@@ -72,10 +72,10 @@ const fetchExtendedData = async (inscriptionId: string | null) => {
 
   if (osError) {
     console.error('Error fetching object sources:', osError);
-    return { images, datings, sources: [], additionalCoordinates };
+    return { images, datings, sources: [], translations, additionalCoordinates };
   }
   if (!objectSources || objectSources.length === 0) {
-    return { images, datings, sources: [], additionalCoordinates };
+    return { images, datings, sources: [], translations, additionalCoordinates };
   }
   const sourceIds = objectSources.map(os => os.sourceid);
 

@@ -1,11 +1,11 @@
 # Viking Age - Runological Research Platform
 
-A comprehensive platform for runological research and analysis of Scandinavian runic inscriptions. Combines modern web technology with AI-driven analysis using Google Gemini 2.0 Flash to help researchers analyze, date, and understand rune stones from the Viking Age and earlier periods.
+A comprehensive platform for runological research and analysis of Scandinavian runic inscriptions. Combines modern web technology with AI-driven analysis (via OpenRouter, Claude Sonnet) to help researchers analyze, date, and understand rune stones from the Viking Age and earlier periods.
 
 ## Features
 
 - **Runic Inscriptions Database** - Extensive database with coordinate data, dating, and metadata
-- **AI Analysis** - Automatic analysis and dating with Google Gemini
+- **AI Analysis** - Automatic analysis and dating via OpenRouter (Claude)
 - **Interactive Maps** - Visualization of rune stones, fortresses, trade routes, and historical locations
 - **Royal Chronicles** - Database of historical kings, dynasties, and sources
 - **Genetic Data Integration** - Archaeological genetic data
@@ -30,7 +30,7 @@ A comprehensive platform for runological research and analysis of Scandinavian r
 - **Database**: `runic-research-db`
 
 ### External Services
-- Google Gemini 2.0 Flash - AI analysis
+- OpenRouter (Claude Sonnet) - AI analysis (server-side edge function)
 - Google Maps API - Geocoding and mapping
 
 ## Local Development
@@ -65,7 +65,8 @@ A comprehensive platform for runological research and analysis of Scandinavian r
      - Request access to the Supabase project at https://supabase.com/dashboard
      - Once granted access, go to **Settings → API** to get your credentials
 
-   - **Google Gemini API key** (optional) - Get from https://makersuite.google.com/app/apikey
+   - **OpenRouter API key** - Set as a Supabase secret (server-side), not in `.env`:
+     `supabase secrets set OPENROUTER_API_KEY=sk-or-...`
 
    - **Google Maps API key** (optional) - Get from https://console.cloud.google.com/
 
@@ -131,7 +132,7 @@ valhall/
 ├── src/
 │   ├── components/        # React components
 │   ├── pages/             # Page routes
-│   ├── services/          # External services (Gemini, Maps)
+│   ├── services/          # External services (aiService, Maps)
 │   ├── types/             # TypeScript types
 │   └── utils/             # Helper functions
 ├── supabase/
