@@ -6,6 +6,7 @@ import { PageMeta } from '../components/PageMeta';
 import { useQuery } from '@tanstack/react-query';
 import { loadDatabaseStats } from '@/hooks/useRunicData/statsLoader';
 import { useWelcomeLocalizedText } from '@/hooks/useWelcomeLocalizedText';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Lazy load components that are not immediately visible
 const PodcastPromotion = lazy(() => import('../components/welcome/PodcastPromotion').then(module => ({ default: module.PodcastPromotion })));
@@ -21,6 +22,7 @@ const Welcome = () => {
   });
 
   const localizedText = useWelcomeLocalizedText();
+  const { language } = useLanguage();
 
   const defaultStats = {
     totalInscriptions: 0,
@@ -35,6 +37,7 @@ const Welcome = () => {
     totalFolkGroups: 0,
     totalGeneticEvents: 0,
     totalRoyalChronicles: 0,
+    totalRivers: 0,
   };
 
   const displayStats = dbStats || defaultStats;
@@ -49,7 +52,7 @@ const Welcome = () => {
         <Header />
         <div className="container mx-auto px-4 py-6">
           <div className="text-center text-white">
-            <p>Laddar statistik...</p>
+            <p>{language === 'sv' ? 'Laddar statistik…' : 'Loading statistics…'}</p>
           </div>
         </div>
       </div>

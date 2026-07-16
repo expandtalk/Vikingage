@@ -9,9 +9,11 @@ import { getEnhancedCoordinates } from '@/utils/coordinateMappingEnhanced';
 import { CoordinatesWithZoom } from '@/types/common';
 import { COUNTRY_CENTERS, CITY_LOCATIONS, REGIONAL_CENTERS, REGION_NAME_TO_CODE } from '@/utils/locationConstants';
 import { InscriptionModal } from './InscriptionModal';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const ExplorerMain: React.FC = () => {
   const { shouldShowControls, shouldShowMap, shouldShowFilters, shouldShowTimeline } = useLayoutManager();
+  const { language } = useLanguage();
   
   const {
     expandedCards,
@@ -68,25 +70,52 @@ export const ExplorerMain: React.FC = () => {
     setCurrentPage
   });
 
+  // Language-aware copy for map/search toasts.
+  const sv = language === 'sv';
+  const T = {
+    focusTitle: sv ? 'Fokusläge aktiverat' : 'Focus mode enabled',
+    focus: sv
+      ? {
+          carvers: 'Fokus på runristare – visar nu ristar-relaterad data',
+          rivers: 'Fokus på flodsystem – visar nu handelsleder och vattenvägar',
+          gods: 'Fokus på gudanamn – visar nu kultplatser och religiösa platser',
+          hundreds: 'Fokus på härader – du kan nu söka per härad.',
+          parishes: 'Fokus på socknar – du kan nu söka per socken.',
+        }
+      : {
+          carvers: 'Focus on carvers – now showing carver-related data',
+          rivers: 'Focus on river systems – now showing trade routes and waterways',
+          gods: 'Focus on god names – now showing cult sites and religious places',
+          hundreds: 'Focus on hundreds – you can now search per hundred.',
+          parishes: 'Focus on parishes – you can now search per parish.',
+        },
+    focusFallback: (f: string) => (sv ? `Fokusläge aktiverat: ${f}` : `Focus mode enabled: ${f}`),
+    showing: (q: string) => (sv ? `Visar ${q}` : `Showing ${q}`),
+    showingRegion: (q: string) => (sv ? `Visar landskapet ${q}` : `Showing province ${q}`),
+    centerCitySearch: sv ? 'Centrerar kartan på staden och söker efter runstenar.' : 'Centering the map on the city and searching for runestones.',
+    centerCity: sv ? 'Centrerar kartan på staden.' : 'Centering the map on the city.',
+    centerCountry: sv ? 'Centrerar kartan på landet.' : 'Centering the map on the country.',
+    centerRegion: sv ? 'Centrerar kartan på landskapet.' : 'Centering the map on the province.',
+    resultsFor: (q: string) => (sv ? `Visar resultat för "${q}"` : `Showing results for "${q}"`),
+    foundN: (n: number) => (sv ? `Hittade ${n} inskrifter. Centrerar kartan.` : `Found ${n} inscriptions. Centering the map.`),
+    noPlaceTitle: sv ? 'Kunde inte hitta plats på kartan' : 'Could not locate on the map',
+    noPlaceDesc: sv ? 'Inga av sökresultaten har koordinater som kan visas.' : 'None of the search results have coordinates to display.',
+    noResultsTitle: sv ? 'Inga resultat' : 'No results',
+    noResultsDesc: (q: string) => (sv ? `Kunde inte hitta några inskrifter för "${q}".` : `Could not find any inscriptions for "${q}".`),
+  };
+
   // Show focus-specific toast when focus changes
   useEffect(() => {
     if (currentFocus) {
-      const focusMessages: { [key: string]: string } = {
-        carvers: "Fokus på runristare - ser du nu carver-relaterade data",
-        rivers: "Fokus på flodsystem - ser du nu handelsleder och vattenvägar", 
-        gods: "Fokus på gudanamn - ser du nu kultplatser och religiösa platser",
-        hundreds: "Fokus på Härader - du kan nu söka per härad.",
-        parishes: "Fokus på Församlingar - du kan nu söka per församling."
-      };
-      
-      const message = focusMessages[currentFocus] || `Fokusläge aktiverat: ${currentFocus}`;
+      const message = (T.focus as Record<string, string>)[currentFocus] || T.focusFallback(currentFocus);
 
       toast({
-        title: `Fokusläge aktiverat`,
+        title: T.focusTitle,
         description: message,
       });
     }
-  }, [currentFocus, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentFocus, toast, language]);
 
   // IMPROVED: Enhanced Swedish location search with better city mappings
   useEffect(() => {
@@ -130,9 +159,9 @@ export const ExplorerMain: React.FC = () => {
         if (swedishCityMappings[query]) {
           const coords = swedishCityMappings[query];
           console.log(`   -> Navigating to Swedish city: ${query}`);
-          toast({ 
-            title: `Visar ${query}`, 
-            description: `Centrerar kartan på staden och söker efter runstenar.` 
+          toast({
+            title: T.showing(query),
+            description: T.centerCitySearch,
           });
           mapNavigate(coords.lat, coords.lng, coords.zoom);
           return;
@@ -142,7 +171,7 @@ export const ExplorerMain: React.FC = () => {
         if (CITY_LOCATIONS[query]) {
           const coords = CITY_LOCATIONS[query];
           console.log(`   -> Navigating to city: ${query}`);
-          toast({ title: `Visar ${query}`, description: `Centrerar kartan på staden.` });
+          toast({ title: T.showing(query), description: T.centerCity });
           mapNavigate(coords.lat, coords.lng, coords.zoom);
           return;
         }
@@ -151,7 +180,7 @@ export const ExplorerMain: React.FC = () => {
         if (COUNTRY_CENTERS[query]) {
           const coords = COUNTRY_CENTERS[query];
           console.log(`   -> Navigating to country: ${query}`);
-          toast({ title: `Visar ${query}`, description: `Centrerar kartan på landet.` });
+          toast({ title: T.showing(query), description: T.centerCountry });
           mapNavigate(coords.lat, coords.lng, coords.zoom);
           return;
         }
@@ -161,7 +190,7 @@ export const ExplorerMain: React.FC = () => {
         if (regionCode && REGIONAL_CENTERS[regionCode]) {
             const coords = REGIONAL_CENTERS[regionCode];
             console.log(`   -> Navigating to region: ${query} (${regionCode})`);
-            toast({ title: `Visar ${query}`, description: `Centrerar kartan på landskapet.` });
+            toast({ title: T.showing(query), description: T.centerRegion });
             mapNavigate(coords.lat, coords.lng, coords.zoom);
             return;
         }
@@ -171,7 +200,7 @@ export const ExplorerMain: React.FC = () => {
         if (REGIONAL_CENTERS[upperQuery]) {
             const coords = REGIONAL_CENTERS[upperQuery];
             console.log(`   -> Navigating to region: ${upperQuery}`);
-            toast({ title: `Visar landskapet ${upperQuery}`, description: `Centrerar kartan på landskapet.` });
+            toast({ title: T.showingRegion(upperQuery), description: T.centerRegion });
             mapNavigate(coords.lat, coords.lng, coords.zoom);
             return;
         }
@@ -194,26 +223,27 @@ export const ExplorerMain: React.FC = () => {
         if (firstResultToNavigate && coordsWithZoom) {
           console.log('   -> No direct location match, navigating to first result:', firstResultToNavigate.signum);
           toast({
-            title: `Visar resultat för "${searchQuery || godNameSearch}"`,
-            description: `Hittade ${inscriptions.length} inskrifter. Centrerar kartan.`,
+            title: T.resultsFor(searchQuery || godNameSearch),
+            description: T.foundN(inscriptions.length),
           });
           mapNavigate(coordsWithZoom.lat, coordsWithZoom.lng, coordsWithZoom.zoom);
         } else {
           console.log('   -> No results with coordinates found for auto-navigation.');
           toast({
-            title: 'Kunde inte hitta plats på kartan',
-            description: 'Inga av sökresultaten har koordinater som kan visas.',
+            title: T.noPlaceTitle,
+            description: T.noPlaceDesc,
             variant: 'destructive',
           });
         }
       } else if (query) {
          toast({
-            title: 'Inga resultat',
-            description: `Kunde inte hitta några inskrifter för "${query}".`,
+            title: T.noResultsTitle,
+            description: T.noResultsDesc(query),
           });
       }
     }
-  }, [inscriptions, hasActiveSearch, mapNavigate, searchQuery, godNameSearch, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inscriptions, hasActiveSearch, mapNavigate, searchQuery, godNameSearch, toast, language]);
 
   if (connectionError) {
     return <ErrorDisplay onRetry={loadData} />;
