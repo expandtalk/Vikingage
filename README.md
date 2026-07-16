@@ -1,6 +1,10 @@
-# Viking Age - Runological Research Platform
+# Viking Age — Runological Research Platform
+
+**Live site: [www.vikingage.se](https://www.vikingage.se)**
 
 A comprehensive platform for runological research and analysis of Scandinavian runic inscriptions. Combines modern web technology with AI-driven analysis (via OpenRouter, Claude Sonnet) to help researchers analyze, date, and understand rune stones from the Viking Age and earlier periods.
+
+![Viking Age platform — interactive map and database of runic inscriptions](docs/screenshot.png)
 
 ## Features
 
@@ -43,8 +47,8 @@ A comprehensive platform for runological research and analysis of Scandinavian r
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/expandtalk/valhall.git
-   cd valhall
+   git clone https://github.com/expandtalk/Vikingage.git
+   cd Vikingage
    ```
 
 2. **Install dependencies**
@@ -77,7 +81,7 @@ A comprehensive platform for runological research and analysis of Scandinavian r
    npm run dev
    ```
 
-   The app will be available at `http://localhost:5173`
+   The app will be available at `http://localhost:5176`
 
 ## Available Scripts
 
@@ -128,7 +132,7 @@ When contributing:
 ## Project Structure
 
 ```
-valhall/
+vikingage/
 ├── src/
 │   ├── components/        # React components
 │   ├── pages/             # Page routes
