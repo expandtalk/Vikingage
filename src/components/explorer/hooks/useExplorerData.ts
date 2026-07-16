@@ -4,6 +4,7 @@ import { useRunicData } from '@/hooks/useRunicData';
 import { useLegendManager } from '@/hooks/useLegendManager';
 import { useFilterState } from '../FilterState';
 import { useFocusManager } from '@/hooks/useFocusManager';
+import { useActiveExploreRole } from '@/hooks/useActiveExploreRole';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface UseExplorerDataProps {
@@ -21,6 +22,7 @@ export const useExplorerData = ({
 }: UseExplorerDataProps) => {
   const queryClient = useQueryClient();
   const { currentFocus } = useFocusManager();
+  const activeRole = useActiveExploreRole();
   
   const {
     searchQuery,
@@ -78,10 +80,10 @@ export const useExplorerData = ({
     handleShowAll,
     handleHideAll
   } = useLegendManager(
-    inscriptions, 
-    false, 
-    selectedTimePeriod, 
-    'explorer', 
+    inscriptions,
+    false,
+    selectedTimePeriod,
+    activeRole,
     dbStats,
     hasActiveSearch,
     inscriptions

@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Monitor, Microscope, Globe, FlaskConical } from "lucide-react";
 import { usePanelManager } from '@/hooks/usePanelManager';
 import { useLanguage } from "@/contexts/LanguageContext";
+import { setActiveExploreRole } from '@/hooks/useActiveExploreRole';
+import type { UserRole } from '@/hooks/legend/rolePresets';
 
 export const PanelLayoutSelector: React.FC = () => {
   const { activePreset, presets, applyPreset } = usePanelManager();
@@ -68,6 +70,8 @@ export const PanelLayoutSelector: React.FC = () => {
                 onClick={() => {
                   console.log('Switching to preset:', key);
                   applyPreset(key);
+                  // Drive the legend/map layers per persona, not just the layout.
+                  setActiveExploreRole(key as UserRole);
                 }}
                 variant={isActive ? "default" : "outline"}
                 size="sm"

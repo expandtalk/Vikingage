@@ -201,11 +201,20 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   };
 
   // Show specific content for focused views
-  if (currentFocus === 'names' || currentFocus === 'hundreds' || currentFocus === 'parishes' || currentFocus === 'carvers') {
+  if (
+    currentFocus === 'names' ||
+    currentFocus === 'hundreds' ||
+    currentFocus === 'parishes' ||
+    currentFocus === 'carvers' ||
+    currentFocus === 'folkGroups' ||
+    currentFocus === 'geneticEvents'
+  ) {
     const renderFocusContent = () => {
       switch (currentFocus) {
         case 'names':
-        case 'carvers': // Let ExplorerPanels handle these
+        case 'carvers':
+        case 'folkGroups':
+        case 'geneticEvents': // ExplorerPanels renders the right dedicated view
           return (
             <ExplorerPanels
               currentFocus={currentFocus}
