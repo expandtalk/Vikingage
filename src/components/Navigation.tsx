@@ -31,6 +31,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
@@ -197,6 +198,9 @@ export const MobileNav: React.FC = () => {
             <SheetTitle className="text-white text-left">
               {language === 'sv' ? 'Meny' : 'Menu'}
             </SheetTitle>
+            <SheetDescription className="sr-only">
+              {language === 'sv' ? 'Sidnavigering' : 'Site navigation'}
+            </SheetDescription>
           </SheetHeader>
           <nav className="mt-6 flex flex-col space-y-1">
             {links.map((link) => {
