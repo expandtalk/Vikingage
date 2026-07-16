@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Search, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { sanitizeFilterValue } from "@/utils/searchFilter";
 
 interface CompactSearchBoxProps {
   onSearch: (query: string) => void;
@@ -13,9 +14,6 @@ interface CompactSearchBoxProps {
   className?: string;
   currentQuery?: string;
 }
-
-// Strip characters that are meaningful in a PostgREST .or() filter expression.
-const sanitize = (value: string) => value.replace(/[,()"*\\%]/g, ' ').replace(/\s+/g, ' ').trim();
 
 export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
   onSearch,
@@ -51,7 +49,7 @@ export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
     const timeoutId = setTimeout(async () => {
       setIsLoadingSuggestions(true);
       try {
-        const safe = sanitize(query);
+        const safe = sanitizeFilterValue(query);
         if (!safe) {
           setSuggestions([]);
           return;

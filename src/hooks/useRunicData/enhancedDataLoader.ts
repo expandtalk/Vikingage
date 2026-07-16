@@ -2,17 +2,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getEnhancedCoordinates } from '../../utils/coordinateMappingEnhanced';
 import { parseCoordinates } from './coordinateUtils';
+import { sanitizeFilterValue } from '@/utils/searchFilter';
 import type { UseRunicDataProps, RunicInscription } from './types';
-
-/**
- * Sanitize a free-text search term before interpolating it into a PostgREST
- * `.or()` / `.ilike` filter expression. Characters like `,` `(` `)` `"` `*`
- * are part of the PostgREST filter grammar and, if left unescaped, let a user
- * alter or break the query (filter injection). We strip them and collapse
- * whitespace — for substring (ILIKE) search this loses nothing meaningful.
- */
-const sanitizeFilterValue = (value: string): string =>
-  value.replace(/[,()"*\\%]/g, ' ').replace(/\s+/g, ' ').trim();
 
 /** A row from the `runic_with_coordinates` view (only the fields we read). */
 interface RunicWithCoordinatesRow {
