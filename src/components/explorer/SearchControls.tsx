@@ -1,9 +1,8 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Loader2 } from 'lucide-react';
+import { CompactSearchBox } from '../search/CompactSearchBox';
 import { GodNameSearch } from '../search/GodNameSearch';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SearchControlsProps {
   searchQuery: string;
@@ -17,53 +16,50 @@ interface SearchControlsProps {
   onLegendToggle?: (id: string) => void;
 }
 
+// Unified on the canonical CompactSearchBox (real suggestions, bilingual,
+// injection-sanitized) instead of a separate plain <Input>, so every search
+// surface behaves the same.
 export const SearchControls: React.FC<SearchControlsProps> = ({
   searchQuery,
   setSearchQuery,
   handleSearch,
-  isLoading,
   totalInscriptions,
-  isVikingMode,
   showGodNameSearch = false,
   onGodNameSearch,
-  onLegendToggle
+  onLegendToggle,
 }) => {
+  const { language } = useLanguage();
+
+  const handleCompactSearch = (query: string) => {
+    setSearchQuery(query);
+    handleSearch();
+  };
+
+  const handleResultSelect = (result: { signum?: string }) => {
+    if (result.signum) {
+      setSearchQuery(result.signum);
+      handleSearch();
+    }
+  };
+
+  const total = totalInscriptions.toLocaleString(language === 'sv' ? 'sv-SE' : 'en-US');
+
   return (
     <div className="space-y-4">
-      {/* Main search */}
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={isVikingMode ? "Sök i runor och sagor..." : "Sök i runstenar..."}
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-          />
-        </div>
-        <Button
-          onClick={handleSearch}
-          disabled={isLoading}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Search className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
+      <CompactSearchBox
+        onSearch={handleCompactSearch}
+        onResultSelect={handleResultSelect}
+        currentQuery={searchQuery}
+      />
 
-      {/* God name search - only show in explorer mode */}
-      {showGodNameSearch && (
-        <GodNameSearch 
-          onGodNameSearch={onGodNameSearch}
-          onLegendToggle={onLegendToggle}
-        />
+      {showGodNameSearch && onGodNameSearch && onLegendToggle && (
+        <GodNameSearch onGodNameSearch={onGodNameSearch} onLegendToggle={onLegendToggle} />
       )}
 
       <div className="text-white/80 text-sm">
-        Totalt {totalInscriptions.toLocaleString('sv-SE')} runstenar att utforska
+        {language === 'sv'
+          ? `Totalt ${total} runstenar att utforska`
+          : `${total} runestones to explore`}
       </div>
     </div>
   );

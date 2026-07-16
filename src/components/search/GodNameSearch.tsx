@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Zap } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const VIKING_GODS = [
   'Odin', 'Thor', 'Freyr', 'Freyja', 'Balder', 'Loki', 'Tyr', 'Heimdall', 
@@ -23,19 +24,31 @@ export const GodNameSearch: React.FC<GodNameSearchProps> = ({
 }) => {
   const [godSearchQuery, setGodSearchQuery] = useState('');
   const { toast } = useToast();
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const t = {
+    placeholder: sv ? 'Sök gudanamn...' : 'Search god names...',
+    search: sv ? 'Sök' : 'Search',
+    intro: sv
+      ? 'Utforska platser associerade med fornnordisk religion och gudar.'
+      : 'Explore places associated with Old Norse religion and gods.',
+    showOnMap: sv ? 'Visa religiösa platser på kartan' : 'Show religious sites on the map',
+    searchingFor: (s: string) => (sv ? `Söker efter ${s}` : `Searching for ${s}`),
+    searchingDesc: sv ? 'Letar efter kultplatser och religiösa platser...' : 'Looking for cult sites and religious places...',
+  };
 
   const handleGodSearch = (godName?: string) => {
     const searchTerm = godName || godSearchQuery;
     if (!searchTerm.trim()) return;
-    
+
     onGodNameSearch(searchTerm);
     onLegendToggle('religious_locations');
-    
+
     toast({
-      title: `Söker efter ${searchTerm}`,
-      description: "Letar efter kultplatser och religiösa platser...",
+      title: t.searchingFor(searchTerm),
+      description: t.searchingDesc,
     });
-    
+
     if (!godName) setGodSearchQuery('');
   };
 
@@ -51,7 +64,7 @@ export const GodNameSearch: React.FC<GodNameSearchProps> = ({
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Input
-              placeholder="Sök gudanamn..."
+              placeholder={t.placeholder}
               value={godSearchQuery}
               onChange={(e) => setGodSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -88,7 +101,7 @@ export const GodNameSearch: React.FC<GodNameSearchProps> = ({
   return (
     <div className="space-y-2">
       <p className="text-sm text-white/70">
-        Utforska platser associerade med fornnordisk religion och gudar.
+        {t.intro}
       </p>
       <div className="flex gap-2">
         <div className="relative flex-1">
@@ -106,7 +119,7 @@ export const GodNameSearch: React.FC<GodNameSearchProps> = ({
           className="bg-amber-600/80 hover:bg-amber-700 text-white text-sm"
         >
           <Search className="h-4 w-4 mr-2" />
-          Sök
+          {t.search}
         </Button>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -127,7 +140,7 @@ export const GodNameSearch: React.FC<GodNameSearchProps> = ({
         className="text-amber-500 hover:text-amber-400 text-sm"
       >
         <Zap className="h-4 w-4 mr-2" />
-        Visa religiösa platser på kartan
+        {t.showOnMap}
       </Button>
     </div>
   );
