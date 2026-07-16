@@ -8,10 +8,56 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Calendar, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { analyzeRunicInscription } from '../services/geminiService';
+import { analyzeRunicInscription } from '../services/aiService';
 import { DatingResult } from './DatingResult';
 import { ImageUpload } from './ImageUpload';
 import { RunicAnalysis } from '../types/runic';
+import { useLanguage } from "@/contexts/LanguageContext";
+
+const COPY = {
+  sv: {
+    title: 'AI-baserad datering av runinskriptioner',
+    description: 'Analysera runinskriptioner med AI för att uppskatta tidsperiod och språkstadium. Baserat på Samnordisk runtextdatabas och modern runologisk forskning.',
+    translitLabel: 'Translitteration (obligatorisk)',
+    translitPlaceholder: "t.ex. 'sirkir × resþi × stin × þana × eftR × karna' eller 'harija'",
+    translitHelp: 'Ange runinskriptionen translittererad till latinska bokstäver',
+    locationLabel: 'Plats (valfritt)',
+    locationPlaceholder: "t.ex. 'Uppland, Orkesta'",
+    objectTypeLabel: 'Objekttyp (valfritt)',
+    objectTypePlaceholder: "t.ex. 'runsten', 'brakteat', 'kam'",
+    analyzing: 'Analyserar med AI...',
+    analyze: 'Analysera datering',
+    clear: 'Rensa',
+    examplesTitle: 'Exempel att testa:',
+    errorTitle: 'Fel',
+    errorEmpty: 'Vänligen ange en runinskription att analysera',
+    doneTitle: 'Analys klar!',
+    donePeriod: (p: string) => `Föreslagen period: ${p}`,
+    failTitle: 'Fel vid analys',
+    failBody: 'Kunde inte analysera inskriptionen. Försök igen.',
+  },
+  en: {
+    title: 'AI-based dating of runic inscriptions',
+    description: 'Analyze runic inscriptions with AI to estimate time period and language stage. Based on the Scandinavian Runic-text Database and modern runological research.',
+    translitLabel: 'Transliteration (required)',
+    translitPlaceholder: "e.g. 'sirkir × resþi × stin × þana × eftR × karna' or 'harija'",
+    translitHelp: 'Enter the runic inscription transliterated into Latin letters',
+    locationLabel: 'Location (optional)',
+    locationPlaceholder: "e.g. 'Uppland, Orkesta'",
+    objectTypeLabel: 'Object type (optional)',
+    objectTypePlaceholder: "e.g. 'runestone', 'bracteate', 'comb'",
+    analyzing: 'Analyzing with AI...',
+    analyze: 'Analyze dating',
+    clear: 'Clear',
+    examplesTitle: 'Examples to try:',
+    errorTitle: 'Error',
+    errorEmpty: 'Please enter a runic inscription to analyze',
+    doneTitle: 'Analysis complete!',
+    donePeriod: (p: string) => `Suggested period: ${p}`,
+    failTitle: 'Analysis error',
+    failBody: 'Could not analyze the inscription. Please try again.',
+  },
+};
 
 export const RunicDatingAssistant: React.FC = () => {
   const [transliteration, setTransliteration] = useState('');
@@ -21,12 +67,14 @@ export const RunicDatingAssistant: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<RunicAnalysis | null>(null);
   const { toast } = useToast();
+  const { language } = useLanguage();
+  const c = COPY[language === 'sv' ? 'sv' : 'en'];
 
   const handleAnalysis = async () => {
     if (!transliteration.trim()) {
       toast({
-        title: "Fel",
-        description: "Vänligen ange en runinskription att analysera",
+        title: c.errorTitle,
+        description: c.errorEmpty,
         variant: "destructive"
       });
       return;
@@ -43,14 +91,14 @@ export const RunicDatingAssistant: React.FC = () => {
       
       setAnalysis(result);
       toast({
-        title: "Analys klar!",
-        description: `Föreslagen period: ${result.period}`,
+        title: c.doneTitle,
+        description: c.donePeriod(result.period),
       });
     } catch (error) {
       console.error('Analysis error:', error);
       toast({
-        title: "Fel vid analys",
-        description: "Kunde inte analysera inskriptionen. Försök igen.",
+        title: c.failTitle,
+        description: c.failBody,
         variant: "destructive"
       });
     } finally {
@@ -80,11 +128,10 @@ export const RunicDatingAssistant: React.FC = () => {
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            AI-baserad datering av runinskriptioner
+            {c.title}
           </CardTitle>
           <CardDescription className="text-slate-300">
-            Analysera runinskriptioner med AI för att uppskatta tidsperiod och språkstadium.
-            Baserat på Samnordisk runtextdatabas och modern runologisk forskning.
+            {c.description}
           </CardDescription>
         </CardHeader>
         
@@ -92,18 +139,18 @@ export const RunicDatingAssistant: React.FC = () => {
           {/* Transliteration Input */}
           <div className="space-y-2">
             <Label htmlFor="transliteration" className="text-white">
-              Translitteration (obligatorisk)
+              {c.translitLabel}
             </Label>
             <Textarea
               id="transliteration"
-              placeholder="t.ex. 'sirkir × resþi × stin × þana × eftR × karna' eller 'harija'"
+              placeholder={c.translitPlaceholder}
               value={transliteration}
               onChange={(e) => setTransliteration(e.target.value)}
               className="bg-white/10 border-white/20 text-white placeholder:text-slate-400"
               rows={3}
             />
             <p className="text-xs text-slate-400">
-              Ange runinskriptionen translittererad till latinska bokstäver
+              {c.translitHelp}
             </p>
           </div>
 
@@ -111,11 +158,11 @@ export const RunicDatingAssistant: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="location" className="text-white">
-                Plats (valfritt)
+                {c.locationLabel}
               </Label>
               <Input
                 id="location"
-                placeholder="t.ex. 'Uppland, Orkesta'"
+                placeholder={c.locationPlaceholder}
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="bg-white/10 border-white/20 text-white placeholder:text-slate-400"
@@ -124,11 +171,11 @@ export const RunicDatingAssistant: React.FC = () => {
             
             <div className="space-y-2">
               <Label htmlFor="objectType" className="text-white">
-                Objekttyp (valfritt)
+                {c.objectTypeLabel}
               </Label>
               <Input
                 id="objectType"
-                placeholder="t.ex. 'runsten', 'brakteat', 'kam'"
+                placeholder={c.objectTypePlaceholder}
                 value={objectType}
                 onChange={(e) => setObjectType(e.target.value)}
                 className="bg-white/10 border-white/20 text-white placeholder:text-slate-400"
@@ -152,28 +199,28 @@ export const RunicDatingAssistant: React.FC = () => {
               {isAnalyzing ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Analyserar med AI...
+                  {c.analyzing}
                 </>
               ) : (
                 <>
                   <Info className="mr-2 h-4 w-4" />
-                  Analysera datering
+                  {c.analyze}
                 </>
               )}
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={clearForm}
               variant="outline"
               className="border-white/20 text-white hover:bg-white/10"
             >
-              Rensa
+              {c.clear}
             </Button>
           </div>
 
           {/* Example Inscriptions */}
           <div className="mt-6 p-4 bg-black/20 rounded-lg">
-            <h4 className="text-white font-medium mb-3">Exempel att testa:</h4>
+            <h4 className="text-white font-medium mb-3">{c.examplesTitle}</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {exampleInscriptions.map((example, index) => (
                 <Button

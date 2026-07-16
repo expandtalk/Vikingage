@@ -1,8 +1,11 @@
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import type { DbStats } from '@/hooks/useRunicData/types';
 import type { FocusType } from '@/hooks/useFocusManager';
+import { NORSE_GODS_EXPANDED } from '@/utils/godNameUtils';
+
+// Number of Norse deities covered by the god name-matching dataset.
+const GOD_COUNT = Object.keys(NORSE_GODS_EXPANDED).length;
 
 interface HeroStatsGridProps {
   dbStats: DbStats;
@@ -25,262 +28,66 @@ interface HeroStatsGridProps {
   };
 }
 
+interface StatItem {
+  label: string;
+  value: React.ReactNode;
+  onClick: () => void;
+}
+
+/** Accessible, keyboard-focusable stat card (renders a real <button>). */
+const StatCard: React.FC<StatItem> = ({ label, value, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-label={`${label}: ${value}`}
+    className="text-left bg-white/10 backdrop-blur-md border border-white/20 rounded-lg cursor-pointer hover:bg-white/15 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+  >
+    <div className="p-3 text-center">
+      <p className="text-xs text-slate-400 mb-1">{label}</p>
+      <p className="text-lg font-bold text-white">{value}</p>
+    </div>
+  </button>
+);
+
 export const HeroStatsGrid: React.FC<HeroStatsGridProps> = ({
   dbStats,
   localizedText
 }) => {
   const navigate = useNavigate();
+  const numberLocale = localizedText.language === 'en' ? 'en-US' : 'sv-SE';
+  const fmt = (n: number) => n.toLocaleString(numberLocale);
 
-  const handleCardClick = (focus: FocusType) => {
-    if (focus) {
-      navigate(`/explore?focus=${focus}`);
-    } else {
-      navigate('/explore');
-    }
-  };
+  const goFocus = (focus: FocusType) => () =>
+    navigate(focus ? `/explore?focus=${focus}` : '/explore');
+  const goTo = (path: string) => () => navigate(path);
 
-  const handleRoyalChroniclesClick = () => {
-    navigate('/royal-chronicles');
-  };
+  const items: StatItem[] = [
+    { label: localizedText.runicInscriptions, value: fmt(dbStats.totalInscriptions), onClick: goFocus('inscriptions') },
+    { label: localizedText.carvers, value: fmt(dbStats.totalCarvers || 0), onClick: goTo('/carvers') },
+    { label: localizedText.artefacts, value: fmt(dbStats.totalArtefacts || 0), onClick: goTo('/artefacts') },
+    { label: localizedText.vikingNames, value: fmt(dbStats.totalVikingNames || 0), onClick: goFocus('names') },
+    { label: localizedText.hundreds, value: fmt(dbStats.totalHundreds || 0), onClick: goFocus('hundreds') },
+    { label: localizedText.parishes, value: fmt(dbStats.totalParishes || 0), onClick: goFocus('parishes') },
+    { label: localizedText.folkGroups, value: fmt(dbStats.totalFolkGroups || 0), onClick: goFocus('folkGroups') },
+    { label: localizedText.riverLocations, value: fmt(dbStats.totalRivers || 0), onClick: goFocus('rivers') },
+    { label: localizedText.godNames, value: GOD_COUNT, onClick: goFocus('gods') },
+    { label: localizedText.geneticEvents, value: fmt(dbStats.totalGeneticEvents || 0), onClick: goFocus('geneticEvents') },
+    { label: localizedText.language === 'en' ? 'Nordic Kings' : 'Nordiska kungar', value: fmt(dbStats.totalRoyalChronicles || 0), onClick: goTo('/royal-chronicles') },
+    { label: localizedText.language === 'en' ? 'Fortresses' : 'Fornborgar', value: fmt(dbStats.totalFortresses || 0), onClick: goTo('/fortresses') },
+    // Diocletian's Price Edict — a descriptive year label, not a DB count.
+    { label: localizedText.prices, value: '301 e.Kr.', onClick: goTo('/prices') },
+  ];
+
+  if (dbStats.totalCities && dbStats.totalCities >= 30) {
+    items.push({ label: localizedText.vikingCities, value: fmt(dbStats.totalCities), onClick: goTo('/fortresses') });
+  }
 
   return (
     <div className="mb-8 max-w-4xl mx-auto">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {/* Core stats that always show */}
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => handleCardClick('inscriptions')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.runicInscriptions}
-              </p>
-              <p className="text-lg font-bold text-white">
-                {dbStats.totalInscriptions.toLocaleString('sv-SE')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => navigate('/carvers')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.carvers}
-              </p>
-              <p className="text-lg font-bold text-white">
-                {dbStats.totalCarvers || 0}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => navigate('/artefacts')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.artefacts}
-              </p>
-              <p className="text-lg font-bold text-white">
-                {dbStats.totalArtefacts || 0}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Viking Names - now shows real count from database */}
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => handleCardClick('names')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.vikingNames}
-              </p>
-              <p className="text-lg font-bold text-white">
-                113
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Hundreds */}
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => handleCardClick('hundreds')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.hundreds}
-              </p>
-              <p className="text-lg font-bold text-white">
-                {dbStats.totalHundreds || 0}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Parishes */}
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => handleCardClick('parishes')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.parishes}
-              </p>
-              <p className="text-lg font-bold text-white">
-                {dbStats.totalParishes || 0}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Folk Groups */}
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => handleCardClick('folkGroups')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.folkGroups}
-              </p>
-              <p className="text-lg font-bold text-white">
-                {dbStats.totalFolkGroups || 0}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* River locations - now clickable */}
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => handleCardClick('rivers')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.riverLocations}
-              </p>
-              <p className="text-lg font-bold text-white">
-                14
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* God names - now clickable */}
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => handleCardClick('gods')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.godNames}
-              </p>
-              <p className="text-lg font-bold text-white">
-                200+
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Genetic Events */}
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => handleCardClick('geneticEvents')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.geneticEvents}
-              </p>
-              <p className="text-lg font-bold text-white">
-                {dbStats.totalGeneticEvents || 0}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Royal Chronicles - now shows actual count from database */}
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={handleRoyalChroniclesClick}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.language === 'en' ? 'Nordic Kings' : 'Nordiska kungar'}
-              </p>
-              <p className="text-lg font-bold text-white">
-                {dbStats.totalRoyalChronicles || 0}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => navigate('/fortresses')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.language === 'en' ? 'Fortresses' : 'Fornborgar'}
-              </p>
-              <p className="text-lg font-bold text-white">
-                800+
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Diocletian Prices */}
-        <Card 
-          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-          onClick={() => navigate('/prices')}
-        >
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-1">
-                {localizedText.prices}
-              </p>
-              <p className="text-lg font-bold text-white">
-                301 e.Kr.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {dbStats.totalCities && dbStats.totalCities >= 30 && (
-          <Card 
-            className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
-            onClick={() => navigate('/fortresses')}
-          >
-            <CardContent className="p-3">
-              <div className="text-center">
-                <p className="text-xs text-slate-400 mb-1">
-                  {localizedText.vikingCities}
-                </p>
-                <p className="text-lg font-bold text-white">
-                  {dbStats.totalCities}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {items.map((item, i) => (
+          <StatCard key={i} {...item} />
+        ))}
       </div>
     </div>
   );

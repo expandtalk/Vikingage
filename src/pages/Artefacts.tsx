@@ -211,7 +211,7 @@ const ArtefactsPage = () => {
           <div className="text-center py-12">
             <Package className="h-16 w-16 text-slate-500 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-white mb-2">
-              {searchTerm || selectedCategory !== 'all' ? t('noMatchingArtefacts') : t('noHillfortsFound')}
+              {searchTerm || selectedCategory !== 'all' ? t('noMatchingArtefacts') : t('noArtefactsFound')}
             </h3>
             <p className="text-slate-400">
               {searchTerm || selectedCategory !== 'all' 
