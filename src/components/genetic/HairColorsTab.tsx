@@ -7,12 +7,71 @@ import { Progress } from "@/components/ui/progress";
 import { Dna, MapPin, TrendingUp, Users, Eye, Lightbulb, Sun, Snowflake } from "lucide-react";
 import { HairColor, HairColorRegion, HairColorGenetics } from './types';
 import { hairColorData, hairColorRegions, hairColorGenetics } from './data/hairColorData';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface HairColorsTabProps {
   searchTerm: string;
 }
 
 export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const c = sv ? {
+    simple: 'Enkel',
+    moderate: 'Måttlig',
+    complex: 'Komplex',
+    veryComplex: 'Mycket komplex',
+    blondInScandinavia: 'Blont hår i Skandinavien',
+    highestGlobalFrequency: 'Högsta globala frekvensen',
+    geneticMarkers: 'Genetiska markörer',
+    identifiedVariants: 'Identifierade varianter',
+    mainGene: 'Huvudgen',
+    evolutionaryAge: 'Evolutionär ålder',
+    years: 'år',
+    scandinavianHunterGatherers: 'Skandinaviska jägare-samlare',
+    globalFrequency: 'Global frekvens:',
+    scandinavianFrequency: 'Skandinavisk frekvens:',
+    mainGenes: 'Huvudgener:',
+    more: 'till',
+    keyMarkers: 'Nyckelmarkörer:',
+    historicalOrigin: 'Historiskt ursprung:',
+    evolutionaryAdvantage: 'Evolutionär fördel:',
+    detailedAnalysis: 'Detaljerad analys:',
+    regionalDistribution: 'Regional fördelning',
+    frequency: 'Frekvens:',
+    marker: 'Markör:',
+    chromosome: 'Kromosom',
+    effectSize: 'Effektstorlek:',
+    population: 'Population:',
+  } : {
+    simple: 'Simple',
+    moderate: 'Moderate',
+    complex: 'Complex',
+    veryComplex: 'Very complex',
+    blondInScandinavia: 'Blond hair in Scandinavia',
+    highestGlobalFrequency: 'Highest global frequency',
+    geneticMarkers: 'Genetic markers',
+    identifiedVariants: 'Identified variants',
+    mainGene: 'Main gene',
+    evolutionaryAge: 'Evolutionary age',
+    years: 'years',
+    scandinavianHunterGatherers: 'Scandinavian hunter-gatherers',
+    globalFrequency: 'Global frequency:',
+    scandinavianFrequency: 'Scandinavian frequency:',
+    mainGenes: 'Main genes:',
+    more: 'more',
+    keyMarkers: 'Key markers:',
+    historicalOrigin: 'Historical origin:',
+    evolutionaryAdvantage: 'Evolutionary advantage:',
+    detailedAnalysis: 'Detailed analysis:',
+    regionalDistribution: 'Regional distribution',
+    frequency: 'Frequency:',
+    marker: 'Marker:',
+    chromosome: 'Chromosome',
+    effectSize: 'Effect size:',
+    population: 'Population:',
+  };
+
   const [selectedHairColor, setSelectedHairColor] = useState<HairColor | null>(null);
   const [showGenetics, setShowGenetics] = useState(false);
 
@@ -41,10 +100,10 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
 
   const getComplexityText = (complexity: string) => {
     switch (complexity) {
-      case 'simple': return 'Enkel';
-      case 'moderate': return 'Måttlig';
-      case 'complex': return 'Komplex';
-      case 'very_complex': return 'Mycket komplex';
+      case 'simple': return c.simple;
+      case 'moderate': return c.moderate;
+      case 'complex': return c.complex;
+      case 'very_complex': return c.veryComplex;
       default: return complexity;
     }
   };
@@ -65,30 +124,30 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-amber-900/20 border-amber-500/30">
           <CardContent className="p-4">
-            <div className="text-amber-300 text-sm mb-1">Blont hår i Skandinavien</div>
+            <div className="text-amber-300 text-sm mb-1">{c.blondInScandinavia}</div>
             <div className="text-white font-bold text-xl">45%</div>
-            <div className="text-amber-200 text-xs">Högsta globala frekvensen</div>
+            <div className="text-amber-200 text-xs">{c.highestGlobalFrequency}</div>
           </CardContent>
         </Card>
         <Card className="bg-blue-900/20 border-blue-500/30">
           <CardContent className="p-4">
-            <div className="text-blue-300 text-sm mb-1">Genetiska markörer</div>
+            <div className="text-blue-300 text-sm mb-1">{c.geneticMarkers}</div>
             <div className="text-white font-bold text-xl">200+</div>
-            <div className="text-blue-200 text-xs">Identifierade varianter</div>
+            <div className="text-blue-200 text-xs">{c.identifiedVariants}</div>
           </CardContent>
         </Card>
         <Card className="bg-green-900/20 border-green-500/30">
           <CardContent className="p-4">
-            <div className="text-green-300 text-sm mb-1">Huvudgen</div>
+            <div className="text-green-300 text-sm mb-1">{c.mainGene}</div>
             <div className="text-white font-bold text-xl">HERC2</div>
             <div className="text-green-200 text-xs">rs12913832</div>
           </CardContent>
         </Card>
         <Card className="bg-purple-900/20 border-purple-500/30">
           <CardContent className="p-4">
-            <div className="text-purple-300 text-sm mb-1">Evolutionär ålder</div>
-            <div className="text-white font-bold text-xl">8000 år</div>
-            <div className="text-purple-200 text-xs">Skandinaviska jägare-samlare</div>
+            <div className="text-purple-300 text-sm mb-1">{c.evolutionaryAge}</div>
+            <div className="text-white font-bold text-xl">8000 {c.years}</div>
+            <div className="text-purple-200 text-xs">{c.scandinavianHunterGatherers}</div>
           </CardContent>
         </Card>
       </div>
@@ -122,13 +181,13 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
               {/* Frequency Comparison */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Global frekvens:</span>
+                  <span className="text-slate-400">{c.globalFrequency}</span>
                   <span className="text-white">{hairColor.global_frequency_percent}%</span>
                 </div>
                 <Progress value={hairColor.global_frequency_percent} className="h-2" />
                 
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Skandinavisk frekvens:</span>
+                  <span className="text-slate-400">{c.scandinavianFrequency}</span>
                   <span className="text-amber-300">{hairColor.scandinavian_frequency_percent}%</span>
                 </div>
                 <Progress value={hairColor.scandinavian_frequency_percent} className="h-2" />
@@ -138,7 +197,7 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
               <div className="bg-slate-800/50 rounded p-3">
                 <div className="text-slate-400 mb-2 text-sm flex items-center gap-1">
                   <Dna className="h-3 w-3" />
-                  <span>Huvudgener:</span>
+                  <span>{c.mainGenes}</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {hairColor.main_genes.slice(0, 4).map((gene, index) => (
@@ -148,7 +207,7 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
                   ))}
                   {hairColor.main_genes.length > 4 && (
                     <Badge variant="outline" className="text-xs">
-                      +{hairColor.main_genes.length - 4} till
+                      +{hairColor.main_genes.length - 4} {c.more}
                     </Badge>
                   )}
                 </div>
@@ -158,7 +217,7 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
               <div className="bg-slate-800/50 rounded p-3">
                 <div className="text-slate-400 mb-2 text-sm flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
-                  <span>Nyckelmarkörer:</span>
+                  <span>{c.keyMarkers}</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {hairColor.key_markers.map((marker, index) => (
@@ -173,7 +232,7 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
               <div className="bg-slate-800/50 rounded p-3">
                 <div className="text-slate-400 mb-1 text-sm flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
-                  <span>Historiskt ursprung:</span>
+                  <span>{c.historicalOrigin}</span>
                 </div>
                 <p className="text-slate-300 text-xs">{hairColor.historical_origin}</p>
               </div>
@@ -182,7 +241,7 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
               <div className="bg-green-900/20 rounded p-3 border border-green-700/30">
                 <div className="text-green-400 mb-1 text-sm flex items-center gap-1">
                   <Lightbulb className="h-3 w-3" />
-                  <span>Evolutionär fördel:</span>
+                  <span>{c.evolutionaryAdvantage}</span>
                 </div>
                 <p className="text-green-300 text-xs">{hairColor.evolutionary_advantage}</p>
               </div>
@@ -197,7 +256,7 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle className="text-white">
-                Detaljerad analys: {selectedHairColor.color_name}
+                {c.detailedAnalysis} {selectedHairColor.color_name}
               </CardTitle>
               <div className="flex gap-2">
                 <Button 
@@ -206,7 +265,7 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
                   onClick={() => setShowGenetics(!showGenetics)}
                 >
                   <Dna className="h-4 w-4 mr-2" />
-                  Genetiska markörer
+                  {c.geneticMarkers}
                 </Button>
               </div>
             </div>
@@ -215,7 +274,7 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
           <CardContent className="space-y-4">
             {/* Regional Distribution */}
             <div>
-              <h4 className="text-white font-semibold mb-3">Regional fördelning</h4>
+              <h4 className="text-white font-semibold mb-3">{c.regionalDistribution}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {hairColorRegions
                   .filter(region => region.hair_color_id === selectedHairColor.id)
@@ -224,7 +283,7 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
                       <div className="font-semibold text-amber-300 mb-1">{region.region_name}</div>
                       <div className="text-sm text-slate-300 mb-2">{region.country}</div>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs text-slate-400">Frekvens:</span>
+                        <span className="text-xs text-slate-400">{c.frequency}</span>
                         <span className="text-white font-semibold">{region.frequency_percent}%</span>
                       </div>
                       <Progress value={region.frequency_percent} className="h-1 mb-2" />
@@ -237,7 +296,7 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
             {/* Genetic Markers */}
             {showGenetics && (
               <div>
-                <h4 className="text-white font-semibold mb-3">Genetiska markörer</h4>
+                <h4 className="text-white font-semibold mb-3">{c.geneticMarkers}</h4>
                 <div className="space-y-3">
                   {hairColorGenetics
                     .filter(genetics => genetics.hair_color_id === selectedHairColor.id)
@@ -246,15 +305,15 @@ export const HairColorsTab: React.FC<HairColorsTabProps> = ({ searchTerm }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <div className="text-amber-300 font-semibold mb-1">{genetics.gene_name}</div>
-                            <div className="text-sm text-slate-300 mb-2">Markör: {genetics.marker_id}</div>
+                            <div className="text-sm text-slate-300 mb-2">{c.marker} {genetics.marker_id}</div>
                             <div className="text-xs text-slate-400">
-                              Kromosom {genetics.chromosome} • Effektstorlek: {(genetics.effect_size * 100).toFixed(0)}%
+                              {c.chromosome} {genetics.chromosome} • {c.effectSize} {(genetics.effect_size * 100).toFixed(0)}%
                             </div>
                           </div>
                           <div>
                             <div className="text-sm text-slate-300 mb-2">{genetics.functional_impact}</div>
                             <div className="text-xs text-slate-400">
-                              Population: {(genetics.population_frequency * 100).toFixed(0)}% • {genetics.discovery_study}
+                              {c.population} {(genetics.population_frequency * 100).toFixed(0)}% • {genetics.discovery_study}
                             </div>
                           </div>
                         </div>

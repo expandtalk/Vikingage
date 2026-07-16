@@ -13,8 +13,48 @@ import { useArchaeologicalSites, useGeneticIndividuals, useGeneticMarkers, useHi
 import { importStudyDataToDatabase } from '@/services/studyDataImporter';
 import { EyeColor, EyeColorRegion } from './types';
 import { HairColorsTab } from './HairColorsTab';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const GeneticEvolutionExplorerView: React.FC = () => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const c = sv
+    ? {
+        loading: 'Laddar genetisk evolution-data…',
+        title: 'Skandinavisk Genetisk Evolution',
+        subtitle: 'Utforska 2000 år av genetisk historia från romersk järnålder till nutid',
+        source: 'Källa: Rodriguez-Varela et al., 2023',
+        publishedIn: 'Publicerad i:',
+        readStudy: 'Läs hela studien här',
+        importTitle: 'Importera studiedata',
+        importDesc: 'Importera Rodriguez-Varela et al. (2023) studiedata till databasen för permanent lagring',
+        importing: 'Importerar…',
+        importData: 'Importera data',
+        importSuccess: 'Import lyckades!',
+        importSuccessDesc: 'Studiedata har importerats till databasen. Du kan nu utforska all genetisk data.',
+        showingResults: (q: string) => `Visar resultat för "${q}" –`,
+        counts: (m: number, p: number, s: number) => `${m} markörer, ${p} perioder, ${s} platser`,
+        noResults: 'Inga resultat hittades. Prova ett bredare sökord.',
+        tabStudy: 'Studiedata', tabPeriods: 'Tidsperioder', tabEyes: 'Ögonfärger', tabHair: 'Hårfärger',
+      }
+    : {
+        loading: 'Loading genetic evolution data…',
+        title: 'Scandinavian Genetic Evolution',
+        subtitle: 'Explore 2000 years of genetic history from the Roman Iron Age to the present',
+        source: 'Source: Rodriguez-Varela et al., 2023',
+        publishedIn: 'Published in:',
+        readStudy: 'Read the full study here',
+        importTitle: 'Import study data',
+        importDesc: 'Import Rodriguez-Varela et al. (2023) study data into the database for permanent storage',
+        importing: 'Importing…',
+        importData: 'Import data',
+        importSuccess: 'Import successful!',
+        importSuccessDesc: 'Study data has been imported to the database. You can now explore all genetic data.',
+        showingResults: (q: string) => `Showing results for "${q}" –`,
+        counts: (m: number, p: number, s: number) => `${m} markers, ${p} periods, ${s} sites`,
+        noResults: 'No results found. Try a broader search term.',
+        tabStudy: 'Study data', tabPeriods: 'Time periods', tabEyes: 'Eye colours', tabHair: 'Hair colours',
+      };
   const [eyeColors, setEyeColors] = useState<EyeColor[]>([]);
   const [eyeColorRegions, setEyeColorRegions] = useState<EyeColorRegion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,7 +200,7 @@ export const GeneticEvolutionExplorerView: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 p-6">
         <div className="text-white text-center flex items-center justify-center gap-2">
           <Loader2 className="h-5 w-5 animate-spin" />
-          Laddar genetisk evolution data...
+          {c.loading}
         </div>
       </div>
     );
@@ -172,30 +212,30 @@ export const GeneticEvolutionExplorerView: React.FC = () => {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-4 flex items-center gap-3">
             <Dna className="h-10 w-10" />
-            Skandinavisk Genetisk Evolution
+            {c.title}
           </h1>
           <p className="text-xl text-slate-300 mb-4">
-            Utforska 2000 år av genetisk historia från romersk järnålder till nutid
+            {c.subtitle}
           </p>
           
           {/* Study Source Reference */}
           <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2 mb-2">
               <Dna className="h-5 w-5 text-blue-300" />
-              <h3 className="text-blue-300 font-semibold">Källa: Rodriguez-Varela et al., 2023</h3>
+              <h3 className="text-blue-300 font-semibold">{c.source}</h3>
             </div>
             <p className="text-blue-200 text-sm mb-2">
               "The genetic history of Scandinavia from the Roman Iron Age to the present"
             </p>
             <p className="text-blue-200 text-xs">
-              <strong>Publicerad i:</strong> Cell, 2023 | 
+              <strong>{c.publishedIn}</strong> Cell, 2023 | 
               <a 
                 href="https://www.cell.com/cell/fulltext/S0092-8674(22)01468-4" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-blue-300 hover:text-blue-100 underline ml-1"
               >
-                Läs hela studien här
+                {c.readStudy}
               </a>
             </p>
           </div>
@@ -205,9 +245,9 @@ export const GeneticEvolutionExplorerView: React.FC = () => {
             <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-amber-300 font-semibold">Importera Studiedata</h3>
+                  <h3 className="text-amber-300 font-semibold">{c.importTitle}</h3>
                   <p className="text-amber-200 text-sm">
-                    Importera Rodriguez-Varela et al. (2023) studiedata till databasen för permanent lagring
+                    {c.importDesc}
                   </p>
                   {importError && (
                     <p className="text-red-300 text-sm mt-2 flex items-center gap-1">
@@ -224,12 +264,12 @@ export const GeneticEvolutionExplorerView: React.FC = () => {
                   {importStatus === 'importing' ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Importerar...
+                      {c.importing}
                     </>
                   ) : (
                     <>
                       <Upload className="h-4 w-4 mr-2" />
-                      Importera Data
+                      {c.importData}
                     </>
                   )}
                 </Button>
@@ -242,10 +282,10 @@ export const GeneticEvolutionExplorerView: React.FC = () => {
             <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-6">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-green-300" />
-                <h3 className="text-green-300 font-semibold">Import lyckades!</h3>
+                <h3 className="text-green-300 font-semibold">{c.importSuccess}</h3>
               </div>
               <p className="text-green-200 text-sm">
-                Studiedata har importerats till databasen. Du kan nu utforska all genetisk data.
+                {c.importSuccessDesc}
               </p>
             </div>
           )}
@@ -263,13 +303,13 @@ export const GeneticEvolutionExplorerView: React.FC = () => {
         {/* Show search results summary */}
         {searchTerm.length > 0 && (
           <div className="mb-4 text-slate-300 text-sm">
-            Visar resultat för "{searchTerm}" - 
+            {c.showingResults(searchTerm)} 
             <span className="ml-2">
-              {filteredMarkers.length} markörer, {filteredPeriods.length} perioder, {filteredSites.length} platser
+              {c.counts(filteredMarkers.length, filteredPeriods.length, filteredSites.length)}
             </span>
             {(filteredMarkers.length === 0 && filteredPeriods.length === 0 && filteredSites.length === 0) && (
               <span className="text-amber-300 ml-2">
-                Inga resultat hittades. Prova ett bredare sökord.
+                {c.noResults}
               </span>
             )}
           </div>
@@ -283,19 +323,19 @@ export const GeneticEvolutionExplorerView: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger value="study-data" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-slate-300">
               <MapPin className="h-4 w-4 mr-2" />
-              Studiedata
+              {c.tabStudy}
             </TabsTrigger>
             <TabsTrigger value="historical-periods" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-slate-300">
               <Clock className="h-4 w-4 mr-2" />
-              Tidsperioder
+              {c.tabPeriods}
             </TabsTrigger>
             <TabsTrigger value="eye-colors" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-slate-300">
               <Eye className="h-4 w-4 mr-2" />
-              Ögonfärger
+              {c.tabEyes}
             </TabsTrigger>
             <TabsTrigger value="hair-colors" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-slate-300">
               <Users className="h-4 w-4 mr-2" />
-              Hårfärger
+              {c.tabHair}
             </TabsTrigger>
           </TabsList>
 

@@ -6,7 +6,7 @@ export const WelcomeFooter: React.FC = () => {
     <footer className="bg-card/50 border-t border-border mt-16">
       <div className="container mx-auto px-4 py-6">
         <div className="text-center text-muted-foreground text-sm">
-          <p>&copy; 2025 <a href="https://expandtalk.se" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">Expandtalk</a>. Built for archaeological and linguistic research.</p>
+          <p>&copy; {new Date().getFullYear()} <a href="https://expandtalk.se" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">Expandtalk</a>. Built for archaeological and linguistic research.</p>
         </div>
       </div>
     </footer>

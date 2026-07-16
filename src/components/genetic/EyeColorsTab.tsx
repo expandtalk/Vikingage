@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Eye, TrendingUp, MapPin } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EyeColor {
   id: string;
@@ -35,6 +36,24 @@ interface EyeColorsTabProps {
 }
 
 export const EyeColorsTab: React.FC<EyeColorsTabProps> = ({ filteredColors, eyeColorRegions }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const c = sv ? {
+    globally: 'globalt',
+    mainGenes: 'Huvudgener:',
+    evolutionaryAdvantage: 'Evolutionär fördel:',
+    historicalOrigin: 'Historiskt ursprung:',
+    regions: 'Regioner:',
+    documented: 'dokumenterade',
+  } : {
+    globally: 'globally',
+    mainGenes: 'Main genes:',
+    evolutionaryAdvantage: 'Evolutionary advantage:',
+    historicalOrigin: 'Historical origin:',
+    regions: 'Regions:',
+    documented: 'documented',
+  };
+
   const getRarityColor = (rank: number) => {
     if (rank <= 2) return 'bg-purple-100 text-purple-800';
     if (rank <= 4) return 'bg-blue-100 text-blue-800';
@@ -80,7 +99,7 @@ export const EyeColorsTab: React.FC<EyeColorsTabProps> = ({ filteredColors, eyeC
               <div className="grid grid-cols-2 gap-2">
                 <div className="text-slate-300 text-sm">
                   <TrendingUp className="h-4 w-4 inline mr-1" />
-                  {color.global_frequency_percent}% globalt
+                  {color.global_frequency_percent}% {c.globally}
                 </div>
                 <Badge className={getComplexityColor(color.genetic_complexity)}>
                   {color.genetic_complexity.replace('_', ' ')}
@@ -89,26 +108,26 @@ export const EyeColorsTab: React.FC<EyeColorsTabProps> = ({ filteredColors, eyeC
 
               {color.main_genes && color.main_genes.length > 0 && (
                 <div className="text-slate-300 text-sm">
-                  <strong>Huvudgener:</strong> {color.main_genes.join(', ')}
+                  <strong>{c.mainGenes}</strong> {color.main_genes.join(', ')}
                 </div>
               )}
 
               {color.evolutionary_advantage && (
                 <div className="text-slate-200 text-sm">
-                  <strong>Evolutionär fördel:</strong> {color.evolutionary_advantage}
+                  <strong>{c.evolutionaryAdvantage}</strong> {color.evolutionary_advantage}
                 </div>
               )}
 
               {color.historical_origin && (
                 <div className="text-slate-300 text-sm">
-                  <strong>Historiskt ursprung:</strong> {color.historical_origin}
+                  <strong>{c.historicalOrigin}</strong> {color.historical_origin}
                 </div>
               )}
 
               {regions.length > 0 && (
                 <div className="text-slate-300 text-sm">
                   <MapPin className="h-4 w-4 inline mr-1" />
-                  <strong>Regioner:</strong> {regions.length} dokumenterade
+                  <strong>{c.regions}</strong> {regions.length} {c.documented}
                 </div>
               )}
             </CardContent>

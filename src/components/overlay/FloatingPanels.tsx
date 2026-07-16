@@ -7,6 +7,7 @@ import { FilterPanel } from '../filters/FilterPanel';
 import { MapLegend } from '../MapLegend';
 import { DraggableLegend } from '../legend/DraggableLegend';
 import { LegendItem } from '@/types/common';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface FloatingPanelsProps {
   showFilters: boolean;
@@ -73,6 +74,8 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
   onLegendPositionChange,
   onLegendSizeChange
 }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
   return (
     <>
       {/* Control Buttons */}
@@ -85,7 +88,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
             size="sm"
           >
             <Map className="h-4 w-4" />
-            <span className="text-xs font-medium">Teckenförklaring</span>
+            <span className="text-xs font-medium">{sv ? 'Teckenförklaring' : 'Legend'}</span>
             {showLegend ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
           </Button>
         )}
@@ -148,7 +151,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
             <div className="flex items-center justify-between p-3 border-b border-slate-600/50">
               <h3 className="text-white font-medium flex items-center gap-2">
                 <Map className="h-4 w-4" />
-                Teckenförklaring
+                {sv ? 'Teckenförklaring' : 'Legend'}
               </h3>
               <Button
                 onClick={onToggleLegend}

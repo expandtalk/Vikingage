@@ -413,7 +413,7 @@ const DiocletianConverter = () => {
                 </a>
               </li>
               <li>
-                <strong>Komplett översättning:</strong> Antony Kropff (2016), "An English translation of the Edict on Maximum Prices" -{' '}
+                <strong>{language === 'sv' ? 'Komplett översättning:' : 'Complete translation:'}</strong> Antony Kropff (2016), "An English translation of the Edict on Maximum Prices" -{' '}
                 <a 
                   href="https://kark.uib.no/antikk/dias/priceedict.pdf" 
                   target="_blank" 
@@ -424,11 +424,13 @@ const DiocletianConverter = () => {
                 </a>
               </li>
               <li>
-                <strong>Originalforskning:</strong> Crawford & Reynolds (1979), Lauffer (1971), Graser (1940)
+                <strong>{language === 'sv' ? 'Originalforskning:' : 'Original research:'}</strong> Crawford & Reynolds (1979), Lauffer (1971), Graser (1940)
               </li>
             </ul>
             <p className="text-xs text-gray-600 mt-3 italic">
-              Alla priser är verifierade mot det kompletta ediktet. Ediktet finns bevarat i fragmentform från 40+ platser i det östra romarriket.
+              {language === 'sv'
+                ? 'Alla priser är verifierade mot det kompletta ediktet. Ediktet finns bevarat i fragmentform från 40+ platser i det östra romarriket.'
+                : 'All prices are verified against the complete edict. The edict survives in fragmentary form from 40+ sites across the eastern Roman Empire.'}
             </p>
           </div>
         </div>
