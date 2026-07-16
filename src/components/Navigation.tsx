@@ -70,6 +70,18 @@ const ICONS: Record<string, LucideIcon> = {
 // Which routes stay inline on desktop (the rest fall into "More").
 const PRIMARY = new Set(['Inscriptions', 'Carvers', 'Artefacts', 'Fortresses', 'RoyalChronicles']);
 
+// Datasets consolidated onto the Explore focus views (2026-07-16): link
+// straight to /explore?focus=X instead of the old standalone routes.
+const FOCUS_ROUTES: Record<string, string> = {
+  VikingNames: 'names',
+  Hundreds: 'hundreds',
+  Parishes: 'parishes',
+  FolkGroups: 'folkGroups',
+  Rivers: 'rivers',
+  Gods: 'gods',
+  GeneticEvents: 'geneticEvents',
+};
+
 /** Single source of truth for the app's navigation links, in both languages. */
 const useNavLinks = (): NavLink[] => {
   const explore: NavLink = {
@@ -81,14 +93,18 @@ const useNavLinks = (): NavLink[] => {
     primary: true,
   };
 
-  const routeLinks: NavLink[] = routes.map((route) => ({
-    pathEn: route.pathEn,
-    pathSv: route.pathSv,
-    labelSv: route.titleSv,
-    labelEn: route.titleEn,
-    icon: ICONS[route.component] ?? BookOpen,
-    primary: PRIMARY.has(route.component),
-  }));
+  const routeLinks: NavLink[] = routes.map((route) => {
+    const focus = FOCUS_ROUTES[route.component];
+    const explorePath = focus ? `/explore?focus=${focus}` : null;
+    return {
+      pathEn: explorePath ?? route.pathEn,
+      pathSv: explorePath ?? route.pathSv,
+      labelSv: route.titleSv,
+      labelEn: route.titleEn,
+      icon: ICONS[route.component] ?? BookOpen,
+      primary: PRIMARY.has(route.component),
+    };
+  });
 
   const profile: NavLink = {
     pathEn: '/profile',

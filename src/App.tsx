@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -18,14 +18,10 @@ const Inscriptions = lazy(() => import("./pages/Inscriptions"));
 const Artefacts = lazy(() => import("./pages/Artefacts"));
 const Fortresses = lazy(() => import("./pages/Fortresses"));
 const Carvers = lazy(() => import("./pages/Carvers"));
-const VikingNames = lazy(() => import("./pages/VikingNames"));
-const Hundreds = lazy(() => import("./pages/Hundreds"));
-const Parishes = lazy(() => import("./pages/Parishes"));
-const FolkGroups = lazy(() => import("./pages/FolkGroups"));
-const Rivers = lazy(() => import("./pages/Rivers"));
-const Gods = lazy(() => import("./pages/Gods"));
-const GeneticEvents = lazy(() => import("./pages/GeneticEvents"));
 const RoyalChronicles = lazy(() => import("./pages/RoyalChronicles"));
+
+// These datasets are canonically the Explore focus views; the old standalone
+// routes redirect there (decision 2026-07-16: Explore is the single destination).
 const Prices = lazy(() => import("./pages/Prices"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -55,33 +51,33 @@ const App = () => (
                   <Route path="/welcome" element={<Welcome />} />
                   <Route path="/explore" element={<Explore />} />
 
-                  {/* English routes */}
+                  {/* Dedicated pages */}
                   <Route path="/inscriptions" element={<Inscriptions />} />
                   <Route path="/carvers" element={<Carvers />} />
                   <Route path="/artefacts" element={<Artefacts />} />
-                  <Route path="/viking-names" element={<VikingNames />} />
-                  <Route path="/hundreds" element={<Hundreds />} />
-                  <Route path="/parishes" element={<Parishes />} />
-                  <Route path="/folk-groups" element={<FolkGroups />} />
-                  <Route path="/rivers" element={<Rivers />} />
-                  <Route path="/gods" element={<Gods />} />
-                  <Route path="/genetic-events" element={<GeneticEvents />} />
                   <Route path="/royal-chronicles" element={<RoyalChronicles />} />
                   <Route path="/fortresses" element={<Fortresses />} />
-
-                  {/* Swedish routes */}
                   <Route path="/sv/runinskrifter" element={<Inscriptions />} />
                   <Route path="/sv/ristare" element={<Carvers />} />
                   <Route path="/sv/artefakter" element={<Artefacts />} />
-                  <Route path="/sv/vikinganamn" element={<VikingNames />} />
-                  <Route path="/sv/harader" element={<Hundreds />} />
-                  <Route path="/sv/socknar" element={<Parishes />} />
-                  <Route path="/sv/folkgrupper" element={<FolkGroups />} />
-                  <Route path="/sv/floder" element={<Rivers />} />
-                  <Route path="/sv/gudar" element={<Gods />} />
-                  <Route path="/sv/genetiska-handelser" element={<GeneticEvents />} />
                   <Route path="/sv/kungakronikor" element={<RoyalChronicles />} />
                   <Route path="/sv/borgar" element={<Fortresses />} />
+
+                  {/* Consolidated to Explore focus views (EN + SV old paths redirect) */}
+                  <Route path="/viking-names" element={<Navigate to="/explore?focus=names" replace />} />
+                  <Route path="/sv/vikinganamn" element={<Navigate to="/explore?focus=names" replace />} />
+                  <Route path="/hundreds" element={<Navigate to="/explore?focus=hundreds" replace />} />
+                  <Route path="/sv/harader" element={<Navigate to="/explore?focus=hundreds" replace />} />
+                  <Route path="/parishes" element={<Navigate to="/explore?focus=parishes" replace />} />
+                  <Route path="/sv/socknar" element={<Navigate to="/explore?focus=parishes" replace />} />
+                  <Route path="/folk-groups" element={<Navigate to="/explore?focus=folkGroups" replace />} />
+                  <Route path="/sv/folkgrupper" element={<Navigate to="/explore?focus=folkGroups" replace />} />
+                  <Route path="/rivers" element={<Navigate to="/explore?focus=rivers" replace />} />
+                  <Route path="/sv/floder" element={<Navigate to="/explore?focus=rivers" replace />} />
+                  <Route path="/gods" element={<Navigate to="/explore?focus=gods" replace />} />
+                  <Route path="/sv/gudar" element={<Navigate to="/explore?focus=gods" replace />} />
+                  <Route path="/genetic-events" element={<Navigate to="/explore?focus=geneticEvents" replace />} />
+                  <Route path="/sv/genetiska-handelser" element={<Navigate to="/explore?focus=geneticEvents" replace />} />
 
                   {/* Other routes */}
                   <Route path="/prices" element={<Prices />} />
