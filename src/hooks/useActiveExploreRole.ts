@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import type { UserRole } from './legend/rolePresets';
+import { normalizeProfileId, PROFILE_IDS, type ProfileId } from '@/config/exploreProfiles';
 
 /**
  * Shared, reactive store for the active Explore persona/role
@@ -12,17 +12,16 @@ import type { UserRole } from './legend/rolePresets';
  * which feeds it into useLegendManager so each role shows different map layers.
  */
 const KEY = 'activePreset';
-const VALID: UserRole[] = ['explorer', 'linguist', 'geographer', 'researcher'];
+const VALID: ProfileId[] = PROFILE_IDS;
 const listeners = new Set<() => void>();
 
-const normalize = (v: string | null): UserRole =>
-  VALID.includes(v as UserRole) ? (v as UserRole) : 'explorer';
+const normalize = (v: string | null): ProfileId => normalizeProfileId(v);
 
-const getSnapshot = (): UserRole => {
+const getSnapshot = (): ProfileId => {
   try {
     return normalize(localStorage.getItem(KEY));
   } catch {
-    return 'explorer';
+    return 'explore';
   }
 };
 
@@ -40,7 +39,7 @@ const subscribe = (cb: () => void) => {
 };
 
 /** Set the active role and notify all subscribers in this tab. */
-export const setActiveExploreRole = (role: UserRole) => {
+export const setActiveExploreRole = (role: ProfileId) => {
   try {
     localStorage.setItem(KEY, role);
   } catch {
@@ -50,5 +49,5 @@ export const setActiveExploreRole = (role: UserRole) => {
 };
 
 /** Reactive hook returning the current Explore role. */
-export const useActiveExploreRole = (): UserRole =>
-  useSyncExternalStore(subscribe, getSnapshot, () => 'explorer');
+export const useActiveExploreRole = (): ProfileId =>
+  useSyncExternalStore(subscribe, getSnapshot, () => 'explore');
