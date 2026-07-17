@@ -5,6 +5,7 @@ import { useMapInstance } from './useMapInstance';
 import { useMapTileLayer } from './useMapTileLayer';
 import { useMapRiverSystems } from './useMapRiverSystems';
 import { useMapValdemarsRoute } from './useMapValdemarsRoute';
+import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
   isVikingMode: boolean;
@@ -26,6 +27,7 @@ export const useMapInitialization = ({
   const isMapReadyRef = useRef<boolean>(false);
   
   const { mapContainer, map } = useMapInstance({ isVikingMode });
+  const activeProfile = useActiveExploreProfile();
 
   // Wait for map to be initialized
   useEffect(() => {
@@ -61,13 +63,13 @@ export const useMapInitialization = ({
   }, [onRefreshRivers]);
 
   // Add tile layer with proper parameters
-  useMapTileLayer({ 
-    map: map.current, 
-    isVikingMode, 
+  useMapTileLayer({
+    map: map.current,
+    basemap: activeProfile.basemap,
     enabledLegendItems,
     isMapReady: isMapReadyRef,
     mapContainer,
-    safelyAddLayer
+    safelyAddLayer,
   });
 
   // Add river systems only if enabled - pass object parameters with all required props
