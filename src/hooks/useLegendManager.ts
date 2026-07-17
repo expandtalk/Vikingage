@@ -4,7 +4,6 @@ import { generateBasicInscriptionItems } from './legend/legendItemGenerators';
 import { processLegendItems } from './legend/legendItemProcessor';
 import { filterInscriptionsByLegend } from './useLegendManager/inscriptionFilters';
 import { useFocusManager } from './useFocusManager';
-import { getCombinedLegendPresets, UserRole } from './legend/rolePresets';
 import { useChristianSites } from './useChristianSites';
 import type { LegendPreset } from '@/types/legend';
 
@@ -12,7 +11,7 @@ export const useLegendManager = (
   inscriptions: any[],
   isVikingMode: boolean,
   selectedTimePeriod: string,
-  userRole: UserRole = 'explorer',
+  roleLayerPreset: LegendPreset,
   dbStats?: any,
   hasActiveSearch?: boolean,
   searchResultInscriptions?: any[]
@@ -23,20 +22,16 @@ export const useLegendManager = (
   // Fetch Christian sites data
   const { data: christianSites = [] } = useChristianSites();
 
-  // Initialize and update legend based on role and focus
+  // Initialize and update legend based on resolved profile preset (focus already merged upstream)
   useEffect(() => {
-    console.log(`🎭 Legend Manager: Focus changed to -> ${currentFocus}, Role: ${userRole}. Updating presets.`);
-    const presets = getCombinedLegendPresets(userRole, currentFocus);
-    // Convert LegendPreset to generic object
-    const presetsObject: { [key: string]: boolean } = { ...presets };
-    setEnabledLegendItems(presetsObject);
-  }, [currentFocus, userRole]);
+    setEnabledLegendItems({ ...roleLayerPreset });
+  }, [roleLayerPreset]);
   
   console.log(`🎭 Legend Manager Debug (UPDATED):`);
   console.log(`  - Total inscriptions received: ${inscriptions.length}`);
   console.log(`  - Runic inscriptions enabled: ${enabledLegendItems.runic_inscriptions}`);
   console.log(`  - Current focus: ${currentFocus}`);
-  console.log(`  - User role: ${userRole}`);
+  console.log(`  - Role layer preset:`, roleLayerPreset);
   
   // Filter inscriptions based on enabled legend items or use search results if active search
   const mapInscriptions = useMemo(() => {

@@ -4,7 +4,8 @@ import { useRunicData } from '@/hooks/useRunicData';
 import { useLegendManager } from '@/hooks/useLegendManager';
 import { useFilterState } from '../FilterState';
 import { useFocusManager } from '@/hooks/useFocusManager';
-import { useActiveExploreRole } from '@/hooks/useActiveExploreRole';
+import { useActiveExploreProfile } from '@/hooks/useExploreProfiles';
+import { resolveProfileLayers } from '@/config/exploreProfiles';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface UseExplorerDataProps {
@@ -22,7 +23,7 @@ export const useExplorerData = ({
 }: UseExplorerDataProps) => {
   const queryClient = useQueryClient();
   const { currentFocus } = useFocusManager();
-  const activeRole = useActiveExploreRole();
+  const activeProfile = useActiveExploreProfile();
   
   const {
     searchQuery,
@@ -56,6 +57,11 @@ export const useExplorerData = ({
     return 'all';
   }, [currentFocus]);
 
+  const roleLayerPreset = useMemo(
+    () => resolveProfileLayers(activeProfile, currentFocus),
+    [activeProfile, currentFocus],
+  );
+
   const enhancedFilterState = {
     ...filterState,
     godNameSearch,
@@ -83,7 +89,7 @@ export const useExplorerData = ({
     inscriptions,
     false,
     selectedTimePeriod,
-    activeRole,
+    roleLayerPreset,
     dbStats,
     hasActiveSearch,
     inscriptions
