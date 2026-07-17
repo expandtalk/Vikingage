@@ -3,6 +3,8 @@ import L from 'leaflet';
 import { TradeRoute } from '@/data/tradeRoutes';
 import { TRADE_GOODS } from '@/data/tradeGoods';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useActiveExploreProfile } from '@/hooks/useExploreProfiles';
+import { layerEmphasis, emphasisStyle } from '@/config/exploreProfiles';
 
 interface TradeRoutesLayerProps {
   map: L.Map | null;
@@ -19,6 +21,9 @@ export const TradeRoutesLayer: React.FC<TradeRoutesLayerProps> = ({
 }) => {
   const layerGroupRef = useRef<L.LayerGroup | null>(null);
   const { language } = useLanguage();
+
+  const activeProfile = useActiveExploreProfile();
+  const emphasis = emphasisStyle(layerEmphasis(activeProfile, 'trade_routes'));
 
   useEffect(() => {
     if (!map || !isVisible) {
@@ -44,10 +49,11 @@ export const TradeRoutesLayer: React.FC<TradeRoutesLayerProps> = ({
         coord => [coord.lat, coord.lng]
       );
 
+      const baseOpacity = 0.7;
       const polyline = L.polyline(coordinates, {
         color: route.color,
         weight: 4,
-        opacity: 0.7,
+        opacity: baseOpacity * emphasis.opacity,
         className: 'trade-route-line',
         // Add dashed pattern to show direction
         dashArray: '10, 5'
@@ -116,8 +122,8 @@ export const TradeRoutesLayer: React.FC<TradeRoutesLayerProps> = ({
             fillColor: route.color,
             color: '#ffffff',
             weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
+            opacity: 1 * emphasis.opacity,
+            fillOpacity: 0.8 * emphasis.opacity
           });
 
           marker.bindTooltip(
@@ -134,8 +140,8 @@ export const TradeRoutesLayer: React.FC<TradeRoutesLayerProps> = ({
             fillColor: '#f59e0b',
             color: '#ffffff',
             weight: 2,
-            opacity: 1,
-            fillOpacity: 0.9,
+            opacity: 1 * emphasis.opacity,
+            fillOpacity: 0.9 * emphasis.opacity,
             className: 'portage-marker'
           });
 
@@ -158,7 +164,7 @@ export const TradeRoutesLayer: React.FC<TradeRoutesLayerProps> = ({
         layerGroupRef.current = null;
       }
     };
-  }, [map, routes, isVisible, onRouteClick, language]);
+  }, [map, routes, isVisible, onRouteClick, language, emphasis.opacity]);
 
   return null;
 };

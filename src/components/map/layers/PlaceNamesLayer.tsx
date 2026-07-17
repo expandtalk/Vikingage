@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { usePlaceNameMarkers, PlaceNameMarker } from '@/hooks/map/usePlaceNameMarkers';
+import { useActiveExploreProfile } from '@/hooks/useExploreProfiles';
+import { layerEmphasis, emphasisStyle } from '@/config/exploreProfiles';
 
 /**
  * Ortnamnslager (GIS-pilot).
@@ -27,6 +29,9 @@ export const PlaceNamesLayer: React.FC<PlaceNamesLayerProps> = ({
   const layerGroupRef = useRef<L.LayerGroup | null>(null);
 
   const placeNames = usePlaceNameMarkers(enabledLegendItems, isVisible);
+
+  const activeProfile = useActiveExploreProfile();
+  const emphasis = emphasisStyle(layerEmphasis(activeProfile, 'place_names'));
 
   const clearMarkers = () => {
     try {
@@ -94,6 +99,11 @@ export const PlaceNamesLayer: React.FC<PlaceNamesLayerProps> = ({
       }
     });
 
+    // Dämpa hela lagret när profilen inte har ortnamn som primärlager.
+    layerGroupRef.current?.eachLayer((layer: any) => {
+      if (typeof layer.setOpacity === 'function') layer.setOpacity(emphasis.opacity);
+    });
+
     console.log(`🏷️ Place names: rendered ${placeNames.length} markers`);
     onCountChange?.(placeNames.length);
 
@@ -101,7 +111,7 @@ export const PlaceNamesLayer: React.FC<PlaceNamesLayerProps> = ({
       clearMarkers();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, isVisible, placeNames]);
+  }, [map, isVisible, placeNames, emphasis.opacity]);
 
   // Säker cleanup när komponenten unmountas.
   useEffect(() => {

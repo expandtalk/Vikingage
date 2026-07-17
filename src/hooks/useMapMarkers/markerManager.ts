@@ -20,7 +20,8 @@ export const addMapMarkers = async (
   enabledLegendItems: { [key: string]: boolean },
   selectedTimePeriod: string,
   historicalEvents: HistoricalEventMarker[] = [],
-  vikingCities: any[] = []
+  vikingCities: any[] = [],
+  inscriptionOpacity: number = 1
 ): Promise<L.Marker[]> => {
   const markers: L.Marker[] = [];
 
@@ -28,6 +29,10 @@ export const addMapMarkers = async (
   if (enabledLegendItems.runic_inscriptions !== false && inscriptionsWithCoords.length > 0) {
     console.log(`🗿 Adding ${inscriptionsWithCoords.length} runic inscription markers`);
     const inscriptionMarkers = addRunicInscriptionMarkers(map, inscriptionsWithCoords, onMarkerClick);
+    // Dämpa/lyft inskriftsmarkörerna enligt aktiv profils primärlager-betoning.
+    if (inscriptionOpacity !== 1) {
+      inscriptionMarkers.forEach((m) => m.setOpacity(inscriptionOpacity));
+    }
     markers.push(...inscriptionMarkers);
     console.log(`✅ Added ${inscriptionMarkers.length} runic inscription markers`);
   }
