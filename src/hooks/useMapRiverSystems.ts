@@ -62,9 +62,10 @@ export const useMapRiverSystems = ({
     });
     riverLayersRef.current = [];
 
-    // Only show river systems if enabled and in appropriate time period
-    const showRivers = enabledLegendItems.river_routes !== false && 
-                      (selectedTimePeriod === 'viking_age' || selectedTimePeriod === 'vendel_period');
+    // Legend is the authority: show rivers whenever the layer is enabled,
+    // regardless of the selected period (dropped the viking_age/vendel period
+    // gate that hid rivers in the default 'all' view).
+    const showRivers = enabledLegendItems.river_routes !== false;
 
     if (!showRivers) return;
 
