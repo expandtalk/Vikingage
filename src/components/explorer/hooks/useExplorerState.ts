@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFocusManager } from '@/hooks/useFocusManager';
@@ -8,7 +8,17 @@ import { RunicInscription } from '@/types/inscription';
 
 export const useExplorerState = () => {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
-  const [mapNavigate, setMapNavigate] = useState<((lat: number, lng: number, zoom: number) => void) | null>(null);
+  const [mapNavigate, setMapNavigateState] = useState<((lat: number, lng: number, zoom: number) => void) | null>(null);
+  // Store the nav function via an updater. Passing the function straight to a
+  // useState setter makes React treat it as a functional update — it invokes
+  // the function with prevState and stores the (undefined) return value, so
+  // mapNavigate would always be undefined and every result click would toast
+  // "kunde inte hitta platsen" even when coordinates exist.
+  const setMapNavigate = useCallback(
+    (fn: (lat: number, lng: number, zoom: number) => void) =>
+      setMapNavigateState(() => fn),
+    [],
+  );
   const [godNameSearch, setGodNameSearch] = useState<string>('');
   
   // Clear any active filters on initial load to show ALL inscriptions
