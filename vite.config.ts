@@ -17,24 +17,11 @@ export default defineConfig(({ mode }) => ({
   },
   // Strip console/debugger from production builds only — keeps them in dev.
   esbuild: mode === "production" ? { drop: ["console", "debugger"] } : {},
-  build: {
-    rollupOptions: {
-      output: {
-        // Split heavy third-party libraries into cacheable vendor chunks
-        // instead of one ~2 MB bundle. Order matters: more specific matches
-        // (leaflet, radix, …) are checked before the generic react bucket.
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return undefined;
-          if (id.includes('react-leaflet') || id.includes('/leaflet')) return 'vendor-map';
-          if (id.includes('recharts') || id.includes('/d3-')) return 'vendor-charts';
-          if (id.includes('@radix-ui')) return 'vendor-radix';
-          if (id.includes('@supabase')) return 'vendor-supabase';
-          if (id.includes('@tanstack')) return 'vendor-query';
-          if (id.includes('react-router')) return 'vendor-router';
-          if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/scheduler/')) return 'vendor-react';
-          return 'vendor';
-        },
-      },
-    },
-  },
+  // NOTE: custom manualChunks removed. Splitting `react` into its own chunk
+  // apart from the libraries that call `React.forwardRef` at module scope
+  // (radix, lucide, react-leaflet, …) produced a production-only crash
+  // ("Cannot read properties of undefined (reading 'forwardRef')") because the
+  // dependent chunk could evaluate before the react chunk's exports were ready.
+  // Vite's default chunking keeps the React dependency graph intact. Re-introduce
+  // splitting later only with per-chunk runtime verification (vite preview).
 }));
