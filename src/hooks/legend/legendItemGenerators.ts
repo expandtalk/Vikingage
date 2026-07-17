@@ -77,7 +77,7 @@ export const generateBasicInscriptionItems = (
     label: '⚔️ ' + t('valdemarsRoute1230s'),
     color: '#1e3a8a', // Mörkblå för vikingatid
     count: 95, // ✅ Alla vägpunkter visas
-    enabled: enabledLegendItems.valdemars_route !== false || enabledLegendItems.valdemar_route !== false,
+    enabled: enabledLegendItems.valdemars_route !== false,
     type: 'primary' as const // ✅ Gör prominent
   });
 

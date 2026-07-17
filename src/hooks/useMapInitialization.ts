@@ -3,7 +3,6 @@ import { useRef, useEffect, useState } from 'react';
 import L from 'leaflet';
 import { useMapInstance } from './useMapInstance';
 import { useMapTileLayer } from './useMapTileLayer';
-import { useMapRoute } from './useMapRoute';
 import { useMapRiverSystems } from './useMapRiverSystems';
 import { useMapValdemarsRoute } from './useMapValdemarsRoute';
 
@@ -69,17 +68,6 @@ export const useMapInitialization = ({
     isMapReady: isMapReadyRef,
     mapContainer,
     safelyAddLayer
-  });
-
-  // Add Valdemar's route only if enabled - pass object parameters
-  useMapRoute({
-    map: map.current,
-    isVikingMode,
-    enabledLegendItems,
-    isMapReady: isMapReadyRef,
-    mapContainer,
-    safelyAddLayer,
-    selectedTimePeriod
   });
 
   // Add river systems only if enabled - pass object parameters with all required props
