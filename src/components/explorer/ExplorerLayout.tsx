@@ -73,7 +73,8 @@ interface ExplorerLayoutProps {
   
   // Time period for rivers focus
   selectedTimePeriod?: string;
-  
+  setSelectedTimePeriod?: (value: string) => void;
+
   // Update handling
   onInscriptionUpdate?: (updatedInscription: any) => void;
 }
@@ -120,6 +121,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   mapNavigate,
   onGodNameSearch,
   selectedTimePeriod = 'all',
+  setSelectedTimePeriod,
   onInscriptionUpdate
 }) => {
   const { activePreset } = usePanelManager();
@@ -420,7 +422,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         <div className="mt-6">
           <TimelineModule
             selectedPeriod="all"
-            onPeriodChange={() => {}}
+            onPeriodChange={(value: string) => setSelectedTimePeriod?.(value)}
             mapNavigate={mapNavigate}
             isMinimized={isTimelineMinimized}
             onToggleMinimized={() => setIsTimelineMinimized(!isTimelineMinimized)}

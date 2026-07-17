@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRunicData } from '@/hooks/useRunicData';
 import { useLegendManager } from '@/hooks/useLegendManager';
 import { useFilterState } from '../FilterState';
@@ -44,18 +44,16 @@ export const useExplorerData = ({
     handleClearFilters
   } = useFilterState();
 
-  // Automatically switch to appropriate periods for different focuses
-  const selectedTimePeriod = useMemo(() => {
-    if (currentFocus === 'rivers') {
-      console.log('🌊 Rivers focus detected - switching to viking_age time period');
-      return 'viking_age';
+  // Startperiod = profilens default; focus kan tvinga viking_age; reglaget kan sedan ändra.
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>(activeProfile.defaultPeriod);
+
+  useEffect(() => {
+    if (currentFocus === 'rivers' || currentFocus === 'inscriptions') {
+      setSelectedTimePeriod('viking_age');
+    } else {
+      setSelectedTimePeriod(activeProfile.defaultPeriod);
     }
-    if (currentFocus === 'inscriptions') {
-      console.log('📿 Inscriptions focus detected - switching to viking_age time period');
-      return 'viking_age';
-    }
-    return 'all';
-  }, [currentFocus]);
+  }, [currentFocus, activeProfile.id, activeProfile.defaultPeriod]);
 
   const roleLayerPreset = useMemo(
     () => resolveProfileLayers(activeProfile, currentFocus),
@@ -179,7 +177,9 @@ export const useExplorerData = ({
     
     // Time period (critical for rivers focus)
     selectedTimePeriod,
-    
+    setSelectedTimePeriod,
+    showTimeline: activeProfile.showTimeline,
+
     // Pagination
     totalPages,
     currentPage,

@@ -61,6 +61,7 @@ export const ExplorerMain: React.FC = () => {
     mapInscriptions,
     handleLegendToggle,
     selectedTimePeriod,
+    setSelectedTimePeriod,
     totalPages,
     handleInscriptionUpdate
   } = useExplorerData({
@@ -293,6 +294,7 @@ export const ExplorerMain: React.FC = () => {
         mapNavigate={mapNavigate}
         onGodNameSearch={handleGodNameSearch}
         selectedTimePeriod={selectedTimePeriod}
+        setSelectedTimePeriod={setSelectedTimePeriod}
         onInscriptionUpdate={handleInscriptionUpdate}
       />
       {modalInscription && (
