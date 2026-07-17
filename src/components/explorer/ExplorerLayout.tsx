@@ -421,7 +421,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
       {shouldShowTimeline && (
         <div className="mt-6">
           <TimelineModule
-            selectedPeriod="all"
+            selectedPeriod={selectedTimePeriod}
             onPeriodChange={(value: string) => setSelectedTimePeriod?.(value)}
             mapNavigate={mapNavigate}
             isMinimized={isTimelineMinimized}
