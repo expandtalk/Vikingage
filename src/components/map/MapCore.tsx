@@ -13,7 +13,6 @@ import { useMapCounts } from "./hooks/useMapCounts";
 import { useMapValidation } from "./hooks/useMapValidation";
 import { useMapNavigation } from "./hooks/useMapNavigation";
 import { useMapLayers } from "./hooks/useMapLayers";
-import { usePanelManager } from "@/hooks/usePanelManager";
 import { MapLegend } from "../MapLegend";
 import { VikingRoadsRenderer } from "./layers/VikingRoadsRenderer";
 import { TradeRoutesLayer } from "./layers/TradeRoutesLayer";
@@ -35,8 +34,6 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
   legendItems = [],
   onLegendToggle
 }) => {
-  const { activePreset } = usePanelManager();
-  const showLegend = activePreset === 'explore';
 
   useMapValidation({ selectedTimePeriod });
 

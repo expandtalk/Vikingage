@@ -35,7 +35,7 @@ const PANEL_TYPES = [
 
 export const PanelLayoutManager: React.FC = () => {
   const { presets } = usePanelManager();
-  const [selectedPreset, setSelectedPreset] = useState<string>('explorer');
+  const [selectedPreset, setSelectedPreset] = useState<string>('explore');
   const [presetConfig, setPresetConfig] = useState<any>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
