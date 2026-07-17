@@ -17,6 +17,7 @@ import { usePanelManager } from "@/hooks/usePanelManager";
 import { MapLegend } from "../MapLegend";
 import { VikingRoadsRenderer } from "./layers/VikingRoadsRenderer";
 import { TradeRoutesLayer } from "./layers/TradeRoutesLayer";
+import { PlaceNamesLayer } from "./layers/PlaceNamesLayer";
 import { useTradeRoutes } from "@/hooks/useTradeRoutes";
 import { InteractiveMapProps } from './types';
 import 'leaflet/dist/leaflet.css';
@@ -155,7 +156,14 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
             routes={activeRoutes}
             isVisible={shouldShowTradeRoutes && isMapReady}
           />
-          
+
+          {/* Place Names Layer (ortnamnslager / GIS-pilot) */}
+          <PlaceNamesLayer
+            map={map}
+            enabledLegendItems={enabledLegendItems}
+            isVisible={isMapReady}
+          />
+
           <MapInfoPanel
             isVikingMode={isVikingMode}
             inscriptionsCount={inscriptionsWithCoords.length}
