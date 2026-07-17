@@ -336,6 +336,37 @@ export const emphasisStyle = (e: "primary" | "muted") =>
     ? { opacity: 1, filterCss: "none" }
     : { opacity: 0.55, filterCss: "saturate(0.35)" };
 
+export interface ResolvedPanel {
+  id: string;
+  visible: boolean;
+  minimized: boolean;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  zIndex: number;
+}
+
+const PANEL_GEOMETRY: Record<string, Omit<ResolvedPanel, "visible" | "minimized">> = {
+  map: { id: "map", position: { x: 0, y: 0 }, size: { width: 100, height: 600 }, zIndex: 1 },
+  legend: { id: "legend", position: { x: 0, y: 20 }, size: { width: 300, height: 500 }, zIndex: 1000 },
+  results: { id: "results", position: { x: 20, y: 110 }, size: { width: 380, height: 480 }, zIndex: 1001 },
+  search: { id: "search", position: { x: 420, y: 110 }, size: { width: 320, height: 450 }, zIndex: 1002 },
+  filters: { id: "filters", position: { x: 20, y: 20 }, size: { width: 320, height: 500 }, zIndex: 1003 },
+};
+
+export const profileToPanels = (profile: ExploreProfile): Record<string, ResolvedPanel> => {
+  const state = (key: PanelKey) => {
+    const s = profile.panels[key];
+    return { visible: s.visible, minimized: s.emphasis === "minimized" };
+  };
+  return {
+    map: { ...PANEL_GEOMETRY.map, visible: true, minimized: false },
+    legend: { ...PANEL_GEOMETRY.legend, ...state("legend") },
+    results: { ...PANEL_GEOMETRY.results, ...state("results") },
+    search: { ...PANEL_GEOMETRY.search, ...state("search") },
+    filters: { ...PANEL_GEOMETRY.filters, ...state("filters") },
+  };
+};
+
 export const validateProfile = (p: ExploreProfile): string[] => {
   const errors: string[] = [];
   if (!(p.basemap in BASEMAPS)) errors.push(`basemap:${p.basemap}`);

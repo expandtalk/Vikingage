@@ -36,7 +36,7 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
   onLegendToggle
 }) => {
   const { activePreset } = usePanelManager();
-  const showLegend = activePreset === 'explorer';
+  const showLegend = activePreset === 'explore';
 
   useMapValidation({ selectedTimePeriod });
 

@@ -124,7 +124,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
 }) => {
   const { activePreset } = usePanelManager();
   const { currentFocus, clearFocus } = useFocusManager();
-  const isExplorerMode = activePreset === 'explorer';
+  const isExplorerMode = activePreset === 'explore';
   const isMobile = useIsMobile();
   
   // Module state management

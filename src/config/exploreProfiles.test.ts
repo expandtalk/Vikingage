@@ -9,6 +9,7 @@ import {
   emphasisStyle,
   validateProfile,
   buildProfilesFromRows,
+  profileToPanels,
 } from "./exploreProfiles";
 
 const seed = (id: string) => PROFILE_SEEDS.find((p) => p.id === id)!;
@@ -118,5 +119,19 @@ describe("buildProfilesFromRows", () => {
   it("falls back to seeds when every row is invalid", () => {
     const rows = [{ id: "x", config: { basemap: "moon" } }];
     expect(buildProfilesFromRows(rows as never)).toBe(PROFILE_SEEDS);
+  });
+});
+
+describe("profileToPanels", () => {
+  it("map is always visible; profile drives legend/results/filters visibility", () => {
+    const panels = profileToPanels(seed("geographer"));
+    expect(panels.map.visible).toBe(true);
+    expect(panels.filters.visible).toBe(false); // geographer maximizes the map
+    expect(panels.legend.visible).toBe(true);
+  });
+  it("minimized emphasis maps to minimized:true", () => {
+    const panels = profileToPanels(seed("explore"));
+    expect(panels.filters.visible).toBe(true);
+    expect(panels.filters.minimized).toBe(true);
   });
 });
