@@ -267,16 +267,35 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
   const o: Partial<LegendPreset> = {};
   switch (focus) {
     case "rivers":
+      // Exclusive water/route view: show the water network + roads + ports,
+      // and explicitly hide everything the active profile might otherwise add
+      // (runestones, regions, folk groups, etc.) so the focus is actually the
+      // rivers/roads/waterways the user asked for.
       Object.assign(o, {
         river_routes: true,
         water_routes: true,
         trade_routes: true,
         valdemar_route: true,
         stake_barriers: true,
-        viking_fortresses: false,
+        viking_roads: true,
         viking_cities: true,
         runic_inscriptions: false,
+        foreign_inscriptions: false,
+        viking_fortresses: false,
         religious_places: false,
+        viking_regions: false,
+        hundreds: false,
+        parishes: false,
+        folk_groups: false,
+        germanic_groups: false,
+        germanic_timeline: false,
+        carvers: false,
+        gods: false,
+        archaeological_finds: false,
+        archaeological_sites: false,
+        place_names: false,
+        historical_events: false,
+        battle_sites: false,
       });
       break;
     case "fortresses":
