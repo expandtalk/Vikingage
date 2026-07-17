@@ -12,7 +12,7 @@ import { usePanelManager } from '@/hooks/usePanelManager';
 
 const LEGEND_ITEMS = [
   { id: 'runic_inscriptions', label: 'Runinskrifter', category: 'primary' },
-  { id: 'valdemars_route', label: 'Valdemars rutt', category: 'routes' },
+  { id: 'valdemar_route', label: 'Valdemars rutt', category: 'routes' },
   { id: 'river_routes', label: 'Flodvägar', category: 'routes' },
   { id: 'ring_fortress', label: 'Ringborgar', category: 'fortifications' },
   { id: 'hillfort', label: 'Fornborgar', category: 'fortifications' },

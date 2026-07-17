@@ -135,21 +135,21 @@ export const useLegendData = (
 
         // Valdemar's route
         items.push({
-          id: 'valdemars_route',
+          id: 'valdemar_route',
           label: 'Valdemars segelled',
           color: '#1e3a8a',
           count: 1,
-          enabled: enabledLegendItems.valdemars_route !== false
+          enabled: enabledLegendItems.valdemar_route !== false
         });
       } else {
         // Modern mode specific items
         if (selectedTimePeriod === 'viking_age' || selectedTimePeriod === 'vendel_period') {
           items.push({
-            id: 'valdemars_route',
+            id: 'valdemar_route',
             label: 'Valdemars segelled',
             color: '#1e3a8a',
             count: 1,
-            enabled: enabledLegendItems.valdemars_route !== false
+            enabled: enabledLegendItems.valdemar_route !== false
           });
         }
 

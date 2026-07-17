@@ -128,7 +128,7 @@ export const useLegendManager = (
     // profile-preset key). Without explicitly clearing these, their
     // `!== false` gates keep the layer on the map after "hide all".
     const EXTRA_GATE_KEYS = [
-      'viking_centers', 'historical_events', 'valdemars_route',
+      'viking_cities', 'historical_events', 'valdemar_route',
       'road_rullstensas', 'road_halvagar', 'road_vinteragar', 'road_landmarks',
       'place_names_sacral', 'place_names_power', 'place_names_nature',
       'religious_center', 'trading_post', 'koping', 'established_city', 'gotlandic_center',

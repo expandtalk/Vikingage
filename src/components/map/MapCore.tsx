@@ -69,9 +69,7 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
     selectedTimePeriod
   });
 
-  const shouldShowTradeRoutes = enabledLegendItems.trade_routes !== false && 
-                                (enabledLegendItems.water_routes !== false || 
-                                 selectedTimePeriod === 'viking_age');
+  const shouldShowTradeRoutes = enabledLegendItems.trade_routes !== false;
   
   console.log('🚢 Trade Routes MapCore:', {
     tradeRoutesYear,

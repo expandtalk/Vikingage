@@ -57,7 +57,7 @@ export const getIconForLegendItem = (id: string) => {
       return Home;
     case 'adapted_fortress':
       return Shield;
-    case 'valdemars_route':
+    case 'valdemar_route':
       return Anchor;
     case 'viking_rivers':
     case 'river_routes':

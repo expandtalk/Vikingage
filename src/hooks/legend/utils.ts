@@ -11,13 +11,13 @@ export const sortLegendItems = (items: LegendItem[]): LegendItem[] => {
     // Vattenvägar före vikingavägar
     'river_routes': 10,
     'water_routes': 11,
-    'valdemars_route': 12,
-    
+    'valdemar_route': 12,
+
     // Vikingavägar efter vattenvägar
     'viking_roads': 20,
-    
+
     // Andra kategorier
-    'viking_centers': 30,
+    'viking_cities': 30,
     'fortifications': 31,
     'religious_items': 40,
     'underwater_finds': 50

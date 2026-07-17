@@ -2,8 +2,7 @@
 export const getDefaultLegendStates = () => ({
   // ✅ ALWAYS ON per default (huvudinnehåll + historisk kontext)
   'runic_inscriptions': true,
-  'valdemars_route': true, // ✅ Default enabled for prominence
-  'valdemar_route': true, // ✅ Alternative naming also enabled
+  'valdemar_route': true, // ✅ Default enabled for prominence
   'river_routes': true,
   'land_routes': true,    // 🔧 FIX: Lägg till landvägar som standard
   

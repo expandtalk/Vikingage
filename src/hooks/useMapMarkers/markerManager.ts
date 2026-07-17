@@ -4,7 +4,6 @@ import { addRunicInscriptionMarkers } from '../map/useRunicInscriptionMarkers';
 import { addVikingFortressMarkers } from '../map/useVikingFortressMarkers';
 import { addStakeBarrierMarkers } from '../map/useStakeBarrierMarkers';
 import { addReligiousLocationMarkers } from '../map/useReligiousLocationMarkers';
-import { addArchaeologicalFindMarkers } from '../map/useArchaeologicalFindMarkers';
 import { addGermanicGroupMarkers } from '../map/useGermanicGroupMarkers';
 import { addFolkGroupMarkers } from '../map/useFolkGroupMarkers';
 import { addHistoricalEventMarkers } from './historicalEventMarkers';
@@ -81,10 +80,8 @@ export const addMapMarkers = async (
     console.log(`🚫 Religious places DISABLED - skipping markers`);
   }
 
-  if (enabledLegendItems.archaeological_finds !== false) {
-    const archaeologicalMarkers = addArchaeologicalFindMarkers(map, selectedTimePeriod, enabledLegendItems);
-    markers.push(...archaeologicalMarkers);
-  }
+  // Note: Archaeological find markers are rendered by useMapLayers/useArchaeologicalMarkers
+  // (src/hooks/map/archaeological/useArchaeologicalMarkers.ts) to avoid double-rendering.
 
   if (enabledLegendItems.germanic_timeline !== false) {
     const germanicMarkers = addGermanicGroupMarkers(map, selectedTimePeriod, enabledLegendItems);
@@ -100,7 +97,7 @@ export const addMapMarkers = async (
   }
 
   // Add Viking cities/centers if enabled
-  if (enabledLegendItems.viking_centers !== false && selectedTimePeriod === 'viking_age') {
+  if (enabledLegendItems.viking_cities !== false && selectedTimePeriod === 'viking_age') {
     console.log(`🏘️ Adding Viking centers markers`);
     // Import the Viking city markers hook and add them
     const { addVikingCityMarkers } = await import('../map/useVikingCityMarkers');
