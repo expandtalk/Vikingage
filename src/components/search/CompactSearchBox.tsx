@@ -54,15 +54,15 @@ export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
           setSuggestions([]);
           return;
         }
-        // Real, lightweight autocomplete against the inscriptions table.
+        // Smart autocomplete via RPC: matchar även gamla katalogsignum
+        // (alternative_signum, t.ex. "B 894" -> "Ög 212"), translitteration
+        // och normalisering – inte bara nuvarande signum/plats.
         const { data, error } = await supabase
-          .from('runic_inscriptions')
-          .select('id, signum, location, object_type')
-          .or(`signum.ilike.%${safe}%,location.ilike.%${safe}%`)
+          .rpc('search_inscriptions_flexible', { p_search_term: safe })
           .limit(5);
 
         if (error) throw error;
-        setSuggestions(data ?? []);
+        setSuggestions((data ?? []).slice(0, 5));
       } catch (error) {
         console.error('Search error:', error);
         setSuggestions([]);
@@ -178,7 +178,18 @@ export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
                   </div>
                   <div>
                     <div className="font-medium text-amber-100">{suggestion.signum}</div>
-                    <div className="text-sm text-amber-300">{suggestion.location}</div>
+                    <div className="text-sm text-amber-300">
+                      {suggestion.location || suggestion.landscape || suggestion.province || suggestion.country || ''}
+                    </div>
+                    {(() => {
+                      const q = query.trim().toLowerCase();
+                      const alt = (suggestion.alternative_signum || []).find(
+                        (a: string) => a && a.toLowerCase().includes(q)
+                      );
+                      return alt && alt.toLowerCase() !== suggestion.signum?.toLowerCase() ? (
+                        <div className="text-xs text-amber-500/80">äv. {alt}</div>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </button>

@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useExploreProfiles } from "@/hooks/useExploreProfiles";
 import { useActiveExploreRole, setActiveExploreRole } from "@/hooks/useActiveExploreRole";
@@ -13,19 +14,36 @@ export const PanelLayoutSelector: React.FC = () => {
   const { language } = useLanguage();
   const lang = language === "en" ? "en" : "sv";
   const activeProfile = profiles.find((p) => p.id === activeId) ?? profiles[0];
+  // Kondenserad som standard — visar bara aktiv profil tills man fäller ut.
+  const [expanded, setExpanded] = useState(false);
+  const ActiveIcon = activeProfile ? PROFILE_ICONS[activeProfile.icon] : null;
 
   return (
     <Card className="bg-slate-800/60 backdrop-blur-md border-slate-600/30">
       <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium text-slate-200">
-            {lang === "en" ? "Interest profile" : "Intresseprofil"}
-          </h3>
-          <Badge variant="outline" className="text-xs text-slate-300 border-slate-500">
-            {activeProfile?.label[lang]}
-          </Badge>
-        </div>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className={`flex w-full items-center justify-between text-left ${expanded ? "mb-3" : ""}`}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <h3 className="text-sm font-medium text-slate-200 shrink-0">
+              {lang === "en" ? "Interest profile" : "Intresseprofil"}
+            </h3>
+            {!expanded && ActiveIcon ? <ActiveIcon className="h-4 w-4 text-blue-400 shrink-0" /> : null}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Badge variant="outline" className="text-xs text-slate-300 border-slate-500">
+              {activeProfile?.label[lang]}
+            </Badge>
+            <ChevronDown
+              className={`h-4 w-4 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`}
+            />
+          </div>
+        </button>
 
+        {expanded && (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
           {profiles.map((profile) => {
             const IconComponent = PROFILE_ICONS[profile.icon];
@@ -52,6 +70,7 @@ export const PanelLayoutSelector: React.FC = () => {
             );
           })}
         </div>
+        )}
       </CardContent>
     </Card>
   );

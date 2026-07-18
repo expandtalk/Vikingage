@@ -8,7 +8,7 @@ validering, städning och framtida importer. Grundad i det faktiska schemat
 > mappas mot **CIDOC-CRM/CRMtex** (kulturarvsstandard) för framtida interoperabilitet,
 > men appen förblir relationell. Målet här är **datakvalitet**, inte RDF-export.
 
-Senast uppdaterad: 2026-07-18.
+Senast uppdaterad: 2026-07-18 (efter full rundata-import: 3067 → **6435** inskrifter).
 
 ---
 
@@ -49,11 +49,47 @@ finns. Att importera dem fullt (DB-TODO item 5) är det som gör "syns på flera
 
 Aldrig platta en 1→N-relation till en enda kolumn utan att bevara resten i satelliten.
 
+**Nyckelinsikt (importarkitektur):** nyimporterade inskrifter fick `runic_inscriptions.id =
+rundata objectid`. Det är limmet som gör att satellit-/spegeltabellerna hittar rätt inskrift:
+`useInscriptionExtendedData` slår `object_source.objectid = inscription.id`. Utan denna
+identitet (äldre 3067 rader hade slump-UUID:n) tänds varken källor, dateringar eller bilder.
+Alla framtida importer MÅSTE bevara objectid som `id`.
+
 Satellitdomäner (egna ontologifragment, ej fullt dokumenterade här): kungar/dynastier
 (`historical_kings`, `royal_dynasties`, `king_inscription_links`), genetik
 (`genetic_individuals`, `archaeological_sites`, `admixture_analysis`), geografi/nätverk
 (`viking_cities`, `viking_fortresses`, `swedish_hillforts`, `viking_roads`, `trade_*`),
-kristna platser (`christian_sites`), gudom/kult (se §1c).
+kristna platser (`christian_sites`), gudom/kult (se §1c), **mynt/numismatik**
+(`coins` — nordiskt kungamynt, solidi, runmynt, islamiska dirhamer; se `/coins`),
+**källhänvisning & bildarkiv** (se §1d), onomastik/personnamn (se §1e).
+
+### 1d. Källhänvisning & bildarkiv (rundata-kedjan)
+
+Skild från `historical_sources` (som handlar om kungakällor). Detta är inskriftens
+**bibliografiska** apparat + arkivbilder, importerad ur Evighetsrunor. Kedja:
+
+`object_source(objectid → sourceid)` → `sources` → `reference_uri(reference_id=sourceid → uri_id)` → `uris`
+
+| Entitet | Tabell | Definition | CIDOC-CRM |
+|---|---|---|---|
+| **Källkoppling** | `object_source` | Länkar inskrift (objectid=`id`) till en källa (sourceid, bytea). | (E31 ref) |
+| **Bibliografisk källa** | `sources` | Litteraturreferens (SRD/Runor-bibliografi). | E31 Document |
+| **URI-koppling** | `reference_uri` | Länkar källa (reference_id=sourceid) till URI. | — |
+| **URI** | `uris` | Extern länk (Runor, RAÄ, DiVA…). | E42 Identifier |
+| **Forskningsnotis** | skalär `scholarly_notes`, `paleographic_notes`, `historical_context` | Vetenskaplig text per inskrift (fylld via notes-crosswalk). | inom E33 |
+| **Arkivbild** | `inscription_media` | Foto/teckning (arkivlänk), matchad på signum. | E36 Visual Item |
+
+**Datakvalitetskonsekvens:** `object_source`/`reference_uri` fylls av
+`scripts/data/rundata-object-source.sql` + `rundata-reference-uri.sql` (bytea/hex, id=objectid).
+Tomma → detaljvyns käll-/URI-flik är tom trots att inskriften finns.
+
+### 1e. Onomastik / personnamn (`viking_names`)
+
+Kurerad **namnlexikon** (namn, kön, betydelse, etymologi, frekvens, regioner) — INTE råa
+belägg. Belägg i inskrift markeras med `"`-prefix i `normalization` (Evighetsrunor-konvention,
+t.ex. `"Tóla`, `"Bugga`); ~9200 namntoken, ~4000 distinkta (böjda/trunkerade) former. Lexikonet
+fylls **hand-kurerat** i moderniserad form (Ingvar, Tore, Ketil…), religiösa termer (Guð, Kristr,
+Maria) och böjningsvarianter uteslutna. **Platta aldrig råa böjda former rakt in i lexikonet.**
 
 ### 1c. Gudom & kult (gods-fokus)
 
@@ -84,12 +120,12 @@ attesteras geografiskt på tre olika sätt — tre olika evidenstyper som inte f
 
 ## 2. Auktoritativa identifierare (LOD-krokar)
 
-Signum är primärnyckel för matchning (det enda pålitliga, 3067/3067). Externa ID:n
+Signum är primärnyckel för matchning (det enda pålitliga, 6435/6435). Externa ID:n
 för verifiering och länkning mot auktoritativa källor:
 
 | Fält | Auktoritet | Täckning nu | Not |
 |---|---|---|---|
-| `signum` (+ `alternative_signum`) | Samnordisk runtextdatabas | 3067 / 684 alt | Kanonisk nyckel |
+| `signum` (+ `alternative_signum`) | Samnordisk runtextdatabas | 6435; alias bevarar gamla katalogsignum (Bautil B/Liljegren L…) vid dedup | Kanonisk nyckel; sökbar via `search_inscriptions_flexible` |
 | `k_samsok_uri` | K-samsök/SOCH (RAÄ) | 710 | Länkad öppen kulturdata |
 | `raa_number` | Fornsök/KMR (RAÄ) | 46 | Fornlämningsnummer |
 | `lamningsnumber` | Fornsök/KMR (RAÄ) | 33 | Lämningsnummer |
@@ -109,7 +145,7 @@ rundata (object→place→parish→hundred→province).
 | Fält | Betydelse | Regel |
 |---|---|---|
 | `coordinates` | Punkt `(lng,lat)` | WGS84. Se konfidens nedan. |
-| `socken` | Historisk socken | Från rundata-crosswalk. 2923/3067. |
+| `socken` | Historisk socken | Från rundata-crosswalk (13874 signum-par). De ursprungliga 3067 ifyllda; de ~4200 nyimporterade fylls av `20260718130000_parish_harad_crosswalk.sql`. |
 | `harad` | Härad (norska: fylke, danska: herred, finska: kihlakunta) | Suffixet avslöjar land. |
 | `landscape` | Landskap (Uppland, Småland…) | **Måste vara ett av 25 svenska landskap** (§4) för svenska stenar. Rättat via rundata. |
 | `country` | Land | **Normaliseras** — se §4 (Sverige=Sweden). |
@@ -193,8 +229,11 @@ Kanoniska: `simple` | `medium` | `complex` | `unknown`.
 - [x] Normalisera `country`, `rune_type`, `complexity_level`, `coord_source` → **SQL redo:** `scripts/data/normalize-vocabularies.sql` (rena normaliseringar, kör i editorn). 25 tvetydiga rune_type lämnas för granskning.
 - [x] Kanonisk `object_category` (~100 `object_type`-varianter → 13 kategorier via nyckelord) → **migration redo:** `20260718180000_object_category.sql` (icke-destruktiv, ny kolumn).
 - [x] Dela `uncertainty_level` i `condition` + `interpretation_confidence` → **migration redo:** `20260718190000_split_uncertainty_level.sql` (icke-destruktiv, original bevarat).
+- [x] Fullständig import av saknade inskrifter → **klart:** 3067 → 6435 (id=objectid, se §1b).
+- [~] Socken/härad för de ~4200 nya → **SQL redo:** `20260718130000_parish_harad_crosswalk.sql` (dollar-citerat, chunkat i `scripts/data/chunks/parish-*`).
+- [~] Källor/URI:er (§1d) → **SQL redo:** `rundata-object-source.sql` + `rundata-reference-uri.sql` (chunkat `chunks/objsrc-*`, `chunks/refuri-*`).
+- [x] Utöka `viking_names` (§1e) → **klart:** 113 → 139 kurerade namn (`viking-names-expansion.sql`).
 - [ ] Lägg till `runor_uuid` + `wikidata_id` (utlänkning/verifiering).
-- [ ] Fullständig import av saknade inskrifter (Sö 13→~400 m.fl.) — se DB-TODO item 5.
 
 **Kanonisk `object_category` (13):** `runestone` | `rock_carving` | `grave_slab` | `fragment` | `portable_object` | `building_inscription` | `plaster_inscription` | `wood` | `bracteate` | `cross` | `liturgical_object` | `other` | `unknown`.
 
