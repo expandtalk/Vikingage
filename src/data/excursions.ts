@@ -355,4 +355,174 @@ export const EXCURSIONS: Excursion[] = [
     sv: 'En runddös vid Skegrie på Söderslätt — en av Skånes tydligaste megalitgravar från trattbägarkulturen, med kraftig kantkedja kring gravkammaren.',
     en: 'A round dolmen at Skegrie on the Söderslätt plain — one of Skåne\'s clearest Funnel Beaker megalithic graves, with a strong kerb of stones around the chamber.',
   },
+  {
+    id: 'ansarvedosen',
+    name: 'Ansarvedösen',
+    region: 'Tofta, Gotland',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder (ca 3300 f.Kr.)',
+    coords: { lat: 57.5100, lng: 18.3000 }, // VERIFIERA
+    sv: 'En av Gotlands få bevarade dösar — en megalitgrav från trattbägarkulturen, ovanlig så långt österut på ön.',
+    en: 'One of Gotland\'s few preserved dolmens — a Funnel Beaker megalithic grave, unusual this far east on the island.',
+  },
+  {
+    id: 'disas_ting',
+    name: 'Disas ting',
+    region: 'Svarte, Ystad, Skåne',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 55.4230, lng: 13.7170 }, // VERIFIERA
+    sv: 'En megalitgrav vid Svarte som i folktron kopplats till "tingsplats"; en av flera dösar/gånggrifter i det täta stenålderslandskapet kring Ystad.',
+    en: 'A megalithic grave near Svarte, popularly linked to an "assembly place"; one of several dolmens in the dense Stone Age landscape around Ystad.',
+  },
+  {
+    id: 'trollasten',
+    name: 'Dösen Trollasten',
+    region: 'Ystad, Skåne',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder (ca 3500 f.Kr.)',
+    coords: { lat: 55.5000, lng: 13.7700 }, // VERIFIERA
+    sv: 'En välbevarad dös i Ystadstrakten med kraftigt takblock — en klassisk trattbägarkultursgrav.',
+    en: 'A well-preserved dolmen in the Ystad area with a massive capstone — a classic Funnel Beaker grave.',
+  },
+  {
+    id: 'eskilstorpsdosen',
+    name: 'Eskilstorpsdösen',
+    region: 'Vellinge, Skåne',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 55.4200, lng: 13.0600 }, // VERIFIERA
+    sv: 'En dös på Söderslätt i sydvästra Skåne, ett område med hög täthet av megalitgravar.',
+    en: 'A dolmen on the Söderslätt plain in south-western Skåne, an area with a high density of megalithic graves.',
+  },
+  {
+    id: 'klockaredosen',
+    name: 'Klockaredösen',
+    region: 'Vellinge, Skåne',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 55.4000, lng: 13.0300 }, // VERIFIERA
+    sv: 'En dös i Vellingebygden — en av Söderslätts många bevarade megalitgravar.',
+    en: 'A dolmen in the Vellinge district — one of the Söderslätt plain\'s many preserved megalithic graves.',
+  },
+  {
+    id: 'trollakistan',
+    name: 'Trollakistan',
+    region: 'Höör, Skåne',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 55.8500, lng: 13.5300 }, // VERIFIERA
+    sv: 'En megalitgrav i mellersta Skåne vars namn ("trollkistan") speglar folktrons syn på de gåtfulla stenkamrarna.',
+    en: 'A megalithic grave in central Skåne whose name ("the trolls\' chest") reflects folklore\'s view of these enigmatic stone chambers.',
+  },
+  {
+    id: 'brot_anunds_grav',
+    name: 'Bröt-Anunds grav',
+    region: 'Hässleholm, Skåne',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 56.1600, lng: 13.7700 }, // VERIFIERA
+    sv: 'En megalitgrav som i traditionen knutits till sagokungen Bröt-Anund. Namnkopplingen är sen — graven själv är från bondestenåldern.',
+    en: 'A megalithic grave traditionally linked to the legendary king Bröt-Anundr. The name is a late attribution — the grave itself is from the Stone Age.',
+  },
+  {
+    id: 'ganggriften_lunden',
+    name: 'Gånggriften vid Lunden',
+    region: 'Orust, Bohuslän',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder (ca 3300 f.Kr.)',
+    coords: { lat: 58.1900, lng: 11.6000 }, // VERIFIERA
+    sv: 'En gånggrift (megalitgrav med gång in till kammaren) på Orust — en senare och mer avancerad megalitform än dösen.',
+    en: 'A passage grave (a megalithic tomb with a passage into the chamber) on Orust — a later, more advanced megalithic form than the dolmen.',
+  },
+  {
+    id: 'klovedal_dos',
+    name: 'Klövedal dös',
+    region: 'Tjörn, Bohuslän',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 58.0300, lng: 11.5300 }, // VERIFIERA
+    sv: 'En dös på Tjörn — Bohusläns kust har flera megalitgravar från trattbägarkulturen.',
+    en: 'A dolmen on Tjörn — the Bohuslän coast has several Funnel Beaker megalithic graves.',
+  },
+  {
+    id: 'nedre_hagadosen',
+    name: 'Nedre Hagadösen',
+    region: 'Orust, Bohuslän',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 58.2000, lng: 11.6100 }, // VERIFIERA
+    sv: 'En av dösarna i Haga-området på Orust, tillsammans med Hagadösen ett litet megalitgravskluster.',
+    en: 'One of the dolmens in the Haga area on Orust, forming a small megalithic-grave cluster together with the Haga dolmen.',
+  },
+  {
+    id: 'torebo_altare',
+    name: 'Torebo Altare',
+    region: 'Orust, Bohuslän',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 58.1800, lng: 11.6200 }, // VERIFIERA
+    sv: 'En megalitgrav på Orust vars stora, altarlika takblock gett den dess namn.',
+    en: 'A megalithic grave on Orust whose large, altar-like capstone gave it its name.',
+  },
+  {
+    id: 'valla_dos',
+    name: 'Valla dös (Styrdalen)',
+    region: 'Tjörn, Bohuslän',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 58.0000, lng: 11.5500 }, // VERIFIERA
+    sv: 'En dös i Styrdalen på Tjörn — en trattbägarkultursgrav i det bohuslänska kustlandskapet.',
+    en: 'A dolmen in Styrdalen on Tjörn — a Funnel Beaker grave in the Bohuslän coastal landscape.',
+  },
+  {
+    id: 'brattas_dos',
+    name: 'Brattås fornlämningsområde (dös)',
+    region: 'Orust, Bohuslän',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 58.2500, lng: 11.5600 }, // VERIFIERA
+    sv: 'Ett fornlämningsområde på Orust med en dös bland flera gravar — ett landskap format av bondestenålderns megalitbyggare.',
+    en: 'A monument area on Orust with a dolmen among several graves — a landscape shaped by the Stone Age megalith builders.',
+  },
+  {
+    id: 'klastorpsdosen',
+    name: 'Klastorpsdösen',
+    region: 'Varberg, Halland',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 57.1300, lng: 12.3500 }, // VERIFIERA
+    sv: 'En dös i Varbergstrakten — Halland har megalitgravar längs kusten som Skåne och Bohuslän.',
+    en: 'A dolmen in the Varberg district — Halland has coastal megalithic graves like Skåne and Bohuslän.',
+  },
+  {
+    id: 'stenstugan',
+    name: 'Stenstugan',
+    region: 'Varberg, Halland',
+    group: 'Megalitgravar (dösar)',
+    period: 'Bondestenålder',
+    coords: { lat: 57.1000, lng: 12.3000 }, // VERIFIERA
+    sv: 'En megalitgrav i Halland vars namn ("stenstugan") speglar hur kammaren liknats vid ett litet stenhus.',
+    en: 'A megalithic grave in Halland whose name ("the stone cottage") reflects how the chamber was likened to a small stone house.',
+  },
+  {
+    id: 'vrangstad',
+    name: 'Vrångstads gravfält',
+    region: 'Tanum, Bohuslän',
+    group: 'Megalitgravar (dösar)',
+    period: 'Sten-/bronsålder',
+    coords: { lat: 58.5500, lng: 11.4500 }, // VERIFIERA
+    sv: 'Ett gravfält i Tanum med bland annat megalitgrav — i samma kommun som Tanums världsberömda hällristningar.',
+    en: 'A grave field in Tanum including a megalithic grave — in the same municipality as Tanum\'s world-famous rock carvings.',
+  },
+  {
+    id: 'alnabjar',
+    name: 'Alnabjär skeppssättning',
+    region: 'Bohuslän',
+    group: 'Bohuslän & Västkusten',
+    period: 'Brons-/järnålder',
+    coords: { lat: 58.3000, lng: 11.5000 }, // VERIFIERA – exakt läge osäkert
+    sv: 'En skeppssättning på västkusten — resta stenar i skeppsform som gravmonument. Exakt läge bör verifieras.',
+    en: 'A stone ship setting on the west coast — raised stones in ship form as a grave monument. Exact location should be verified.',
+  },
 ];

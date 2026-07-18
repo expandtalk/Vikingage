@@ -6,6 +6,21 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 
 ## 🎯 PRIORITERAT NU (2026-07-18, uppdaterad efter dagens diskussion)
 
+### 🟢 SLUTSTATUS 2026-07-18 (efter stor rundata-session)
+**KLART (körda i DB via editor/MCP):**
+- ✅ **Rundata-import komplett:** 3 067 → **6 435 inskrifter** (5 972 med koordinater). Alla svenska landskap + DR/D/DE m.fl. Sö/Sm/Öl/G/Vg/Ög fullt inne med koord/text/datering/noter/bilder. (N/Norge kvar om önskas: `import-N.sql`.)
+- ✅ **Notes/dating/bilder-crosswalk** körd (scholarly_notes, dating_text, inscription_media).
+- ✅ **Bautil-dedup** körd (2 omgångar, **864 dubbletter borta**), gamla katalognamn bevarade som **sökbara alias** (B 894 → Ög 212). 571 kvar = mest Bergen (norska), moderna ej importerade.
+- ✅ **Coins + dirhamer** i DB. **Placeholder-transliteration** (1 552) nollad.
+- 🔑 **Lärdom:** Supabase-editorn av-dubblar `''`→`'` vid inklistring → använd **dollar-citering** (`$$...$$`) i genererad SQL.
+
+**BYGGT, VÄNTAR FTP av `dist/` (allt frontend committat):**
+- Utflykter: **48 kort**, regiongruppering, Gotland Visby/Norra/Södra, dösar, Ales stenar, Björketorp, Anundshög, Noaks Ark. Carvers namngivna-först + attributionssektion. Megameny. Mynt/dirhamer. Valdemarsleden. Welcome-räknaren dynamisk. `.htaccess` no-cache.
+
+**KVAR (kort lista):** socken/härad på nya rader · references/uris/sources-import · koordverifiering (`// VERIFIERA`) · live-QA (zoom-kluster, i18n, period/profil) · Geotorget (ortnamn + socken-polygoner) · Wikidata/foton · DB-städning.
+
+---
+
 ### A. ✅ DEPLOYAT + LIVE-QA:AT (2026-07-18)
 Live-QA kört mot www.vikingage.se (browse, textkontroll):
 - [x] Legend: **ingen "1002/1001/999"** kvar (den gamla synvillan borta). Exakt nytt tal (3201/365) ej skrapbart ur hopfälld legend — **ögonkolla själv** vid tillfälle.
