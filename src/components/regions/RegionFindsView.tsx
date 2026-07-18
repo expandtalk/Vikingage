@@ -20,13 +20,52 @@ interface RegionFindsViewProps {
 
 interface RegionGroup {
   name: string;          // härads-/sockennamn (auktoritativt ur fyndens egen kolumn)
-  landscape: string;     // för gruppering/etikett
+  landscape: string;     // majoritets-landskap (tom om för spretigt, t.ex. "Okänd")
+  country: string;       // normaliserat land (majoritet)
   inscriptions: any[];
   count: number;
 }
 
 const hasCoords = (i: any): boolean =>
   (i?.coordinates && i.coordinates.lat && i.coordinates.lng) || (i?.latitude && i?.longitude);
+
+// Normalisera land — källan har både "Sverige" och "Sweden".
+const COUNTRY_LABEL_SV: Record<string, string> = {
+  sweden: 'Sverige', denmark: 'Danmark', norway: 'Norge', greenland: 'Grönland',
+  germany: 'Tyskland', netherlands: 'Nederländerna', poland: 'Polen', ukraine: 'Ukraina',
+  'united kingdom': 'Storbritannien', finland: 'Finland', britain: 'Storbritannien',
+  estonia: 'Estland', ireland: 'Irland', scotland: 'Skottland', iceland: 'Island', other: 'Övrigt',
+};
+// Land härleds ur SIGNUM-PREFIXET, inte country-kolumnen (som är fel för t.ex.
+// Akershus fylke = felmärkt Denmark). Prefixet är auktoritativt: N=Norge, DR/DK=
+// Danmark, IS=Island, GR=Grönland osv.; övriga svenska landskapsprefix → Sverige.
+const COUNTRY_BY_PREFIX: Record<string, string> = {
+  DR: 'denmark', DK: 'denmark', N: 'norway', IS: 'iceland', GR: 'greenland',
+  E: 'estonia', IR: 'ireland', SC: 'scotland', BR: 'britain', X: 'other',
+};
+const countryKeyFromSignum = (signum?: string): string => {
+  const p = (signum ?? '').trim().split(/\s+/)[0]?.toUpperCase() ?? '';
+  return COUNTRY_BY_PREFIX[p] ?? 'sweden';
+};
+// Härads-suffixet är auktoritativt för land (fylke=Norge, herred=Danmark,
+// härad=Sverige, kihlakunta=Finland, Kreis=Tyskland) — mer pålitligt än signum
+// för specialkataloger (KJ, NIÆR) i t.ex. "Akershus fylke".
+const countryKeyFromRegionName = (name: string): string | null => {
+  const n = name.toLowerCase();
+  if (/fylke$/.test(n)) return 'norway';
+  if (/herred$/.test(n)) return 'denmark';
+  if (/härad$/.test(n)) return 'sweden';
+  if (/kihlakunta/.test(n)) return 'finland';
+  if (/\bkreis\b|landkreis/.test(n)) return 'germany';
+  return null;
+};
+const topVote = (votes: Map<string, number>): { key: string; share: number } => {
+  let key = '';
+  let best = 0;
+  let total = 0;
+  for (const [k, n] of votes) { total += n; if (n > best) { best = n; key = k; } }
+  return { key, share: total ? best / total : 0 };
+};
 
 export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, mode, onResultClick }) => {
   const { language } = useLanguage();
@@ -46,6 +85,7 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
         all: 'Alla områden',
         sortName: 'A–Ö',
         sortCount: 'Flest fynd',
+        sortCountry: 'Land',
       }
     : {
         title: mode === 'hundreds' ? 'Hundreds' : 'Parishes',
@@ -59,47 +99,67 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
         all: 'All regions',
         sortName: 'A–Z',
         sortCount: 'Most finds',
+        sortCountry: 'Country',
       };
+
+  const countryLabel = (key: string): string => {
+    if (!key) return '';
+    if (sv) return COUNTRY_LABEL_SV[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
+    return key.charAt(0).toUpperCase() + key.slice(1);
+  };
 
   // Gruppera fynden per härad/socken (bara de med koordinat — annars syns de inte).
   const regions = useMemo<RegionGroup[]>(() => {
-    const map = new Map<string, { name: string; inscriptions: any[]; landscapeVotes: Map<string, number> }>();
+    const map = new Map<string, { name: string; inscriptions: any[]; landscapeVotes: Map<string, number>; countryVotes: Map<string, number> }>();
     for (const i of inscriptions) {
       const name = (i?.[field] ?? '').toString().trim();
       if (!name || !hasCoords(i)) continue;
       let g = map.get(name);
       if (!g) {
-        g = { name, inscriptions: [], landscapeVotes: new Map() };
+        g = { name, inscriptions: [], landscapeVotes: new Map(), countryVotes: new Map() };
         map.set(name, g);
       }
       g.inscriptions.push(i);
-      // Landskap via MAJORITETSRÖSTNING — landscape-kolumnen är fel för en del
-      // Bautil-stenar (t.ex. Vallentuna härad felmärkt Småland), men ett härad
-      // hör historiskt till exakt ETT landskap, så majoriteten ger rätt.
+      // Landskap + land via MAJORITETSRÖSTNING — kolumnerna är fel för en del
+      // Bautil-stenar (Vallentuna felmärkt Småland). Ett härad hör historiskt till
+      // ETT landskap, så majoriteten ger rätt; catch-allen "Okänd" spänner dock många.
       const ls = (i?.landscape ?? '').toString().trim();
       if (ls) g.landscapeVotes.set(ls, (g.landscapeVotes.get(ls) ?? 0) + 1);
+      const ck = countryKeyFromSignum(i?.signum);
+      if (ck) g.countryVotes.set(ck, (g.countryVotes.get(ck) ?? 0) + 1);
     }
+    const isUnknown = (n: string) => /^(okänd|unknown)$/i.test(n.trim());
     return [...map.values()]
       .map((g) => {
-        let landscape = '';
-        let best = 0;
-        for (const [ls, n] of g.landscapeVotes) if (n > best) { best = n; landscape = ls; }
-        return { name: g.name, landscape, inscriptions: g.inscriptions, count: g.inscriptions.length };
+        const ls = topVote(g.landscapeVotes);
+        const co = topVote(g.countryVotes);
+        // Dölj landskap för catch-allen "Okänd" och när gruppen är för spretig (<60%).
+        const landscape = isUnknown(g.name) || ls.share < 0.6 ? '' : ls.key;
+        // Land: härad-suffix först (auktoritativt), annars signum-majoritet.
+        const country = countryKeyFromRegionName(g.name) ?? co.key;
+        return { name: g.name, landscape, country, inscriptions: g.inscriptions, count: g.inscriptions.length };
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'sv'));
   }, [inscriptions, field]);
 
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'name' | 'count'>('name');
+  const [sortBy, setSortBy] = useState<'name' | 'count' | 'country'>('name');
 
   const filteredRegions = useMemo(() => {
     const q = query.trim().toLowerCase();
     const base = q
-      ? regions.filter((r) => r.name.toLowerCase().includes(q) || r.landscape.toLowerCase().includes(q))
+      ? regions.filter(
+          (r) =>
+            r.name.toLowerCase().includes(q) ||
+            r.landscape.toLowerCase().includes(q) ||
+            r.country.toLowerCase().includes(q),
+        )
       : regions;
     const sorted = [...base];
     if (sortBy === 'count') sorted.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'sv'));
+    else if (sortBy === 'country')
+      sorted.sort((a, b) => a.country.localeCompare(b.country, 'sv') || a.name.localeCompare(b.name, 'sv'));
     else sorted.sort((a, b) => a.name.localeCompare(b.name, 'sv'));
     return sorted;
   }, [regions, query, sortBy]);
@@ -179,7 +239,7 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
               />
             </div>
             <div className="flex gap-1 text-xs">
-              {(['name', 'count'] as const).map((key) => (
+              {(['name', 'count', 'country'] as const).map((key) => (
                 <button
                   key={key}
                   onClick={() => setSortBy(key)}
@@ -187,7 +247,7 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
                     sortBy === key ? 'bg-amber-500/20 text-amber-200' : 'text-slate-300 hover:bg-white/10'
                   }`}
                 >
-                  {key === 'name' ? c.sortName : c.sortCount}
+                  {key === 'name' ? c.sortName : key === 'count' ? c.sortCount : c.sortCountry}
                 </button>
               ))}
             </div>
@@ -213,7 +273,10 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
                     >
                       <span className="truncate">
                         {r.name}
-                        {r.landscape ? <span className="text-slate-400 text-xs ml-1">· {r.landscape}</span> : null}
+                        {(() => {
+                          const label = sortBy === 'country' ? countryLabel(r.country) : r.landscape;
+                          return label ? <span className="text-slate-400 text-xs ml-1">· {label}</span> : null;
+                        })()}
                       </span>
                       <Badge variant="secondary" className="shrink-0">{r.count}</Badge>
                     </button>
