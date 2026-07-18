@@ -2504,4 +2504,6 @@ from (values
 ('db17d040-82f4-4105-825e-f34798b84c3c','215e5f1f6acb4e84a5dc477e45ac37c9'),
 ('db32d07e-2773-46a1-ae0e-c81a08f1fc25','674f407f097c4f3b818f7ed0f18118a0')
 ) as v(oid, sid)
-where not exists (select 1 from public.object_source os where os.objectid = v.oid::uuid and os.sourceid = decode(v.sid,'hex'));
+where exists (select 1 from public.runic_inscriptions ri where ri.id = v.oid::uuid)          -- FK fk_object (-> runic_inscriptions)
+  and exists (select 1 from public.sources s where s.sourceid = decode(v.sid,'hex'))          -- FK fk_source (-> sources)
+  and not exists (select 1 from public.object_source os where os.objectid = v.oid::uuid and os.sourceid = decode(v.sid,'hex'));

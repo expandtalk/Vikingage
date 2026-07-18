@@ -34,7 +34,9 @@ select v.oid::uuid, decode(v.sid,'hex')
 from (values
 ${osValues}
 ) as v(oid, sid)
-where not exists (select 1 from public.object_source os where os.objectid = v.oid::uuid and os.sourceid = decode(v.sid,'hex'));
+where exists (select 1 from public.runic_inscriptions ri where ri.id = v.oid::uuid)          -- FK fk_object (-> runic_inscriptions)
+  and exists (select 1 from public.sources s where s.sourceid = decode(v.sid,'hex'))          -- FK fk_source (-> sources)
+  and not exists (select 1 from public.object_source os where os.objectid = v.oid::uuid and os.sourceid = decode(v.sid,'hex'));
 `;
 
 // reference_uri: reference_id bytea (= sourceid), uri_id bytea
