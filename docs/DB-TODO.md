@@ -68,7 +68,18 @@ Genomgång av `rundata.sql` (27 MB, Evighetsrunor, repo-roten). **Vi har idag en
 **Geografisk hierarki (svar på Daniels fråga — JA, parishes/hundreds har fler kopplingar):**
 `objects.placeid` → `places` (3 622) → `place_parish` (3 747) → `parishes` (1 696) → `her_SE_parishes` (927) → `her_SE`/härad (4 090, med `her_SE_notes` 1 330) → `provinces`/`counties`/`municipalities`. Plus `object_her_SE` (4 980) länkar objekt direkt till härad. Idag använder vi bara en platt `socken`/`harad`-text på `runic_inscriptions`.
 
-**Rekommenderad ordning (crosswalk på signum→objectid, samma metod som koordinaterna):**
+**🔑 ROOT CAUSE (upptäckt 2026-07-18, steg 1): rundata-tabellerna är importerade men med FEL nyckel.**
+`imagelinks` (1099), `dating` (2549), `notes` (2182), `sources` (621), `uris` (4553) finns redan i Supabase — men med rundatas **egna `objectid`**, som INTE matchar `runic_inscriptions.id`. Appens `useInscriptionExtendedData` letar med `objectid = bytea(inscription.id)` → **0 av 1099 matchar** → inget visas. Plumbingen finns, nyckeln är fel. (`objects` har bara 142 rader, `object_source`/`reference_uri` är TOMMA → källor/URI:er fungerar ej alls.)
+
+**Steg 1 LÖST via signum (kringgår nyckel-buggen):** `scripts/crosswalk-rundata-notes.mjs` → `scripts/data/rundata-notes-crosswalk.sql`. Matchar rundata `objectid → inscriptionid → signum_inscription → signa → signum` mot `runic_inscriptions.signum`, och skriver till fält UI:t **redan renderar** (InscriptionDetail + `inscription_media`):
+- `scholarly_notes` ← notes (2 113 signum) — Forskningsnoter-fliken.
+- `dating_text` ← dating (2 609 signum).
+- `inscription_media` ← imagelinks (1 098 bilder / 587 signum, kulturarvsdata.se) — Bilder-fliken.
+- [ ] **KÖR `scripts/data/rundata-notes-crosswalk.sql` i Supabase-editorn** (ren data, idempotent, verifierad via probe). **Ingen deploy behövs** — allt renderas redan. Join på signum begränsar naturligt till våra 3 067 inskrifter.
+- Not: notes är otypade i källan → allt hamnar i `scholarly_notes` (ej uppdelat på historical_context/paleographic_notes; kan AI-klassas senare).
+- **Alternativ helfix (senare):** re-nyckla imagelinks/dating/notes/translations `objectid` → `runic_inscriptions.id` via signum, så ALL befintlig plumbing (inkl. detaljerad datering, översättningar) tänds. Kräver objectid→signum-map ur rundata.sql (`inscriptions`/`signa`/`signum_inscription` saknas i Supabase).
+
+**Rekommenderad ordning för RESTEN (crosswalk på signum, samma metod som koordinaterna):**
 1. **notes + imagelinks + dating** → nya kolumner/tabeller på inskrifter (`research_notes`, `image_urls`, `dating_text`). Ger direkt Daniels önskemål: forskarnoter, historisk kontext, paleografi, arkivbilder. *Störst synligt värde, lägst risk.*
 2. **references/uris/sources** → utlänkar + källor i detaljvyn (vetenskaplig trovärdighet).
 3. **Saknade ~4 122 inskrifter** → importera resten (fyller Sö/Öl-luckorna; pensionerar standalone-virtual-hacket).
