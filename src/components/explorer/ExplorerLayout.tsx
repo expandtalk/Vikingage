@@ -9,8 +9,7 @@ import { usePanelManager } from '@/hooks/usePanelManager';
 import { useFocusManager } from '@/hooks/useFocusManager';
 import { LayoutHeader } from './layout/LayoutHeader';
 import { LayoutContent } from './layout/LayoutContent';
-import { HundredsView } from '../hundreds/HundredsView';
-import { ParishesView } from '../parishes/ParishesView';
+import { RegionFindsView } from '../regions/RegionFindsView';
 import { MobileDrawer } from '@/components/ui/mobile-drawer';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { Filter, Map, BarChart3 } from 'lucide-react';
@@ -175,18 +174,6 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   };
 
   // Handlers for focus views
-  const handleParishSelect = (parishName: string) => {
-    setSearchQuery(parishName);
-    handleSearchWithResults();
-    clearFocus();
-  };
-
-  const handleHundredSelect = (hundredName: string) => {
-    setSearchQuery(hundredName);
-    handleSearchWithResults();
-    clearFocus();
-  };
-
   const handleNameSelect = (name: string) => {
     setSearchQuery(name);
     handleSearchWithResults();
@@ -228,9 +215,9 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
             />
           );
         case 'hundreds':
-          return <HundredsView onHundredSelect={handleHundredSelect} />;
+          return <RegionFindsView inscriptions={allInscriptions} mode="hundreds" onResultClick={onResultClick} />;
         case 'parishes':
-          return <ParishesView onParishSelect={handleParishSelect} />;
+          return <RegionFindsView inscriptions={allInscriptions} mode="parishes" onResultClick={onResultClick} />;
         default:
           return null;
       }
