@@ -7,12 +7,32 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, Search, Crown, Heart, Shield, Loader2 } from 'lucide-react';
 import { useVikingNames, useVikingNamesStats, type VikingName } from '@/hooks/useVikingNames';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface VikingNamesViewProps {
   onNameSelect?: (name: string) => void;
 }
 
 export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const c = sv
+    ? {
+        title: 'Vikinganamn', intro: 'Utforska autentiska vikingatida personnamn från runinskrifter — mäns och kvinnors namn med betydelser och historisk information',
+        search: 'Sök efter namn, betydelse eller historisk info…',
+        allGenders: 'Alla kön', male: 'Mansnamn', female: 'Kvinnonamn', allRegions: 'Alla regioner',
+        totalNames: 'Totalt antal namn', totalFreq: 'Total förekomst',
+        allTab: 'Alla namn', etymology: 'Etymologi', occurrence: 'Förekomst', unit: 'inskrifter',
+        loading: 'Laddar vikinganamn…', error: 'Ett fel uppstod när vikinganamnen skulle laddas.',
+      }
+    : {
+        title: 'Viking Names', intro: 'Explore authentic Viking Age personal names from runic inscriptions — men’s and women’s names with meanings and historical information',
+        search: 'Search by name, meaning or historical info…',
+        allGenders: 'All genders', male: 'Male names', female: 'Female names', allRegions: 'All regions',
+        totalNames: 'Total names', totalFreq: 'Total occurrences',
+        allTab: 'All names', etymology: 'Etymology', occurrence: 'Occurrence', unit: 'inscriptions',
+        loading: 'Loading Viking names…', error: 'An error occurred while loading the Viking names.',
+      };
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGender, setSelectedGender] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
@@ -56,7 +76,7 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-white" />
-        <span className="ml-2 text-white">Laddar Viking namn...</span>
+        <span className="ml-2 text-white">{c.loading}</span>
       </div>
     );
   }
@@ -65,7 +85,7 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
     return (
       <Card className="bg-red-500/10 backdrop-blur-md border-red-500/20">
         <CardContent className="p-6 text-center">
-          <p className="text-red-400">Ett fel uppstod när Viking namnen skulle laddas.</p>
+          <p className="text-red-400">{c.error}</p>
         </CardContent>
       </Card>
     );
@@ -78,10 +98,10 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Viking namn
+            {c.title}
           </CardTitle>
           <p className="text-slate-300">
-            Utforska autentiska vikingatida personnamn från runinskrifter - männens och kvinnornas namn med betydelser och historisk information
+            {c.intro}
           </p>
         </CardHeader>
         
@@ -90,7 +110,7 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
             <div className="flex items-center gap-2">
               <Search className="h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Sök efter namn, betydelse eller historisk info..."
+                placeholder={c.search}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-80 bg-slate-700/50 border-slate-600 text-white"
@@ -102,9 +122,9 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alla kön</SelectItem>
-                <SelectItem value="male">Mansnamn</SelectItem>
-                <SelectItem value="female">Kvinnonamn</SelectItem>
+                <SelectItem value="all">{c.allGenders}</SelectItem>
+                <SelectItem value="male">{c.male}</SelectItem>
+                <SelectItem value="female">{c.female}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -113,7 +133,7 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alla regioner</SelectItem>
+                <SelectItem value="all">{c.allRegions}</SelectItem>
                 {allRegions.map(region => (
                   <SelectItem key={region} value={region}>{region}</SelectItem>
                 ))}
@@ -129,7 +149,7 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400">Totalt antal namn</p>
+                <p className="text-sm text-slate-400">{c.totalNames}</p>
                 <p className="text-2xl font-bold text-white">
                   {isLoadingStats ? <Loader2 className="h-6 w-6 animate-spin" /> : (stats?.total_names || 0)}
                 </p>
@@ -143,7 +163,7 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400">Mansnamn</p>
+                <p className="text-sm text-slate-400">{c.male}</p>
                 <p className="text-2xl font-bold text-blue-400">
                   {isLoadingStats ? <Loader2 className="h-6 w-6 animate-spin" /> : (stats?.male_names || 0)}
                 </p>
@@ -157,7 +177,7 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400">Kvinnonamn</p>
+                <p className="text-sm text-slate-400">{c.female}</p>
                 <p className="text-2xl font-bold text-pink-400">
                   {isLoadingStats ? <Loader2 className="h-6 w-6 animate-spin" /> : (stats?.female_names || 0)}
                 </p>
@@ -171,7 +191,7 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400">Total förekomst</p>
+                <p className="text-sm text-slate-400">{c.totalFreq}</p>
                 <p className="text-2xl font-bold text-emerald-400">
                   {isLoadingStats ? <Loader2 className="h-6 w-6 animate-spin" /> : (stats?.total_frequency || 0)}
                 </p>
@@ -185,9 +205,9 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
       {/* Names List */}
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3 bg-slate-800/60">
-          <TabsTrigger value="all">Alla namn ({filteredNames.length})</TabsTrigger>
-          <TabsTrigger value="male">Mansnamn ({maleNames.length})</TabsTrigger>
-          <TabsTrigger value="female">Kvinnonamn ({femaleNames.length})</TabsTrigger>
+          <TabsTrigger value="all">{c.allTab} ({filteredNames.length})</TabsTrigger>
+          <TabsTrigger value="male">{c.male} ({maleNames.length})</TabsTrigger>
+          <TabsTrigger value="female">{c.female} ({femaleNames.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
@@ -209,7 +229,7 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
                     <p className="text-slate-300 text-sm mb-2">{nameData.meaning}</p>
                     
                     {nameData.etymology && (
-                      <p className="text-slate-400 text-xs mb-2 italic">Etymologi: {nameData.etymology}</p>
+                      <p className="text-slate-400 text-xs mb-2 italic">{c.etymology}: {nameData.etymology}</p>
                     )}
                     
                     {nameData.historical_info && (
@@ -218,9 +238,9 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
                     
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-400 text-xs">Förekomst:</span>
+                        <span className="text-slate-400 text-xs">{c.occurrence}:</span>
                         <Badge variant="outline" className="text-slate-300">
-                          {nameData.frequency} inskrifter
+                          {nameData.frequency} {c.unit}
                         </Badge>
                       </div>
                       
@@ -254,14 +274,14 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
                   </div>
                   <p className="text-slate-300 text-sm mb-2">{nameData.meaning}</p>
                   {nameData.etymology && (
-                    <p className="text-slate-400 text-xs mb-2 italic">Etymologi: {nameData.etymology}</p>
+                    <p className="text-slate-400 text-xs mb-2 italic">{c.etymology}: {nameData.etymology}</p>
                   )}
                   {nameData.historical_info && (
                     <p className="text-slate-400 text-xs mb-3 italic">{nameData.historical_info}</p>
                   )}
                   <div className="space-y-2">
                     <Badge variant="outline" className="text-slate-300">
-                      {nameData.frequency} inskrifter
+                      {nameData.frequency} {c.unit}
                     </Badge>
                     <div className="flex flex-wrap gap-1">
                       {nameData.regions.map((region) => (
@@ -292,14 +312,14 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
                   </div>
                   <p className="text-slate-300 text-sm mb-2">{nameData.meaning}</p>
                   {nameData.etymology && (
-                    <p className="text-slate-400 text-xs mb-2 italic">Etymologi: {nameData.etymology}</p>
+                    <p className="text-slate-400 text-xs mb-2 italic">{c.etymology}: {nameData.etymology}</p>
                   )}
                   {nameData.historical_info && (
                     <p className="text-slate-400 text-xs mb-3 italic">{nameData.historical_info}</p>
                   )}
                   <div className="space-y-2">
                     <Badge variant="outline" className="text-slate-300">
-                      {nameData.frequency} inskrifter
+                      {nameData.frequency} {c.unit}
                     </Badge>
                     <div className="flex flex-wrap gap-1">
                       {nameData.regions.map((region) => (

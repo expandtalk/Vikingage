@@ -2,6 +2,7 @@
 import React from 'react';
 import { CompactSearchBox } from '../search/CompactSearchBox';
 import { GodNameSearch } from '../search/GodNameSearch';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SearchModuleProps {
   searchQuery: string;
@@ -30,6 +31,8 @@ export const SearchModule: React.FC<SearchModuleProps> = ({
   isMinimized = false,
   onToggleMinimized
 }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
   const handleCompactSearch = (query: string) => {
     setSearchQuery(query);
     handleSearch();
@@ -65,7 +68,7 @@ export const SearchModule: React.FC<SearchModuleProps> = ({
   return (
     <div className="bg-white/10 backdrop-blur-md border-white/20 rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-medium text-lg">Sök i runstenar</h3>
+        <h3 className="text-white font-medium text-lg">{sv ? 'Sök i runstenar' : 'Search runestones'}</h3>
         <button
           onClick={onToggleMinimized}
           className="text-white/70 hover:text-white text-xs px-2 py-1 rounded hover:bg-amber-900/20 transition-colors"
@@ -79,7 +82,7 @@ export const SearchModule: React.FC<SearchModuleProps> = ({
         <CompactSearchBox
           onSearch={handleCompactSearch}
           onResultSelect={handleResultSelect}
-          placeholder={`Sök bland ${totalInscriptions.toLocaleString()} runstenar...`}
+          placeholder={sv ? `Sök bland ${totalInscriptions.toLocaleString()} runstenar...` : `Search ${totalInscriptions.toLocaleString()} runestones...`}
           currentQuery={searchQuery}
         />
 
