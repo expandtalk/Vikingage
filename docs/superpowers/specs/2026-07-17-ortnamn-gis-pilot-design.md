@@ -28,7 +28,7 @@ UI:t (avsnitt 8).
 
 ## 2. Bakgrund och forskningskoppling
 
-Piloten sitter direkt på Stephanie Heinz hypotes (rapport juli 2026): förkristna
+Piloten sitter direkt på hypotesen (rapport juli 2026): förkristna
 namnelement (**Val, Ed, Hammar, Vang, Sal, Stav, Horn** samt hästrelaterade **Hors,
 Ross, Stod, Ökna**) markerar platser med kult-/centralortsfunktion, och samvarierar med
 runstenar och fornborgar.
@@ -109,7 +109,7 @@ interface PlaceNameElement {
 }
 ```
 
-Startlista (Stephanie Heinz element; `Mar/Mer` medvetet uteslutet — brus mot Maria/Mark):
+Startlista (Agnetas element; `Mar/Mer` medvetet uteslutet — brus mot Maria/Mark):
 
 | key | label | category | contested | excludes (brus) | etymologi-not |
 |---|---|---|---|---|---|

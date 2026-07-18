@@ -330,7 +330,13 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
       Object.assign(o, { parishes: true, runic_inscriptions: true });
       break;
     case "folkGroups":
-      Object.assign(o, { folk_groups: true, runic_inscriptions: true });
+      // Folkgrupper + DNA/provplatser (arkeologiska platser med genetik) — INTE runstenar.
+      Object.assign(o, {
+        folk_groups: true,
+        archaeological_sites: true,
+        runic_inscriptions: false,
+        foreign_inscriptions: false,
+      });
       break;
     case "inscriptions":
       // Fokus på runinskrifterna själva — BÅDE svenska och utländska ifyllda.

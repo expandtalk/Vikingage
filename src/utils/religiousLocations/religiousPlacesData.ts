@@ -1004,19 +1004,6 @@ export const RELIGIOUS_PLACES: ReligiousPlace[] = [
     region: 'Bohuslän',
     sources: ['Metallofferforskning', 'Arkeologiska fynd']
   },
-  {
-    id: 'kalla_odekyrka_oland',
-    name: 'Källa Ödekyrka',
-    coordinates: { lat: 56.7833, lng: 16.9667 },
-    deity: 'other',
-    type: 'offering_spring',
-    evidence: ['archaeological', 'church_foundation'],
-    description: 'Offerkälla med kontinuitet in i kristen tid',
-    historicalPeriods: ['early_iron_age', 'migration_period', 'vendel_period', 'viking_age', 'transition_period'],
-    establishedPeriod: 'early_iron_age',
-    region: 'Öland',
-    sources: ['Kristianiseringsforskning', 'Offerkällestudier']
-  },
 
   // ✅ UTÖKADE OFFERKÄLLOR I SVERIGE (nya tillägg från användaren)
   {
@@ -1335,16 +1322,18 @@ export const RELIGIOUS_PLACES: ReligiousPlace[] = [
   },
   {
     id: 'kalla_gamla_kyrka_spring',
-    name: 'Källa gamla kyrka offerkälla',
-    coordinates: { lat: 57.2167, lng: 17.0333 },
+    name: 'Källa gamla kyrka',
+    // 57°6′41″N 16°59′11″Ö (norra Öland, Källa socken). Konsoliderad post — ersätter
+    // även tidigare dubblett "Källa Ödekyrka".
+    coordinates: { lat: 57.1114, lng: 16.9864 },
     deity: 'other',
     type: 'offering_spring',
     evidence: ['place_name', 'church_foundation', 'archaeological'],
-    description: 'Hednisk offerkälla kristnad till S:t Olof. Socknen namngiven efter källan.',
-    historicalPeriods: ['early_iron_age', 'medieval'],
+    description: 'Hednisk offerkälla vid Källa hamn — under forntid/medeltid en av Ölands viktigaste hamnar och en knutpunkt i Östersjötrafiken (myntfynd från Gotland, fastlandet och nordtyska hamnar). Källan kristnades och helgades åt S:t Olof, sjöfararnas helgon, och gav socknen dess namn. 1960 påträffades en igenrasad brunn på kyrkogården — trolig ursprunglig offerkälla. Kristendomen infördes under 1000-talets senare hälft (kristna runstenar); en träkyrka (spår funna 1971 under stenkyrkan) följdes på 1100-talet av en försvarskyrka i kalksten. Idag ödekyrka, sedan 1928 förvaltad av Riksantikvarieämbetet.',
+    historicalPeriods: ['early_iron_age', 'migration_period', 'vendel_period', 'viking_age', 'transition_period', 'medieval'],
     establishedPeriod: 'early_iron_age',
     region: 'Öland',
-    sources: ['Kulturbilder', 'Wikipedia']
+    sources: ['Ragnhild Boström, Källa gamla kyrka (Riksantikvarieämbetet)', 'Nils Sjöstrand, Öländsk Bygd 1960', 'Wikipedia']
   },
   {
     id: 'sankt_mans_spring',

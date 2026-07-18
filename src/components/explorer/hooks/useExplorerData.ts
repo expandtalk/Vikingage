@@ -83,7 +83,8 @@ export const useExplorerData = ({
     mapInscriptions: legendFilteredInscriptions,
     handleLegendToggle,
     handleShowAll,
-    handleHideAll
+    handleHideAll,
+    focusDeity
   } = useLegendManager(
     inscriptions,
     false,
@@ -174,7 +175,8 @@ export const useExplorerData = ({
     handleLegendToggle,
     handleShowAll,
     handleHideAll,
-    
+    focusDeity,
+
     // Time period (critical for rivers focus)
     selectedTimePeriod,
     setSelectedTimePeriod,

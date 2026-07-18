@@ -35,21 +35,16 @@ interface CarverInscription {
   };
 }
 
-// Generate realistic research notes for carvers
-const generateResearchNote = (name: string, stats: CarverStats): string => {
-  const researchNotes = [
-    `Troligen ${name}, eventuellt samma person som utförde liknande arbeten i regionen`,
-    `Stilanalys tyder på att ${name} var aktiv under 1000-talet, baserat på runformer`,
-    `Möjligen identisk med mästaren som signerade närliggande stenar`,
-    `Forskare diskuterar om ${name} kan vara samma person som ${name.split(' ')[0]} eller annan känd ristare`,
-    `Säker identifikation baserad på unika stilmarkörer och geografisk närhet`,
-    `Osäker tillskrivning - ytterligare forskning behövs för definitiv bestämning`,
-    `Troligen två olika ristare med samma namn verksamma i området`,
-    `Stark stilistisk överensstämmelse med signerade verk stödjer tillskrivningen`
-  ];
-  
-  const hash = name.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-  return researchNotes[hash % researchNotes.length];
+// Import-artefakter i description-kolumnen (t.ex. "Importerad från MySQL data")
+// ska INTE visas. Vi hittar-på inga forskningsnoteringar (det vore påhittad
+// vetenskap på en forskningsplattform) — tom description → ingen not renderas.
+const cleanCarverDescription = (description: string | null): string | null => {
+  if (!description) return null;
+  const d = description.trim();
+  if (!d) return null;
+  if (/mysql/i.test(d)) return null;
+  if (/^importerad\s+från/i.test(d)) return null;
+  return description;
 };
 
 export const useCarverData = () => {
@@ -106,9 +101,8 @@ export const useCarverData = () => {
     
     return {
       ...carver,
-      // Clean up description - remove MySQL import notes and add realistic research notes
-      description: carver.description === 'importerad från MySQL data' ? 
-        generateResearchNote(carver.name, stats) : carver.description,
+      // Rensa bort import-artefakter ("Importerad från MySQL data" m.fl.).
+      description: cleanCarverDescription(carver.description),
       inscriptions: inscriptions.map(ci => ci.inscription),
       inscriptionCount: Number(stats.total_inscriptions),
       signedCount: Number(stats.signed_count),
@@ -122,7 +116,10 @@ export const useCarverData = () => {
 
   return {
     carvers: carversWithInscriptions,
-    isLoading: carversLoading || statsLoading || inscriptionsLoading,
+    // Blockera bara listan på carvers+stats (behövs för antal/sortering).
+    // Inskrifts-RPC:n laddas i bakgrunden — behövs först när detaljpanelen öppnas.
+    isLoading: carversLoading || statsLoading,
+    inscriptionsLoading,
     totalCarvers: carvers.length
   };
 };

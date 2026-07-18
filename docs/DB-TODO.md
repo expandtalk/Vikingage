@@ -2,12 +2,51 @@
 
 Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **crosswalk ur `rundata.sql`** (Evighetsrunor, i repo-roten, gitignorerad) matchat på `signum`, kört som SQL i editorn + `migration repair`. Bakgrund: `docs/superpowers/specs/2026-07-18-db-review.md`.
 
+---
+
+## 🎯 PRIORITERAT NU (2026-07-18, uppdaterad efter dagens diskussion)
+
+### A. ✅ DEPLOYAT (2026-07-18, build + FTP kört av Daniel) — verifiera live
+Allt nedan är nu ute på www.vikingage.se. **Live-QA att göra (hårduppdatera först, Ctrl/Cmd+Shift+R):**
+- [ ] Legend-räknare visar 3201/365 (inte 1002) + tonade osäkra markörer
+- [ ] `focus=gods` visar Pagan cult sites (ej runstenar); klick på Oden → bara Odens kultplatser; "Visa alla gudar" återställer
+- [ ] Gudkort visar verkliga kultplatsantal (Oden 16, Tor 10, Frej 11) — INGA "145/287 omnämnanden"
+- [ ] `focus=folkGroups` visar folkgrupper + DNA/provplatser (ej runstenar)
+- [ ] `focus=geneticist` utan runstenar; `focus=inscriptions` visar sv+utl; `focus=rivers`/trade = farleder
+- [ ] Tidslinjen filtrerar kartan (inga runstenar i Paleolit/Brons osv.)
+- [ ] Carvers: karta syns, kort klickbart, ingen "Importerad från MySQL data", inga fejk-noteringar
+- [ ] Fortresses: "Fortresses and Centres/Befästningar och Centra"
+- [ ] Källa ödekyrka ligger på norra Öland (ej i Östersjön); Prices → "Roman Price Converter"
+- [ ] i18n: engelskt läge saknar svensk text (teckenförklaring/"X platser"/"X länder")
+- **Cache:** sätt `Cache-Control: no-cache` på `index.html` om inte redan gjort (annars chunk-mismatch-synvilla).
+
+### B. SQL / Python att köra? → **NEJ, inget nytt kvar.**
+Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av dig:
+- [x] Carvers-städning: `UPDATE carvers SET description = NULL WHERE description ILIKE 'importerad från%'`.
+- [x] `20260718140000_drop_superseded_standalone_coords.sql` — körd + repad (`[20260718140000] => applied`). Raderar 1939 superseder-koordinater = dubbel/felplacerade B-markörer i Östersjön.
+- [ ] (Valfri städning) `landscape`/`province` fel för ~546 Bautil-via-alt-stenar (item 4).
+
+### C. Undersök / beställ PARALLELLT (blockerar inte deploy)
+- [ ] **Beställ de två Geotorget-nedladdningarna** (Lantmäteriet, en session) — se längst ned. Enda riktiga blockeraren för flera features:
+  - **Ortnamn, vektor** → fyller tomma `place_names` → gör att **teoforta ortnamn (Odensala/Torslunda…) kan plottas** = gudarnas "omnämnanden på karta" på riktigt (idag saknar `places` koordinater).
+  - **Socken och stad, vektor** → sockenpolygoner (härad/socken-gränser på kartan).
+
+### D. Nästa kod-tasks (prioritetsordning, efter deploy)
+1. [x] **Gods-fokus: klick → gudens kultplatser på kartan** — KLART: `focusDeity` i `useLegendManager` (visar bara `religious_<deity>`), tråt via `useExplorerData`→`ExplorerMain`→`ExplorerLayout`→`GodCardsGrid`. Klick igen/"Visa alla gudar" återställer. Gudar utan kultplatser är ej klickbara.
+2. [x] **folkGroups → folkgrupper + DNA** — KLART: `applyFocusOverrides` case `folkGroups` visar nu `folk_groups` + `archaeological_sites` (provplatser/DNA), inte runstenar.
+3. **Tidslinje/zoom** — verifiera tidslinjefiltret live; fixa att zoom-kluster döljer andra lager.
+4. **i18n live-jakt** — kvarvarande svenska i EN-läge.
+5. **Wikidata-ID:n + foton** (`wikidata_id` via SPARQL → Commons-bilder).
+6. **Rundata-satellittabeller** (translations/readings/interpretations klara; parishes/locations/objects kvar — item 5).
+
+---
+
 ## ✅ Klart (baslinje)
 - [x] **Koordinat-konsolidering** — migration `20260718120000` (coord_source/coord_confidence, DEMO-rad bort). Repad.
 - [x] **Koordinat-crosswalk** ur rundata.sql → `runic_inscriptions.coordinates`. **98 % täckning (3 014/3 067)**, 2 402 auktoritativa RAÄ. Syns i appen via vyn `runic_with_coordinates` (`original_coordinates`). Kördes om med utf8-fix.
 - [x] **Socken/härad-crosswalk** — migration `20260718130000` (`socken`+`harad` på runic_inscriptions). **2 923/3 067 (95 %)**, 618 distinkta socknar.
 
-## 🔜 Kör imorgon (prioriterad)
+## 📚 Historik / detaljer (mestadels klart — se PRIORITERAT NU för aktuell status)
 
 ### 1. Kolla migration repair (30 s)
 - [ ] Verifiera att `supabase migration repair --status applied 20260718130000` (socken) är körd. Om inte: kör den.
@@ -15,7 +54,7 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 ### 2. ✅ Legend-räknarna 999/1001 (LÖST 2026-07-18, commit 2329591)
 - [x] **Root cause: PostgREST `db-max-rows=1000`** kapar varje svar oavsett `.limit(50000)`. Huvudfrågan gav 1000/3067, standalone-koordinaterna 1000 → "Places found: 2000" och legenden räknade en kapad+virtuell blandning (999/1001).
 - [x] Fix (`enhancedDataLoader.ts`): `fetchAllPages()` pagineras med `.range()` → alla 3067 laddas; dedup av standalone vars signum redan finns i huvuddatan (1393 st, gav dubbelmarkörer); klassa virtuellas country via signum-prefix (`getCountryFromSignum`) → Sö/U/Öl = svenska, DR/N/IS = utländska.
-- [x] Resultat: **3747 svenska / 365 utländska** (foreign nu ärlig, ~350 i DB + virtuella). Väntar på build+FTP (bundla med item 3).
+- [x] Resultat: **3747 svenska / 365 utländska** (foreign nu ärlig, ~350 i DB + virtuella). ✅ Deployat 2026-07-18.
 
 **Datafynd under utredningen (→ påverkar item 5 + städning):**
 - Huvudtabellen `runic_inscriptions` är kraftigt ofullständig för vissa landskap: **Sö 13 av ~400**, U 923 av ~1300, Öl 22 av ~60. `additional_coordinates` (standalone, inscription_id null) fyller luckan delvis (384 Sö saknas i huvud men finns som koord). → Riktig fix = importera saknade inskrifter (item 5); då kan standalone-virtual-hacket pensioneras.
@@ -26,16 +65,16 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 - [ ] **Kör `20260718140000_drop_superseded_standalone_coords.sql`** — raderar de 1939 superseder-posterna, verkar direkt i redan byggd app (ingen ombyggnad). Sedan `migration repair --status applied 20260718140000`.
 - [ ] De 499 kvarvarande: importera ordentligt (item 5) + verifiera mot Runor/SNRD (Daniels `bautil_lookup.py` / `enriched.json` som mall). Notera Bautil-dubbletter (B 1021/1022=Sm 103, B 1027/1030=Sm 121) och försvunna stenar (extant=false: Sm 20, U 314, U 315).
 
-### 3. ✅ Kod-polish: deterministisk karta (kod klar, commit 7ebc6af — kräver vy-migration + deploy)
+### 3. ✅ Kod-polish: deterministisk karta (klar + deployat 2026-07-18)
 - [x] `useExplorerState.handleResultClick` — klick-tids-Nominatim-geokodning **borttagen**. Bara kanonisk koord; saknas → toast.
 - [x] **Tona osäkra markörer** via `coord_confidence`: approximativa (virtuell socken-centroid / låg-medium-okänd konfidens / geokodad källa) ritas ihåligt+streckat+halv opacitet; verifierade (rundata/RAÄ, manuellt, user-exakt) solida. Säker fallback innan vy-migration.
 - [x] **Vy-migration `20260718150000`** körd + repad (exponerar coord_confidence/coord_source). Fält bärs genom `coordinateProcessor.ts` (commit a8cd79f — den återskapade objekt och tappade fälten först).
 - [x] Toning verifierad i dev + prod-build (2262 solida / 938 tonade av renderade; totalt ~2596/970). Build klar (commit a8cd79f), #root renderar rent.
-- [ ] **FTP: ladda upp hela dist/ rent** (chunk-hashar måste matcha). Cache: sätt `Cache-Control: no-cache` på index.html (hashade assets kan cachas hårt) för att undvika chunk-mismatch (gav 1002/497-synvillan). `.htaccess`-snutt kan tas fram.
+- [x] **FTP: ladda upp hela dist/ rent** — ✅ deployat 2026-07-18. Cache: sätt `Cache-Control: no-cache` på index.html (hashade assets kan cachas hårt) för att undvika chunk-mismatch (gav 1002/497-synvillan). `.htaccess`-snutt kan tas fram.
 
 ### 4. ✅ Socken/härad-feature #1 (klar utom polygoner, commits 0042fe1+4245aa0)
 - [x] **Sök socken/härad** — migration `20260718160000` (körd+repad): vyn exponerar socken/harad, RPC `search_inscriptions_flexible` matchar dem. "Adelsö"/"Vallentuna härad" hittar stenarna.
-- [x] **Härader-/socknar-sidorna (focus=hundreds/parishes) har karta med fynd** — `RegionFindsView`: sökbar lista (209 härader / 618 socknar, antal + landskap via majoritetsröstning) + Leaflet-karta som zoomar till valt område. Väntar FTP-deploy.
+- [x] **Härader-/socknar-sidorna (focus=hundreds/parishes) har karta med fynd** — `RegionFindsView`: sökbar lista (209 härader / 618 socknar, antal + landskap via majoritetsröstning) + Leaflet-karta som zoomar till valt område. ✅ Deployat 2026-07-18.
 - [ ] **Polygon-gränser** (avvaktar — ingen GeoPackage): kräver **Lantmäteriet "Socken och stad" Nedladdning, vektor** (GeoPackage, CC0, Geotorget). Import: GeoPackage → SWEREF99→WGS84 → GeoJSON → polygonlager. Härad = union av socken-polygoner.
 - [ ] **Sidofix (data):** `landscape`/`province`-kolumnerna är fel för ~546 Bautil-via-alt-stenar (t.ex. B 100 = U 285 står "Småland/Kalmar län" fast Uppland). socken/harad är rätt. Kan härledas ur härad→landskap eller modernt signum. Låg prio (UI kringgår via majoritetsröstning).
 
@@ -57,13 +96,26 @@ Import kraftigt ofullständig (rundata.sql → DB). Prioritet efter synligt vär
 - [ ] Droppa genuint oanvända: `aliases_canonical`, `alts_canonical`, `folk_group_cities` (0 rader, ingen `.from()`).
 
 ## Explore/UI-TODO (Daniels feedback 2026-07-18)
-- [x] **Profil-fixar** (commit 5198e59): geneticist utan runstenar (+folkgrupper), inscriptions-focus visar sv+utl, trade +viking_roads. **KÖR `scripts/data/fix-explore-profiles.sql`** (DB-config styr runtime) + ny FTP-upload för kod.
-- [ ] **Tidslinjen filtrerar inte kartan** — runstenar visas i Paleolithic/Mesolithic/Neolithic/Bronze/Pre-Roman/Roman fast runor inte fanns då. Kartan ska filtreras på vald period (runinskrifter ~fr.o.m. Roman/Migration; mest Viking).
+- [x] **Profil-fixar** (commit 5198e59): geneticist utan runstenar (+folkgrupper), inscriptions-focus visar sv+utl, trade +viking_roads. `fix-explore-profiles.sql` körd. ✅ Deployat 2026-07-18.
+- [x] **Tidslinjen filtrerar kartan** — `filterInscriptionsByPeriod` + borttagen no-op-TimelineModule. Runstenar visas ej i förhistoriska perioder. ✅ Deployat — **verifiera live** (D.3).
 - [ ] **Zoom-kluster döljer annat** — vid översiktszoom syns bara runstenar, intressantare lager göms. Justera markörprioritet/z-index per zoom.
 - [ ] **i18n live-jakt** — kvarvarande svenska i EN-läge (teckenförklaring, "X platser", "X länder") — hitta via live-browsing.
 - [ ] **Wikidata-ID:n** — `wikidata_id` via Wikidata SPARQL (Rundata-signum-property) för utlänkning + foton via Commons.
 - [ ] **Foton på runinskrifter** — visa bilder (befintliga imagelinks/inscription_media + ev. Wikimedia Commons via Wikidata).
-- [ ] **Carvers-sidan** (`/carvers`) — långsam laddning; vill ha karta över vad varje ristare gjort + mer info; ta bort "imported från sql data"-texten; ev. artikeltext om lokala skrifttraditioner.
+- [x] **Carvers-sidan** (`/carvers`) — FIXAT + ✅ deployat 2026-07-18:
+  - "Importerad från MySQL data" försvann: matchningen i `useCarverData.ts` var skiftlägeskänslig (`=== 'importerad...'`) och missade DB:s versal-I. Nu case-/whitespace-tolerant filter (`cleanCarverDescription`). **Slutade hitta på fejkade forskningsnoteringar** (`generateResearchNote`) — påhittad vetenskap på en forskningsplattform; import-artefakt → ingen not visas alls.
+  - Klick på ristarkort "gjorde inget": detaljpanelen öppnas högst upp på sidan men scrollades aldrig dit. Ny `useEffect` scrollar till panelen (`detailPanelRef`).
+  - Kartan (`CarversMap`) importerades men renderades aldrig → nu inbäddad i carvers-fliken (region-centroider, klick öppnar detalj). i18n:ad (var hårdkodad svenska).
+  - Snabbare laddning: `isLoading` blockerar inte längre hela sidan på inskrifts-RPC:n (laddas i bakgrunden, behövs först i detaljpanelen).
+  - Avlusade korten: tog bort dubbel statistik (signed/attributed-grid + certainty-rad) — badges visar redan stones/signed/uncertain.
+  - **Kvar (data):** `carvers.description` i DB innehåller fortfarande "Importerad från MySQL data" — kosmetiskt nu (UI filtrerar), men för datakvalitet: `UPDATE carvers SET description = NULL WHERE description ILIKE 'importerad från%' OR description ILIKE '%mysql%';`
+- [x] **Fortresses-sidan** (`/fortresses`) — "Cities/Städer" döpt om till "Centres/Centra" (samlingen är handelsplatser, religiösa/kungliga centra + enstaka protostäder, inte riktiga städer). Titel, underrubrik, flik, översikt + SEO-meta uppdaterade. Alt: "Central Places/Centralplatser" (arkeologisk term) om Daniel föredrar.
+- [x] **Gudkort — påhittad statistik BORT** (`GodCardsGrid`, `GodNamesView`): "Oden 145 / Tor 287 omnämnanden" var **påhittade tal** (matchade ingen datakälla), likaså `importance` 1–10. Ersatta med VERKLIGT antal katalogförda, koordinatsatta kultplatser (`getDeityPlaces`): Oden 16, Tor 10, Frej 11, Frigg/Njord/Ull 2. Gudar utan kultplatsdata visar "Inga katalogförda kultplatser" (ingen siffra). Vetenskaplig integritet (jfr carvers fejk-noteringar).
+- [x] **Ontologi: gudar/kult tillagt** (`docs/ontology.md §1c`) — deity/kultplats/teofort ortnamn/textomnämnande som fyra evidenstyper + CIDOC-mappning + datakvalitetsflaggor (påhittade tal, `places` utan koordinater).
+- [x] **Källa ödekyrka rättad** — låg i Östersjön (56.7833/16.9667 + en dubblett 57.2167/17.0333). Rättad till Wikipedias 57°6′41″N 16°59′11″Ö = 57.1114/16.9864 i `religiousPlacesData.ts` (2 poster) + `offeringSprings.ts`. **OBS dubblett:** samma plats finns som både "Källa Ödekyrka" och "Källa gamla kyrka offerkälla" — bör konsolideras till en (avvaktar besked).
+- [x] **Gods-fokus klick → kultplatser** — KLART + ✅ deployat 2026-07-18. `focusDeity` (`useLegendManager`) filtrerar kartan till `religious_<deity>`; trådat till `GodCardsGrid`. Ersätter den förlustiga plats→inskrift-sökningen. Klick igen/"Visa alla gudar" återställer.
+- [x] **folkGroups → folkgrupper + DNA** — KLART + ✅ deployat. `applyFocusOverrides` case `folkGroups` = `folk_groups` + `archaeological_sites`, inga runstenar.
+- [x] **Källa ödekyrka** — rättad + ✅ deployat (57.1114/16.9864). Kvar: konsolidera dubbletten (2 poster samma plats).
 
 ## Verktyg (finns redan)
 - `scripts/crosswalk-rundata-coordinates.mjs` → genererar `scripts/data/rundata-coordinate-crosswalk.sql`

@@ -69,7 +69,9 @@ interface ExplorerLayoutProps {
   
   // God name search props
   onGodNameSearch?: (godName: string) => void;
-  
+  // Fokusera EN guds kultplatser på kartan (null = visa alla)
+  onFocusDeity?: (deityKey: string | null) => void;
+
   // Time period for rivers focus
   selectedTimePeriod?: string;
   setSelectedTimePeriod?: (value: string) => void;
@@ -119,6 +121,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   onObjectTypeChange,
   mapNavigate,
   onGodNameSearch,
+  onFocusDeity,
   selectedTimePeriod = 'all',
   setSelectedTimePeriod,
   onInscriptionUpdate
@@ -420,7 +423,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
       {/* Gods Cards Grid - only show when in gods focus */}
       {currentFocus === 'gods' && (
         <div className="mt-6">
-          <GodCardsGrid onGodSelect={onGodNameSearch} />
+          <GodCardsGrid onFocusDeity={onFocusDeity} />
         </div>
       )}
     </div>

@@ -107,6 +107,23 @@ export const useLegendManager = (
     });
   }, []);
 
+  // Fokusera EN gud: visa bara den gudens kultplatser (religious_<deity>), dölj övriga.
+  // deity = null → visa alla gudars kultplatser igen. Styr kartans religiösa lager
+  // (useReligiousLocationMarkers gate:ar på religious_<deity> !== false).
+  const DEITY_LEGEND_KEYS = [
+    'religious_odin', 'religious_thor', 'religious_frey', 'religious_freyja',
+    'religious_frigg', 'religious_ull', 'religious_njord', 'religious_other',
+  ];
+  const focusDeity = useCallback((deityKey: string | null) => {
+    setEnabledLegendItems(prevState => {
+      const newState = { ...prevState, religious_places: true, gods: false };
+      DEITY_LEGEND_KEYS.forEach(k => {
+        newState[k] = deityKey ? k === deityKey : true;
+      });
+      return newState;
+    });
+  }, []);
+
   // Handle show all / hide all
   const handleShowAll = useCallback(() => {
     console.log(`👁️ Showing all legend items`);
@@ -156,6 +173,7 @@ export const useLegendManager = (
     mapInscriptions,
     handleLegendToggle,
     handleShowAll,
-    handleHideAll
+    handleHideAll,
+    focusDeity
   };
 };

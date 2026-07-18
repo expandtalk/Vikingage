@@ -34,6 +34,7 @@ export const VIKING_TRADE_ROUTES: TradeRoute[] = [
     description: 'Dnjepr-rutten från Östersjön via Kiev till Konstantinopel. Den viktigaste handelsleden mellan Skandinavien och Bysans.',
     descriptionEn: 'The Dnieper route from the Baltic Sea via Kyiv to Constantinople. The most important trade route between Scandinavia and Byzantium.',
     coordinates: [
+      { lat: 59.3350, lng: 17.5447, name: 'Birka', nameEn: 'Birka', isCity: true },
       { lat: 59.6197, lng: 17.7239, name: 'Sigtuna', nameEn: 'Sigtuna', isCity: true },
       { lat: 56.95, lng: 24.10, name: 'Riga', nameEn: 'Riga', isCity: true },
       { lat: 60.1272, lng: 32.2963, name: 'Staraja Ladoga', nameEn: 'Staraya Ladoga', isCity: true },
@@ -57,6 +58,7 @@ export const VIKING_TRADE_ROUTES: TradeRoute[] = [
     description: 'Volgarutten från Novgorod via Volga till Kaspiska havet och den muslimska världen. Central för silverhande med arabvärlden.',
     descriptionEn: 'The Volga route from Novgorod via the Volga to the Caspian Sea and the Muslim world. Central for silver trade with the Arab world.',
     coordinates: [
+      { lat: 59.3350, lng: 17.5447, name: 'Birka', nameEn: 'Birka', isCity: true },
       { lat: 59.6197, lng: 17.7239, name: 'Sigtuna', nameEn: 'Sigtuna', isCity: true },
       { lat: 60.1272, lng: 32.2963, name: 'Staraja Ladoga', nameEn: 'Staraya Ladoga', isCity: true },
       { lat: 58.5219, lng: 31.2756, name: 'Novgorod', nameEn: 'Novgorod', isCity: true },

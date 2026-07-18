@@ -53,7 +53,32 @@ Satellitdomäner (egna ontologifragment, ej fullt dokumenterade här): kungar/dy
 (`historical_kings`, `royal_dynasties`, `king_inscription_links`), genetik
 (`genetic_individuals`, `archaeological_sites`, `admixture_analysis`), geografi/nätverk
 (`viking_cities`, `viking_fortresses`, `swedish_hillforts`, `viking_roads`, `trade_*`),
-kristna platser (`christian_sites`).
+kristna platser (`christian_sites`), gudom/kult (se §1c).
+
+### 1c. Gudom & kult (gods-fokus)
+
+Fornnordiska gudar och deras kult är en egen domän (Explore `focus=gods`). En **gud**
+attesteras geografiskt på tre olika sätt — tre olika evidenstyper som inte får blandas ihop:
+
+| Entitet | Källa | Koordinater? | Definition | CIDOC-CRM |
+|---|---|---|---|---|
+| **Gudom** | hårdkodad `VIKING_GODS` (`GodNamesView`/`GodCardsGrid`) | — | Mytologisk gestalt (Oden, Tor, Frej…), asar/vaner. Ingen DB-tabell, inga auktoritativa ID:n. | E28 Conceptual Object |
+| **Kultplats** | `RELIGIOUS_PLACES` (`religiousLocations/religiousPlacesData.ts`), `deity`-fält | ✅ ja | Offerkälla/lund/vi med gudsattribution. **Mappbar.** Legend "Pagan cult sites" (`t('paganCultSites')`), räknas per gud via `getDeityPlaces(deity, period)`. | E53 Place + E7 Activity (kult) |
+| **Teofort ortnamn** | `places` (3621 rader) via `godNameUtils.searchPlacesForGodNames` | ❌ **nej** | Ortnamn med gudselement (Odensala, Torslunda, Frösö, Ullevi). Toponymiskt kultbevis. | E44 Place Appellation |
+| **Omnämnande i inskrift** | `runic_inscriptions` (text) | ✅ (via inskriften) | Gud namngiven i runtexten (t.ex. Tor-vigningsformler "þur uiki"). Få; Oden nära nog aldrig på runsten. | inom E33/TX1 |
+
+**Datakvalitetsflaggor (❌ åtgärda):**
+- `VIKING_GODS[].mentions` (Oden 145, Tor 287 …) är **påhittade siffror** — motsvarar varken
+  kultplatser, teoforta ortnamn eller textomnämnanden. Ska ersättas med en RIKTIG räkning
+  (t.ex. `getDeityPlaces(deity).length`) eller tas bort. Påhittad statistik hör inte hemma
+  på en forskningsplattform (jfr borttagna fejk-"forskningsnoteringar" för carvers).
+- `places` saknar koordinater → teoforta ortnamn kan inte plottas förrän ortnamnsregistret
+  (`place_names`, tomt) importeras (Lantmäteriet Ortnamn, DB-TODO item 6). Tills dess är
+  **kultplatserna** (`RELIGIOUS_PLACES`, har koord) den enda kartbara evidensen för "var guden dyrkades".
+- Klick på en gud kör idag den förlustiga kedjan gud→teofort ortnamn→runsten vars *platstext*
+  matchar → visar nästan inget. Bör istället filtrera **kultplatslagret** till vald gud
+  (`religious_<deity>`), så man ser gudens kultplatser ifyllda på kartan.
+- Gudar har inga auktoritativa ID:n; kandidat: Wikidata QID per gud för utlänkning (jfr §2).
 
 ---
 

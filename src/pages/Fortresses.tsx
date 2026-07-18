@@ -27,7 +27,7 @@ const Fortresses = () => {
         allCategories: 'Alla kategorier', estCities: 'Etablerade städer', tradingPosts: 'Handelsplatser',
         relCentres: 'Religiösa centrum', gotlandicCentres: 'Gotländska centrum', kopings: 'Köpingar',
         loadError: 'Fel vid laddning', swedishHillforts: 'Svenska fornborgar', vikingFortifications: 'Vikingatida befästningar',
-        cities: 'Städer', hillfortsDesc: 'Fornborgar från hela Sverige med RAÄ-nummer och historisk dokumentation',
+        cities: 'Centra', hillfortsDesc: 'Fornborgar från hela Sverige med RAÄ-nummer och historisk dokumentation',
         total: 'Totalt antal', landscapeN: 'Landskap', confirmedN: 'Bekräftade', municipalities: 'Kommuner',
         importing: 'Importerar…', importOlandSmaland: 'Importera Öland & Småland', importNarkeUppland: 'Importera Närke & Uppland',
         allLandscapes: 'Alla landskap', namelessHillfort: 'Namnlös fornborg', confirmed: 'Bekräftad',
@@ -37,8 +37,8 @@ const Fortresses = () => {
         unescoBadge: 'UNESCO', excavated: 'Utgrävd', diameter: 'Diameter', area: 'Yta', hectares: 'hektar',
         historicalSig: 'Historisk betydelse', noForts: 'Inga befästningar hittades',
         noFortsDesc: 'Inga befästningar av den valda typen hittades.',
-        citiesOverview: 'Städer översikt', population: 'Befolkning', noCities: 'Inga städer hittades',
-        noCitiesDesc: 'Inga städer av den valda kategorin hittades.',
+        citiesOverview: 'Centra översikt', population: 'Befolkning', noCities: 'Inga centra hittades',
+        noCitiesDesc: 'Inga centra av den valda kategorin hittades.',
       }
     : {
         allTypes: 'All types', ringForts: 'Ring fortresses', hillforts: 'Hillforts', longphorts: 'Longphorts',
@@ -46,7 +46,7 @@ const Fortresses = () => {
         allCategories: 'All categories', estCities: 'Established cities', tradingPosts: 'Trading posts',
         relCentres: 'Religious centres', gotlandicCentres: 'Gotlandic centres', kopings: 'Market towns',
         loadError: 'Error loading', swedishHillforts: 'Swedish hillforts', vikingFortifications: 'Viking Age fortifications',
-        cities: 'Cities', hillfortsDesc: 'Hillforts from across Sweden with RAÄ numbers and historical documentation',
+        cities: 'Centres', hillfortsDesc: 'Hillforts from across Sweden with RAÄ numbers and historical documentation',
         total: 'Total', landscapeN: 'Provinces', confirmedN: 'Confirmed', municipalities: 'Municipalities',
         importing: 'Importing…', importOlandSmaland: 'Import Öland & Småland', importNarkeUppland: 'Import Närke & Uppland',
         allLandscapes: 'All provinces', namelessHillfort: 'Unnamed hillfort', confirmed: 'Confirmed',
@@ -56,8 +56,8 @@ const Fortresses = () => {
         unescoBadge: 'UNESCO', excavated: 'Excavated', diameter: 'Diameter', area: 'Area', hectares: 'hectares',
         historicalSig: 'Historical significance', noForts: 'No fortifications found',
         noFortsDesc: 'No fortifications of the selected type found.',
-        citiesOverview: 'Cities overview', population: 'Population', noCities: 'No cities found',
-        noCitiesDesc: 'No cities of the selected category found.',
+        citiesOverview: 'Centres overview', population: 'Population', noCities: 'No centres found',
+        noCitiesDesc: 'No centres of the selected category found.',
       };
   const { fortresses, isLoading: fortressesLoading, error: fortressesError } = useVikingFortresses(true);
   const { data: cities, isLoading: citiesLoading, error: citiesError } = useVikingCities(true);
@@ -178,8 +178,8 @@ const Fortresses = () => {
       <PageMeta
         title="Vikingaborgar"
         titleEn="Viking Fortresses"
-        description="Utforska vikingatida borgar, städer och fornborgar i Skandinavien. Interaktiva kartor med detaljerad information om varje plats."
-        descriptionEn="Explore Viking Age fortresses, cities and hillforts in Scandinavia. Interactive maps with detailed information about each location."
+        description="Utforska vikingatida borgar, handelscentra och fornborgar i Skandinavien. Interaktiva kartor med detaljerad information om varje plats."
+        descriptionEn="Explore Viking Age fortresses, trade centres and hillforts in Scandinavia. Interactive maps with detailed information about each location."
         keywords="vikingaborgar, fornborgar, vikingastäder, vikingatid, arkeologi, skandinavisk historia"
       />
       <Header />

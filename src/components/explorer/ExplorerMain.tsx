@@ -60,6 +60,7 @@ export const ExplorerMain: React.FC = () => {
     legendItems,
     mapInscriptions,
     handleLegendToggle,
+    focusDeity,
     selectedTimePeriod,
     setSelectedTimePeriod,
     totalPages,
@@ -293,6 +294,7 @@ export const ExplorerMain: React.FC = () => {
         onObjectTypeChange={setSelectedObjectType}
         mapNavigate={mapNavigate}
         onGodNameSearch={handleGodNameSearch}
+        onFocusDeity={focusDeity}
         selectedTimePeriod={selectedTimePeriod}
         setSelectedTimePeriod={setSelectedTimePeriod}
         onInscriptionUpdate={handleInscriptionUpdate}

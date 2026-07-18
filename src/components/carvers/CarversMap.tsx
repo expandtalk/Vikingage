@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, ZoomIn, User } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Fix för Leaflet ikoner
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -109,6 +110,27 @@ export const CarversMap: React.FC<CarversMapProps> = ({
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const t = sv ? {
+    title: 'Runristare karta',
+    onMap: (a: number, b: number) => `${a} av ${b} på kartan`,
+    showAll: 'Visa alla',
+    stones: 'stenar',
+    signed: 'signerade',
+    unknownPlace: 'Okänd plats',
+    legendTitle: 'Förklaring (antal ristade stenar):',
+    s20: '20+ stenar', s10: '10-19 stenar', s5: '5-9 stenar', s2: '2-4 stenar', s1: '1 sten',
+  } : {
+    title: 'Carver map',
+    onMap: (a: number, b: number) => `${a} of ${b} on the map`,
+    showAll: 'Show all',
+    stones: 'stones',
+    signed: 'signed',
+    unknownPlace: 'Unknown location',
+    legendTitle: 'Legend (number of carved stones):',
+    s20: '20+ stones', s10: '10-19 stones', s5: '5-9 stones', s2: '2-4 stones', s1: '1 stone',
+  };
 
   // Initialize map
   useEffect(() => {
@@ -188,11 +210,11 @@ export const CarversMap: React.FC<CarversMapProps> = ({
     const popupContent = `
       <div class="p-3 max-w-sm">
         <h3 class="font-bold text-base text-gray-800">${carver.name}</h3>
-        <p class="text-sm text-gray-600 mt-1">${carver.inscriptionCount} stenar (${carver.signedCount} signerade)</p>
+        <p class="text-sm text-gray-600 mt-1">${carver.inscriptionCount} ${t.stones} (${carver.signedCount} ${t.signed})</p>
         ${carver.description ? `<p class="text-xs text-gray-500 mt-2 italic">"${carver.description}"</p>` : ''}
         <div class="mt-2">
           <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
-            ${carver.region || carver.country || 'Okänd plats'}
+            ${carver.region || carver.country || t.unknownPlace}
           </span>
         </div>
       </div>
@@ -257,12 +279,12 @@ export const CarversMap: React.FC<CarversMapProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-accent" />
-              <h3 className="font-semibold text-foreground">Runristare karta</h3>
+              <h3 className="font-semibold text-foreground">{t.title}</h3>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">
-                {carversWithLocation} av {carvers.length} på kartan
+                {t.onMap(carversWithLocation, carvers.length)}
               </Badge>
 
               <Button
@@ -272,7 +294,7 @@ export const CarversMap: React.FC<CarversMapProps> = ({
                 className="text-xs"
               >
                 <ZoomIn className="h-3 w-3 mr-1" />
-                Visa alla
+                {t.showAll}
               </Button>
             </div>
           </div>
@@ -288,27 +310,27 @@ export const CarversMap: React.FC<CarversMapProps> = ({
         {/* Legend */}
         <div className="p-4 border-t border-border">
           <div className="text-xs text-muted-foreground">
-            <p className="mb-2 font-medium">Förklaring (antal ristade stenar):</p>
+            <p className="mb-2 font-medium">{t.legendTitle}</p>
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center text-white text-xs">ᚱ</div>
-                <span>20+ stenar</span>
+                <span>{t.s20}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-orange-600 flex items-center justify-center text-white text-xs">ᚱ</div>
-                <span>10-19 stenar</span>
+                <span>{t.s10}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-amber-600 flex items-center justify-center text-white text-xs">ᚱ</div>
-                <span>5-9 stenar</span>
+                <span>{t.s5}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs">ᚱ</div>
-                <span>2-4 stenar</span>
+                <span>{t.s2}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs">ᚱ</div>
-                <span>1 sten</span>
+                <span>{t.s1}</span>
               </div>
             </div>
           </div>

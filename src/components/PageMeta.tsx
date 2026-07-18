@@ -18,7 +18,7 @@ export const PageMeta: React.FC<PageMetaProps> = ({
   description,
   descriptionEn,
   keywords,
-  ogImage = 'https://lovable.dev/opengraph-image-p98pqg.png',
+  ogImage = '/og-image.png',
   ogType = 'website'
 }) => {
   const { language } = useLanguage();

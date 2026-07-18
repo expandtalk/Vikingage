@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
@@ -18,7 +18,16 @@ const Carvers = () => {
   const [selectedCarver, setSelectedCarver] = useState<string | null>(null);
   const [highlightedCarver, setHighlightedCarver] = useState<{ id: string } | null>(null);
   const [showDetailPanel, setShowDetailPanel] = useState(false);
+  const detailPanelRef = useRef<HTMLDivElement>(null);
   const { language } = useLanguage();
+
+  // När detaljpanelen öppnas ligger den högst upp på sidan — scrolla dit så att
+  // klick på ett kort längre ner faktiskt visar något (annars "händer inget").
+  useEffect(() => {
+    if (showDetailPanel && selectedCarver) {
+      detailPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showDetailPanel, selectedCarver]);
   const sv = language === 'sv';
   const c = sv ? {
     loading: 'Laddar runristare...',
@@ -70,17 +79,11 @@ const Carvers = () => {
     return sv ? 'Okänd period' : 'Unknown period';
   };
 
-  // Map interaction handlers
+  // Map interaction handlers — öppna detaljpanelen (useEffect scrollar dit).
   const handleCarverClick = (carver: any) => {
     setSelectedCarver(carver.id);
     setHighlightedCarver({ id: carver.id });
     setShowDetailPanel(true);
-    
-    // Scroll to corresponding card
-    const element = document.getElementById(`carver-${carver.id}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
   };
 
   const handleCardClick = (carver: any) => {
@@ -146,7 +149,7 @@ const Carvers = () => {
 
         {/* Detail Panel */}
         {showDetailPanel && selectedCarver && (
-          <div className="mb-8">
+          <div className="mb-8" ref={detailPanelRef}>
             <CarverDetailPanel
               carverId={selectedCarver}
               onBack={handleCloseDetailPanel}
@@ -229,6 +232,13 @@ const Carvers = () => {
           </TabsContent>
 
           <TabsContent value="carvers" className="space-y-6">
+            {/* Karta: var varje ristare var verksam (region-centroider) */}
+            <CarversMap
+              carvers={carvers}
+              onCarverClick={handleCarverClick}
+              highlightedCarver={highlightedCarver}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {carvers.map((carver) => (
                 <Card 
@@ -284,32 +294,6 @@ const Carvers = () => {
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4" />
                           <span>{carver.region}{carver.country && `, ${carver.country}`}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Statistics breakdown */}
-                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-accent">{carver.signedCount}</div>
-                        <div className="text-xs text-muted-foreground">{c.signed}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-accent">{carver.attributedCount}</div>
-                        <div className="text-xs text-muted-foreground">{c.attributed}</div>
-                      </div>
-                    </div>
-
-                    {/* Certainty indicator */}
-                    <div className="pt-2 border-t border-border">
-                      {carver.certainCount === carver.inscriptionCount ? (
-                        <div className="text-xs text-green-400 flex items-center gap-1">
-                          <CheckCircle className="h-3 w-3" />
-                          {c.allCertain}
-                        </div>
-                      ) : (
-                        <div className="text-xs text-muted-foreground">
-                          {c.certaintyMix(carver.certainCount, carver.uncertainCount)}
                         </div>
                       )}
                     </div>
