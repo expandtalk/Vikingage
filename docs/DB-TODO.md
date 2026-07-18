@@ -26,6 +26,14 @@ Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av 
 - [x] `20260718140000_drop_superseded_standalone_coords.sql` — körd + repad (`[20260718140000] => applied`). Raderar 1939 superseder-koordinater = dubbel/felplacerade B-markörer i Östersjön.
 - [ ] (Valfri städning) `landscape`/`province` fel för ~546 Bautil-via-alt-stenar (item 4).
 
+### B2. 🐛 Ny buggbatch (Daniel 2026-07-18) — triage
+- [ ] **3. Karta "map data not available" vid inzoomning** — OSM-tiles saknar höga zoomnivåer → Leaflet visar felruta. Fix: sätt korrekt `maxZoom` per tile-lager (OSM = 19) + ev. cap. **Plus:** "zooma till min plats" → lägg till geolocation-knapp (`navigator.geolocation` + `map.setView`).
+- [ ] **4. Carvers: klick på ristare visar inte stenarna på kartan; "Okänd period" på alla** — `CarversMap` ritar bara ristaren på region-centroid, inte de enskilda stenarna. Behöver: plotta ristarens inskrifter (finns via `get_carver_inscriptions`, har koord) + härleda aktiv period ur inskrifternas datering (`carvers.period_active_*` är null). Datafråga: koppla ristare→inskrift→datering/artefakt.
+- [ ] **5. Se vilka artefakter ristarna rör** — koppla ristarens inskrifter till `artefacts` (unikt nr). Visa artefakt-ID i detaljpanelen.
+- [ ] **6. Namn/kungalängder + gruppering** — (a) VikingNamesView visar bara 113 namn — bör vara fler (DB `viking_names` + namn ur inskrifter); (b) vid sortering på land: skriv landet som RUBRIK en gång istället för att upprepa per rad; (c) samma gruppering för socken (`focus=parishes`, `RegionFindsView`).
+- [ ] **7. Folkgrupper på karta** (`focus=folkGroups`) — vissa `folk_groups` bör ritas (polygon/punkt) på kartan, inte bara listas.
+- [ ] **8. Tidsperiod ändrar inte kartan / "låser sig" (bl.a. focus=gods)** — periodval får för liten effekt; UI verkar frysa på gods-fokus. Undersök tidslinje→lager-filter för religiösa platser (historicalPeriods) + ev. lås/race.
+
 ### C. Undersök / beställ PARALLELLT (blockerar inte deploy)
 - [ ] **Beställ de två Geotorget-nedladdningarna** (Lantmäteriet, en session) — se längst ned. Enda riktiga blockeraren för flera features:
   - **Ortnamn, vektor** → fyller tomma `place_names` → gör att **teoforta ortnamn (Odensala/Torslunda…) kan plottas** = gudarnas "omnämnanden på karta" på riktigt (idag saknar `places` koordinater).
@@ -34,7 +42,15 @@ Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av 
 ### D. Nästa tasks (prioritetsordning)
 1. [x] **Gods-fokus: klick → gudens kultplatser** — KLART + deployat. `focusDeity` i `useLegendManager`.
 2. [x] **folkGroups → folkgrupper + DNA** — KLART + deployat.
-3. **🏛️ Royal Chronicles-revision (STOR — eget fokuspass)** — underlag sparat i `scripts/data/royal-chronicles/` (regents_missing.csv ~90 poster, relations_edges.csv ~40 kanter, README med 11 rättelser + schemaförslag). **Kör INTE blint** — steg: (a) kartlägg schema (`historical_kings`, `royal_dynasties`, `king_inscription_links`), (b) kör de 11 rättelserna som UPDATE, (c) deduplicera (Gorm ×3 osv.), (d) generera INSERT-SQL ur CSV, (e) ev. schemautökning (roller, relationstabell, Västerleden-region). Datakvalitet > hastighet.
+3. **🏛️ Royal Chronicles-revision (STOR — pågår)** — underlag i `scripts/data/royal-chronicles/` (regents_missing.csv, relations_edges.csv, README, **SCHEMA-MAPPING.md**). Godkänt av Daniel: alla schemabeslut ja.
+   - [x] (a) Schemakartläggning — `SCHEMA-MAPPING.md` (128 kungar, 12 ätter, king_status-enum matchar, inga role/attestation/relations-kolumner).
+   - [x] (b) **Migration `20260718200000_royal_chronicles_schema.sql`** — role/de_facto_ruler/external_attestation/sources/node_control på historical_kings + ny `royal_relations`-tabell + RLS. **KÖR i editorn + `migration repair --status applied 20260718200000`.**
+   - [ ] (c) Region-städning (Sweden/Sverige/Danmark/Jylland → kanonisk engelska + Västerleden/England).
+   - [ ] (d) 11 rättelser (UPDATE på bekräftade IDs — se SCHEMA-MAPPING).
+   - [ ] (e) Dedup (Gorm ×3, Harald Blåtand/Håkan Magnusson/Magnus Haraldsson/Olav Kyrre ×2).
+   - [ ] (f) Skapa saknade dynastier + döp om Sverkerätren→Sverkerska ätten.
+   - [ ] (g) Importera ~90 regenter + ~40 relationer.
+   - [ ] (h) UI-följd: använd `role` i filterByRulerType; visa attestering/relationer; region-filter Västerleden/England.
 4. **🧭 Utflykter/excursions (ny sida/sektion)** — Birka, Långhundraleden, Broborg, Ölands fornborgar, Rösaringsåsen (processionsvägen). Daniel har lämnat rikt Rösaring-innehåll. Egen route/komponent + kort per utflykt (karta, beskrivning, källor).
 5. **Tidslinje/zoom** — verifiera tidslinjefiltret live; zoom-kluster döljer andra lager.
 6. **i18n live-jakt** — kvarvarande svenska i EN-läge.
