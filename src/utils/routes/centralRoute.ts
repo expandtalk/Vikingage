@@ -1,169 +1,198 @@
 
 import { RoutePoint } from './types';
 
-// Central route sections: Kalmar to Stockholm - following waterways and archipelago
+// Central route: Kalmar → Stockholm, längs kusten och genom skärgården.
+// Korrigerad 2026-07-18 (Daniel, i två omgångar):
+//  - Västervik flyttad från felaktiga 57.06 → 57.758 (låg 0,7° för långt söderut).
+//  - Loftahammar-punkten flyttad ut utanför orten (~57.90N).
+//  - Den gamla "arkösund"-punkten på 58.68/17.11 var i själva verket OXELÖSUND
+//    och är nu korrekt namngiven; äkta Arkösund (~58.48/16.96) lagd vid Slätbakens mynning.
+//  - Drag flyttad till Skäggenäskanalen vid Revsudden (56.83/16.46) - drag/kanal, inte inne i sundet.
+//  - Kalmarsund: följer kusten upp mot Ölands norra udde (ingen genväg tvärs över Öland).
+//  - Slätbaken-slingan omordnad så linjerna inte korsar varandra: in i viken till
+//    Söderköping (Stegeborg vaktar inloppet) → tillbaka ut → norrut mot Arkösund → Oxelösund.
+//  - Stockholms skärgård följer den dokumenterade jordebokleden (Landsort–Stockholm).
+// OBS: skärgårds-/mellankoordinater är kustnära approximationer — verifiera per punkt.
 export const centralRoutePoints: RoutePoint[] = [
-  // === SEKTION 7: Från Kalmar norrut längs Smålandskusten ===
+  // === Ut ur Kalmar norrut i Kalmarsund, längs kusten ===
   {
     id: 'kalmar_exit_north',
     name: 'Kalmar ut nord',
-    coordinates: { lat: 56.7000, lng: 16.3800 },
-    description: 'Ut från Kalmar norrut i Kalmar Sund',
-    section: 'Från Kalmar'
+    coordinates: { lat: 56.7200, lng: 16.4000 },
+    description: 'Ut från Kalmar norrut längs kusten i Kalmarsund',
+    section: 'Kalmarsund'
   },
   {
-    id: 'småland_coast_north_1',
-    name: 'Smålandskust nord 1',
-    coordinates: { lat: 56.8000, lng: 16.4500 },
-    description: 'Norrut längs Smålands östkust',
-    section: 'Småland östkust'
+    id: 'drag',
+    name: 'Drag (Skäggenäskanalen, Revsudden)',
+    coordinates: { lat: 56.8300, lng: 16.4600 }, // draget/kanalen vid Revsudden N om Kalmar
+    description: 'Drag - draget/kanalen vid Revsudden (Skäggenäs). Enda överlandsstället (ed/drag) på hela leden; övrigt gick alltid på vatten.',
+    section: 'Kalmarsund',
+    isMajorWaypoint: true
   },
   {
-    id: 'småland_coast_north_2',
-    name: 'Smålandskust nord 2',
-    coordinates: { lat: 56.9000, lng: 16.5500 },
-    description: 'Fortsatt längs Smålands östkust',
-    section: 'Småland östkust'
+    id: 'kopingsvik',
+    name: 'Köpingsvik',
+    coordinates: { lat: 56.8722, lng: 16.7175 }, // Öland, väster om Borgholm
+    description: 'Köpingsvik på Ölands sida - vikingatida handels- och maktcentrum',
+    section: 'Kalmarsund',
+    isMajorWaypoint: true
+  },
+  {
+    id: 'olands_norra_udde',
+    name: 'Ölands norra udde',
+    coordinates: { lat: 57.3660, lng: 17.0930 }, // norra spetsen (Långe Erik/Grankullavik)
+    description: 'Följer kusten norrut och rundar Ölands norra udde ut ur Kalmarsund',
+    section: 'Kalmarsund'
   },
 
-  // === SEKTION 8: Västervik område ===
+  // === Tjust skärgård ===
   {
-    id: 'västervik_approach',
-    name: 'Västervik approach',
-    coordinates: { lat: 57.0000, lng: 16.6000 },
-    description: 'Approach till Västervik',
-    section: 'Västervik'
-  },
-  {
-    id: 'västervik',
-    name: 'Västervik',
-    coordinates: { lat: 57.0574, lng: 16.6364 },
-    description: 'Västervik - viktig medeltida hamn',
-    section: 'Västervik',
+    id: 'vastervik',
+    name: 'Västervik (Stegeholm)',
+    coordinates: { lat: 57.7580, lng: 16.6380 }, // KORRIGERAD (var felaktigt 57.0574)
+    description: 'Västervik - viktig medeltida hamn, vaktad av Stegeholms slott',
+    section: 'Tjust skärgård',
     isLotstation: true,
     isMajorWaypoint: true
   },
-
-  // === SEKTION 9: Tjust skärgård - genom inre farleden ===
   {
-    id: 'tjust_inner_1',
-    name: 'Tjust inre farled 1',
-    coordinates: { lat: 57.1500, lng: 16.7000 },
+    id: 'tjust_inner',
+    name: 'Tjust inre farled',
+    coordinates: { lat: 57.8500, lng: 16.8500 },
     description: 'Inre farleden genom Tjust skärgård',
-    section: 'Tjust skärgård'
-  },
-  {
-    id: 'tjust_inner_2',
-    name: 'Tjust inre farled 2',
-    coordinates: { lat: 57.2500, lng: 16.8000 },
-    description: 'Fortsatt genom Tjust skärgård',
     section: 'Tjust skärgård'
   },
   {
     id: 'loftahammar',
     name: 'Loftahammar',
-    coordinates: { lat: 57.3106, lng: 16.9492 },
-    description: 'Loftahammar - viktig skärgårdshamn',
+    coordinates: { lat: 57.9000, lng: 16.8700 }, // KORRIGERAD - utanför Loftahammar (var 57.31)
+    description: 'Loftahammar - skärgårdshamn i norra Tjust',
     section: 'Tjust skärgård',
     isMajorWaypoint: true
   },
 
-  // === SEKTION 10: Östergötlands skärgård ===
+  // === Östergötlands skärgård + Slätbaken (in i viken → ut → norrut) ===
   {
-    id: 'östergötland_approach',
-    name: 'Östergötland approach',
-    coordinates: { lat: 57.4000, lng: 17.0000 },
-    description: 'Approach till Östergötlands skärgård',
+    id: 'ostergotland_skargard',
+    name: 'Sankt Anna skärgård',
+    coordinates: { lat: 58.2500, lng: 16.9500 },
+    description: 'Genom Östergötlands ytterskärgård (Sankt Anna) mot Slätbakens inlopp',
     section: 'Östergötland'
   },
   {
-    id: 'arkösund',
-    name: 'Arkösund',
-    coordinates: { lat: 58.6794, lng: 17.1056 },
-    description: 'Arkösund - viktig skärgårdshamn i Östergötland',
-    section: 'Östergötland',
-    isLotstation: true,
-    isMajorWaypoint: true
+    id: 'stegeborg',
+    name: 'Stegeborg (in i viken)',
+    coordinates: { lat: 58.4300, lng: 16.6000 }, // Stegeborg vaktar inloppet till Slätbaken
+    description: 'In i viken (Slätbaken) - Stegeborgs slott vaktar inloppet',
+    section: 'Slätbaken'
   },
-
-  // === SEKTION 11: Söderköping - KORRIGERADE KOORDINATER ===
   {
-    id: 'söderköping',
+    id: 'soderkoping',
     name: 'Söderköping',
-    coordinates: { lat: 58.4833, lng: 16.3167 },
-    description: 'Söderköping - viktig medeltida handelsstad vid Göta kanal',
+    coordinates: { lat: 58.4833, lng: 16.3167 }, // innerst i viken
+    description: 'Söderköping - innerst i viken (Slätbaken). Man seglade in hit och därefter tillbaka ut samma väg.',
+    section: 'Slätbaken',
+    isLotstation: true,
+    isMajorWaypoint: true
+  },
+  {
+    id: 'arkosund',
+    name: 'Arkösund',
+    coordinates: { lat: 58.4830, lng: 16.9600 }, // ut ur viken igen, sedan norrut
+    description: 'Arkösund - ut ur Slätbaken igen och vidare norrut längs kusten',
     section: 'Östergötland',
     isLotstation: true,
     isMajorWaypoint: true
   },
-
-  // === SEKTION 12: Södra Stockholms skärgård - EXAKTA KOORDINATER ===
   {
-    id: 'utö',
-    name: 'Utö',
-    coordinates: { lat: 58.9, lng: 17.9 },
-    description: 'Utö - historiska järngruvor i södra skärgården',
-    section: 'Södra Stockholm skärgård',
+    id: 'vikbolandet_ost',
+    name: 'Vikbolandet ost',
+    coordinates: { lat: 58.5700, lng: 17.0800 }, // runt Vikbolandets ostsida (undviker land)
+    description: 'Längs Vikbolandets ostsida mot Bråvikens mynning',
+    section: 'Östergötland'
+  },
+  {
+    id: 'oxelosund',
+    name: 'Oxelösund',
+    coordinates: { lat: 58.6700, lng: 17.1010 }, // punkten som tidigare felaktigt hette "Arkösund"
+    description: 'Oxelösund - vid Bråvikens mynning, längs kusten norrut mot Södertörn',
+    section: 'Södermanland kust',
+    isMajorWaypoint: true
+  },
+
+  // === Landsort → Stockholm (dokumenterad led ur Kung Valdemars jordebok,
+  //     "Landsort–Stockholm–Arholma", ca 1250 — den led som går genom hela
+  //     skärgården förbi Stockholm). Latinska namnen inom parentes. Flera
+  //     mellankoordinater är approximativa — VERIFIERA per punkt.
+  {
+    id: 'landsort',
+    name: 'Landsort (Öja)',
+    coordinates: { lat: 58.7420, lng: 17.8650 }, // Landsorts fyr, Öjas sydspets
+    description: 'Landsort/Öja - utpost där skärgårdslederna mot Stockholm och Arholma börjar',
+    section: 'Stockholms skärgård',
+    isLotstation: true,
     isMajorWaypoint: true
   },
   {
-    id: 'ornö',
-    name: 'Ornö',
-    coordinates: { lat: 58.9, lng: 18.2 },
-    description: 'Ornö - största ön i södra skärgården',
-    section: 'Södra Stockholm skärgård',
+    id: 'ekholmen',
+    name: 'Ekholmen (ekiholm)',
+    coordinates: { lat: 58.8300, lng: 17.8500 }, // VERIFIERA
+    description: 'Ekholmen (jordeboken: ekiholm)',
+    section: 'Stockholms skärgård'
+  },
+  {
+    id: 'yxlosund',
+    name: 'Yxlösundet (oslæsund)',
+    coordinates: { lat: 58.8800, lng: 17.8400 }, // VERIFIERA
+    description: 'Yxlösundet vid Yxlö (jordeboken: oslæsund)',
+    section: 'Stockholms skärgård'
+  },
+  {
+    id: 'ekorrsund',
+    name: 'Ekorrsund (ikernsund)',
+    coordinates: { lat: 58.9700, lng: 18.0500 }, // VERIFIERA
+    description: 'Ekorrsund (jordeboken: ikernsund)',
+    section: 'Stockholms skärgård'
+  },
+  {
+    id: 'gålö',
+    name: 'Gålö (gardø)',
+    coordinates: { lat: 59.0500, lng: 18.1300 },
+    description: 'Gålö (jordeboken: gardø)',
+    section: 'Stockholms skärgård',
     isMajorWaypoint: true
   },
   {
     id: 'dalarö',
-    name: 'Dalarö',
-    coordinates: { lat: 59.133, lng: 18.406 },
-    description: 'Dalarö - viktig skärgårdshamn och tullstation',
-    section: 'Södra Stockholm skärgård',
+    name: 'Dalarö (dalernsund)',
+    coordinates: { lat: 59.1330, lng: 18.4060 },
+    description: 'Dalarö - skärgårdshamn och senare tullstation. Efter Dalarö följer leden kusten inåt mot Stockholm (jordeboken: dalernsund).',
+    section: 'Stockholms skärgård',
     isMajorWaypoint: true
+  },
+  {
+    id: 'baggensstaket',
+    name: 'Baggensstäket (harustik)',
+    coordinates: { lat: 59.2900, lng: 18.2200 }, // VERIFIERA
+    description: 'Baggensstäket - trång inre farled längs kusten in mot Stockholm (jordeboken: harustik)',
+    section: 'Stockholms skärgård',
+    isMajorWaypoint: true
+  },
+  {
+    id: 'sveriges_holme',
+    name: 'Sveriges holme (litle swethiuthæ)',
+    coordinates: { lat: 59.3200, lng: 18.0900 }, // VERIFIERA
+    description: 'Sveriges holme vid Stockholms inlopp (jordeboken: litle swethiuthæ) - förgreningspunkt mot Stockholm respektive Arholma',
+    section: 'Stockholms skärgård'
   },
 
-  // === SEKTION 13: Mellersta Stockholm skärgård - EXAKTA KOORDINATER ===
-  {
-    id: 'nämdö',
-    name: 'Nämdö',
-    coordinates: { lat: 59.1, lng: 18.7 },
-    description: 'Nämdö - skärgårdsö på vägen norrut',
-    section: 'Mellersta Stockholm skärgård',
-    isMajorWaypoint: true
-  },
-  {
-    id: 'runmarö',
-    name: 'Runmarö',
-    coordinates: { lat: 59.2, lng: 18.8 },
-    description: 'Runmarö - stora ön med sankmarker och sjöar',
-    section: 'Mellersta Stockholm skärgård',
-    isMajorWaypoint: true
-  },
-  {
-    id: 'sandhamn',
-    name: 'Sandhamn',
-    coordinates: { lat: 59.287, lng: 18.909 },
-    description: 'Sandhamn - yttre skärgårdens viktigaste hamn',
-    section: 'Mellersta Stockholm skärgård',
-    isLotstation: true,
-    isMajorWaypoint: true
-  },
-  {
-    id: 'möja',
-    name: 'Möja',
-    coordinates: { lat: 59.4, lng: 18.9 },
-    description: 'Möja - populär ö i mellanskärgården',
-    section: 'Mellersta Stockholm skärgård',
-    isMajorWaypoint: true
-  },
-
-  // === SEKTION 14: Stockholm stad - EXAKTA KOORDINATER ===
+  // === Stockholm ===
   {
     id: 'stockholm',
     name: 'Stockholm',
     coordinates: { lat: 59.333, lng: 18.065 },
-    description: 'Stockholm - medeltida handelsstad',
+    description: 'Stockholm - medeltida handelsstad (jordeboken: stokholm)',
     section: 'Stockholm',
     isLotstation: true,
     isMajorWaypoint: true

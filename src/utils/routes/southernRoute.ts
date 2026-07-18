@@ -1,9 +1,13 @@
 
 import { RoutePoint } from './types';
 
-// Southern route sections: Utlängan to Kalmar - direct route over water
+// Southern route: Utlängan → Kalmar, längs kusten (aldrig över öppet vatten
+// eller land). Korrigerad 2026-07-18 (Daniel): den gamla "direkt över vatten
+// mot Kalmar" ströks — rutten hugger Blekinge/Smålandskusten via Torhamns udde,
+// Kristianopel, Bröms, Bergkvara och Ljungbyåns mynning.
+// OBS: mellanliggande koordinater är kustnära approximationer — verifiera per punkt.
 export const southernRoutePoints: RoutePoint[] = [
-  // === SEKTION 1: Utlängan - startpunkt ===
+  // === Startpunkt ===
   {
     id: 'utlangan',
     name: 'Utlängan',
@@ -14,43 +18,52 @@ export const southernRoutePoints: RoutePoint[] = [
     isMajorWaypoint: true
   },
 
-  // === SEKTION 2: Direkt över vatten mot Kalmar ===
+  // === Längs Blekingekusten norrut ===
   {
-    id: 'open_water_1',
-    name: 'Öppet vatten 1',
-    coordinates: { lat: 56.1500, lng: 15.9000 },
-    description: 'Över öppet vatten från Utlängan mot Kalmar',
-    section: 'Över vatten till Kalmar'
+    id: 'torhamns_udde',
+    name: 'Torhamns udde',
+    coordinates: { lat: 56.0550, lng: 15.8550 }, // passerades på utsidan (öster om udden)
+    description: 'Torhamns udde (naturreservat) - passerades på utsidan',
+    section: 'Blekinge östkust'
   },
   {
-    id: 'open_water_2',
-    name: 'Öppet vatten 2',
-    coordinates: { lat: 56.3000, lng: 16.0000 },
-    description: 'Fortsatt över öppet vatten',
-    section: 'Över vatten till Kalmar'
+    id: 'kristianopel',
+    name: 'Kristianopel',
+    coordinates: { lat: 56.2536, lng: 16.0392 },
+    description: 'Kristianopel - skyddat läge, sannolikt god hamnstad',
+    section: 'Blekinge östkust',
+    isMajorWaypoint: true
   },
   {
-    id: 'open_water_3',
-    name: 'Öppet vatten 3',
-    coordinates: { lat: 56.4500, lng: 16.1500 },
-    description: 'Närmre Kalmar över vatten',
-    section: 'Över vatten till Kalmar'
-  },
-
-  // === SEKTION 3: Approach till Kalmar ===
-  {
-    id: 'kalmar_approach',
-    name: 'Kalmar approach',
-    coordinates: { lat: 56.6000, lng: 16.3000 },
-    description: 'Approach till Kalmar från söder',
-    section: 'Kalmar approach'
+    id: 'broms',
+    name: 'Bröms',
+    coordinates: { lat: 56.3617, lng: 16.0778 }, // Brömsebäcks mynning, Blekinge/Kalmar-gränsen
+    description: 'Bröms - området kring Brömsebäcks mynning, sannolikt god hamnplats',
+    section: 'Blekinge östkust'
   },
 
-  // === SEKTION 4: Kalmar - destination ===
+  // === Smålands östkust mot Kalmar ===
+  {
+    id: 'bergkvara',
+    name: 'Bergkvara',
+    coordinates: { lat: 56.3844, lng: 16.0503 },
+    description: 'Bergkvara - naturlig hamn på Smålandskusten',
+    section: 'Småland östkust',
+    isMajorWaypoint: true
+  },
+  {
+    id: 'ljungbyan_vassmolosa',
+    name: 'Ljungbyåns mynning (Vassmolösa)',
+    coordinates: { lat: 56.5350, lng: 16.2100 }, // Ljungbyåns/Vassmolösaåns utlopp
+    description: 'Ljungbyån / Vassmolösaån - god ankarpunkt med tillgång till sötvatten',
+    section: 'Småland östkust'
+  },
+
+  // === Destination ===
   {
     id: 'kalmar',
     name: 'Kalmar',
-    coordinates: { lat: 56.6621, lng: 16.3627 }, // Kalmar stad koordinater
+    coordinates: { lat: 56.6621, lng: 16.3627 }, // Kalmar stad
     description: 'Kalmar - viktig medeltida handelsstad och kunglig residens',
     section: 'Kalmar',
     isLotstation: true,
