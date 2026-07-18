@@ -14,7 +14,7 @@ select
   v.translit, v.norm, v.tsv, v.ten, v.dating, v.notes, v.otype, v.material, v.landscape,
   coalesce(v.country,'Sweden'), 'rundata_evighetsrunor'
 from (values
-('051ff73f-7014-4794-a3e8-ff057f2fe935','F NOR2001;10','X FraNOR2001;10',48.0068,0.199471,'ormr (:) kæit : a : høys þena','"Ormr "Geit(?)/<kæit> á haus þenna.',NULL,'Ormr the goat(?) owns this walrus-cranium.','1200–1300-talet','Kom 1816 till Musées du Mans från en fransk 1700-t naturaliesamling. Västnordisk proveniens.','Valrosskalle (med tänderna intakta)','Valrossben',NULL,'Sweden')
+($$051ff73f-7014-4794-a3e8-ff057f2fe935$$,$$F NOR2001;10$$,$$X FraNOR2001;10$$,48.0068,0.199471,$$ormr (:) kæit : a : høys þena$$,$$"Ormr "Geit(?)/<kæit> á haus þenna.$$,NULL,$$Ormr the goat(?) owns this walrus-cranium.$$,$$1200–1300-talet$$,$$Kom 1816 till Musées du Mans från en fransk 1700-t naturaliesamling. Västnordisk proveniens.$$,$$Valrosskalle (med tänderna intakta)$$,$$Valrossben$$,NULL,$$Sweden$$)
 ) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape, country)
 where not exists (
   select 1 from public.runic_inscriptions ri

@@ -14,7 +14,7 @@ select
   v.translit, v.norm, v.tsv, v.ten, v.dating, v.notes, v.otype, v.material, v.landscape,
   coalesce(v.country,'Sweden'), 'rundata_evighetsrunor'
 from (values
-('398aec94-393a-4991-9d00-991872638260','Ds Vg236','Vg 236|X DsVg236',58.5405,12.4475,'…ria','"[Ma]ria',NULL,'Mary','1200-talet','Latininskrift, tidigare trodde man att tegelstenen kom från Lödöse (Kroken 1:35). Kommer från Dalsland','Tegelsten','Tegel',NULL,'Sweden')
+($$398aec94-393a-4991-9d00-991872638260$$,$$Ds Vg236$$,$$Vg 236|X DsVg236$$,58.5405,12.4475,$$…ria$$,$$"[Ma]ria$$,NULL,$$Mary$$,$$1200-talet$$,$$Latininskrift, tidigare trodde man att tegelstenen kom från Lödöse (Kroken 1:35). Kommer från Dalsland$$,$$Tegelsten$$,$$Tegel$$,NULL,$$Sweden$$)
 ) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape, country)
 where not exists (
   select 1 from public.runic_inscriptions ri

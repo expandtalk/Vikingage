@@ -14,7 +14,7 @@ select
   v.translit, v.norm, v.tsv, v.ten, v.dating, v.notes, v.otype, v.material, v.landscape,
   coalesce(v.country,'Sweden'), 'rundata_evighetsrunor'
 from (values
-('8d682e5f-34c5-4b73-81ad-78f7b2da83a9','LV RR1987;248','X LtRR1987;248',56.8208,24.4217,'…- ⁓ runar ⁓ þesar ⁓ o -…','… rúnar þessar á(?) …',NULL,'… these runes in …','1000-talet (arkeologisk datering)','Fyndår 1937.','Sländtrissa?','Kalksten',NULL,'Sweden')
+($$8d682e5f-34c5-4b73-81ad-78f7b2da83a9$$,$$LV RR1987;248$$,$$X LtRR1987;248$$,56.8208,24.4217,$$…- ⁓ runar ⁓ þesar ⁓ o -…$$,$$… rúnar þessar á(?) …$$,NULL,$$… these runes in …$$,$$1000-talet (arkeologisk datering)$$,$$Fyndår 1937.$$,$$Sländtrissa?$$,$$Kalksten$$,NULL,$$Sweden$$)
 ) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape, country)
 where not exists (
   select 1 from public.runic_inscriptions ri

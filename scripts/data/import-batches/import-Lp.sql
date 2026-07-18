@@ -14,7 +14,7 @@ select
   v.translit, v.norm, v.tsv, v.ten, v.dating, v.notes, v.otype, v.material, v.landscape,
   coalesce(v.country,'Sweden'), 'rundata_evighetsrunor'
 from (values
-('7c9f3662-8a47-47bc-9860-f6e3e03b69fb','Lp Fv1988;245',NULL,64.208,17.4935,'bjzo-…','…',NULL,'…','160–560/570 (Imer 2007)','Hittades 1896, kom till SHM 1907.','Spjutspets','Skiffer','Lappland','Sweden')
+($$7c9f3662-8a47-47bc-9860-f6e3e03b69fb$$,$$Lp Fv1988;245$$,NULL,64.208,17.4935,$$bjzo-…$$,$$…$$,NULL,$$…$$,$$160–560/570 (Imer 2007)$$,$$Hittades 1896, kom till SHM 1907.$$,$$Spjutspets$$,$$Skiffer$$,$$Lappland$$,$$Sweden$$)
 ) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape, country)
 where not exists (
   select 1 from public.runic_inscriptions ri

@@ -14,7 +14,7 @@ select
   v.translit, v.norm, v.tsv, v.ten, v.dating, v.notes, v.otype, v.material, v.landscape,
   coalesce(v.country,'Sweden'), 'rundata_evighetsrunor'
 from (values
-('d9503bbd-2904-49c3-9995-c220b9f7753c','IT UOÅ1979;229','X ItUOÅ1979;229',43.7687,11.2568,'andres ¶ gerdi mik','"Andrés gerði mik',NULL,'Andrés made me','Slutet av 1200-talet (konsthistorisk datering)','Av västnordisk proveniens. Kallas också "Gånge-Rolfs Drikkehorn". Inlämnad till museet i F. från Sainte Chapelle i Paris.','Ornerat dryckeshorn','Valrosstand',NULL,'Sweden')
+($$d9503bbd-2904-49c3-9995-c220b9f7753c$$,$$IT UOÅ1979;229$$,$$X ItUOÅ1979;229$$,43.7687,11.2568,$$andres ¶ gerdi mik$$,$$"Andrés gerði mik$$,NULL,$$Andrés made me$$,$$Slutet av 1200-talet (konsthistorisk datering)$$,$$Av västnordisk proveniens. Kallas också "Gånge-Rolfs Drikkehorn". Inlämnad till museet i F. från Sainte Chapelle i Paris.$$,$$Ornerat dryckeshorn$$,$$Valrosstand$$,NULL,$$Sweden$$)
 ) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape, country)
 where not exists (
   select 1 from public.runic_inscriptions ri

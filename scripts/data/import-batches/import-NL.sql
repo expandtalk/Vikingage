@@ -14,9 +14,9 @@ select
   v.translit, v.norm, v.tsv, v.ten, v.dating, v.notes, v.otype, v.material, v.landscape,
   coalesce(v.country,'Sweden'), 'rundata_evighetsrunor'
 from (values
-('c18441d0-805f-49a8-8ae3-60ca9a7e7636','NL ABÄG1984;76','L 1893|X NlABÄG1984;76',52.0905,5.12323,'§A þuyh §B (s)uærri §C ?','§A … §B "Sverri(?) §C …',NULL,'§A … §B Sverrir(?) §C …','1100-talet?','I Utrecht Mariakyrkas skattkamare före 1524.','Valrosstand','Valrosstand',NULL,'Sweden'),
-('3a09f63f-2668-4cdb-bb4f-584338d37084','NL Aarb1987;194','X NlAarb1987;194|DR Aarb1987;194',NULL,NULL,'agerot(r)(a) : mosel- ¶ mahtelt ok pætær r--','… "Mosel(?) "Mekthild(?) ok "Pætær …',NULL,'… Mosel(?) Mekthildr(?) and Pétr …','1100–1200-talet',NULL,'Spelbricka','Valrosstand',NULL,'Sweden'),
-('3388c8ce-5f3a-4fc3-941a-f73140c52504','NL NOR1987;16','X NlNOR1987;16',NULL,NULL,'ænua^rs','"Ærnwars(?)/"Ærnwarðs(?)',NULL,'Ernvarr''s(?)/Ernvarðr''s(?)',NULL,NULL,'Nyckel','Järn',NULL,'Sweden')
+($$c18441d0-805f-49a8-8ae3-60ca9a7e7636$$,$$NL ABÄG1984;76$$,$$L 1893|X NlABÄG1984;76$$,52.0905,5.12323,$$§A þuyh §B (s)uærri §C ?$$,$$§A … §B "Sverri(?) §C …$$,NULL,$$§A … §B Sverrir(?) §C …$$,$$1100-talet?$$,$$I Utrecht Mariakyrkas skattkamare före 1524.$$,$$Valrosstand$$,$$Valrosstand$$,NULL,$$Sweden$$),
+($$3a09f63f-2668-4cdb-bb4f-584338d37084$$,$$NL Aarb1987;194$$,$$X NlAarb1987;194|DR Aarb1987;194$$,NULL,NULL,$$agerot(r)(a) : mosel- ¶ mahtelt ok pætær r--$$,$$… "Mosel(?) "Mekthild(?) ok "Pætær …$$,NULL,$$… Mosel(?) Mekthildr(?) and Pétr …$$,$$1100–1200-talet$$,NULL,$$Spelbricka$$,$$Valrosstand$$,NULL,$$Sweden$$),
+($$3388c8ce-5f3a-4fc3-941a-f73140c52504$$,$$NL NOR1987;16$$,$$X NlNOR1987;16$$,NULL,NULL,$$ænua^rs$$,$$"Ærnwars(?)/"Ærnwarðs(?)$$,NULL,$$Ernvarr's(?)/Ernvarðr's(?)$$,NULL,NULL,$$Nyckel$$,$$Järn$$,NULL,$$Sweden$$)
 ) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape, country)
 where not exists (
   select 1 from public.runic_inscriptions ri

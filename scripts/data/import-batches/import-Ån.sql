@@ -14,8 +14,8 @@ select
   v.translit, v.norm, v.tsv, v.ten, v.dating, v.notes, v.otype, v.material, v.landscape,
   coalesce(v.country,'Sweden'), 'rundata_evighetsrunor'
 from (values
-('656082f5-a05b-4db8-a238-177bf9948120','Ån Fv1908;298B','X ÅnFv1908;298B',62.8615,18.0464,'n-þ','…',NULL,'…',NULL,'Funnen i jord från backe.','Skifferbit avi form av kniv','Skiffer',NULL,'Sweden'),
-('ebff6f16-fcc4-4f67-b358-2f8e8d9117b1','Ån Fv1908;298A','X ÅnFv1908;298A',62.8615,18.0464,'ok-þ','…',NULL,'…',NULL,'Funnen i jord från backe.','Skifferbit','Skiffer',NULL,'Sweden')
+($$656082f5-a05b-4db8-a238-177bf9948120$$,$$Ån Fv1908;298B$$,$$X ÅnFv1908;298B$$,62.8615,18.0464,$$n-þ$$,$$…$$,NULL,$$…$$,NULL,$$Funnen i jord från backe.$$,$$Skifferbit avi form av kniv$$,$$Skiffer$$,NULL,$$Sweden$$),
+($$ebff6f16-fcc4-4f67-b358-2f8e8d9117b1$$,$$Ån Fv1908;298A$$,$$X ÅnFv1908;298A$$,62.8615,18.0464,$$ok-þ$$,$$…$$,NULL,$$…$$,NULL,$$Funnen i jord från backe.$$,$$Skifferbit$$,$$Skiffer$$,NULL,$$Sweden$$)
 ) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape, country)
 where not exists (
   select 1 from public.runic_inscriptions ri
