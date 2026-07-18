@@ -24,6 +24,7 @@ const RoyalChronicles = lazy(() => import("./pages/RoyalChronicles"));
 // routes redirect there (decision 2026-07-16: Explore is the single destination).
 const Prices = lazy(() => import("./pages/Prices"));
 const Excursions = lazy(() => import("./pages/Excursions"));
+const Coins = lazy(() => import("./pages/Coins"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -84,6 +85,8 @@ const App = () => (
                   <Route path="/prices" element={<Prices />} />
                   <Route path="/excursions" element={<Excursions />} />
                   <Route path="/sv/utflykter" element={<Excursions />} />
+                  <Route path="/coins" element={<Coins />} />
+                  <Route path="/sv/mynt" element={<Coins />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/profile" element={<Profile />} />

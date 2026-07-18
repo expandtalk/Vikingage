@@ -15,6 +15,7 @@ import {
   Waves,
   Sparkles,
   Dna,
+  Coins,
   Menu,
   ChevronDown,
   type LucideIcon,
@@ -65,6 +66,7 @@ const ICONS: Record<string, LucideIcon> = {
   GeneticEvents: Dna,
   RoyalChronicles: Crown,
   Fortresses: Castle,
+  Coins: Coins,
 };
 
 // Which routes stay inline on desktop (the rest fall into "More").
