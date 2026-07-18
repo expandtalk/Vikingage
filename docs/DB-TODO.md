@@ -48,11 +48,41 @@ Tillagt som poster i `archaeological_finds`-lagret (`src/utils/archaeologicalFin
 - [x] **6. Stenålder/rödockragravar** — Manjärv tillagd (burial, mesolitikum). (Västra Ansvar/Ligga kan läggas till.)
 - [ ] **Städa dubbel finds-modul** — slå ihop `archaeologicalFinds.ts` (live, 15 finds) med orphan `archaeologicalFinds/data.ts` (stor kurerad uppsättning som ej renderas).
 
+### B6. 📥 rundata.sql — full import-roadmap (analys Daniel 2026-07-18)
+Genomgång av `rundata.sql` (27 MB, Evighetsrunor, repo-roten). **Vi har idag en bråkdel av datan.** Faktiska radantal i dumpen vs vår DB:
+
+| rundata-tabell | rader i dump | i vår DB | vad det ger |
+|---|---|---|---|
+| `inscriptions`/`objects` | **7 189** | 3 067 | **~4 122 saknade inskrifter** |
+| `notes` | **2 187** | ~0 | **Forskarnoter / historisk kontext / paleografi** (fritext + `lang`, ej typad) |
+| `imagelinks` | **1 098** | 0 | **Arkivbilder** (URL:er till kulturarvsdata.se — RAÄ/SHM) |
+| `dating` | 2 609 | delvis | daterings-text per objekt |
+| `interpretations` | 10 117 | crosswalkad | fornnordisk normalform |
+| `readings` | 7 043 | crosswalkad | translitteration |
+| `translations` | 8 508 | crosswalkad | översättningar |
+| `references`/`reference_uri`/`uris`/`object_uri` | 4 141 / 2 336 / 4 699 / 4 179 | ~0 | käll- och utlänkningar (SNRD, Wikidata m.m.) |
+| `sources`/`object_source` | 620 / 5 814 | ~0 | källhänvisningar per objekt |
+| `parishes` | 1 696 | 927 | ~769 saknade socknar |
+| `hundreds` | 467 | 468 | ~komplett |
+
+**Geografisk hierarki (svar på Daniels fråga — JA, parishes/hundreds har fler kopplingar):**
+`objects.placeid` → `places` (3 622) → `place_parish` (3 747) → `parishes` (1 696) → `her_SE_parishes` (927) → `her_SE`/härad (4 090, med `her_SE_notes` 1 330) → `provinces`/`counties`/`municipalities`. Plus `object_her_SE` (4 980) länkar objekt direkt till härad. Idag använder vi bara en platt `socken`/`harad`-text på `runic_inscriptions`.
+
+**Rekommenderad ordning (crosswalk på signum→objectid, samma metod som koordinaterna):**
+1. **notes + imagelinks + dating** → nya kolumner/tabeller på inskrifter (`research_notes`, `image_urls`, `dating_text`). Ger direkt Daniels önskemål: forskarnoter, historisk kontext, paleografi, arkivbilder. *Störst synligt värde, lägst risk.*
+2. **references/uris/sources** → utlänkar + källor i detaljvyn (vetenskaplig trovärdighet).
+3. **Saknade ~4 122 inskrifter** → importera resten (fyller Sö/Öl-luckorna; pensionerar standalone-virtual-hacket).
+4. **Geografisk hierarki** (places/place_parish/her_SE-kopplingar) → riktiga socken/härad-relationer istället för platt text; underlag för polygon-featuren.
+5. **Namn** → `viking_names` (113 idag) berikas via personnamn ur `readings`/`interpretations` + kunganamn.
+
+Fokusplatser Daniel vill ha rikare data om (Stockholm, Årsta, Kalmar, Hossmo, Ljungbyån, Öland) faller ut automatiskt av steg 1–2 (deras objekt får notes/bilder/källor). **Kräver schemabeslut (nya kolumner/tabeller + migration) → egen godkänd session.**
+
 ### B4. 🪙 Mynt/coins som kategori (Daniel 2026-07-18) — commit af58338
 Ny DB-kategori för mynt (fanns ej tidigare). **KÖR i ordning:**
 - [ ] **`supabase/migrations/20260718220000_coins.sql`** + `migration repair --status applied 20260718220000` — `coins`-tabell (kopplad till `historical_kings` via `issuer_king_id`, med mint/metall/valör/åtsida/frånsida/koordinater) + RLS.
 - [ ] **`scripts/data/coins-seed.sql`** (ren data) — 18 mynt: Olof Skötkonungs första Sigtuna-penningar (+ ETHELRED-kopia, fyrkantiga), Anund Jakob, Birka-imitationer, dansk/norsk myntning, Knut Eriksson-brakteat, örtug, Gustav Vasa riksdaler, Kristian II klipping, **Åby-solidusskatten + Leo Perpetuus 457** (Fischer/LEO), och **runmynt** (Sven Estridsson, gotländska "+Botulfi", anglosaxiska Beonna/Epa/Pada).
 - [x] **Frontend** — KLART (commit 014d823, kräver deploy): `/coins`-sida (`useCoins` + `Coins.tsx`) med karta (myntorter/fyndplatser färgade per kategori) + kort grupperade per kategori (nordisk kunglig, runmynt, solidi, skatter, imitationer). Nav-post + myntikon tillagd. KVAR (valfritt): visa `coins.issuer_king_id` i kungadetaljvyn; welcome-kort.
+- [x] **Islamiska dirhamer tillagda (Daniel 2026-07-18)** — ny kategori `islamic` (Coins.tsx + seed + DB, kräver deploy): halvdrachm Tabaristan (Skälby, omgjord till hänge), klippt dirham al-Muhammadiyya (Skälby), abbasidisk dirham (Bagdad, ~500 000 dirhamer i Norden enl. Hammad/Sorbonne), Spillingsskatten (hoard, Gotland). Coins nu 22 rader.
 - [ ] **Koppla runiska myntinskrifter:** DR BR 75, IK 17, Nä 10 (brakteater med runinskrift) finns i `runic_inscriptions` (object_type brakteat) men är ej kopplade till mynt-konceptet. Kan länkas.
 - Kontext: `/artefacts` har redan en `currency-trade`-klassificering (objectCategories.ts) som bucketar mynt-objekttyper — coins-tabellen kompletterar den.
 
