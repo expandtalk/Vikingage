@@ -58,14 +58,16 @@ for (const raw of lines) {
     const c = line.match(reSigna);
     if (c) signumText.set(c[1], `${c[2]} ${c[3]}`.replace(/\s+/g, ' ').trim());
   } else if (cur === 'translations') {
-    const f = splitTuple(line.replace(/\),?\s*$/, '').replace(/^\(/, ''));
+    // Strippa trailing ")", ")," ELLER ");" (sista tupeln i en INSERT-batch slutar med ");").
+    const f = splitTuple(line.replace(/\)\s*[,;]?\s*$/, '').replace(/^\(/, ''));
     if (f.length < 6) continue;
     const inscriptionid = hexOf(f[1]);
     const mark = unquote(f[2]);
     const text = unquote(f[3]);
     const lang = (unquote(f[5]) || '').toLowerCase();
     if (!inscriptionid || !text) continue;
-    if (!(lang.startsWith('sv') || lang.startsWith('en'))) continue;
+    // Bara språk som finns i languages.language_code (FK) — sv-se / en-gb.
+    if (lang !== 'sv-se' && lang !== 'en-gb') continue;
     if (!rowsByInsc.has(inscriptionid)) rowsByInsc.set(inscriptionid, []);
     rowsByInsc.get(inscriptionid).push({ mark: mark || 'P', text, lang });
   }
