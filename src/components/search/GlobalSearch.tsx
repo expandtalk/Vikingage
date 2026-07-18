@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Loader2, CornerDownLeft, BookOpen, Hammer, MapPin, Church,
-  Castle, Crown, Users2, Coins as CoinsIcon, Users, type LucideIcon,
+  Castle, Crown, Users2, Coins as CoinsIcon, Users, X, type LucideIcon,
 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { sanitizeFilterValue } from '@/utils/searchFilter';
+import { THEMES, type Theme } from '@/config/themes';
 
 // Federerat global-sök (toppnav). Söker parallellt över flera entiteter och
 // grupperar resultaten: runinskrifter (via search_inscriptions_flexible) +
@@ -51,7 +52,7 @@ const SOURCES: Source[] = [
     type: 'carvers', labelSv: 'Ristare', labelEn: 'Carvers', icon: Hammer,
     table: 'carvers', select: 'id,name,description,region,country',
     orFields: ['name', 'description'],
-    map: (r) => ({ key: `carver-${r.id}`, title: r.name, subtitle: [r.region, r.country].filter(Boolean).join(', '), snippet: truncate(r.description), route: '/carvers' }),
+    map: (r) => ({ key: `carver-${r.id}`, title: r.name, subtitle: [r.region, r.country].filter(Boolean).join(', '), snippet: truncate(r.description), route: `/carvers?carver=${r.id}` }),
   },
   {
     type: 'places', labelSv: 'Ortnamn', labelEn: 'Place names', icon: MapPin,
@@ -103,12 +104,59 @@ const SOURCES: Source[] = [
   },
 ];
 
+// Tematiskt sök: kör temats nyckelord (ILIKE-or) mot inskriftstext + de
+// entiteter temat spänner över. Steget från fältsök mot tematisk graf.
+const buildThemeGroups = async (theme: Theme): Promise<Group[]> => {
+  const kw = theme.keywords;
+  const inscFields = ['normalization', 'translation_sv', 'translation_en', 'scholarly_notes', 'historical_context'];
+  const out: Group[] = [];
+
+  const jobs: Promise<Group | null>[] = [];
+
+  if (theme.entities.includes('inscriptions')) {
+    const orExpr = kw.flatMap((k) => inscFields.map((f) => `${f}.ilike.%${k}%`)).join(',');
+    jobs.push(
+      sb.from('runic_inscriptions').select('id,signum,primary_signum,location,landscape,province').or(orExpr).limit(10)
+        .then((res: any): Group | null => {
+          const rows: Row[] = (res.data ?? []).map((r: any) => ({
+            key: `insc-${r.id}`,
+            title: r.primary_signum || r.signum,
+            subtitle: r.location || r.landscape || r.province || undefined,
+            route: `/explore?searchQuery=${encodeURIComponent(r.primary_signum || r.signum)}`,
+          }));
+          return rows.length ? { type: 'inscriptions', labelSv: 'Runinskrifter', labelEn: 'Inscriptions', icon: BookOpen, rows } : null;
+        })
+        .catch(() => null)
+    );
+  }
+
+  for (const s of SOURCES) {
+    if (!theme.entities.includes(s.type)) continue;
+    const orExpr = kw.flatMap((k) => s.orFields.map((f) => `${f}.ilike.%${k}%`)).join(',');
+    jobs.push(
+      sb.from(s.table).select(s.select).or(orExpr).limit(6)
+        .then((res: any): Group | null => {
+          const rows: Row[] = (res.data ?? []).map(s.map);
+          return rows.length ? { type: s.type, labelSv: s.labelSv, labelEn: s.labelEn, icon: s.icon, rows } : null;
+        })
+        .catch(() => null)
+    );
+  }
+
+  for (const g of await Promise.all(jobs)) if (g) out.push(g);
+  // Behåll ordning: inskrifter först, sedan enligt SOURCES-ordning
+  const order = ['inscriptions', ...SOURCES.map((s) => s.type)];
+  out.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
+  return out;
+};
+
 export const GlobalSearch: React.FC = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const sv = language === 'sv';
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [theme, setTheme] = useState<Theme | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -126,10 +174,18 @@ export const GlobalSearch: React.FC = () => {
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 50);
-    else { setQuery(''); setGroups([]); }
+    else { setQuery(''); setTheme(null); setGroups([]); }
   }, [open]);
 
+  // Tema-läge: kör tematiskt sök när ett tema valts.
   useEffect(() => {
+    if (!theme) return;
+    setLoading(true);
+    buildThemeGroups(theme).then(setGroups).finally(() => setLoading(false));
+  }, [theme]);
+
+  useEffect(() => {
+    if (theme) return;
     if (query.trim().length < 2) { setGroups([]); return; }
     const t = setTimeout(async () => {
       setLoading(true);
@@ -169,7 +225,7 @@ export const GlobalSearch: React.FC = () => {
       }
     }, 250);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, theme]);
 
   const go = useCallback((route: string) => { setOpen(false); navigate(route); }, [navigate]);
   const total = groups.reduce((n, g) => n + g.rows.length, 0);
@@ -194,7 +250,7 @@ export const GlobalSearch: React.FC = () => {
             <input
               ref={inputRef}
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => { setQuery(e.target.value); if (e.target.value) setTheme(null); }}
               placeholder={sv
                 ? 'Runsten, ort, socken, ristare, gud, kung, mynt, namn…'
                 : 'Runestone, place, parish, carver, god, king, coin, name…'}
@@ -204,9 +260,47 @@ export const GlobalSearch: React.FC = () => {
           </div>
 
           <div className="max-h-[60vh] overflow-y-auto">
-            {query.trim().length >= 2 && !loading && total === 0 && (
+            {/* Begreppslager: temachips när fältet är tomt */}
+            {!theme && query.trim().length < 2 && (
+              <div className="p-4">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  {sv ? 'Teman' : 'Themes'}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {THEMES.map((th) => {
+                    const TIcon = th.icon;
+                    return (
+                      <button
+                        key={th.id}
+                        onClick={() => { setTheme(th); setQuery(''); }}
+                        className="flex items-center gap-1.5 rounded-full border border-slate-600 bg-slate-800/60 px-3 py-1.5 text-xs text-slate-300 hover:border-amber-500/50 hover:text-amber-100 transition-colors"
+                      >
+                        <TIcon className="h-3.5 w-3.5 text-amber-400" />
+                        {sv ? th.labelSv : th.labelEn}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Aktivt tema: banner med rensa-knapp */}
+            {theme && (
+              <div className="flex items-center justify-between border-b border-slate-800 bg-slate-800/40 px-4 py-2">
+                <div className="flex items-center gap-2 text-sm text-amber-100">
+                  <theme.icon className="h-4 w-4 text-amber-400" />
+                  {sv ? theme.labelSv : theme.labelEn}
+                  <span className="text-xs text-slate-500">{sv ? '— tematiskt sök tvärs över databasen' : '— thematic search across the database'}</span>
+                </div>
+                <button onClick={() => setTheme(null)} className="text-slate-400 hover:text-white" aria-label={sv ? 'Rensa tema' : 'Clear theme'}>
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
+            {((query.trim().length >= 2) || theme) && !loading && total === 0 && (
               <div className="p-6 text-center text-sm text-slate-400">
-                {sv ? 'Inga träffar för' : 'No matches for'} “{query}”
+                {sv ? 'Inga träffar för' : 'No matches for'} “{theme ? (sv ? theme.labelSv : theme.labelEn) : query}”
               </div>
             )}
 

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Calendar, User, Scroll, Hash, CheckCircle, AlertTriangle } from "lucide-react";
+import { useSearchParams } from 'react-router-dom';
 import { useCarverData } from '../hooks/useCarverData';
 import { CarversMap } from '../components/carvers/CarversMap';
 import { CarverDetailPanel } from '../components/carvers/CarverDetailPanel';
@@ -20,7 +21,18 @@ const Carvers = () => {
   const [highlightedCarver, setHighlightedCarver] = useState<{ id: string } | null>(null);
   const [showDetailPanel, setShowDetailPanel] = useState(false);
   const detailPanelRef = useRef<HTMLDivElement>(null);
+  const [searchParams] = useSearchParams();
   const { language } = useLanguage();
+
+  // Deep-link: /carvers?carver=<id> öppnar detaljpanelen direkt (från globala söket).
+  useEffect(() => {
+    const cid = searchParams.get('carver');
+    if (cid) {
+      setSelectedCarver(cid);
+      setHighlightedCarver({ id: cid });
+      setShowDetailPanel(true);
+    }
+  }, [searchParams]);
 
   // När detaljpanelen öppnas ligger den högst upp på sidan — scrolla dit så att
   // klick på ett kort längre ner faktiskt visar något (annars "händer inget").
