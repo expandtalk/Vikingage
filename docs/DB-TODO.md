@@ -56,6 +56,15 @@ Import kraftigt ofullständig (rundata.sql → DB). Prioritet efter synligt vär
 - [ ] `staging_inscriptions` (1 112) — importstaging kvar i prod; arkivera/ta bort (används av importverktyg — kolla först).
 - [ ] Droppa genuint oanvända: `aliases_canonical`, `alts_canonical`, `folk_group_cities` (0 rader, ingen `.from()`).
 
+## Explore/UI-TODO (Daniels feedback 2026-07-18)
+- [x] **Profil-fixar** (commit 5198e59): geneticist utan runstenar (+folkgrupper), inscriptions-focus visar sv+utl, trade +viking_roads. **KÖR `scripts/data/fix-explore-profiles.sql`** (DB-config styr runtime) + ny FTP-upload för kod.
+- [ ] **Tidslinjen filtrerar inte kartan** — runstenar visas i Paleolithic/Mesolithic/Neolithic/Bronze/Pre-Roman/Roman fast runor inte fanns då. Kartan ska filtreras på vald period (runinskrifter ~fr.o.m. Roman/Migration; mest Viking).
+- [ ] **Zoom-kluster döljer annat** — vid översiktszoom syns bara runstenar, intressantare lager göms. Justera markörprioritet/z-index per zoom.
+- [ ] **i18n live-jakt** — kvarvarande svenska i EN-läge (teckenförklaring, "X platser", "X länder") — hitta via live-browsing.
+- [ ] **Wikidata-ID:n** — `wikidata_id` via Wikidata SPARQL (Rundata-signum-property) för utlänkning + foton via Commons.
+- [ ] **Foton på runinskrifter** — visa bilder (befintliga imagelinks/inscription_media + ev. Wikimedia Commons via Wikidata).
+- [ ] **Carvers-sidan** (`/carvers`) — långsam laddning; vill ha karta över vad varje ristare gjort + mer info; ta bort "imported från sql data"-texten; ev. artikeltext om lokala skrifttraditioner.
+
 ## Verktyg (finns redan)
 - `scripts/crosswalk-rundata-coordinates.mjs` → genererar `scripts/data/rundata-coordinate-crosswalk.sql`
 - `scripts/crosswalk-rundata-parish.mjs` → genererar `supabase/migrations/20260718130000_parish_harad_crosswalk.sql`
