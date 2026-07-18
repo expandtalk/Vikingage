@@ -32,8 +32,22 @@ interface CarverInscription {
     signum: string;
     location: string | null;
     coordinates: { lat: number; lng: number } | null;
+    period_start?: number | null;
+    period_end?: number | null;
+    dating_text?: string | null;
   };
 }
+
+// Härled ristarens aktiva period ur inskrifternas datering när carvers.period_active_*
+// saknas (vanligt) — min(period_start)…max(period_end) över de daterade stenarna.
+const derivePeriod = (inscs: CarverInscription[]): { start: number | null; end: number | null } => {
+  const starts = inscs.map((ci) => ci.inscription?.period_start).filter((n): n is number => typeof n === 'number');
+  const ends = inscs.map((ci) => ci.inscription?.period_end).filter((n): n is number => typeof n === 'number');
+  return {
+    start: starts.length ? Math.min(...starts) : null,
+    end: ends.length ? Math.max(...ends) : null,
+  };
+};
 
 // Import-artefakter i description-kolumnen (t.ex. "Importerad från MySQL data")
 // ska INTE visas. Vi hittar-på inga forskningsnoteringar (det vore påhittad
@@ -99,10 +113,15 @@ export const useCarverData = () => {
       uncertain_count: 0,
     };
     
+    const derived = derivePeriod(inscriptions);
     return {
       ...carver,
       // Rensa bort import-artefakter ("Importerad från MySQL data" m.fl.).
       description: cleanCarverDescription(carver.description),
+      // Härledd aktiv period ur inskrifternas datering när kolumnen saknas.
+      period_active_start: carver.period_active_start ?? derived.start,
+      period_active_end: carver.period_active_end ?? derived.end,
+      periodDerived: carver.period_active_start == null && derived.start != null,
       inscriptions: inscriptions.map(ci => ci.inscription),
       inscriptionCount: Number(stats.total_inscriptions),
       signedCount: Number(stats.signed_count),

@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, MapPin, Calendar, ExternalLink, BookOpen, FileText } from 'lucide-react';
 import { useCarverData } from '@/hooks/useCarverData';
+import { CarverStonesMap } from './CarverStonesMap';
 
 interface CarverDetailPanelProps {
   carverId: string;
@@ -319,6 +320,13 @@ export const CarverDetailPanel: React.FC<CarverDetailPanelProps> = ({
           </TabsContent>
 
           <TabsContent value="inscriptions" className="mt-4">
+            {/* Karta över ristarens stenar (koordinater ur get_carver_inscriptions) */}
+            <div className="mb-4">
+              <CarverStonesMap
+                inscriptions={carver.carverInscriptions ?? []}
+                onStoneClick={(s) => onInscriptionClick?.(s)}
+              />
+            </div>
             {/* Enhanced Inscriptions List */}
             <div>
               <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
