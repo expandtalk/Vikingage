@@ -28,7 +28,16 @@ Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av 
 
 ### B2. 🐛 Ny buggbatch (Daniel 2026-07-18) — triage
 - [x] **3. Karta "map data not available" + zooma till min plats** — FIXAT (commit 3717201, kräver deploy). Root: terrain-basemap var Esri World_Physical_Map (tiles bara till z~8). Bytt till World_Topo_Map + `maxNativeZoom` per basemap (Leaflet skalar upp istället för felruta). Geolocation-knapp ("Visa min plats") tillagd i `useMapInitialization`.
-- [ ] **4. Carvers: klick på ristare visar inte stenarna på kartan; "Okänd period" på alla** — `CarversMap` ritar bara ristaren på region-centroid, inte de enskilda stenarna. Behöver: plotta ristarens inskrifter (finns via `get_carver_inscriptions`, har koord) + härleda aktiv period ur inskrifternas datering (`carvers.period_active_*` är null). Datafråga: koppla ristare→inskrift→datering/artefakt.
+- [x] **4. Carvers: klick visar inte stenarna; "Okänd period"** — FIXAT (commit aaee0ef, kräver migration + deploy). **Rotorsak: `get_carver_inscriptions()`-RPC:n KRASCHADE** (PostGIS `ST_Y/ST_X` på en `point`-kolumn) → ristarnas inskrifter laddades aldrig. **KÖR `20260718210000_fix_get_carver_inscriptions.sql` + `migration repair`.** Frontend: `CarverStonesMap` plottar ristarens faktiska stenar i detaljpanelen; aktiv period härleds ur inskrifternas datering.
+
+### B3. 🏛️ Historiska museet-material (Daniel 2026-07-18) — INGET finns i DB idag
+Rikt, citerbart material (CC BY 4.0). Ingen post finns i DB (kollat: `archaeological_sites` saknar alla; `artefacts` är bara en term-glossa). Databerikning, egna pass:
+- [ ] **1. Gudar** — berika gudsbeskrivningarna (hårdkodade `GodNamesView`/`GodCardsGrid`) med museitexten: asar/vaner, Midgård/Asgård, Oden (Lindby-statyetten), Frej (Rällinge), Freja (Aska-hänget), völvor/nornor/diser/valkyrior.
+- [ ] **2. Bronsålderssmycken** — Torslunda/Stockhult-halskragar, tutulus (Ekudden). Hemvist: hårdkodad `archaeologicalFinds` eller `archaeological_sites`.
+- [ ] **3. Hågahögen (Kung Björns hög)** — Nordens guldrikaste bronsåldersgrav (~1100–1000 f.Kr.), Uppsala, glasögonspänne. Lägg i `archaeological_sites` (~59.82, 17.60).
+- [ ] **4. Hästutrustning (bronsålder)** — Eskelhem, Gotland (Nerthus-kult). → finds/sites.
+- [ ] **5. Romerska legosoldater** — Fulleröringen (Fullerö n. Gamla Uppsala, romersk järnålder, dona militaria). → finds/sites.
+- [ ] **6. Stenålder/megalitgravar** — rödockragravar Norrbotten (Manjärv/Västra Ansvar/Ligga, ~5000 f.Kr.). → finds/sites.
 - [ ] **5. Se vilka artefakter ristarna rör** — koppla ristarens inskrifter till `artefacts` (unikt nr). Visa artefakt-ID i detaljpanelen.
 - [~] **6. Namn/kungalängder + gruppering** — (b/c) **KLART** (commit 3717201): `RegionFindsView` grupperar under landsrubrik vid landssortering (härad + socken). (a) **KVAR — databerikning:** `viking_names` har exakt 113 rader (ej cap); fler namn kräver extraktion ur inskrifter (rundata personnamn) + kunganamn (crosswalk-task).
 - [ ] **7. Folkgrupper på karta** (`focus=folkGroups`) — vissa `folk_groups` bör ritas (polygon/punkt) på kartan, inte bara listas.
