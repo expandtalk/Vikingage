@@ -6,19 +6,19 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 
 ## 🎯 PRIORITERAT NU (2026-07-18, uppdaterad efter dagens diskussion)
 
-### A. ✅ DEPLOYAT (2026-07-18, build + FTP kört av Daniel) — verifiera live
-Allt nedan är nu ute på www.vikingage.se. **Live-QA att göra (hårduppdatera först, Ctrl/Cmd+Shift+R):**
-- [ ] Legend-räknare visar 3201/365 (inte 1002) + tonade osäkra markörer
-- [ ] `focus=gods` visar Pagan cult sites (ej runstenar); klick på Oden → bara Odens kultplatser; "Visa alla gudar" återställer
-- [ ] Gudkort visar verkliga kultplatsantal (Oden 16, Tor 10, Frej 11) — INGA "145/287 omnämnanden"
-- [ ] `focus=folkGroups` visar folkgrupper + DNA/provplatser (ej runstenar)
-- [ ] `focus=geneticist` utan runstenar; `focus=inscriptions` visar sv+utl; `focus=rivers`/trade = farleder
-- [ ] Tidslinjen filtrerar kartan (inga runstenar i Paleolit/Brons osv.)
-- [ ] Carvers: karta syns, kort klickbart, ingen "Importerad från MySQL data", inga fejk-noteringar
-- [ ] Fortresses: "Fortresses and Centres/Befästningar och Centra"
-- [ ] Källa ödekyrka ligger på norra Öland (ej i Östersjön); Prices → "Roman Price Converter"
-- [ ] i18n: engelskt läge saknar svensk text (teckenförklaring/"X platser"/"X länder")
-- **Cache:** sätt `Cache-Control: no-cache` på `index.html` om inte redan gjort (annars chunk-mismatch-synvilla).
+### A. ✅ DEPLOYAT + LIVE-QA:AT (2026-07-18)
+Live-QA kört mot www.vikingage.se (browse, textkontroll):
+- [x] Legend: **ingen "1002/1001/999"** kvar (den gamla synvillan borta). Exakt nytt tal (3201/365) ej skrapbart ur hopfälld legend — **ögonkolla själv** vid tillfälle.
+- [x] `focus=gods`: gudkorten visar "kultplats"-antal, **INGA "omnämnanden"-tal**. (Klick-beteendet "Oden → bara Odens kultplatser" ej klicktestat — bekräfta manuellt.)
+- [x] `focus=folkGroups`: folkgrupper + DNA/arkeologi syns, ingen "1002".
+- [x] Carvers: ingen "Importerad från MySQL data", karta syns.
+- [x] Fortresses: "Centres/Centra" syns, "Städer" borta. ⚠️ **Hittade residual "Cities"** i kartlagrets toggle (`FortressesCitiesMap`) → **fixat i kod (commit 7c05b86), kräver ny build+FTP.**
+- [ ] Ej klicktestat (browse-klick opålitligt) — bekräfta manuellt: geneticist utan runstenar; inscriptions sv+utl; rivers/trade = farleder; tidslinjen filtrerar; Prices→"Roman Price Converter"; Källa på norra Öland; i18n EN-läge.
+- **Cache:** `Cache-Control: no-cache` på `index.html`.
+
+### A2. 🔁 Väntar NÄSTA build+FTP (committat efter deployen)
+- [ ] `FortressesCitiesMap`: "Cities/Städer" → "Centres/Centra" (commit 7c05b86).
+- [ ] Källa gamla kyrka: konsoliderad + berikad sourced historik, dubbletten "Källa Ödekyrka" borttagen (commit eaf75d3, efter deploy).
 
 ### B. SQL / Python att köra? → **NEJ, inget nytt kvar.**
 Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av dig:
@@ -31,13 +31,15 @@ Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av 
   - **Ortnamn, vektor** → fyller tomma `place_names` → gör att **teoforta ortnamn (Odensala/Torslunda…) kan plottas** = gudarnas "omnämnanden på karta" på riktigt (idag saknar `places` koordinater).
   - **Socken och stad, vektor** → sockenpolygoner (härad/socken-gränser på kartan).
 
-### D. Nästa kod-tasks (prioritetsordning, efter deploy)
-1. [x] **Gods-fokus: klick → gudens kultplatser på kartan** — KLART: `focusDeity` i `useLegendManager` (visar bara `religious_<deity>`), tråt via `useExplorerData`→`ExplorerMain`→`ExplorerLayout`→`GodCardsGrid`. Klick igen/"Visa alla gudar" återställer. Gudar utan kultplatser är ej klickbara.
-2. [x] **folkGroups → folkgrupper + DNA** — KLART: `applyFocusOverrides` case `folkGroups` visar nu `folk_groups` + `archaeological_sites` (provplatser/DNA), inte runstenar.
-3. **Tidslinje/zoom** — verifiera tidslinjefiltret live; fixa att zoom-kluster döljer andra lager.
-4. **i18n live-jakt** — kvarvarande svenska i EN-läge.
-5. **Wikidata-ID:n + foton** (`wikidata_id` via SPARQL → Commons-bilder).
-6. **Rundata-satellittabeller** (translations/readings/interpretations klara; parishes/locations/objects kvar — item 5).
+### D. Nästa tasks (prioritetsordning)
+1. [x] **Gods-fokus: klick → gudens kultplatser** — KLART + deployat. `focusDeity` i `useLegendManager`.
+2. [x] **folkGroups → folkgrupper + DNA** — KLART + deployat.
+3. **🏛️ Royal Chronicles-revision (STOR — eget fokuspass)** — underlag sparat i `scripts/data/royal-chronicles/` (regents_missing.csv ~90 poster, relations_edges.csv ~40 kanter, README med 11 rättelser + schemaförslag). **Kör INTE blint** — steg: (a) kartlägg schema (`historical_kings`, `royal_dynasties`, `king_inscription_links`), (b) kör de 11 rättelserna som UPDATE, (c) deduplicera (Gorm ×3 osv.), (d) generera INSERT-SQL ur CSV, (e) ev. schemautökning (roller, relationstabell, Västerleden-region). Datakvalitet > hastighet.
+4. **🧭 Utflykter/excursions (ny sida/sektion)** — Birka, Långhundraleden, Broborg, Ölands fornborgar, Rösaringsåsen (processionsvägen). Daniel har lämnat rikt Rösaring-innehåll. Egen route/komponent + kort per utflykt (karta, beskrivning, källor).
+5. **Tidslinje/zoom** — verifiera tidslinjefiltret live; zoom-kluster döljer andra lager.
+6. **i18n live-jakt** — kvarvarande svenska i EN-läge.
+7. **Wikidata-ID:n + foton** (`wikidata_id` via SPARQL → Commons-bilder).
+8. **Rundata-satellittabeller** (parishes/locations/objects — item 5).
 
 ---
 
