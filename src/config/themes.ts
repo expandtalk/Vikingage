@@ -20,12 +20,12 @@ export const THEMES: Theme[] = [
   {
     id: 'faith', labelSv: 'Tro', labelEn: 'Faith', icon: Cross,
     keywords: ['guð', 'guþ', 'kristr', 'krist', 'kors', 'ængil', 'ande', 'själ', 'god', 'christ', 'cross', 'soul', 'angel', 'bön', 'prayer', 'helga'],
-    entities: ['inscriptions', 'holy'],
+    entities: ['inscriptions', 'holy', 'gods'],
   },
   {
     id: 'cult', labelSv: 'Kult', labelEn: 'Cult', icon: Sparkles,
     keywords: ['vi', 'lund', 'hov', 'offer', 'þórr', 'óðinn', 'freyr', 'freyja', 'tor', 'oden', 'frej', 'sacred', 'heathen', 'hednisk'],
-    entities: ['inscriptions', 'places', 'holy'],
+    entities: ['inscriptions', 'places', 'holy', 'gods'],
   },
   {
     id: 'death', labelSv: 'Död & minne', labelEn: 'Death & memory', icon: Skull,

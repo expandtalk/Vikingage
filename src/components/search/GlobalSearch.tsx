@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Loader2, CornerDownLeft, BookOpen, Hammer, MapPin, Church,
-  Castle, Crown, Users2, Coins as CoinsIcon, Users, X, type LucideIcon,
+  Castle, Crown, Users2, Coins as CoinsIcon, Users, Sparkles, X, type LucideIcon,
 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -95,6 +95,12 @@ const SOURCES: Source[] = [
     table: 'coins', select: 'id,name,name_en,category,issuer,description',
     orFields: ['name', 'name_en', 'issuer', 'description'],
     map: (r) => ({ key: `coin-${r.id}`, title: r.name, subtitle: [r.category, r.issuer].filter(Boolean).join(' · '), snippet: truncate(r.description), route: '/coins' }),
+  },
+  {
+    type: 'gods', labelSv: 'Gudar', labelEn: 'Gods', icon: Sparkles,
+    table: 'gods', select: 'id,name,name_old_norse,category,description',
+    orFields: ['name', 'name_old_norse', 'description'],
+    map: (r) => ({ key: `god-${r.id}`, title: r.name, subtitle: [r.name_old_norse, r.category].filter(Boolean).join(' · '), snippet: truncate(r.description), route: '/explore?focus=gods' }),
   },
   {
     type: 'names', labelSv: 'Namn', labelEn: 'Names', icon: Users,
