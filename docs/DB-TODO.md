@@ -30,14 +30,15 @@ Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av 
 - [x] **3. Karta "map data not available" + zooma till min plats** — FIXAT (commit 3717201, kräver deploy). Root: terrain-basemap var Esri World_Physical_Map (tiles bara till z~8). Bytt till World_Topo_Map + `maxNativeZoom` per basemap (Leaflet skalar upp istället för felruta). Geolocation-knapp ("Visa min plats") tillagd i `useMapInitialization`.
 - [x] **4. Carvers: klick visar inte stenarna; "Okänd period"** — FIXAT (commit aaee0ef, kräver migration + deploy). **Rotorsak: `get_carver_inscriptions()`-RPC:n KRASCHADE** (PostGIS `ST_Y/ST_X` på en `point`-kolumn) → ristarnas inskrifter laddades aldrig. **KÖR `20260718210000_fix_get_carver_inscriptions.sql` + `migration repair`.** Frontend: `CarverStonesMap` plottar ristarens faktiska stenar i detaljpanelen; aktiv period härleds ur inskrifternas datering.
 
-### B3. 🏛️ Historiska museet-material (Daniel 2026-07-18) — INGET finns i DB idag
-Rikt, citerbart material (CC BY 4.0). Ingen post finns i DB (kollat: `archaeological_sites` saknar alla; `artefacts` är bara en term-glossa). Databerikning, egna pass:
-- [ ] **1. Gudar** — berika gudsbeskrivningarna (hårdkodade `GodNamesView`/`GodCardsGrid`) med museitexten: asar/vaner, Midgård/Asgård, Oden (Lindby-statyetten), Frej (Rällinge), Freja (Aska-hänget), völvor/nornor/diser/valkyrior.
-- [ ] **2. Bronsålderssmycken** — Torslunda/Stockhult-halskragar, tutulus (Ekudden). Hemvist: hårdkodad `archaeologicalFinds` eller `archaeological_sites`.
-- [ ] **3. Hågahögen (Kung Björns hög)** — Nordens guldrikaste bronsåldersgrav (~1100–1000 f.Kr.), Uppsala, glasögonspänne. Lägg i `archaeological_sites` (~59.82, 17.60).
-- [ ] **4. Hästutrustning (bronsålder)** — Eskelhem, Gotland (Nerthus-kult). → finds/sites.
-- [ ] **5. Romerska legosoldater** — Fulleröringen (Fullerö n. Gamla Uppsala, romersk järnålder, dona militaria). → finds/sites.
-- [ ] **6. Stenålder/megalitgravar** — rödockragravar Norrbotten (Manjärv/Västra Ansvar/Ligga, ~5000 f.Kr.). → finds/sites.
+### B3. 🏛️ Historiska museet-material (Daniel 2026-07-18) — commit 34e3e07 (kräver deploy)
+Tillagt som poster i `archaeological_finds`-lagret (`src/utils/archaeologicalFinds.ts`, CC BY 4.0, approx koord). **OBS modulupplösning:** `archaeologicalFinds.ts` (filen) vinner över `archaeologicalFinds/`-mappen → den STORA `data.ts`+`NEW_SWEDISH_FINDS` är orphan/renderas ej. Bör städas (egen task).
+- [~] **1. Gudar** — DELVIS: gudafigurerna tillagda som finds (Oden/Lindby, Frej/Rällinge, Freja/Aska). KVAR: mytologisk text (asar/vaner, Midgård/Asgård, völvor/nornor/diser) — saknar hemvist (ingen gudaartikel-vy); kräver ny komponent.
+- [x] **2. Bronsålderssmycken** — Stockhult-halskragen tillagd. (Torslunda-halskragen/tutulus kan läggas till senare.)
+- [x] **3. Hågahögen** — tillagd (royal_burial, bronsålder).
+- [x] **4. Hästutrustning** — Eskelhem tillagd (ritual, bronsålder, Nerthus).
+- [x] **5. Romerska legosoldater** — Fulleröringen tillagd (burial, romersk järnålder).
+- [x] **6. Stenålder/rödockragravar** — Manjärv tillagd (burial, mesolitikum). (Västra Ansvar/Ligga kan läggas till.)
+- [ ] **Städa dubbel finds-modul** — slå ihop `archaeologicalFinds.ts` (live, 15 finds) med orphan `archaeologicalFinds/data.ts` (stor kurerad uppsättning som ej renderas).
 - [ ] **5. Se vilka artefakter ristarna rör** — koppla ristarens inskrifter till `artefacts` (unikt nr). Visa artefakt-ID i detaljpanelen.
 - [~] **6. Namn/kungalängder + gruppering** — (b/c) **KLART** (commit 3717201): `RegionFindsView` grupperar under landsrubrik vid landssortering (härad + socken). (a) **KVAR — databerikning:** `viking_names` har exakt 113 rader (ej cap); fler namn kräver extraktion ur inskrifter (rundata personnamn) + kunganamn (crosswalk-task).
 - [ ] **7. Folkgrupper på karta** (`focus=folkGroups`) — vissa `folk_groups` bör ritas (polygon/punkt) på kartan, inte bara listas.
