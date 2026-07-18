@@ -43,7 +43,7 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 Import kraftigt ofullständig (rundata.sql → DB). Prioritet efter synligt värde:
 - [x] **translations** — crosswalk klar (`scripts/data/rundata-translations-crosswalk.sql`, commit b1c1178). Rundata-tabellen har 8508 rader (1802 sv / 6683 en) → 6826 signum mappade (1773 sv, 6492 en). Fyller `runic_inscriptions.translation_sv/en` där tomma. **KÖR SQL:en i editorn** (ren data-UPDATE, ingen repair). OBS: rundata 2021 har mest ENGELSKA översättningar; svenska (nu 249→~1773) kan berikas mer via SNRD-API (som Bautil-skriptet).
 - [x] **readings → transliteration** — crosswalk klar (`scripts/data/rundata-readings-crosswalk.sql`, commit 9415e3c). 6839 signum (primär läsning 'P') → fyller `runic_inscriptions.transliteration` där tom (nu 1819/3067). **KÖR SQL:en i editorn** (ren data-UPDATE). Syns i detaljvyn.
-- [ ] **interpretations** 0 → 10 117 — scholarly tolkningar. Tabell saknas i DB OCH ingen UI visar dem än. Kräver: skapa tabell/kolumn + detaljvy-UI + crosswalk. Större jobb — bygg när UI finns.
+- [x] **interpretations → normalization** — crosswalk klar (`scripts/data/rundata-interpretations-crosswalk.sql`, commit ce65db9). interpretations.text = fornnordisk normalform → `runic_inscriptions.normalization` (visas redan i InscriptionDetail:395, ingen UI/tabell behövs). 6515 signum, primär 'P'. **KÖR SQL:en i editorn**.
 - [ ] **parishes**-tabellen 927 → 1 696 (komplett sockenlista; för polygon-featuren).
 - [ ] **locations** 124 → 4 071, **her_SE** 18 → 4 090, **object_source** 0 → 5 814, **reference_uri** 0 → 2 336.
 - [ ] **objects** 142 → 7 189 — navet; men appen använder det inte. Beslut: importera för fullständighet eller skippa.
