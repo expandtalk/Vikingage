@@ -18,14 +18,36 @@ Senast uppdaterad: 2026-07-18.
 |---|---|---|---|
 | **Inskrift** | `runic_inscriptions` | En runinskrift, identifierad av **signum**. Navet. | TX1 Written Text / E33 Linguistic Object |
 | **Bärare/objekt** | (`object_type`-fält) | Fysiskt föremål som bär inskriften (runsten, spänne, bleck…). | E22 Human-Made Object |
-| **Signum** | `signum` (+`alternative_signum[]`, `primary_signum`) | Kanonisk identifierare (t.ex. `U 337`). Ett modernt landskapssignum + alias (Bautil `B`, Liljegren `L`, äldre kataloger `KJ`/`NIÆR`…). | E42 Identifier |
-| **Läsning** | `transliteration` | Translitteration av runraden (t.ex. `laþu`). | TX2 Transcription |
-| **Normalisering** | `normalization` | Fornnordisk standardform (t.ex. "Þorgerðr lét reisa stein…"). | (interpretation) |
-| **Översättning** | `translation_sv`, `translation_en` | Modern översättning. | E33 Linguistic Object |
-| **Datering** | `dating_text`, `period_start`, `period_end`, `dating_confidence` | När inskriften tillkom. | E52 Time-Span |
+| **Signum** | `signum` (+`alternative_signum[]`, `primary_signum`) | Kanonisk identifierare (t.ex. `U 337`). Ett modernt landskapssignum + alias (Bautil `B`, Liljegren `L`, äldre kataloger `KJ`/`NIÆR`…). **1 inskrift → N signum.** | E42 Identifier |
+| **Läsning** | `readings` (tabell) + skalär `transliteration` | Translitteration av runraden (t.ex. `laþu`). **1 inskrift → N läsningar** (versioner `P`/`Q`/`R`… av olika utgivare/över tid). | TX2 Transcription |
+| **Tolkning/normalisering** | `interpretations` (tabell) + skalär `normalization` | Fornnordisk standardform ("Þorgerðr lét reisa stein…"). **1 → N.** | (interpretation act) |
+| **Översättning** | `translations` (tabell) + skalär `translation_sv`/`_en` | Modern översättning. **1 → N** (per språk OCH per version). | E33 Linguistic Object |
+| **Datering** | `dating` (tabell) + skalär `dating_text`, `period_start/end` | När inskriften tillkom. **1 → N** (konkurrerande). | E52 Time-Span |
+| **Koordinat** | `additional_coordinates` + skalär `coordinates` | Plats. **1 → N** (nuvarande, ursprunglig, alt.). | E53 Place |
 | **Plats** | `socken`, `harad`, `landscape`, `country`, `municipality`, `county`, `parish`, `location`, `coordinates` | Var inskriften finns/fanns. Se §3. | E53 Place / CRMgeo |
 | **Ristare** | `carvers` (+ `carver_inscription`) | Runmästare. | E21 Person |
 | **Källa** | `historical_sources` | Historisk källa som nämner en kung/inskrift, med tillförlitlighet + bias. | E31 Document |
+
+### 1b. Representationer & kardinalitet (VIKTIGT)
+
+En inskrift är **ett** objekt men har **många** vetenskapliga representationer — läsningar,
+tolkningar, översättningar, dateringar, signum, koordinater. Modellen är **tvådelad**:
+
+- **Kanonisk skalär (primär)** — `transliteration`, `normalization`, `translation_sv/_en`,
+  `dating_text`, `signum`, `coordinates`. Är "den föredragna versionen" (rundata-enum `P`).
+  Används för **sök, lista och snabbvy**. En per inskrift.
+- **Fullständig satellit (alla versioner)** — tabellerna `readings`, `interpretations`,
+  `translations`, `dating`, `additional_coordinates`, `alternative_signum[]`. Håller
+  **alla** representationer (version `P`/`Q`/`R`…, per språk, konkurrerande dateringar).
+  Visas i **detaljvyn** (`InscriptionModal` läser `extendedData.translations`/`datings`).
+
+**Regel:** de skalära fälten FÅR aldrig vara enda källan — de är en projektion (primär) av
+satelliten. Crosswalken plockade bara `P` till skalärerna; den fulla mångfalden ligger i
+rundatas satellittabeller. **Datakvalitetskonsekvens:** satellittabellerna är idag nästan
+tomma (`readings` 0, `interpretations` saknas, `translations` 24) → bara primärversionen
+finns. Att importera dem fullt (DB-TODO item 5) är det som gör "syns på flera sätt" verkligt.
+
+Aldrig platta en 1→N-relation till en enda kolumn utan att bevara resten i satelliten.
 
 Satellitdomäner (egna ontologifragment, ej fullt dokumenterade här): kungar/dynastier
 (`historical_kings`, `royal_dynasties`, `king_inscription_links`), genetik
