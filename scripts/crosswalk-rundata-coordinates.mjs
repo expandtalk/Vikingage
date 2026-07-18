@@ -72,24 +72,22 @@ const rows = [...signumCoord.entries()];
 const esc = (s) => s.replace(/'/g, "''");
 const values = rows.map(([sig, c]) => `('${esc(sig)}',${c.lat},${c.lng})`).join(',\n');
 
+// ETT enda UPDATE-statement med inline VALUES (ingen temp-tabell — Supabase-
+// editorn kör satser så att en on-commit-drop-temptabell försvinner mellan dem).
 const out = `-- Koordinat-crosswalk ur rundata.sql (Evighetsrunor). Auto-genererat.
 -- ${rows.length} signum->koordinat-par. Fyller runic_inscriptions.coordinates där den
 -- saknas ELLER har låg/okänd konfidens (RAÄ-koordinater är auktoritativa); rör inte
 -- 'high'-konfidens (user/manual exakta). Matchar på normaliserat signum.
--- Kör i SQL-editorn.
-begin;
-create temporary table _cw (signum text, lat double precision, lng double precision) on commit drop;
-insert into _cw (signum, lat, lng) values
-${values};
-
+-- Ett enda statement — kör i SQL-editorn.
 update public.runic_inscriptions ri
-set coordinates = point(cw.lng, cw.lat),
+set coordinates = point(cw.lng::float8, cw.lat::float8),
     coord_source = 'rundata_evighetsrunor',
     coord_confidence = 'high'
-from _cw cw
-where lower(regexp_replace(ri.signum,'\\s+',' ','g')) = lower(regexp_replace(cw.signum,'\\s+',' ','g'))
+from (values
+${values}
+) as cw(signum, lat, lng)
+where lower(regexp_replace(ri.signum,'\\s+',' ','g')) = lower(regexp_replace(cw.signum::text,'\\s+',' ','g'))
   and (ri.coordinates is null or ri.coord_confidence in ('low','unknown'));
-commit;
 `;
 
 writeFileSync('scripts/data/rundata-coordinate-crosswalk.sql', out);

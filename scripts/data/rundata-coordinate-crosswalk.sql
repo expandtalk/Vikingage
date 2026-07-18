@@ -2,10 +2,12 @@
 -- 13132 signum->koordinat-par. Fyller runic_inscriptions.coordinates där den
 -- saknas ELLER har låg/okänd konfidens (RAÄ-koordinater är auktoritativa); rör inte
 -- 'high'-konfidens (user/manual exakta). Matchar på normaliserat signum.
--- Kör i SQL-editorn.
-begin;
-create temporary table _cw (signum text, lat double precision, lng double precision) on commit drop;
-insert into _cw (signum, lat, lng) values
+-- Ett enda statement — kör i SQL-editorn.
+update public.runic_inscriptions ri
+set coordinates = point(cw.lng::float8, cw.lat::float8),
+    coord_source = 'rundata_evighetsrunor',
+    coord_confidence = 'high'
+from (values
 ('NJy 46',56.9164,10.0144),
 ('DR 143',56.9164,10.0144),
 ('DK NJy46',56.9164,10.0144),
@@ -13137,13 +13139,7 @@ insert into _cw (signum, lat, lng) values
 ('Ãl ATA4701/43',56.9476,16.7842),
 ('DR 68',56.1582,10.2049),
 ('MJy 79',56.1582,10.2049),
-('DK MJy79',56.1582,10.2049);
-
-update public.runic_inscriptions ri
-set coordinates = point(cw.lng, cw.lat),
-    coord_source = 'rundata_evighetsrunor',
-    coord_confidence = 'high'
-from _cw cw
-where lower(regexp_replace(ri.signum,'\s+',' ','g')) = lower(regexp_replace(cw.signum,'\s+',' ','g'))
+('DK MJy79',56.1582,10.2049)
+) as cw(signum, lat, lng)
+where lower(regexp_replace(ri.signum,'\s+',' ','g')) = lower(regexp_replace(cw.signum::text,'\s+',' ','g'))
   and (ri.coordinates is null or ri.coord_confidence in ('low','unknown'));
-commit;
