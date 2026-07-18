@@ -15,6 +15,9 @@ export interface BaseInscription {
   period?: string;
   status?: string;
   object_type?: string;
+  coord_confidence?: string | null;
+  coord_source?: string | null;
+  virtual_inscription?: boolean;
 }
 
 export interface RunicInscription extends BaseInscription {

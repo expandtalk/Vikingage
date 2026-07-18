@@ -21,7 +21,11 @@ export const processInscriptionCoordinates = (
       status: inscription.status,
       object_type: inscription.object_type,
       location: inscription.location,
-      coordinates: inscription.coordinates
+      coordinates: inscription.coordinates,
+      // Bär med konfidens/källa/virtuell-flagga så kartan kan tona osäkra markörer.
+      coord_confidence: inscription.coord_confidence,
+      coord_source: inscription.coord_source,
+      virtual_inscription: inscription.virtual_inscription
     };
 
     if (!inscriptionWithId.coordinates && (!inscriptionWithId.latitude || !inscriptionWithId.longitude)) {
