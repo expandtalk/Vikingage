@@ -51,7 +51,7 @@ const SOURCES: Source[] = [
   {
     type: 'carvers', labelSv: 'Ristare', labelEn: 'Carvers', icon: Hammer,
     table: 'carvers', select: 'id,name,description,region,country',
-    orFields: ['name', 'description'],
+    orFields: ['name', 'description', 'region'],
     map: (r) => ({ key: `carver-${r.id}`, title: r.name, subtitle: [r.region, r.country].filter(Boolean).join(', '), snippet: truncate(r.description), route: `/carvers?carver=${r.id}` }),
   },
   {
@@ -63,37 +63,37 @@ const SOURCES: Source[] = [
   {
     type: 'holy', labelSv: 'Heliga platser', labelEn: 'Holy sites', icon: Church,
     table: 'christian_sites', select: 'id,name,name_en,site_type,region,description',
-    orFields: ['name', 'name_en', 'description'],
+    orFields: ['name', 'name_en', 'description', 'region', 'province'],
     map: (r) => ({ key: `holy-${r.id}`, title: r.name, subtitle: [r.site_type, r.region].filter(Boolean).join(' · '), snippet: truncate(r.description), route: `/explore?searchQuery=${encodeURIComponent(r.name)}` }),
   },
   {
     type: 'fortresses', labelSv: 'Försvar', labelEn: 'Fortresses', icon: Castle,
     table: 'viking_fortresses', select: 'id,name,fortress_type,region,description',
-    orFields: ['name', 'description', 'fortress_type'],
+    orFields: ['name', 'description', 'fortress_type', 'region'],
     map: (r) => ({ key: `fort-${r.id}`, title: r.name, subtitle: [r.fortress_type, r.region].filter(Boolean).join(' · '), snippet: truncate(r.description), route: '/fortresses' }),
   },
   {
     type: 'cities', labelSv: 'Städer', labelEn: 'Cities', icon: Castle,
     table: 'viking_cities', select: 'id,name,region,description',
-    orFields: ['name', 'description'],
+    orFields: ['name', 'description', 'region'],
     map: (r) => ({ key: `city-${r.id}`, title: r.name, subtitle: r.region || undefined, snippet: truncate(r.description), route: '/fortresses' }),
   },
   {
     type: 'kings', labelSv: 'Kungar', labelEn: 'Kings', icon: Crown,
     table: 'historical_kings', select: 'id,name,region,description',
-    orFields: ['name', 'description'],
+    orFields: ['name', 'description', 'region'],
     map: (r) => ({ key: `king-${r.id}`, title: r.name, subtitle: r.region || undefined, snippet: truncate(r.description), route: '/royal-chronicles' }),
   },
   {
     type: 'dynasties', labelSv: 'Släkter', labelEn: 'Dynasties', icon: Users2,
     table: 'royal_dynasties', select: 'id,name,name_en,region,description',
-    orFields: ['name', 'name_en', 'description'],
+    orFields: ['name', 'name_en', 'description', 'region'],
     map: (r) => ({ key: `dyn-${r.id}`, title: r.name, subtitle: r.region || undefined, snippet: truncate(r.description), route: '/royal-chronicles' }),
   },
   {
     type: 'coins', labelSv: 'Mynt', labelEn: 'Coins', icon: CoinsIcon,
     table: 'coins', select: 'id,name,name_en,category,issuer,description',
-    orFields: ['name', 'name_en', 'issuer', 'description'],
+    orFields: ['name', 'name_en', 'issuer', 'description', 'find_place', 'mint'],
     map: (r) => ({ key: `coin-${r.id}`, title: r.name, subtitle: [r.category, r.issuer].filter(Boolean).join(' · '), snippet: truncate(r.description), route: '/coins' }),
   },
   {
