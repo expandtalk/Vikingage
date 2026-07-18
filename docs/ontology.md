@@ -143,14 +143,13 @@ Kanoniska: `simple` | `medium` | `complex` | `unknown`.
 
 ## 6. Öppna datakvalitetsposter (→ [[improvement-roadmap]], docs/DB-TODO.md)
 
-- [ ] Normalisera `country` (Sverige→Sweden, Danmark→Denmark).
-- [ ] Mappa `object_type` (~100 varianter) → kanonisk kategori via lookup-tabell.
-- [ ] Mappa `rune_type` → 5 kanoniska.
-- [ ] Dela `uncertainty_level` i `condition` + `interpretation_confidence`.
-- [ ] Mappa `complexity_level` sv→en.
-- [ ] Konsolidera `coord_source` "kyrka location lookup" → `manual`.
-- [ ] Lägg till `runor_uuid` + `wikidata_id`.
+- [x] Normalisera `country`, `rune_type`, `complexity_level`, `coord_source` → **SQL redo:** `scripts/data/normalize-vocabularies.sql` (rena normaliseringar, kör i editorn). 25 tvetydiga rune_type lämnas för granskning.
+- [x] Kanonisk `object_category` (~100 `object_type`-varianter → 13 kategorier via nyckelord) → **migration redo:** `20260718180000_object_category.sql` (icke-destruktiv, ny kolumn).
+- [ ] Dela `uncertainty_level` i `condition` + `interpretation_confidence` (kräver kolumndelning + mappning av svensk fritext).
+- [ ] Lägg till `runor_uuid` + `wikidata_id` (utlänkning/verifiering).
 - [ ] Fullständig import av saknade inskrifter (Sö 13→~400 m.fl.) — se DB-TODO item 5.
+
+**Kanonisk `object_category` (13):** `runestone` | `rock_carving` | `grave_slab` | `fragment` | `portable_object` | `building_inscription` | `plaster_inscription` | `wood` | `bracteate` | `cross` | `liturgical_object` | `other` | `unknown`.
 
 ---
 
