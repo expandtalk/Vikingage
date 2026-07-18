@@ -12,10 +12,15 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 ### 1. Kolla migration repair (30 s)
 - [ ] Verifiera att `supabase migration repair --status applied 20260718130000` (socken) är körd. Om inte: kör den.
 
-### 2. Legend-räknarna 999/1001 (bugg — utreds klart)
-- [ ] Fördjupa: legenden visade 999 svenska / 1001 utländska. **Fel** — DB har 2 306 "Sweden" + 411 "Sverige" = 2 717 svenska, ~350 utländska. Filtret (`legendItemGenerators.ts:26-38`) räknar båda som svenska, så det borde bli ~2 717/350.
-- [ ] Trolig orsak: nåt kapar till ~2 000 nedströms ELLER siffrorna var gamla (före koordinat-/socken-datan). Data-laddaren (`enhancedDataLoader.ts:196`) har `limit(50000)`, vyn kapar inte. Kolla live-siffrorna i dev (5176) + `additional_coordinates`-joinen i vyn (kan multiplicera rader per signum → dedup?).
-- [ ] Fixa räkningen så legenden speglar riktiga tal.
+### 2. ✅ Legend-räknarna 999/1001 (LÖST 2026-07-18, commit 2329591)
+- [x] **Root cause: PostgREST `db-max-rows=1000`** kapar varje svar oavsett `.limit(50000)`. Huvudfrågan gav 1000/3067, standalone-koordinaterna 1000 → "Places found: 2000" och legenden räknade en kapad+virtuell blandning (999/1001).
+- [x] Fix (`enhancedDataLoader.ts`): `fetchAllPages()` pagineras med `.range()` → alla 3067 laddas; dedup av standalone vars signum redan finns i huvuddatan (1393 st, gav dubbelmarkörer); klassa virtuellas country via signum-prefix (`getCountryFromSignum`) → Sö/U/Öl = svenska, DR/N/IS = utländska.
+- [x] Resultat: **3747 svenska / 365 utländska** (foreign nu ärlig, ~350 i DB + virtuella). Väntar på build+FTP (bundla med item 3).
+
+**Datafynd under utredningen (→ påverkar item 5 + städning):**
+- Huvudtabellen `runic_inscriptions` är kraftigt ofullständig för vissa landskap: **Sö 13 av ~400**, U 923 av ~1300, Öl 22 av ~60. `additional_coordinates` (standalone, inscription_id null) fyller luckan delvis (384 Sö saknas i huvud men finns som koord). → Riktig fix = importera saknade inskrifter (item 5); då kan standalone-virtual-hacket pensioneras.
+- **544 "B 1"–"B 544"** i additional_coordinates: source `manual_admin`, notes "Manually added by admin for B N", koords läcker till Nordtyskland (lat 51.5). Ser ut som skräp/testdata — visas nu som "svenska runstenar" (prefix okänt → default Sverige). **Rekommendation: granska + radera.** Inspektera: `select signum,latitude,longitude,notes,source from additional_coordinates where inscription_id is null and signum ~ '^B \d' order by signum;`
+- Kosmetiskt: "Places found 4112 > Total in database 3067" — de virtuella ligger inte i `runic_inscriptions`-count. Ofarligt men ser inkonsekvent ut.
 
 ### 3. Kod-polish: deterministisk karta (kräver deploy)
 - [ ] `useExplorerState.handleResultClick` — **ta bort klick-tids-Nominatim-geokodning**; använd bara den kanoniska koordinaten (nu ifylld). Om ingen coord → toast, ingen gissning.
