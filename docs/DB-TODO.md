@@ -22,6 +22,10 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 - **544 "B 1"–"B 544"** i additional_coordinates: source `manual_admin`, notes "Manually added by admin for B N", koords läcker till Nordtyskland (lat 51.5). Ser ut som skräp/testdata — visas nu som "svenska runstenar" (prefix okänt → default Sverige). **Rekommendation: granska + radera.** Inspektera: `select signum,latitude,longitude,notes,source from additional_coordinates where inscription_id is null and signum ~ '^B \d' order by signum;`
 - Kosmetiskt: "Places found 4112 > Total in database 3067" — de virtuella ligger inte i `runic_inscriptions`-count. Ofarligt men ser inkonsekvent ut.
 
+**Bautil-verifiering (Daniel, extern SNRD-körning 2026-07-18):** "B"-signum bekräftade som äkta Bautil-referenser (Göransson 1750). Alla 30 testade hittades i Runor/SNRD med modernt signum + exakta koord + översättning. Sockenfelet för B 1/B 100–103 var UPPSTRÖMS (låga B-nr = Uppland, ej Småland). runic_inscriptions har redan rätt data (rundata); felet satt kvar i `additional_coordinates` (gammal 2025-geokod). Skala: av 2438 standalone matchar **1393 huvudtabellen direkt, 546 via alternative_signum** (dolda dubbletter, ritades på fel plats), 499 genuint saknade.
+- [ ] **Kör `20260718140000_drop_superseded_standalone_coords.sql`** — raderar de 1939 superseder-posterna, verkar direkt i redan byggd app (ingen ombyggnad). Sedan `migration repair --status applied 20260718140000`.
+- [ ] De 499 kvarvarande: importera ordentligt (item 5) + verifiera mot Runor/SNRD (Daniels `bautil_lookup.py` / `enriched.json` som mall). Notera Bautil-dubbletter (B 1021/1022=Sm 103, B 1027/1030=Sm 121) och försvunna stenar (extant=false: Sm 20, U 314, U 315).
+
 ### 3. Kod-polish: deterministisk karta (kräver deploy)
 - [ ] `useExplorerState.handleResultClick` — **ta bort klick-tids-Nominatim-geokodning**; använd bara den kanoniska koordinaten (nu ifylld). Om ingen coord → toast, ingen gissning.
 - [ ] **Tona osäkra markörer** annorlunda via `coord_confidence` (~53 saknar, + ev. kvarvarande 'low'). Verifierat/approximativt-visualisering.
