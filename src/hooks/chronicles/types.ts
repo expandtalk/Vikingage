@@ -43,9 +43,28 @@ export interface HistoricalKing {
   description?: string;
   archaeological_evidence: boolean;
   runestone_mentions: boolean;
+  // Tillagda 2026-07-18 (migration 20260718200000)
+  role?: string | null;
+  de_facto_ruler?: boolean;
+  external_attestation?: string[] | null;
+  sources?: string | null;
+  node_control?: string | null;
   created_at: string;
   updated_at: string;
   dynasty?: RoyalDynasty;
+}
+
+export interface RoyalRelation {
+  id: string;
+  person_a: string;
+  person_b: string;
+  relation_type: string;
+  period?: string | null;
+  comment?: string | null;
+  source?: string | null;
+  king_a_id?: string | null;
+  king_b_id?: string | null;
+  created_at: string;
 }
 
 export interface KingSourceMention {

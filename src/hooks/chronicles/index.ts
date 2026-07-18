@@ -6,6 +6,7 @@ export type {
   HistoricalKing,
   KingSourceMention,
   KingInscriptionLink,
+  RoyalRelation,
 } from './types';
 
 // Export all hooks
@@ -15,6 +16,7 @@ export { useHistoricalKings } from './useHistoricalKings';
 export { useKingSourceMentions } from './useKingSourceMentions';
 export { useKingInscriptionLinks } from './useKingInscriptionLinks';
 export { useDynastyMembers } from './useDynastyMembers';
+export { useKingRelations } from './useKingRelations';
 
 // Export mutations
 export { 

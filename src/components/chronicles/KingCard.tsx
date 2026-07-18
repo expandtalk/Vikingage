@@ -57,22 +57,12 @@ export const KingCard: React.FC<KingCardProps> = ({ king, onClick }) => {
   };
 
   const getGenderBadge = (gender: string) => {
-    const colors = {
-      'male': 'bg-blue-600',
-      'female': 'bg-pink-600',
-      'unknown': 'bg-gray-600'
-    };
-    
-    const labels = language === 'en' ? {
-      'male': 'King',
-      'female': 'Queen',
-      'unknown': 'Unknown'
-    } : {
-      'male': 'Kung',
-      'female': 'Drottning',
-      'unknown': 'Okänt'
-    };
-    
+    // "unknown" visas inte — det förvirrar (Daniel 2026-07-18).
+    if (gender !== 'male' && gender !== 'female') return null;
+    const colors = { male: 'bg-blue-600', female: 'bg-pink-600' };
+    const labels = language === 'en'
+      ? { male: 'King', female: 'Queen' }
+      : { male: 'Kung', female: 'Drottning' };
     return (
       <Badge className={`${colors[gender as keyof typeof colors]} text-white`}>
         {labels[gender as keyof typeof labels]}

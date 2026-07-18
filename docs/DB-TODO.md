@@ -51,7 +51,8 @@ Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av 
    - [x] (c–f) **`01-corrections.sql`** GENERERAD — region-städning, dynasti-renames (Stenkilsätten→Stenkilska, Eriksätten→Erikska, Sverkerätren→Sverkerska) + 18 nya dynastier, 11 rättelser, dedup. **Fynd:** Håkan Magnusson ×2 är EJ dubbletter (olika personer 1093 vs 1362) → lämnas. Toke Gormsson/Sibbe är runstensbelagda → behålls, bara Björn Jarl/Sibir Fultarsson flaggas spekulativa. Olof III + "Ragnhild"-artefakten = DELETE utkommenterad (verifiera först).
    - [x] (g) **`02-import.sql`** GENERERAD (via `scripts/gen-royal-chronicles-import.mjs`) — 89 regenter + 42 relationer, idempotent.
    - [ ] **KÖR i editorn (i ordning): `01-corrections.sql` sedan `02-import.sql`** (ren data-SQL, ingen migration repair).
-   - [ ] (h) UI-följd: använd `role` i filterByRulerType; visa attestering/relationer; region-filter Västerleden/England.
+   - [x] **KÖRT av Daniel** — 212 kungar, 30 dynastier, 42 relationer (36 kungkopplade), 0 unknown gender. "Ser rätt ut."
+   - [~] (h) UI-följd (commit följer, kräver deploy): **Dynasti-kort expanderbart → medlemslista** (`DynastyCard`+useDynastyMembers). **Kort-klick → `KingDetailPanel`** (full beskrivning, external_attestation-badges, sources, **relationer** via ny `useKingRelations`, källomnämnanden). **Gender "unknown" borttaget** (filter + badge). KVAR: `role` i filterByRulerType (ersätt textgissning), runstenslänkar (`king_inscription_links` tomt → koppla), region-filter Västerleden/England.
 4. **🧭 Utflykter/excursions (ny sida/sektion)** — Birka, Långhundraleden, Broborg, Ölands fornborgar, Rösaringsåsen (processionsvägen). Daniel har lämnat rikt Rösaring-innehåll. Egen route/komponent + kort per utflykt (karta, beskrivning, källor).
 5. **Tidslinje/zoom** — verifiera tidslinjefiltret live; zoom-kluster döljer andra lager.
 6. **i18n live-jakt** — kvarvarande svenska i EN-läge.
