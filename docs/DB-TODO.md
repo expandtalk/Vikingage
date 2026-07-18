@@ -41,7 +41,7 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 
 ### 5. Fler trasiga rundata-tabeller (samma crosswalk-metod)
 Import kraftigt ofullständig (rundata.sql → DB). Prioritet efter synligt värde:
-- [ ] **translations** 24 → 8 508 (inskrifts-översättningar; syns i detaljvyn) — hög synlig vinst.
+- [x] **translations** — crosswalk klar (`scripts/data/rundata-translations-crosswalk.sql`, commit b1c1178). Rundata-tabellen har 8508 rader (1802 sv / 6683 en) → 6826 signum mappade (1773 sv, 6492 en). Fyller `runic_inscriptions.translation_sv/en` där tomma. **KÖR SQL:en i editorn** (ren data-UPDATE, ingen repair). OBS: rundata 2021 har mest ENGELSKA översättningar; svenska (nu 249→~1773) kan berikas mer via SNRD-API (som Bautil-skriptet).
 - [ ] **readings** 0 → 7 043 (+ `reading_source` 0 → 9 767).
 - [ ] **interpretations** 0 → 10 117 (+ `interpretation_source`) — tabell saknas i DB, skapa + importera.
 - [ ] **parishes**-tabellen 927 → 1 696 (komplett sockenlista; för polygon-featuren).
