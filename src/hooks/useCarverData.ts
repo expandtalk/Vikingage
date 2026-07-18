@@ -61,6 +61,17 @@ const cleanCarverDescription = (description: string | null): string | null => {
   return description;
 };
 
+// Många "ristare" i tabellen är inte namn utan stilattribueringar ("Samma som
+// gjort DR 155", "Troligen samma ristare som gjort Sö 324") — ingen identifierad
+// ristare. De ska visas separat, efter de namngivna. Heuristik på namnet.
+export const isAttributionName = (name: string | null): boolean => {
+  if (!name) return true;
+  const n = name.trim();
+  if (!n) return true;
+  return /^(samma|samme|eventuellt|troligen|visar)\b/i.test(n)
+    || /(gjort|ristare som|liknar|ornamentik som|likheter med)/i.test(n);
+};
+
 export const useCarverData = () => {
   const { data: carvers = [], isLoading: carversLoading } = useQuery({
     queryKey: ['carvers'],
@@ -116,6 +127,8 @@ export const useCarverData = () => {
     const derived = derivePeriod(inscriptions);
     return {
       ...carver,
+      // Namngiven ristare eller bara en stilattribuering ("samma som gjort X")?
+      isAttribution: isAttributionName(carver.name),
       // Rensa bort import-artefakter ("Importerad från MySQL data" m.fl.).
       description: cleanCarverDescription(carver.description),
       // Härledd aktiv period ur inskrifternas datering när kolumnen saknas.
@@ -131,14 +144,23 @@ export const useCarverData = () => {
       carverInscriptions: inscriptions,
       stats
     };
-  }).sort((a, b) => b.inscriptionCount - a.inscriptionCount); // Sort by total inscriptions DESC
+  }).sort((a, b) => {
+    // Namngivna ristare först, därefter stilattribueringar; inom varje grupp flest stenar först.
+    if (a.isAttribution !== b.isAttribution) return a.isAttribution ? 1 : -1;
+    return b.inscriptionCount - a.inscriptionCount;
+  });
+
+  const namedCount = carversWithInscriptions.filter((c) => !c.isAttribution).length;
 
   return {
     carvers: carversWithInscriptions,
+    namedCarvers: carversWithInscriptions.filter((c) => !c.isAttribution),
+    attributionCarvers: carversWithInscriptions.filter((c) => c.isAttribution),
     // Blockera bara listan på carvers+stats (behövs för antal/sortering).
     // Inskrifts-RPC:n laddas i bakgrunden — behövs först när detaljpanelen öppnas.
     isLoading: carversLoading || statsLoading,
     inscriptionsLoading,
-    totalCarvers: carvers.length
+    totalCarvers: carvers.length,
+    namedCount,
   };
 };

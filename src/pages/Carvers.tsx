@@ -14,7 +14,8 @@ import { CarverDetailPanel } from '../components/carvers/CarverDetailPanel';
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Carvers = () => {
-  const { carvers, isLoading, totalCarvers } = useCarverData();
+  const { carvers, namedCarvers, attributionCarvers, namedCount, isLoading, totalCarvers } = useCarverData();
+  const [showAttributions, setShowAttributions] = useState(false);
   const [selectedCarver, setSelectedCarver] = useState<string | null>(null);
   const [highlightedCarver, setHighlightedCarver] = useState<{ id: string } | null>(null);
   const [showDetailPanel, setShowDetailPanel] = useState(false);
@@ -49,6 +50,11 @@ const Carvers = () => {
     attributed: 'Tillskrivna',
     allCertain: 'Alla tillskrivningar säkra',
     certaintyMix: (certain: number, uncertain: number) => `${certain} säkra, ${uncertain} osäkra tillskrivningar`,
+    tabCarversNamed: (n: number) => `Runristare (${n})`,
+    attribTitle: (n: number) => `Ej namngivna ristargrupper — stilattribueringar (${n})`,
+    attribIntro: 'Dessa är inte identifierade ristare utan stilattribueringar ("samma hand som gjort X"). Attributionen hör egentligen hemma på de berörda stenarna.',
+    show: 'Visa',
+    hide: 'Dölj',
   } : {
     loading: 'Loading rune carvers...',
     title: 'Rune carvers',
@@ -69,6 +75,11 @@ const Carvers = () => {
     attributed: 'Attributed',
     allCertain: 'All attributions certain',
     certaintyMix: (certain: number, uncertain: number) => `${certain} certain, ${uncertain} uncertain attributions`,
+    tabCarversNamed: (n: number) => `Rune carvers (${n})`,
+    attribTitle: (n: number) => `Unnamed carver groups — stylistic attributions (${n})`,
+    attribIntro: 'These are not identified carvers but stylistic attributions ("same hand as X"). The attribution really belongs on the affected stones.',
+    show: 'Show',
+    hide: 'Hide',
   };
 
   const formatPeriod = (start: number | null, end: number | null) => {
@@ -105,6 +116,65 @@ const Carvers = () => {
   const handleCardLeave = () => {
     setHighlightedCarver(null);
   };
+
+  const renderCarverCard = (carver: any) => (
+    <Card
+      key={carver.id}
+      id={`carver-${carver.id}`}
+      className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
+        highlightedCarver?.id === carver.id ? 'ring-2 ring-accent' : ''
+      }`}
+      onMouseEnter={() => handleCardHover(carver.id)}
+      onMouseLeave={handleCardLeave}
+      onClick={() => handleCardClick(carver)}
+    >
+      <CardHeader className="pb-3">
+        <CardTitle className="text-foreground text-lg flex items-center gap-2">
+          <User className="h-5 w-5 text-accent" />
+          {carver.name}
+        </CardTitle>
+        <div className="flex gap-2 flex-wrap">
+          <Badge variant="secondary" className="text-xs">
+            <Hash className="h-3 w-3 mr-1" />
+            {c.badgeStones(carver.inscriptionCount)}
+          </Badge>
+          {carver.signedCount > 0 && (
+            <Badge variant="default" className="text-xs bg-green-600">
+              <CheckCircle className="h-3 w-3 mr-1" />
+              {c.badgeSigned(carver.signedCount)}
+            </Badge>
+          )}
+          {carver.uncertainCount > 0 && (
+            <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-500">
+              <AlertTriangle className="h-3 w-3 mr-1" />
+              {c.badgeUncertain(carver.uncertainCount)}
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {carver.description && (
+          <p className="text-sm text-muted-foreground italic">
+            "{carver.description}"
+          </p>
+        )}
+        <div className="space-y-2">
+          {(carver.period_active_start || carver.period_active_end) && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>{formatPeriod(carver.period_active_start, carver.period_active_end)}</span>
+            </div>
+          )}
+          {carver.region && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              <span>{carver.region}{carver.country && `, ${carver.country}`}</span>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   if (isLoading) {
     return (
@@ -165,7 +235,7 @@ const Carvers = () => {
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="carvers" className="flex items-center gap-2">
               <Scroll className="h-4 w-4" />
-              {c.tabCarvers(totalCarvers)}
+              {c.tabCarversNamed(namedCount)}
             </TabsTrigger>
             <TabsTrigger value="statistics" className="flex items-center gap-2">
               <User className="h-4 w-4" />
@@ -232,75 +302,43 @@ const Carvers = () => {
           </TabsContent>
 
           <TabsContent value="carvers" className="space-y-6">
-            {/* Karta: var varje ristare var verksam (region-centroider) */}
+            {/* Karta: var varje NAMNGIVEN ristare var verksam (region-centroider) */}
             <CarversMap
-              carvers={carvers}
+              carvers={namedCarvers}
               onCarverClick={handleCarverClick}
               highlightedCarver={highlightedCarver}
             />
 
+            {/* Namngivna ristare först */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {carvers.map((carver) => (
-                <Card 
-                  key={carver.id}
-                  id={`carver-${carver.id}`}
-                  className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
-                    highlightedCarver?.id === carver.id ? 'ring-2 ring-accent' : ''
-                  }`}
-                  onMouseEnter={() => handleCardHover(carver.id)}
-                  onMouseLeave={handleCardLeave}
-                  onClick={() => handleCardClick(carver)}
-                >
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-foreground text-lg flex items-center gap-2">
-                      <User className="h-5 w-5 text-accent" />
-                      {carver.name}
-                    </CardTitle>
-                    <div className="flex gap-2 flex-wrap">
-                      <Badge variant="secondary" className="text-xs">
-                        <Hash className="h-3 w-3 mr-1" />
-                        {c.badgeStones(carver.inscriptionCount)}
-                      </Badge>
-                      {carver.signedCount > 0 && (
-                        <Badge variant="default" className="text-xs bg-green-600">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          {c.badgeSigned(carver.signedCount)}
-                        </Badge>
-                      )}
-                      {carver.uncertainCount > 0 && (
-                        <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-500">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          {c.badgeUncertain(carver.uncertainCount)}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {carver.description && (
-                      <p className="text-sm text-muted-foreground italic">
-                        "{carver.description}"
-                      </p>
-                    )}
-                    
-                    <div className="space-y-2">
-                      {(carver.period_active_start || carver.period_active_end) && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          <span>{formatPeriod(carver.period_active_start, carver.period_active_end)}</span>
-                        </div>
-                      )}
-                      
-                      {carver.region && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          <span>{carver.region}{carver.country && `, ${carver.country}`}</span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {namedCarvers.map(renderCarverCard)}
             </div>
+
+            {/* Stilattribueringar (ej identifierade ristare) — hopfällt */}
+            {attributionCarvers.length > 0 && (
+              <div className="pt-4 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setShowAttributions((v) => !v)}
+                  className="w-full flex items-center justify-between text-left group"
+                >
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {c.attribTitle(attributionCarvers.length)}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1 max-w-3xl">{c.attribIntro}</p>
+                  </div>
+                  <Badge variant="outline" className="ml-4 shrink-0">
+                    {showAttributions ? c.hide : c.show}
+                  </Badge>
+                </button>
+                {showAttributions && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 opacity-90">
+                    {attributionCarvers.map(renderCarverCard)}
+                  </div>
+                )}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>

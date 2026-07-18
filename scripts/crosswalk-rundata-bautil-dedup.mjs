@@ -30,6 +30,24 @@ for (const [, sigs] of inscToSig) {
     if (!pairs.has(s.text)) pairs.set(s.text, modern.text);
   }
 }
+// Filtrera paren till gamla signum som FAKTISKT finns som rad i DB (annars är
+// merge/delete no-ops som bara sväller filen). Hämtas via Supabase REST (publik läsning).
+const norm0 = (s) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+const SUPABASE_URL = 'https://mnuifmcjspeaauzehasj.supabase.co';
+const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1udWlmbWNqc3BlYWF1emVoYXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMzQ1MzQsImV4cCI6MjA2MzYxMDUzNH0.ZkAhIwMPRe4lgAH8MxUCNjM39Vh4hyk9IVdmX0jC-z8';
+const existing = new Set();
+for (let offset = 0; ; offset += 1000) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/runic_inscriptions?select=signum`, {
+    headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, Range: `${offset}-${offset + 999}`, 'Range-Unit': 'items' },
+  });
+  const chunk = await res.json();
+  if (!Array.isArray(chunk) || chunk.length === 0) break;
+  for (const r of chunk) if (r.signum) existing.add(norm0(r.signum));
+  if (chunk.length < 1000) break;
+}
+console.log(`DB-signum hämtade: ${existing.size}`);
+for (const oldSig of [...pairs.keys()]) if (!existing.has(norm0(oldSig))) pairs.delete(oldSig);
+
 const rows = [...pairs.entries()];
 const esc = (s) => `'${s.replace(/'/g, "''")}'`;
 const values = rows.map(([o, m]) => `(${esc(o)},${esc(m)})`).join(',\n');
@@ -51,34 +69,36 @@ join (values\n${values}\n) as p(old_sig, modern_sig) on ${norm('r.signum')} = ${
 where exists (select 1 from public.runic_inscriptions m where ${norm('m.signum')} = ${norm('p.modern_sig')});`;
 
 const del = `-- DEDUP: slår ihop gamla katalogsignum (Bautil/Bergen/L/BN…) med moderna stenar.
--- STEG 1 bevarar ALLA gamla namn som sökbara alias på moderna raden (search_inscriptions_flexible
--- söker i alternative_signum) => man kan fortfarande söka på "B 1054" och hitta Öl 37.
--- STEG 2 flyttar koordinat om moderna saknar. STEG 3 raderar den tomma gamla dubbletten
--- ENDAST där moderna finns. Idempotent. Destruktivt (radering) — kör medvetet.
+-- Temptabell => paren inline EN gång. STEG 1 bevarar gamla namn som sökbara alias
+-- (search_inscriptions_flexible söker i alternative_signum → "B 1054" hittar Öl 37).
+-- STEG 2 flyttar koord om moderna saknar. STEG 3 raderar tom gammal dubblett där modern finns.
+-- Idempotent. Destruktivt (radering) — kör medvetet.
 begin;
+create temp table _dedup(old_sig text, modern_sig text) on commit drop;
+insert into _dedup(old_sig, modern_sig) values
+${values};
 
--- 1. Bevara gamla namn som alias (görs för ALLA moderna rader som finns, även om ingen radering sker).
+-- 1. Bevara gamla namn som sökbara alias på moderna raden.
 update public.runic_inscriptions m
 set alternative_signum = (
   select array(
     select distinct x
-    from unnest(coalesce(m.alternative_signum, '{}'::text[]) || p.olds) x
+    from unnest(coalesce(m.alternative_signum, '{}'::text[]) || g.olds) x
     where x is not null and x <> m.signum
   )
 )
-from (values\n${mergeValues}\n) as p(modern_sig, olds)
-where ${norm('m.signum')} = ${norm('p.modern_sig')};
+from (select modern_sig, array_agg(distinct old_sig) as olds from _dedup group by modern_sig) g
+where ${norm('m.signum')} = ${norm('g.modern_sig')};
 
 -- 2. Flytta koordinat till moderna raden om den saknar.
 update public.runic_inscriptions m
 set coordinates = r.coordinates, coord_source = coalesce(m.coord_source,'bautil_transfer')
-from public.runic_inscriptions r
-join (values\n${values}\n) as p(old_sig, modern_sig) on ${norm('r.signum')} = ${norm('p.old_sig')}
+from _dedup p join public.runic_inscriptions r on ${norm('r.signum')} = ${norm('p.old_sig')}
 where ${norm('m.signum')} = ${norm('p.modern_sig')} and m.coordinates is null and r.coordinates is not null;
 
--- 3. Radera gamla tomma dubbletter där moderna signumet finns (namnet är nu bevarat i steg 1).
+-- 3. Radera gamla tomma dubbletter där moderna signumet finns (namnet bevarat i steg 1).
 delete from public.runic_inscriptions r
-using (values\n${values}\n) as p(old_sig, modern_sig)
+using _dedup p
 where ${norm('r.signum')} = ${norm('p.old_sig')}
   and exists (select 1 from public.runic_inscriptions m where ${norm('m.signum')} = ${norm('p.modern_sig')});
 commit;`;
