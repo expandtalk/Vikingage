@@ -79,6 +79,15 @@ Genomgång av `rundata.sql` (27 MB, Evighetsrunor, repo-roten). **Vi har idag en
 - Not: notes är otypade i källan → allt hamnar i `scholarly_notes` (ej uppdelat på historical_context/paleographic_notes; kan AI-klassas senare).
 - **Alternativ helfix (senare):** re-nyckla imagelinks/dating/notes/translations `objectid` → `runic_inscriptions.id` via signum, så ALL befintlig plumbing (inkl. detaljerad datering, översättningar) tänds. Kräver objectid→signum-map ur rundata.sql (`inscriptions`/`signa`/`signum_inscription` saknas i Supabase).
 
+**✅ STEG 3 PILOT KÖRD (Daniel 2026-07-18):** `scripts/crosswalk-rundata-import-inscriptions.mjs` → `rundata-import-inscriptions.sql`. Importerade **1 105 saknade inskrifter** (Sö 13→460, G 127→432, Sm 11→199, Öl 25→190) med `id = objectid`. Resultat: `imagelinks_matched 0→208`, `dating_matched 0→265`, `translations_matched 0→1633` — spegeltabellerna tänds nu automatiskt via `useInscriptionExtendedData`. Totalt runic_inscriptions 3 067→4 172. Ingen deploy behövdes.
+- [ ] **Rulla ut till RESTEN av landskapen** (U ~350 saknas, Vg, Ög, Gs, Hs, Nä, Vs, Vr, Dr, Bo, Ha… + utländska DR/N/IS/GB med rätt `country`). Utöka `TARGET` + prefix→landskap/land-map i generatorn.
+- [ ] **socken/harad för de nya raderna** — kördes ej i importen (nullable). Kör om socken/härad-crosswalken (`20260718130000`-mönstret) eller härled via places-hierarkin (roadmap-steg 4).
+
+**🧹 Städning (Daniel 2026-07-18):**
+- [x] **Platshållar-transliteration nollad** — 1 552 rader hade texten "Translitteration saknas (endast signum från databas)" lagrad SOM transliteration (+ tomma dating_text=''). Nollställda via MCP → UI visar korrekt "saknas"-läge. `2 436` äkta translitterationer kvar.
+- [ ] **DUBBLETT-VARNING: gamla katalogsignum vs moderna.** B-stenar (Bautil), Bergen, BN, L m.fl. är ALIAS för moderna stenar (B 1054 = Öl 37, Bergen 163 = N B163). **1 553 gamla-katalog-rader (1 408 tomma):** Bergen 636, B 499, BN 160, KJ/Bh 67, DK 38… Pilotimporten skapade dubbletter (importerade Öl 37 fast B 1054 redan fanns). Dedup-verktyg klart: `scripts/crosswalk-rundata-bautil-dedup.mjs` → `rundata-bautil-dedup.sql` (5 725 alias→modern-par). Tar bort gammal tom rad ENDAST om modern finns (flyttar koord först); Bergen utan modern rad överlever. **Kör dry-run först** (`rundata-bautil-dedup-dryrun.sql`). Destruktivt → Daniels OK.
+- [ ] **Gör rollout-importen alias-medveten** innan den körs (annars skapar den fler dubbletter): skippa signum vars alias redan finns som rad.
+
 **Rekommenderad ordning för RESTEN (crosswalk på signum, samma metod som koordinaterna):**
 1. **notes + imagelinks + dating** → nya kolumner/tabeller på inskrifter (`research_notes`, `image_urls`, `dating_text`). Ger direkt Daniels önskemål: forskarnoter, historisk kontext, paleografi, arkivbilder. *Störst synligt värde, lägst risk.*
 2. **references/uris/sources** → utlänkar + källor i detaljvyn (vetenskaplig trovärdighet).

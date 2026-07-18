@@ -7,8 +7,16 @@
 // Kör: node scripts/crosswalk-rundata-import-inscriptions.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const TARGET = new Set(['Sm', 'Sö', 'Öl', 'G']);
-const LANDSCAPE = { 'Sm': 'Småland', 'Sö': 'Södermanland', 'Öl': 'Öland', 'G': 'Gotland' };
+// Pilotlandskapen är redan importerade — hoppa dem (WHERE NOT EXISTS skulle ändå dedupa).
+const DONE = new Set(['Sm', 'Sö', 'Öl', 'G']);
+const SV_LANDSCAPE = {
+  U: 'Uppland', 'Sö': 'Södermanland', 'Ög': 'Östergötland', Sm: 'Småland', 'Öl': 'Öland',
+  G: 'Gotland', Vg: 'Västergötland', Bo: 'Bohuslän', Ha: 'Halland', 'Nä': 'Närke',
+  Vs: 'Västmanland', Vr: 'Värmland', Gs: 'Gästrikland', Hs: 'Hälsingland', M: 'Medelpad',
+  'Ång': 'Ångermanland', J: 'Jämtland', 'Hä': 'Härjedalen', D: 'Dalarna', Nb: 'Norrbotten',
+  Vb: 'Västerbotten', Lp: 'Lappland', Sk: 'Skåne', Bl: 'Blekinge',
+};
+const FOREIGN = { DR: 'Denmark', N: 'Norway', IS: 'Iceland', GR: 'Greenland' };
 
 const lines = readFileSync('rundata.sql', 'utf8').split('\n');
 
@@ -143,7 +151,7 @@ for (const [objid, inscid] of objToInsc) {
   const s = signumsFor(inscid);
   if (!s) continue;
   const pref = prefixOf(s.primary);
-  if (!TARGET.has(pref)) continue;
+  if (DONE.has(pref)) continue; // pilotlandskapen redan importerade
   const sigKey = s.primary.toLowerCase().replace(/\s+/g, ' ');
   if (seenSig.has(sigKey)) continue;
   seenSig.add(sigKey);
@@ -165,7 +173,8 @@ for (const [objid, inscid] of objToInsc) {
     notes: notesByObj.has(objid) ? pickText(notesByObj.get(objid)) : null,
     otype: meta.artefact || null,
     material: meta.material || null,
-    landscape: LANDSCAPE[pref],
+    landscape: SV_LANDSCAPE[pref] || null,
+    country: FOREIGN[pref] || 'Sweden',
   };
   rows.push(row);
   perPrefix[pref] = (perPrefix[pref] || 0) + 1;
@@ -173,7 +182,7 @@ for (const [objid, inscid] of objToInsc) {
 
 const values = rows.map((r) =>
   `(${esc(r.id)},${esc(r.signum)},${esc(r.alt)},${num(r.lat)},${num(r.lng)},${esc(r.translit)},${esc(r.norm)},` +
-  `${esc(r.tsv)},${esc(r.ten)},${esc(r.dating)},${esc(r.notes)},${esc(r.otype)},${esc(r.material)},${esc(r.landscape)})`
+  `${esc(r.tsv)},${esc(r.ten)},${esc(r.dating)},${esc(r.notes)},${esc(r.otype)},${esc(r.material)},${esc(r.landscape)},${esc(r.country)})`
 ).join(',\n');
 
 const out = `-- STEG 3: import av saknade inskrifter ur rundata.sql (pilot: Sm/Sö/Öl/G).
@@ -191,10 +200,10 @@ select
   case when v.lat is not null then 'rundata_evighetsrunor' else null end,
   case when v.lat is not null then 'high' else null end,
   v.translit, v.norm, v.tsv, v.ten, v.dating, v.notes, v.otype, v.material, v.landscape,
-  'Sweden', 'rundata_evighetsrunor'
+  coalesce(v.country,'Sweden'), 'rundata_evighetsrunor'
 from (values
 ${values}
-) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape)
+) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape, country)
 where not exists (
   select 1 from public.runic_inscriptions ri
   where lower(regexp_replace(ri.signum,'\\s+',' ','g')) = lower(regexp_replace(v.signum,'\\s+',' ','g'))
@@ -203,6 +212,6 @@ on conflict (id) do nothing;
 `;
 
 writeFileSync('scripts/data/rundata-import-inscriptions.sql', out);
-console.log(`Kandidater (unika signum i ${[...TARGET].join('/')}):`, rows.length, perPrefix);
+console.log(`Kandidater (unika signum, exkl. redan importerade ${[...DONE].join('/')}):`, rows.length, perPrefix);
 console.log(`Med koordinat: ${rows.filter((r) => r.lat != null).length} | translit: ${rows.filter((r) => r.translit).length} | översättning: ${rows.filter((r) => r.tsv || r.ten).length} | noter: ${rows.filter((r) => r.notes).length}`);
 console.log('Wrote scripts/data/rundata-import-inscriptions.sql');
