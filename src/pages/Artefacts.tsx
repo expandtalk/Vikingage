@@ -30,7 +30,7 @@ const ArtefactsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedArtefact, setSelectedArtefact] = useState<ArtefactWithCategory | null>(null);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const { data: artefacts, isLoading, error } = useQuery({
     queryKey: ['artefacts-with-categories'],
@@ -246,7 +246,7 @@ const ArtefactsPage = () => {
                       </Badge>
                       <div className="flex items-center gap-1 text-slate-400">
                         <Info className="h-3 w-3" />
-                        <span className="text-xs">Klicka för detaljer</span>
+                        <span className="text-xs">{language === 'sv' ? 'Klicka för detaljer' : 'Click for details'}</span>
                       </div>
                     </div>
                     <div className="text-xs text-slate-500">

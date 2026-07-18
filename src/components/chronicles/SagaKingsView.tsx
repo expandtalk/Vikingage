@@ -6,6 +6,7 @@ import { Sparkles, Crown, Book, AlertTriangle, Info } from 'lucide-react';
 import type { HistoricalKing, KingSourceMention } from '@/hooks/useRoyalChronicles';
 import { KingCard } from './KingCard';
 import { KingSourceMentions } from './KingSourceMentions';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SagaKingsViewProps {
   sagaKings: HistoricalKing[];
@@ -20,6 +21,33 @@ export const SagaKingsView: React.FC<SagaKingsViewProps> = ({
   selectedKing,
   sourceMentions
 }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const c = sv
+    ? {
+        noneInCategory: 'Inga kungar i denna kategori',
+        aboutTitle: 'Om sagokungar',
+        aboutLead1: 'Sagokungar', aboutLead2: 'är härskare som huvudsakligen finns i sagolitteratur och som saknar tillförlitliga historiska bevis för sin existens.',
+        pureSagas: 'Rena sagor', pureSagasDesc: 'Ynglingaätten och andra utan historisk grund',
+        possiblyHist: 'Möjligen historiska', possiblyHistDesc: 'Med runstenar, arkeologi eller externa källor',
+        otherKings: 'Övriga sagokungar', otherKingsDesc: 'Legendära gestalter från olika traditioner',
+        secPossiblyTitle: 'Möjligen historiska sagokungar', secPossiblyDesc: 'Kungar med runstenar, arkeologiska fynd eller externa källor som stöd',
+        secYnglingaTitle: 'Ynglingaätten', secYnglingaDesc: 'Legendarisk dynasti utan historisk grund, men central i nordisk sagotradition',
+        secOtherTitle: 'Övriga sagokungar', secOtherDesc: 'Andra legendära härskare från nordisk sagotradition',
+        emptyTitle: 'Inga sagokungar hittades', emptyDesc: 'Sagokungar är kungar med status "legendary" i databasen',
+      }
+    : {
+        noneInCategory: 'No kings in this category',
+        aboutTitle: 'About legendary kings',
+        aboutLead1: 'Legendary kings', aboutLead2: 'are rulers found mainly in saga literature and lacking reliable historical evidence for their existence.',
+        pureSagas: 'Pure sagas', pureSagasDesc: 'The Yngling dynasty and others without historical basis',
+        possiblyHist: 'Possibly historical', possiblyHistDesc: 'With runestones, archaeology or external sources',
+        otherKings: 'Other legendary kings', otherKingsDesc: 'Legendary figures from various traditions',
+        secPossiblyTitle: 'Possibly historical legendary kings', secPossiblyDesc: 'Kings supported by runestones, archaeological finds or external sources',
+        secYnglingaTitle: 'The Yngling dynasty', secYnglingaDesc: 'Legendary dynasty without historical basis, but central to Norse saga tradition',
+        secOtherTitle: 'Other legendary kings', secOtherDesc: 'Other legendary rulers from Norse saga tradition',
+        emptyTitle: 'No legendary kings found', emptyDesc: 'Legendary kings are kings with status "legendary" in the database',
+      };
   // Group saga kings by category
   const ynglingaKings = sagaKings.filter(king => 
     king.dynasty?.name?.toLowerCase().includes('yngling') ||
@@ -76,7 +104,7 @@ export const SagaKingsView: React.FC<SagaKingsViewProps> = ({
           </div>
         ) : (
           <div className="text-center py-4">
-            <p className="text-slate-400">Inga kungar i denna kategori</p>
+            <p className="text-slate-400">{c.noneInCategory}</p>
           </div>
         )}
       </CardContent>
@@ -90,27 +118,26 @@ export const SagaKingsView: React.FC<SagaKingsViewProps> = ({
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Info className="h-5 w-5" />
-            Om sagokungar
+            {c.aboutTitle}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-slate-300 space-y-2 text-sm">
             <p>
-              <strong>Sagokungar</strong> är härskare som huvudsakligen finns i sagolitteratur och 
-              som saknar tillförlitliga historiska bevis för sin existens.
+              <strong>{c.aboutLead1}</strong> {c.aboutLead2}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <div className="bg-purple-900/30 p-3 rounded">
-                <h4 className="font-semibold text-purple-300">Rena sagor</h4>
-                <p className="text-xs">Ynglingaätten och andra utan historisk grund</p>
+                <h4 className="font-semibold text-purple-300">{c.pureSagas}</h4>
+                <p className="text-xs">{c.pureSagasDesc}</p>
               </div>
               <div className="bg-orange-900/30 p-3 rounded">
-                <h4 className="font-semibold text-orange-300">Möjligen historiska</h4>
-                <p className="text-xs">Med runstenar, arkeologi eller externa källor</p>
+                <h4 className="font-semibold text-orange-300">{c.possiblyHist}</h4>
+                <p className="text-xs">{c.possiblyHistDesc}</p>
               </div>
               <div className="bg-red-900/30 p-3 rounded">
-                <h4 className="font-semibold text-red-300">Övriga sagokungar</h4>
-                <p className="text-xs">Legendära gestalter från olika traditioner</p>
+                <h4 className="font-semibold text-red-300">{c.otherKings}</h4>
+                <p className="text-xs">{c.otherKingsDesc}</p>
               </div>
             </div>
           </div>
@@ -119,8 +146,8 @@ export const SagaKingsView: React.FC<SagaKingsViewProps> = ({
 
       {/* Possibly historical saga kings */}
       <SagaKingSection
-        title="Möjligen historiska sagokungar"
-        description="Kungar med runstenar, arkeologiska fynd eller externa källor som stöd"
+        title={c.secPossiblyTitle}
+        description={c.secPossiblyDesc}
         kings={possiblyHistoricalKings}
         icon={AlertTriangle}
         badgeColor="bg-orange-600"
@@ -128,8 +155,8 @@ export const SagaKingsView: React.FC<SagaKingsViewProps> = ({
 
       {/* Ynglinga dynasty */}
       <SagaKingSection
-        title="Ynglingaätten"
-        description="Legendarisk dynasti utan historisk grund, men central i nordisk sagotradition"
+        title={c.secYnglingaTitle}
+        description={c.secYnglingaDesc}
         kings={ynglingaKings}
         icon={Crown}
         badgeColor="bg-purple-600"
@@ -137,8 +164,8 @@ export const SagaKingsView: React.FC<SagaKingsViewProps> = ({
 
       {/* Other saga kings */}
       <SagaKingSection
-        title="Övriga sagokungar"
-        description="Andra legendära härskare från nordisk sagotradition"
+        title={c.secOtherTitle}
+        description={c.secOtherDesc}
         kings={otherSagaKings}
         icon={Sparkles}
         badgeColor="bg-red-600"
@@ -153,9 +180,9 @@ export const SagaKingsView: React.FC<SagaKingsViewProps> = ({
       {sagaKings.length === 0 && (
         <div className="text-center py-12">
           <Sparkles className="h-16 w-16 text-slate-500 mx-auto mb-4" />
-          <p className="text-slate-400 text-xl mb-2">Inga sagokungar hittades</p>
+          <p className="text-slate-400 text-xl mb-2">{c.emptyTitle}</p>
           <p className="text-slate-500">
-            Sagokungar är kungar med status "legendary" i databasen
+            {c.emptyDesc}
           </p>
         </div>
       )}
