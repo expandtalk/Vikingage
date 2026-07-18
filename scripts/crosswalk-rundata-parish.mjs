@@ -60,10 +60,9 @@ for (const [objectid, placeid] of objPlace) {
 }
 
 const rows = [...sigParish.entries()];
-const esc = (s) => (s == null ? null : s.replace(/'/g, "''"));
-const values = rows.map(([sig, v]) =>
-  `('${esc(sig)}',${v.socken ? `'${esc(v.socken)}'` : 'NULL'},${v.harad ? `'${esc(v.harad)}'` : 'NULL'})`
-).join(',\n');
+// Dollar-citering ($$...$$) — Supabase-editorn av-dubblar '' till ' vid inklistring.
+const dq = (s) => (s == null || s === '' ? 'NULL' : (String(s).includes('$$') ? `$q$${s}$q$` : `$$${s}$$`));
+const values = rows.map(([sig, v]) => `(${dq(sig)},${dq(v.socken)},${dq(v.harad)})`).join(',\n');
 
 const out = `-- Socken/härad-crosswalk ur rundata.sql (Evighetsrunor). Auto-genererat.
 -- ${rows.length} signum-par. Lägger runic_inscriptions.socken + .harad (auktoritativt
