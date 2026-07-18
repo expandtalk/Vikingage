@@ -44,6 +44,8 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
         pick: 'Välj ett område i listan för att se fynden på kartan.',
         showing: 'Visar',
         all: 'Alla områden',
+        sortName: 'A–Ö',
+        sortCount: 'Flest fynd',
       }
     : {
         title: mode === 'hundreds' ? 'Hundreds' : 'Parishes',
@@ -55,6 +57,8 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
         pick: 'Pick a region in the list to see its finds on the map.',
         showing: 'Showing',
         all: 'All regions',
+        sortName: 'A–Z',
+        sortCount: 'Most finds',
       };
 
   // Gruppera fynden per härad/socken (bara de med koordinat — annars syns de inte).
@@ -87,12 +91,18 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
 
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'count'>('name');
 
   const filteredRegions = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return regions;
-    return regions.filter((r) => r.name.toLowerCase().includes(q) || r.landscape.toLowerCase().includes(q));
-  }, [regions, query]);
+    const base = q
+      ? regions.filter((r) => r.name.toLowerCase().includes(q) || r.landscape.toLowerCase().includes(q))
+      : regions;
+    const sorted = [...base];
+    if (sortBy === 'count') sorted.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'sv'));
+    else sorted.sort((a, b) => a.name.localeCompare(b.name, 'sv'));
+    return sorted;
+  }, [regions, query, sortBy]);
 
   const activeInscriptions = useMemo(() => {
     if (selected) return regions.find((r) => r.name === selected)?.inscriptions ?? [];
@@ -167,6 +177,19 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
                 placeholder={c.search}
                 className="pl-8 bg-white/5 border-white/20 text-white placeholder:text-slate-400"
               />
+            </div>
+            <div className="flex gap-1 text-xs">
+              {(['name', 'count'] as const).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => setSortBy(key)}
+                  className={`px-2 py-1 rounded transition-colors ${
+                    sortBy === key ? 'bg-amber-500/20 text-amber-200' : 'text-slate-300 hover:bg-white/10'
+                  }`}
+                >
+                  {key === 'name' ? c.sortName : c.sortCount}
+                </button>
+              ))}
             </div>
             <ScrollArea className="h-[520px] pr-3">
               <ul className="space-y-1">
