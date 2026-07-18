@@ -98,8 +98,8 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
   const { language } = useLanguage();
   const sv = language === 'sv';
   const M = sv
-    ? { interactiveMap: 'Interaktiv karta', fortifications: 'Befästningar', cities: 'Städer', hillforts: 'Fornborgar', showAll: 'Visa alla', legend: 'Förklaring' }
-    : { interactiveMap: 'Interactive map', fortifications: 'Fortifications', cities: 'Cities', hillforts: 'Hillforts', showAll: 'Show all', legend: 'Legend' };
+    ? { interactiveMap: 'Interaktiv karta', fortifications: 'Befästningar', cities: 'Centra', hillforts: 'Fornborgar', showAll: 'Visa alla', legend: 'Förklaring' }
+    : { interactiveMap: 'Interactive map', fortifications: 'Fortifications', cities: 'Centres', hillforts: 'Hillforts', showAll: 'Show all', legend: 'Legend' };
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
