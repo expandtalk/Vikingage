@@ -36,6 +36,9 @@ export const useMapTileLayer = ({
     const tileLayer = L.tileLayer(cfg.url, {
       attribution: cfg.attribution,
       maxZoom: cfg.maxZoom,
+      // Skala upp bortom källans sista tile-nivå istället för att visa felrutor
+      // ("Map data not available") vid inzoomning.
+      maxNativeZoom: cfg.maxNativeZoom,
       opacity: 1.0,
       className: cfg.className,
     });

@@ -164,6 +164,19 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
     return sorted;
   }, [regions, query, sortBy]);
 
+  // Vid landssortering: gruppera under landsrubrik (landet skrivs EN gång, ej per rad).
+  type ListItem = { kind: 'header'; country: string } | { kind: 'item'; region: RegionGroup };
+  const listItems = useMemo<ListItem[]>(() => {
+    if (sortBy !== 'country') return filteredRegions.map((r) => ({ kind: 'item', region: r }));
+    const out: ListItem[] = [];
+    let prev: string | null = null;
+    for (const r of filteredRegions) {
+      if (r.country !== prev) { out.push({ kind: 'header', country: r.country }); prev = r.country; }
+      out.push({ kind: 'item', region: r });
+    }
+    return out;
+  }, [filteredRegions, sortBy]);
+
   const activeInscriptions = useMemo(() => {
     if (selected) return regions.find((r) => r.name === selected)?.inscriptions ?? [];
     return regions.flatMap((r) => r.inscriptions);
@@ -263,25 +276,34 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
                     {c.all}
                   </button>
                 </li>
-                {filteredRegions.map((r) => (
-                  <li key={r.name}>
-                    <button
-                      onClick={() => setSelected(r.name)}
-                      className={`w-full flex items-center justify-between gap-2 text-left p-2 rounded transition-colors ${
-                        selected === r.name ? 'bg-amber-500/20 text-amber-200' : 'text-white hover:bg-white/10'
-                      }`}
+                {listItems.map((it, idx) =>
+                  it.kind === 'header' ? (
+                    <li
+                      key={`h-${it.country}-${idx}`}
+                      className="sticky top-0 z-10 px-2 pt-3 pb-1 text-amber-200/90 text-xs font-semibold uppercase tracking-wide bg-slate-900/70 backdrop-blur"
                     >
-                      <span className="truncate">
-                        {r.name}
-                        {(() => {
-                          const label = sortBy === 'country' ? countryLabel(r.country) : r.landscape;
-                          return label ? <span className="text-slate-400 text-xs ml-1">· {label}</span> : null;
-                        })()}
-                      </span>
-                      <Badge variant="secondary" className="shrink-0">{r.count}</Badge>
-                    </button>
-                  </li>
-                ))}
+                      {countryLabel(it.country) || (sv ? 'Okänt land' : 'Unknown country')}
+                    </li>
+                  ) : (
+                    <li key={it.region.name}>
+                      <button
+                        onClick={() => setSelected(it.region.name)}
+                        className={`w-full flex items-center justify-between gap-2 text-left p-2 rounded transition-colors ${
+                          selected === it.region.name ? 'bg-amber-500/20 text-amber-200' : 'text-white hover:bg-white/10'
+                        }`}
+                      >
+                        <span className="truncate">
+                          {it.region.name}
+                          {/* Landssortering: landet står i rubriken → visa bara landskap i övriga lägen. */}
+                          {sortBy !== 'country' && it.region.landscape ? (
+                            <span className="text-slate-400 text-xs ml-1">· {it.region.landscape}</span>
+                          ) : null}
+                        </span>
+                        <Badge variant="secondary" className="shrink-0">{it.region.count}</Badge>
+                      </button>
+                    </li>
+                  ),
+                )}
               </ul>
             </ScrollArea>
           </div>

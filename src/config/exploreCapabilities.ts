@@ -5,7 +5,8 @@ export type BasemapId = "osm" | "terrain" | "light";
 export interface BasemapConfig {
   url: string;
   attribution: string;
-  maxZoom: number;
+  maxZoom: number;        // hur långt kartan får zooma
+  maxNativeZoom: number;  // sista zoom där källan HAR tiles (Leaflet skalar upp bortom)
   className: string;
 }
 
@@ -14,18 +15,23 @@ export const BASEMAPS: Record<BasemapId, BasemapConfig> = {
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     attribution: "© OpenStreetMap contributors",
     maxZoom: 19,
+    maxNativeZoom: 19,
     className: "modern-detailed-tiles",
   },
   terrain: {
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}",
-    attribution: "Tiles © Esri — Source: US National Park Service",
-    maxZoom: 18,
+    // Var World_Physical_Map (tiles bara till z~8) → "Map data not available" vid
+    // inzoomning. World_Topo_Map har detaljerade tiles till z19.
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+    attribution: "Tiles © Esri — Esri, HERE, Garmin, USGS, NGA",
+    maxZoom: 19,
+    maxNativeZoom: 19,
     className: "viking-terrain-tiles",
   },
   light: {
     url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
     attribution: "© OpenStreetMap contributors © CARTO",
     maxZoom: 20,
+    maxNativeZoom: 20,
     className: "light-neutral-tiles",
   },
 };
