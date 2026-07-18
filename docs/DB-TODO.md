@@ -16,9 +16,17 @@ Live-QA kört mot www.vikingage.se (browse, textkontroll):
 - [ ] Ej klicktestat (browse-klick opålitligt) — bekräfta manuellt: geneticist utan runstenar; inscriptions sv+utl; rivers/trade = farleder; tidslinjen filtrerar; Prices→"Roman Price Converter"; Källa på norra Öland; i18n EN-läge.
 - **Cache:** `Cache-Control: no-cache` på `index.html`.
 
-### A2. 🔁 Väntar NÄSTA build+FTP (committat efter deployen)
+### A2. 🔁 DEPLOY-BATCH (build klar 2026-07-18 17:06, FTP körs av Daniel)
+`npm run build` kört rent (2427 moduler, `dist/` klar). **`.htaccess` uppdaterad** (`public/.htaccess` + `dist/.htaccess`): hashade assets `max-age=31536000, immutable`, `index.html` `no-cache, no-store` → stänger chunk-mismatch-synvillan (1002/497). Ladda upp hela `dist/` rent. Commits i denna batch:
 - [ ] `FortressesCitiesMap`: "Cities/Städer" → "Centres/Centra" (commit 7c05b86).
-- [ ] Källa gamla kyrka: konsoliderad + berikad sourced historik, dubbletten "Källa Ödekyrka" borttagen (commit eaf75d3, efter deploy).
+- [ ] Källa gamla kyrka: konsoliderad + berikad sourced historik, dubbletten "Källa Ödekyrka" borttagen (commit eaf75d3).
+- [ ] Karta "map data not available"-fix + geolocation-knapp + region-gruppering (commit 3717201).
+- [ ] Carvers RPC-fix frontend (commit aaee0ef) — **kräver även migration `20260718210000`**.
+- [ ] Historiska museet-fynd (commit 34e3e07).
+- [ ] Roman Price Converter i18n (commit ec97fd5).
+- [ ] Utflykter-sida + welcome-kort 16-grid (commit 7fc543a).
+- [ ] Coins-tabell + /coins-sida (commits af58338/014d823) — **kräver migration `20260718220000` + `coins-seed.sql`**.
+- **SQL i editorn (parallellt):** `20260718210000_fix_get_carver_inscriptions.sql`, `20260718220000_coins.sql` + `scripts/data/coins-seed.sql`, `scripts/data/folk-groups-coordinates.sql` (+ `migration repair` på de två migrationerna).
 
 ### B. SQL / Python att köra? → **NEJ, inget nytt kvar.**
 Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av dig:
@@ -47,6 +55,29 @@ Ny DB-kategori för mynt (fanns ej tidigare). **KÖR i ordning:**
 - [x] **Frontend** — KLART (commit 014d823, kräver deploy): `/coins`-sida (`useCoins` + `Coins.tsx`) med karta (myntorter/fyndplatser färgade per kategori) + kort grupperade per kategori (nordisk kunglig, runmynt, solidi, skatter, imitationer). Nav-post + myntikon tillagd. KVAR (valfritt): visa `coins.issuer_king_id` i kungadetaljvyn; welcome-kort.
 - [ ] **Koppla runiska myntinskrifter:** DR BR 75, IK 17, Nä 10 (brakteater med runinskrift) finns i `runic_inscriptions` (object_type brakteat) men är ej kopplade till mynt-konceptet. Kan länkas.
 - Kontext: `/artefacts` har redan en `currency-trade`-klassificering (objectCategories.ts) som bucketar mynt-objekttyper — coins-tabellen kompletterar den.
+
+### B5. 🚢 Valdemars segelled — omskriven rutt (Daniel 2026-07-18) — IMPLEMENTERAD, kräver build+deploy
+Data i kod: `src/utils/routes/{southernRoute,centralRoute}.ts` (aggregeras i `valdemarsRoute.ts`, ritas i array-ordning via `useMapValdemarsRoute.ts`). **Rutten gick längs kusten — ALDRIG över land utom vid draget Drag, norr om Kalmar.** Typecheckar rent. **Mellankoordinater är kustnära approximationer — Daniel verifierar per punkt.**
+
+**Åtgärdat i kod:**
+- [x] **Södra sträckan omskriven** (`southernRoute.ts`): tog bort "direkt över vatten mot Kalmar" (open_water_1..3). Ny kustföljande rutt: Utlängan → **Torhamns udde** (passeras på utsidan) → **Kristianopel** → **Bröms** → **Bergkvara** → **Ljungbyåns mynning/Vassmolösa** (sötvatten) → Kalmar.
+- [x] **Västervik korrigerad**: `57.0574` → **57.7580** (låg 0,7° för långt söderut).
+- [x] **Loftahammar korrigerad**: `57.3106/16.9492` → **57.9000/16.8700** (ut utanför orten).
+- [x] **"arkösund" var egentligen Oxelösund**: den gamla punkten `58.6794/17.1056` omdöpt till **Oxelösund**; äkta **Arkösund** tillagd på **58.4830/16.9600** vid Slätbakens mynning.
+- [x] **Slätbaken-slingan modellerad**: Arkösund → in i viken till **Söderköping** (föregångaren i viken) → ut via **Stegeborg** → runt Vikbolandet → Oxelösund. Ingen genväg över land.
+- [x] **Drag tillagt** (portage, `isMajorWaypoint`) norr om Kalmar — enda överlandsstället.
+- [x] **Köpingsvik tillagt** (Öland) som vikingatida center i Kalmarsund.
+- [x] **Runda 2-fixar (Daniel 2026-07-18, kräver deploy):** (a) **Drag** flyttad till Skäggenäskanalen vid **Revsudden** (56.83/16.46) — låg fel, såg ut att gå inne på Öland. (b) Kalmarsund följer kusten och rundar **Ölands norra udde** (57.366/17.093) istället för genväg tvärs Öland. (c) **Slätbaken-slingan omordnad så linjerna inte korsar varandra:** Sankt Anna → in via Stegeborg → Söderköping (innerst) → ut → norrut mot Arkösund → Vikbolandet ost → Oxelösund. (d) Efter Dalarö följer leden kusten inåt mot Stockholm (dokumenterat i punktbeskrivning). (e) Västervik fick "(Stegeholm)".
+- [x] **Stockholms skärgård omskriven efter jordeboken** (Daniel gav latinsk källtext ur Kung Valdemars Sejrs jordebok, ca 1250). Ersatte den gissade svansen (Utö/Ornö/Nämdö/Runmarö/Sandhamn/Möja) med den dokumenterade "Landsort–Stockholm"-leden i `centralRoute.ts`: Landsort(Öja) → Ekholmen(ekiholm) → Yxlösundet(oslæsund) → Ekorrsund(ikernsund) → Gålö(gardø) → Dalarö(dalernsund) → Baggensstäket(harustik) → Sveriges holme(litle swethiuthæ) → Stockholm(stokholm). Fortsättningen Stockholm→Arholma i `sections/stockholmToRoslagen.ts`: Tenösund(wiræsund) → Stäksund(malægstagh) → Nenningesund(krampe sund, 3 veckosjöar) → Vätösund(weddesund) → Arholma(arnholm). Avstånd i källan anges i veckosjöar (~4 sjömil ≈ 7 420 m).
+
+**Kvar:**
+- [ ] **Daniel verifierar koordinater per punkt** — särskilt approximationerna (markerade `// VERIFIERA` i koden): Drag (56.82/16.33, Skäggenäs-näset?), Stegeborg-utloppet, Vikbolandet-ost, Kalmarsund nord, Sankt Anna, samt hela Stockholms-kedjan Ekholmen/Yxlösund/Ekorrsund/Baggensstäket/Sveriges holme/Tenösund/Stäksund/Nenningesund/Vätösund. Justera efter din SNRD/kart-koll.
+- [ ] **Ej inlagda alternativa etapper ur jordeboken** (enkel-polylinje kan bara följa EN väg — dessa är grenar/alternativ; kan bli separata linjelager senare):
+  - **Torö–Vindö:** Torö → Herrhamra → Mällsten → Älvsnabben → Gålö → Vindö → Runmarö.
+  - **Landsort–Runmarö (ytterled):** Öja → Mellsten → Nåttarö → Ålö → Ornö → Nämdö → Runmarö.
+  - **Stavsnäs–Arholma (Husaröleden):** Berghamn → Stora Jällö → Sandö → Träskö-Storö → Särsö → Husarö → Lagnö → Linken → Sikmarö → Blidö → Yxlö → Oxhalsö → Riddersholm → Räfsnäs → Arholma.
+  - **Runmarö–Möja (avstickare):** Eknö → Harö → Lökaö/Bockö → Möja.
+  - Full latinsk källtext finns i denna konversation (Daniel 2026-07-18) om leden ska byggas ut till flera lager.
 
 ### Folkgrupper — Daniels feedback (2026-07-18), ej åtgärdat
 - [x] **Suioner (Tacitus) vs Svear** — SAMMANSLAGET (Daniels beslut, kört i DB): Suioner borttagen, Svear bär nu Tacitus-attesteringen (period −200–1200).
@@ -77,6 +108,10 @@ Ny DB-kategori för mynt (fanns ej tidigare). **KÖR i ordning:**
    - [x] **KÖRT av Daniel** — 212 kungar, 30 dynastier, 42 relationer (36 kungkopplade), 0 unknown gender. "Ser rätt ut."
    - [~] (h) UI-följd (commit följer, kräver deploy): **Dynasti-kort expanderbart → medlemslista** (`DynastyCard`+useDynastyMembers). **Kort-klick → `KingDetailPanel`** (full beskrivning, external_attestation-badges, sources, **relationer** via ny `useKingRelations`, källomnämnanden). **Gender "unknown" borttaget** (filter + badge). KVAR: `role` i filterByRulerType (ersätt textgissning), runstenslänkar (`king_inscription_links` tomt → koppla), region-filter Västerleden/England.
 4. **🧭 Utflykter/excursions (ny sida/sektion)** — Birka, Långhundraleden, Broborg, Ölands fornborgar, Rösaringsåsen (processionsvägen). Daniel har lämnat rikt Rösaring-innehåll. Egen route/komponent + kort per utflykt (karta, beskrivning, källor).
+   - [x] **Welcome-kortet "Utflykter" räknade fel** (Daniel 2026-07-18): `EXCURSION_COUNT = 5` var hårdkodat i `HeroStatsGrid.tsx` trots 11 utflykter. Fixat: utflyktsdatan flyttad till delad `src/data/excursions.ts`, både sidan och kortet räknar `EXCURSIONS.length`. Kräver deploy.
+   - [x] **Utflyktskarta + relaterad närdata (Daniel 2026-07-18, kräver deploy):** `ExcursionsMap.tsx` (imperativ Leaflet, samma mönster som CarversMap) visar alla utflyktsmål (orange) ovanpå kontextlager av kultplatser/kyrkor (blå) + arkeologiska fynd (bärnsten). Klick på markör scrollar till kortet. Varje kort listar nu **kultplatser/kyrkor** och **arkeologiska fynd inom 40 km** (haversine, `src/utils/geoDistance.ts`) + länk "Utforska i kartan" (`/explore?lat=&lng=`) och OSM. **Begränsning:** relaterade **runstenar/härader/artefakter** görs INTE ännu — runic_inscriptions har `point`-koordinater (går ej bounding-box:a via PostgREST), `runic_with_coordinates.coordinates_latitude` är ~tom, artefacts saknar koord. Kräver en `nearby_features(lat,lng,radius)`-RPC (egen task). Explore-centrering på `?lat=&lng=` är ej implementerad än (länken öppnar /explore).
+   - [x] **Megameny i toppnavigeringen (Daniel 2026-07-18, `Navigation.tsx`, kräver deploy):** desktop-nav ombyggd till grupperad megameny (shadcn NavigationMenu): **Runinskrifter / Platser & kartor / Historia / Vetenskap**, varje kolumn med ikon + kort beskrivning. Lade även in tidigare saknade **Utforska, Utflykter, Priser** i navet. Mobilmenyn (Sheet) grupperad med kategorirubriker.
+   - [x] **6 fler utflyktskort tillagda (Daniel 2026-07-18, `Excursions.tsx`, kräver deploy):** Ingvarståget (ankrat på Gripsholmsstenen Sö 179, Mariefred), Tanums hällristningar (Bohuslän, bronsålder, världsarv), Sigurdsristningen/Ramsundsberget (Sö 101, draksläparen), Himmelstalunds hällristningar (Norrköping), Rökstenen (Rök, ca 800), **Hågahögen** (Håga v. Uppsala, Skandinaviens främsta bronsåldersplats, ~1000 f.Kr., 1/3 av Sveriges bronsåldersguld, offer/rituell kannibalism, föregångare till Gamla Uppsala; fornborgen Predikstolen intill). Håga-källa: Kaliff & Østigård, *Bronze Age Håga and the Viking King Björn* (DiVA diva2:1221652). (Valfritt senare: fler Ingvarsstenar som egna punkter; Predikstolens fornborg som eget kort.)
 5. **Tidslinje/zoom** — verifiera tidslinjefiltret live; zoom-kluster döljer andra lager.
 6. **i18n live-jakt** — kvarvarande svenska i EN-läge.
 7. **Wikidata-ID:n + foton** (`wikidata_id` via SPARQL → Commons-bilder).
