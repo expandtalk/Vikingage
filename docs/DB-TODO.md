@@ -39,6 +39,18 @@ Tillagt som poster i `archaeological_finds`-lagret (`src/utils/archaeologicalFin
 - [x] **5. Romerska legosoldater** — Fulleröringen tillagd (burial, romersk järnålder).
 - [x] **6. Stenålder/rödockragravar** — Manjärv tillagd (burial, mesolitikum). (Västra Ansvar/Ligga kan läggas till.)
 - [ ] **Städa dubbel finds-modul** — slå ihop `archaeologicalFinds.ts` (live, 15 finds) med orphan `archaeologicalFinds/data.ts` (stor kurerad uppsättning som ej renderas).
+
+### B4. 🪙 Mynt/coins som kategori (Daniel 2026-07-18) — commit af58338
+Ny DB-kategori för mynt (fanns ej tidigare). **KÖR i ordning:**
+- [ ] **`supabase/migrations/20260718220000_coins.sql`** + `migration repair --status applied 20260718220000` — `coins`-tabell (kopplad till `historical_kings` via `issuer_king_id`, med mint/metall/valör/åtsida/frånsida/koordinater) + RLS.
+- [ ] **`scripts/data/coins-seed.sql`** (ren data) — 18 mynt: Olof Skötkonungs första Sigtuna-penningar (+ ETHELRED-kopia, fyrkantiga), Anund Jakob, Birka-imitationer, dansk/norsk myntning, Knut Eriksson-brakteat, örtug, Gustav Vasa riksdaler, Kristian II klipping, **Åby-solidusskatten + Leo Perpetuus 457** (Fischer/LEO), och **runmynt** (Sven Estridsson, gotländska "+Botulfi", anglosaxiska Beonna/Epa/Pada).
+- [ ] **Frontend (nästa):** coins-vy/-lager — visa mynten (karta via koordinater + lista per kategori/härskare). Ev. welcome-kort. Koppla `coins.issuer_king_id` i kungadetaljvyn.
+- [ ] **Koppla runiska myntinskrifter:** DR BR 75, IK 17, Nä 10 (brakteater med runinskrift) finns i `runic_inscriptions` (object_type brakteat) men är ej kopplade till mynt-konceptet. Kan länkas.
+- Kontext: `/artefacts` har redan en `currency-trade`-klassificering (objectCategories.ts) som bucketar mynt-objekttyper — coins-tabellen kompletterar den.
+
+### Folkgrupper — Daniels feedback (2026-07-18), ej åtgärdat
+- [ ] **Suioner (Tacitus) vs Svear** — nära dubblett på kartan (~3 km isär, samma folk). Egentligen INTE fel: Suiones = romartidens (Tacitus 98 e.Kr.) attestering, Svear = vikingatidens stam — olika perioder/källor. Rekommendation: BEHÅLL båda som temporala attesteringar, ELLER slå ihop om Daniel vill (`delete from folk_groups where id='99e2bf6e-fe7f-4fd4-bad2-388ca2d5c843';` = Suioner). Avvaktar besked.
+- [ ] **focus=folkGroups layout** — kartan bör ligga överst; runstenar bör inte visas förrän man zoomat in (hör ihop med #8 zoom-kluster). Kräver live-repro.
 - [ ] **5. Se vilka artefakter ristarna rör** — koppla ristarens inskrifter till `artefacts` (unikt nr). Visa artefakt-ID i detaljpanelen.
 - [~] **6. Namn/kungalängder + gruppering** — (b/c) **KLART** (commit 3717201): `RegionFindsView` grupperar under landsrubrik vid landssortering (härad + socken). (a) **KVAR — databerikning:** `viking_names` har exakt 113 rader (ej cap); fler namn kräver extraktion ur inskrifter (rundata personnamn) + kunganamn (crosswalk-task).
 - [x] **7. Folkgrupper på karta** — utrett: markörlagret fungerar redan (73/82 ritades). De 9 osynliga saknade bara koordinat. **KÖR `scripts/data/folk-groups-coordinates.sql`** (ren data-UPDATE, ingen deploy behövs — markörkoden finns). Boii/Brigantes/Dacians/Danes/Helvetii/Illyrians/Normans/Thracians/Värend får hemvist-koord.
