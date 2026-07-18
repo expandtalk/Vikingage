@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Map,
+  Home,
   Castle,
   Scroll,
   Hammer,
@@ -84,12 +84,12 @@ const FOCUS_ROUTES: Record<string, string> = {
 
 /** Single source of truth for the app's navigation links, in both languages. */
 const useNavLinks = (): NavLink[] => {
-  const explore: NavLink = {
-    pathEn: '/explore',
-    pathSv: '/explore',
-    labelSv: 'Utforska',
-    labelEn: 'Explore',
-    icon: Map,
+  const home: NavLink = {
+    pathEn: '/',
+    pathSv: '/',
+    labelSv: 'Hem',
+    labelEn: 'Home',
+    icon: Home,
     primary: true,
   };
 
@@ -115,7 +115,7 @@ const useNavLinks = (): NavLink[] => {
     authOnly: true,
   };
 
-  return [explore, ...routeLinks, profile];
+  return [home, ...routeLinks, profile];
 };
 
 const useResolveLink = () => {

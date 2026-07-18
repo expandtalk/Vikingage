@@ -32,6 +32,9 @@ Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av 
 - [ ] **5. Se vilka artefakter ristarna rör** — koppla ristarens inskrifter till `artefacts` (unikt nr). Visa artefakt-ID i detaljpanelen.
 - [~] **6. Namn/kungalängder + gruppering** — (b/c) **KLART** (commit 3717201): `RegionFindsView` grupperar under landsrubrik vid landssortering (härad + socken). (a) **KVAR — databerikning:** `viking_names` har exakt 113 rader (ej cap); fler namn kräver extraktion ur inskrifter (rundata personnamn) + kunganamn (crosswalk-task).
 - [ ] **7. Folkgrupper på karta** (`focus=folkGroups`) — vissa `folk_groups` bör ritas (polygon/punkt) på kartan, inte bara listas.
+- [x] **9. Topnav: Explore → Home** — KLART (commit följer). `Navigation.tsx`: första länken är nu Hem/Home → `/`.
+- [ ] **10. Welcome-kort: "Heliga källor & äldre kultplatser" + Utflykter** — Daniel vill ha kort för heliga källor/kultplatser + utflykter på förstasidan → totalt **16 kort** (snyggt rutnät). Utflykter = Birka, Långhundraleden, Broborg, Ölands fornborgar, Rösaring (se D.4).
+- [ ] **11. Roman Price Converter i18n** — prislistan visas på svenska även i EN-läge. Översätt kategorierna + varorna (spannmål/vin/kött/fisk/löner/boskap/slavar/vilda djur/kläder/silke/metaller/mynt) till engelska. Daniel har skickat hela sv-listan.
 - [ ] **8. Tidsperiod ändrar inte kartan / "låser sig" (focus=gods)** + **profilbyte ändrar inget** — KRÄVER LIVE-REPRO. Kod-mekanismen ser korrekt ut: profilbyte→`setActiveExploreRole`→reaktiv store→legend-reset; period→`filterInscriptionsByPeriod` + religiösa `getPlacesForTimePeriod`. Trolig orsak att "profiler ser lika ut": runstenslagret dominerar (flest profiler har runic_inscriptions på), sekundärlager syns svagt. Behöver klicktestas live för att bekräfta ev. äkta bugg.
 
 ### C. Undersök / beställ PARALLELLT (blockerar inte deploy)
@@ -45,11 +48,9 @@ Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av 
 3. **🏛️ Royal Chronicles-revision (STOR — pågår)** — underlag i `scripts/data/royal-chronicles/` (regents_missing.csv, relations_edges.csv, README, **SCHEMA-MAPPING.md**). Godkänt av Daniel: alla schemabeslut ja.
    - [x] (a) Schemakartläggning — `SCHEMA-MAPPING.md` (128 kungar, 12 ätter, king_status-enum matchar, inga role/attestation/relations-kolumner).
    - [x] (b) **Migration `20260718200000_royal_chronicles_schema.sql`** — role/de_facto_ruler/external_attestation/sources/node_control på historical_kings + ny `royal_relations`-tabell + RLS. **KÖR i editorn + `migration repair --status applied 20260718200000`.**
-   - [ ] (c) Region-städning (Sweden/Sverige/Danmark/Jylland → kanonisk engelska + Västerleden/England).
-   - [ ] (d) 11 rättelser (UPDATE på bekräftade IDs — se SCHEMA-MAPPING).
-   - [ ] (e) Dedup (Gorm ×3, Harald Blåtand/Håkan Magnusson/Magnus Haraldsson/Olav Kyrre ×2).
-   - [ ] (f) Skapa saknade dynastier + döp om Sverkerätren→Sverkerska ätten.
-   - [ ] (g) Importera ~90 regenter + ~40 relationer.
+   - [x] (c–f) **`01-corrections.sql`** GENERERAD — region-städning, dynasti-renames (Stenkilsätten→Stenkilska, Eriksätten→Erikska, Sverkerätren→Sverkerska) + 18 nya dynastier, 11 rättelser, dedup. **Fynd:** Håkan Magnusson ×2 är EJ dubbletter (olika personer 1093 vs 1362) → lämnas. Toke Gormsson/Sibbe är runstensbelagda → behålls, bara Björn Jarl/Sibir Fultarsson flaggas spekulativa. Olof III + "Ragnhild"-artefakten = DELETE utkommenterad (verifiera först).
+   - [x] (g) **`02-import.sql`** GENERERAD (via `scripts/gen-royal-chronicles-import.mjs`) — 89 regenter + 42 relationer, idempotent.
+   - [ ] **KÖR i editorn (i ordning): `01-corrections.sql` sedan `02-import.sql`** (ren data-SQL, ingen migration repair).
    - [ ] (h) UI-följd: använd `role` i filterByRulerType; visa attestering/relationer; region-filter Västerleden/England.
 4. **🧭 Utflykter/excursions (ny sida/sektion)** — Birka, Långhundraleden, Broborg, Ölands fornborgar, Rösaringsåsen (processionsvägen). Daniel har lämnat rikt Rösaring-innehåll. Egen route/komponent + kort per utflykt (karta, beskrivning, källor).
 5. **Tidslinje/zoom** — verifiera tidslinjefiltret live; zoom-kluster döljer andra lager.
