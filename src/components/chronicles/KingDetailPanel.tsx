@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { BookOpen, Link2, ScrollText, Users } from 'lucide-react';
 import { useKingRelations } from '@/hooks/chronicles/useKingRelations';
 import { KingSourceMentions } from './KingSourceMentions';
+import { KingInscriptionLinks } from './KingInscriptionLinks';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { HistoricalKing, KingSourceMention } from '@/hooks/useRoyalChronicles';
 
@@ -101,6 +102,8 @@ export const KingDetailPanel: React.FC<KingDetailPanelProps> = ({ king, sourceMe
             </ul>
           </div>
         )}
+
+        <KingInscriptionLinks kingId={king.id} />
 
         {sourceMentions && sourceMentions.length > 0 && <KingSourceMentions sourceMentions={sourceMentions} />}
       </CardContent>
