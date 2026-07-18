@@ -6,6 +6,7 @@ import { useFilterState } from '../FilterState';
 import { useFocusManager } from '@/hooks/useFocusManager';
 import { useActiveExploreProfile } from '@/hooks/useExploreProfiles';
 import { resolveProfileLayers } from '@/config/exploreProfiles';
+import { filterInscriptionsByPeriod } from '@/utils/timePeriods';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface UseExplorerDataProps {
@@ -96,14 +97,13 @@ export const useExplorerData = ({
   // FIXED: When there's an active search, show only search results on map
   // Otherwise show legend-filtered inscriptions
   const mapInscriptions = useMemo(() => {
-    if (hasActiveSearch) {
-      console.log(`🗺️ Active search detected - showing ${inscriptions.length} search results on map`);
-      return inscriptions;
-    } else {
-      console.log(`🗺️ No active search - showing ${legendFilteredInscriptions.length} legend-filtered inscriptions on map`);
-      return legendFilteredInscriptions;
-    }
-  }, [hasActiveSearch, inscriptions, legendFilteredInscriptions]);
+    const base = hasActiveSearch ? inscriptions : legendFilteredInscriptions;
+    // Filtrera på vald tidslinjeperiod — runor fanns inte i förhistorien, så
+    // förhistoriska perioder tömmer runstenarna (istället för att alltid visa dem).
+    const byPeriod = filterInscriptionsByPeriod(base, selectedTimePeriod);
+    console.log(`🗺️ Map inscriptions: ${base.length} → ${byPeriod.length} efter period '${selectedTimePeriod}' (search=${hasActiveSearch})`);
+    return byPeriod;
+  }, [hasActiveSearch, inscriptions, legendFilteredInscriptions, selectedTimePeriod]);
 
   // Calculate pagination
   const totalPages = Math.ceil(inscriptions.length / itemsPerPage);
