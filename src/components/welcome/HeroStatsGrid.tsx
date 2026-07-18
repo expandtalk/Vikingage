@@ -4,12 +4,14 @@ import type { DbStats } from '@/hooks/useRunicData/types';
 import type { FocusType } from '@/hooks/useFocusManager';
 import { NORSE_GODS_EXPANDED } from '@/utils/godNameUtils';
 import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
+import { EXCURSIONS } from '@/data/excursions';
 
 // Number of Norse deities covered by the god name-matching dataset.
 const GOD_COUNT = Object.keys(NORSE_GODS_EXPANDED).length;
 // Hedniska heliga källor/kultplatser (ej kristna) — för welcome-kortet.
 const CULT_SITE_COUNT = RELIGIOUS_PLACES.filter((p) => p.deity !== 'christian').length;
-const EXCURSION_COUNT = 5;
+// Räknas från den delade utflyktslistan så kortet aldrig hamnar ur synk.
+const EXCURSION_COUNT = EXCURSIONS.length;
 
 interface HeroStatsGridProps {
   dbStats: DbStats;
