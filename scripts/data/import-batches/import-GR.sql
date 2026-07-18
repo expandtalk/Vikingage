@@ -45,9 +45,7 @@ from (values
 ('857cee3a-b006-466a-ab0b-0c217d7f29c0','GR 15',NULL,60.0034,-44.761,'+ þæsi : kona : uar : lagþ ⁓ firi : borþ : i : grøna¶laz : haf(e) : ær : guþu(e)h : het','Þessi kona var lagð fyrir borð í "Grœnalands hafi, er "Guðveig hét.',NULL,'This woman, who was called Guðveig, was laid overboard in the Greenland sea.',NULL,NULL,'Pinne','Trä',NULL,'Greenland'),
 ('d76c9d53-c67a-4ae4-a12e-cad7f6f9a880','GR 84',NULL,64.2032,-50.0904,'+ t^o^r','"Þórr(?)',NULL,'Þórr(?)',NULL,NULL,'Radband?','Trä',NULL,'Greenland'),
 ('2ea30b42-420c-44ed-a03c-660524d23a5b','GR NOR2001;9B',NULL,64.2032,-50.0904,'kylbæ','kylfa',NULL,'club/mallet',NULL,'Fyndår 1996.','Träklubba','Trä',NULL,'Greenland'),
-('fc66ab28-ab53-4913-b2a3-2221a6050496','GR 88','GR NOR2001;9C',64.2032,-50.0904,'⁓^ ^ko(-)','…',NULL,'…',NULL,'Samma som GR 88.
-
-Troligen ett bomärke.','Botten av skål','Trä',NULL,'Greenland'),
+('fc66ab28-ab53-4913-b2a3-2221a6050496','GR 88','GR NOR2001;9C',64.2032,-50.0904,'⁓^ ^ko(-)','…',NULL,'…',NULL,'Samma som GR 88. Troligen ett bomärke.','Botten av skål','Trä',NULL,'Greenland'),
 ('2063ab05-ca97-4fb8-a456-5f3e9484da51','GR 80',NULL,60.9152,-46.0454,'§A iø/øi §B {E}','§A … §B …',NULL,'§A … §B …',NULL,NULL,'Vävvikt(?)','Täljsten',NULL,'Greenland'),
 ('7ada387e-5c8f-4aa6-b204-4217fd4b9aa9','GR 38',NULL,64.2346,-50.2388,'talkr<k>u(d)(i)o^ræ','…',NULL,'…',NULL,NULL,'Tunnstav','Trä',NULL,'Greenland'),
 ('607cb2f8-d9b2-4613-9db1-054dfe43ebe2','GR 14',NULL,60.0034,-44.761,'(·) isus · kristr (·) (h)ialbi ¶ -ristus (n)atus ist nubis','"Jesus "Kristr hjalpi. "[Ch]ristus natus est nobis.',NULL,'May Jesus Christ help. Christ was born for us.',NULL,NULL,'Kors','Trä',NULL,'Greenland'),

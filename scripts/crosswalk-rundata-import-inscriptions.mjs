@@ -140,7 +140,9 @@ const pickText = (arr) => {
   return (sv.length ? sv : arr).map((x) => x.text.trim()).filter(Boolean).join('\n\n');
 };
 const toUuid = (hex) => hex.toLowerCase().replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, '$1-$2-$3-$4-$5');
-const esc = (s) => (s == null || s === '' ? 'NULL' : `'${String(s).replace(/'/g, "''")}'`);
+// Platta inbäddade radbrytningar till mellanslag — annars bryter SQL-editorns
+// inklistring på fältvärden som spänner över flera rader (t.ex. fleradiga noter).
+const esc = (s) => (s == null || s === '' ? 'NULL' : `'${String(s).replace(/\r?\n+/g, ' ').replace(/\s+$/,'').replace(/'/g, "''")}'`);
 const num = (n) => (n == null ? 'NULL' : n);
 
 // Bygg rader för objekt vars primära signum matchar TARGET-prefix.

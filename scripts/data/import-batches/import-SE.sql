@@ -17,9 +17,7 @@ from (values
 ('ce06d3a8-a8ae-490f-b56c-7cfab0b6d32c','SE Fv1988;247','X SvFv1988;247',NULL,NULL,'torh','…',NULL,'…',NULL,NULL,'Skafthålsyxa','Mörk grönsten',NULL,'Sweden'),
 ('34c66ab7-e020-481f-b265-7a1891d595c4','SE Owe1996b;136','X SvOwe1996b:136',NULL,NULL,'… …t ra… …','… [lé]t(?) re[isa](?) …','… lät(?) resa(?) …','… had(?) (the stone) raised(?) …',NULL,NULL,'Fragment av runsten','Sten',NULL,'Sweden'),
 ('933f4272-64c5-4575-a864-42affe1a306e','SE IK365,7','IK 365,7',NULL,NULL,'ee^lil','ehwe(?)','…','(Dedicated) to the horse (?)',NULL,'Okänd fyndort. Slagen med samma stämpel som SE IK365,1, G 45, G 143, DR IK365,4, G 287, G 89, G IK365,8. Tidigare del av signum: X SvIK365,1,7','Brakteat (C-typ)','Guld',NULL,'Sweden'),
-('46bbb0a4-63fe-48cc-b118-a95cb4f44bd1','SE IK365,1','X SvIK365,1,7|IK 365,1',NULL,NULL,'ee^lil','ehwe(?)','…','(Dedicated) to the horse (?)',NULL,'Uppdelad i två signum: SE IK365,1 och SE IK365,7
-
-Okänd fyndort. Slagen med samma stämpel som G 45, G 143, DR IK365,4, G 287, G 89, SE IK365,7, G IK365,8. Tidigare del av signum: X SvIK365,1,7','Brakteat (C-typ)','Guld',NULL,'Sweden'),
+('46bbb0a4-63fe-48cc-b118-a95cb4f44bd1','SE IK365,1','X SvIK365,1,7|IK 365,1',NULL,NULL,'ee^lil','ehwe(?)','…','(Dedicated) to the horse (?)',NULL,'Uppdelad i två signum: SE IK365,1 och SE IK365,7 Okänd fyndort. Slagen med samma stämpel som G 45, G 143, DR IK365,4, G 287, G 89, SE IK365,7, G IK365,8. Tidigare del av signum: X SvIK365,1,7','Brakteat (C-typ)','Guld',NULL,'Sweden'),
 ('e42a28c4-cb5e-4aeb-8286-d0decb967a7b','SE SHMFid45487',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Fragment av runlös sten','Sten',NULL,'Sweden')
 ) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape, country)
 where not exists (
