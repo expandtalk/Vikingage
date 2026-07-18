@@ -3,9 +3,13 @@ import { useNavigate } from "react-router-dom";
 import type { DbStats } from '@/hooks/useRunicData/types';
 import type { FocusType } from '@/hooks/useFocusManager';
 import { NORSE_GODS_EXPANDED } from '@/utils/godNameUtils';
+import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
 
 // Number of Norse deities covered by the god name-matching dataset.
 const GOD_COUNT = Object.keys(NORSE_GODS_EXPANDED).length;
+// Hedniska heliga källor/kultplatser (ej kristna) — för welcome-kortet.
+const CULT_SITE_COUNT = RELIGIOUS_PLACES.filter((p) => p.deity !== 'christian').length;
+const EXCURSION_COUNT = 5;
 
 interface HeroStatsGridProps {
   dbStats: DbStats;
@@ -76,6 +80,16 @@ export const HeroStatsGrid: React.FC<HeroStatsGridProps> = ({
     { label: localizedText.language === 'en' ? 'Fortresses' : 'Fornborgar', value: fmt(dbStats.totalFortresses || 0), onClick: goTo('/fortresses') },
     // Diocletian's Price Edict — a descriptive year label, not a DB count.
     { label: localizedText.prices, value: '301 e.Kr.', onClick: goTo('/prices') },
+    {
+      label: localizedText.language === 'en' ? 'Holy springs & cult sites' : 'Heliga källor & kultplatser',
+      value: fmt(CULT_SITE_COUNT),
+      onClick: goFocus('gods'),
+    },
+    {
+      label: localizedText.language === 'en' ? 'Excursions' : 'Utflykter',
+      value: fmt(EXCURSION_COUNT),
+      onClick: goTo('/excursions'),
+    },
   ];
 
   if (dbStats.totalCities && dbStats.totalCities >= 30) {

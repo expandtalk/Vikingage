@@ -23,6 +23,7 @@ const RoyalChronicles = lazy(() => import("./pages/RoyalChronicles"));
 // These datasets are canonically the Explore focus views; the old standalone
 // routes redirect there (decision 2026-07-16: Explore is the single destination).
 const Prices = lazy(() => import("./pages/Prices"));
+const Excursions = lazy(() => import("./pages/Excursions"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -81,6 +82,8 @@ const App = () => (
 
                   {/* Other routes */}
                   <Route path="/prices" element={<Prices />} />
+                  <Route path="/excursions" element={<Excursions />} />
+                  <Route path="/sv/utflykter" element={<Excursions />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/profile" element={<Profile />} />
