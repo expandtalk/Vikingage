@@ -27,12 +27,12 @@ Allt dagens arbete är frontend + docs. DB-åtgärderna är **redan körda** av 
 - [ ] (Valfri städning) `landscape`/`province` fel för ~546 Bautil-via-alt-stenar (item 4).
 
 ### B2. 🐛 Ny buggbatch (Daniel 2026-07-18) — triage
-- [ ] **3. Karta "map data not available" vid inzoomning** — OSM-tiles saknar höga zoomnivåer → Leaflet visar felruta. Fix: sätt korrekt `maxZoom` per tile-lager (OSM = 19) + ev. cap. **Plus:** "zooma till min plats" → lägg till geolocation-knapp (`navigator.geolocation` + `map.setView`).
+- [x] **3. Karta "map data not available" + zooma till min plats** — FIXAT (commit 3717201, kräver deploy). Root: terrain-basemap var Esri World_Physical_Map (tiles bara till z~8). Bytt till World_Topo_Map + `maxNativeZoom` per basemap (Leaflet skalar upp istället för felruta). Geolocation-knapp ("Visa min plats") tillagd i `useMapInitialization`.
 - [ ] **4. Carvers: klick på ristare visar inte stenarna på kartan; "Okänd period" på alla** — `CarversMap` ritar bara ristaren på region-centroid, inte de enskilda stenarna. Behöver: plotta ristarens inskrifter (finns via `get_carver_inscriptions`, har koord) + härleda aktiv period ur inskrifternas datering (`carvers.period_active_*` är null). Datafråga: koppla ristare→inskrift→datering/artefakt.
 - [ ] **5. Se vilka artefakter ristarna rör** — koppla ristarens inskrifter till `artefacts` (unikt nr). Visa artefakt-ID i detaljpanelen.
-- [ ] **6. Namn/kungalängder + gruppering** — (a) VikingNamesView visar bara 113 namn — bör vara fler (DB `viking_names` + namn ur inskrifter); (b) vid sortering på land: skriv landet som RUBRIK en gång istället för att upprepa per rad; (c) samma gruppering för socken (`focus=parishes`, `RegionFindsView`).
+- [~] **6. Namn/kungalängder + gruppering** — (b/c) **KLART** (commit 3717201): `RegionFindsView` grupperar under landsrubrik vid landssortering (härad + socken). (a) **KVAR — databerikning:** `viking_names` har exakt 113 rader (ej cap); fler namn kräver extraktion ur inskrifter (rundata personnamn) + kunganamn (crosswalk-task).
 - [ ] **7. Folkgrupper på karta** (`focus=folkGroups`) — vissa `folk_groups` bör ritas (polygon/punkt) på kartan, inte bara listas.
-- [ ] **8. Tidsperiod ändrar inte kartan / "låser sig" (bl.a. focus=gods)** — periodval får för liten effekt; UI verkar frysa på gods-fokus. Undersök tidslinje→lager-filter för religiösa platser (historicalPeriods) + ev. lås/race.
+- [ ] **8. Tidsperiod ändrar inte kartan / "låser sig" (focus=gods)** + **profilbyte ändrar inget** — KRÄVER LIVE-REPRO. Kod-mekanismen ser korrekt ut: profilbyte→`setActiveExploreRole`→reaktiv store→legend-reset; period→`filterInscriptionsByPeriod` + religiösa `getPlacesForTimePeriod`. Trolig orsak att "profiler ser lika ut": runstenslagret dominerar (flest profiler har runic_inscriptions på), sekundärlager syns svagt. Behöver klicktestas live för att bekräfta ev. äkta bugg.
 
 ### C. Undersök / beställ PARALLELLT (blockerar inte deploy)
 - [ ] **Beställ de två Geotorget-nedladdningarna** (Lantmäteriet, en session) — se längst ned. Enda riktiga blockeraren för flera features:
