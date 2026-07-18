@@ -1,7 +1,6 @@
--- STEG 3: import av saknade inskrifter ur rundata.sql (pilot: Sm/Sö/Öl/G).
+-- STEG 3: import av saknade inskrifter ur rundata.sql (alla landskap).
 -- 5921 kandidatrader. id = rundatas objectid (UUID) => spegeltabeller matchar.
 -- Dedup: WHERE NOT EXISTS på signum + ON CONFLICT(id). Ren data, idempotent. Kör i editorn.
--- Per prefix: {"Vg":322,"Ög":495,"U":1533,"N":1678,"DR":1034,"IM":35,"Nä":39,"GR":101,"Vr":10,"D":328,"FR":9,"E":20,"Hr":5,"IS":49,"Gs":24,"IR":16,"DE":14,"Or":57,"SE":5,"Hs":22,"M":18,"Vs":36,"Bo":15,"By":4,"FI":6,"J":4,"Sc":15,"LV":1,"NL":3,"Ds":1,"PL":3,"Sh":7,"Lp":1,"RU":5,"UA":2,"Ån":2,"IT":1,"F":1}
 insert into public.runic_inscriptions
   (id, signum, alternative_signum, coordinates, coord_source, coord_confidence,
    transliteration, normalization, translation_sv, translation_en, dating_text,

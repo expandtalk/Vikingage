@@ -5,7 +5,7 @@
 // noter/objekttyp/material/landskap direkt. Endast prefix i TARGET (pilot: Sm/Sö/Öl/G).
 // Emitterar scripts/data/rundata-import-inscriptions.sql. Kör i editorn.
 // Kör: node scripts/crosswalk-rundata-import-inscriptions.mjs
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 
 // Pilotlandskapen är redan importerade — hoppa dem (WHERE NOT EXISTS skulle ändå dedupa).
 const DONE = new Set(['Sm', 'Sö', 'Öl', 'G']);
@@ -180,15 +180,13 @@ for (const [objid, inscid] of objToInsc) {
   perPrefix[pref] = (perPrefix[pref] || 0) + 1;
 }
 
-const values = rows.map((r) =>
+const rowToValue = (r) =>
   `(${esc(r.id)},${esc(r.signum)},${esc(r.alt)},${num(r.lat)},${num(r.lng)},${esc(r.translit)},${esc(r.norm)},` +
-  `${esc(r.tsv)},${esc(r.ten)},${esc(r.dating)},${esc(r.notes)},${esc(r.otype)},${esc(r.material)},${esc(r.landscape)},${esc(r.country)})`
-).join(',\n');
+  `${esc(r.tsv)},${esc(r.ten)},${esc(r.dating)},${esc(r.notes)},${esc(r.otype)},${esc(r.material)},${esc(r.landscape)},${esc(r.country)})`;
 
-const out = `-- STEG 3: import av saknade inskrifter ur rundata.sql (pilot: Sm/Sö/Öl/G).
--- ${rows.length} kandidatrader. id = rundatas objectid (UUID) => spegeltabeller matchar.
+const buildSQL = (subset, label) => `-- STEG 3: import av saknade inskrifter ur rundata.sql (${label}).
+-- ${subset.length} kandidatrader. id = rundatas objectid (UUID) => spegeltabeller matchar.
 -- Dedup: WHERE NOT EXISTS på signum + ON CONFLICT(id). Ren data, idempotent. Kör i editorn.
--- Per prefix: ${JSON.stringify(perPrefix)}
 insert into public.runic_inscriptions
   (id, signum, alternative_signum, coordinates, coord_source, coord_confidence,
    transliteration, normalization, translation_sv, translation_en, dating_text,
@@ -202,7 +200,7 @@ select
   v.translit, v.norm, v.tsv, v.ten, v.dating, v.notes, v.otype, v.material, v.landscape,
   coalesce(v.country,'Sweden'), 'rundata_evighetsrunor'
 from (values
-${values}
+${subset.map(rowToValue).join(',\n')}
 ) as v(id, signum, alt, lat, lng, translit, norm, tsv, ten, dating, notes, otype, material, landscape, country)
 where not exists (
   select 1 from public.runic_inscriptions ri
@@ -211,7 +209,20 @@ where not exists (
 on conflict (id) do nothing;
 `;
 
-writeFileSync('scripts/data/rundata-import-inscriptions.sql', out);
+// Kombinerad fil (allt) + en fil PER LANDSKAP (för editorn, om den kombinerade är för stor).
+writeFileSync('scripts/data/rundata-import-inscriptions.sql', buildSQL(rows, 'alla landskap'));
+mkdirSync('scripts/data/import-batches', { recursive: true });
+const byPrefix = new Map();
+for (const r of rows) {
+  const p = r.signum.split(' ')[0];
+  if (!byPrefix.has(p)) byPrefix.set(p, []);
+  byPrefix.get(p).push(r);
+}
+for (const [p, subset] of byPrefix) {
+  const safe = p.replace(/[^A-Za-zÅÄÖåäö0-9]/g, '_');
+  writeFileSync(`scripts/data/import-batches/import-${safe}.sql`, buildSQL(subset, `landskap ${p}, ${subset.length} rader`));
+}
+console.log('Batch-filer per prefix:', [...byPrefix.entries()].map(([p, s]) => `${p}:${s.length}`).join(', '));
 console.log(`Kandidater (unika signum, exkl. redan importerade ${[...DONE].join('/')}):`, rows.length, perPrefix);
 console.log(`Med koordinat: ${rows.filter((r) => r.lat != null).length} | translit: ${rows.filter((r) => r.translit).length} | översättning: ${rows.filter((r) => r.tsv || r.ten).length} | noter: ${rows.filter((r) => r.notes).length}`);
 console.log('Wrote scripts/data/rundata-import-inscriptions.sql');

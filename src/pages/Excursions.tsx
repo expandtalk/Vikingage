@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Compass, Calendar, Sparkles, Landmark, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { EXCURSIONS } from '@/data/excursions';
+import { EXCURSIONS, EXCURSION_GROUPS } from '@/data/excursions';
 import { ExcursionsMap } from '@/components/excursions/ExcursionsMap';
 import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
 import { ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFinds';
@@ -110,8 +110,22 @@ const Excursions = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-          {EXCURSIONS.map((e) => {
+        {(() => {
+          // Gruppera per region/tema; okända grupper hamnar sist under "Övrigt".
+          const groupsInData = Array.from(
+            new Set(EXCURSIONS.map((e) => e.group).filter(Boolean) as string[]),
+          );
+          const orderedGroups = [
+            ...EXCURSION_GROUPS.filter((g) => groupsInData.includes(g)),
+            ...groupsInData.filter((g) => !EXCURSION_GROUPS.includes(g)),
+          ];
+          const ungrouped = EXCURSIONS.filter((e) => !e.group);
+          const sections: Array<{ title: string | null; items: typeof EXCURSIONS }> = [
+            ...orderedGroups.map((g) => ({ title: g, items: EXCURSIONS.filter((e) => e.group === g) })),
+            ...(ungrouped.length ? [{ title: sv ? 'Övrigt' : 'Other', items: ungrouped }] : []),
+          ];
+
+          const renderCard = (e: (typeof EXCURSIONS)[number]) => {
             const nearbyPlaces = nearestWithin(
               e.coords,
               RELIGIOUS_PLACES,
@@ -216,8 +230,22 @@ const Excursions = () => {
                 </CardContent>
               </Card>
             );
-          })}
-        </div>
+          };
+
+          return (
+            <div className="space-y-10 mt-8">
+              {sections.map((section) => (
+                <section key={section.title}>
+                  <h2 className="text-2xl font-bold text-foreground mb-1">{section.title}</h2>
+                  <div className="h-0.5 w-16 bg-accent/60 rounded mb-5" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {section.items.map(renderCard)}
+                  </div>
+                </section>
+              ))}
+            </div>
+          );
+        })()}
       </main>
       <Footer />
     </div>
