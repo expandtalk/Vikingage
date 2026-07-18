@@ -29,8 +29,9 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 ### 3. ✅ Kod-polish: deterministisk karta (kod klar, commit 7ebc6af — kräver vy-migration + deploy)
 - [x] `useExplorerState.handleResultClick` — klick-tids-Nominatim-geokodning **borttagen**. Bara kanonisk koord; saknas → toast.
 - [x] **Tona osäkra markörer** via `coord_confidence`: approximativa (virtuell socken-centroid / låg-medium-okänd konfidens / geokodad källa) ritas ihåligt+streckat+halv opacitet; verifierade (rundata/RAÄ, manuellt, user-exakt) solida. Säker fallback innan vy-migration.
-- [ ] **KÖR vy-migration `20260718150000_expose_coord_confidence_in_view.sql`** (CREATE OR REPLACE VIEW, exponerar coord_confidence/coord_source) + `migration repair --status applied 20260718150000`. UTAN denna tonas inget (fältet saknas).
-- [ ] Efter migration: verifiera toning i dev → bygg om dist → FTP. Cache: sätt `Cache-Control: no-cache` på index.html (hashade assets kan cachas hårt) för att undvika chunk-mismatch (som gav 1002/497-synvillan).
+- [x] **Vy-migration `20260718150000`** körd + repad (exponerar coord_confidence/coord_source). Fält bärs genom `coordinateProcessor.ts` (commit a8cd79f — den återskapade objekt och tappade fälten först).
+- [x] Toning verifierad i dev + prod-build (2262 solida / 938 tonade av renderade; totalt ~2596/970). Build klar (commit a8cd79f), #root renderar rent.
+- [ ] **FTP: ladda upp hela dist/ rent** (chunk-hashar måste matcha). Cache: sätt `Cache-Control: no-cache` på index.html (hashade assets kan cachas hårt) för att undvika chunk-mismatch (gav 1002/497-synvillan). `.htaccess`-snutt kan tas fram.
 
 ### 4. Socken/härad-feature #1 (data klar → bygg UI)
 - [ ] **Sök socken/härad → visa fynd** + koppling. Datan finns nu (`socken`/`harad` på inskrifter). Ingen extern data krävs för sök/koppling.
