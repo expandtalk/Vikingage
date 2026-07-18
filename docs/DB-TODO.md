@@ -33,9 +33,11 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 - [x] Toning verifierad i dev + prod-build (2262 solida / 938 tonade av renderade; totalt ~2596/970). Build klar (commit a8cd79f), #root renderar rent.
 - [ ] **FTP: ladda upp hela dist/ rent** (chunk-hashar måste matcha). Cache: sätt `Cache-Control: no-cache` på index.html (hashade assets kan cachas hårt) för att undvika chunk-mismatch (gav 1002/497-synvillan). `.htaccess`-snutt kan tas fram.
 
-### 4. Socken/härad-feature #1 (data klar → bygg UI)
-- [ ] **Sök socken/härad → visa fynd** + koppling. Datan finns nu (`socken`/`harad` på inskrifter). Ingen extern data krävs för sök/koppling.
-- [ ] **Polygon-gränser på kartan** kräver **Lantmäteriet "Socken och stad" Nedladdning, vektor** (GeoPackage, CC0, Geotorget). Historiska socknar (~2 350). Import: GeoPackage → omprojicera SWEREF99→WGS84 → GeoJSON → polygonlager. Härad = union av medlems-socknars polygoner.
+### 4. ✅ Socken/härad-feature #1 (klar utom polygoner, commits 0042fe1+4245aa0)
+- [x] **Sök socken/härad** — migration `20260718160000` (körd+repad): vyn exponerar socken/harad, RPC `search_inscriptions_flexible` matchar dem. "Adelsö"/"Vallentuna härad" hittar stenarna.
+- [x] **Härader-/socknar-sidorna (focus=hundreds/parishes) har karta med fynd** — `RegionFindsView`: sökbar lista (209 härader / 618 socknar, antal + landskap via majoritetsröstning) + Leaflet-karta som zoomar till valt område. Väntar FTP-deploy.
+- [ ] **Polygon-gränser** (avvaktar — ingen GeoPackage): kräver **Lantmäteriet "Socken och stad" Nedladdning, vektor** (GeoPackage, CC0, Geotorget). Import: GeoPackage → SWEREF99→WGS84 → GeoJSON → polygonlager. Härad = union av socken-polygoner.
+- [ ] **Sidofix (data):** `landscape`/`province`-kolumnerna är fel för ~546 Bautil-via-alt-stenar (t.ex. B 100 = U 285 står "Småland/Kalmar län" fast Uppland). socken/harad är rätt. Kan härledas ur härad→landskap eller modernt signum. Låg prio (UI kringgår via majoritetsröstning).
 
 ### 5. Fler trasiga rundata-tabeller (samma crosswalk-metod)
 Import kraftigt ofullständig (rundata.sql → DB). Prioritet efter synligt värde:
