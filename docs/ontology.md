@@ -131,11 +131,11 @@ Kanoniska: `elder_futhark` (urnordiska/äldre futhark) | `younger_futhark` (yngr
 `medieval_runes` (medeltida) | `anglo_frisian` | `unknown`.
 **Nuläge:** "yngre futhark"/"Yngre futhark"/"yngre_runor" = samma; "okänd"/"Okänd"; tom.
 
-### `uncertainty_level` ❌ HOPBLANDAR TVÅ BEGREPP
-Idag blandas konfidens (`confirmed`/`high`/`medium`/`low`/`uncertain`) med svensk fritext
-om VAD som är osäkert ("Osäker datering", "Osäker tolkning", "Fragmentarisk").
-**Bör delas i två fält:** `condition` (t.ex. `intact`/`fragmentary`/`lost`) och
-`interpretation_confidence` (`certain`/`uncertain`). Fritexten flyttas till `condition_notes`.
+### `uncertainty_level` → DELAT (migration `20260718190000`)
+Blandade ihop konfidens, skick och daterings-fritext + bulk-default 'medium'. Delat i
+två kanoniska kolumner (original bevarat för bakåtkompatibilitet):
+- **`interpretation_confidence`**: `certain` (confirmed/high) | `uncertain` (low/uncertain/Osäker tolkning) | `unknown` (medium + fritext)
+- **`condition`**: `intact` | `fragmentary` (ur "Fragmentarisk" + `object_category='fragment'`) | `lost` | `unknown`
 
 ### `complexity_level` ❌ BLANDAT SV/EN
 Kanoniska: `simple` | `medium` | `complex` | `unknown`.
@@ -167,7 +167,7 @@ Kanoniska: `simple` | `medium` | `complex` | `unknown`.
 
 - [x] Normalisera `country`, `rune_type`, `complexity_level`, `coord_source` → **SQL redo:** `scripts/data/normalize-vocabularies.sql` (rena normaliseringar, kör i editorn). 25 tvetydiga rune_type lämnas för granskning.
 - [x] Kanonisk `object_category` (~100 `object_type`-varianter → 13 kategorier via nyckelord) → **migration redo:** `20260718180000_object_category.sql` (icke-destruktiv, ny kolumn).
-- [ ] Dela `uncertainty_level` i `condition` + `interpretation_confidence` (kräver kolumndelning + mappning av svensk fritext).
+- [x] Dela `uncertainty_level` i `condition` + `interpretation_confidence` → **migration redo:** `20260718190000_split_uncertainty_level.sql` (icke-destruktiv, original bevarat).
 - [ ] Lägg till `runor_uuid` + `wikidata_id` (utlänkning/verifiering).
 - [ ] Fullständig import av saknade inskrifter (Sö 13→~400 m.fl.) — se DB-TODO item 5.
 
