@@ -221,6 +221,7 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
     description: { sv: "Flöden, emporier och farleder", en: "Flows, emporia and waterways" },
     icon: "ship",
     basemap: "osm",
+    // I synk med focus=rivers: hela vattennätverket + vägar + hamnar, inga runstenar.
     layers: on(
       "trade_routes",
       "viking_cities",
@@ -228,6 +229,7 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
       "water_routes",
       "valdemar_route",
       "stake_barriers",
+      "viking_roads",
     ),
     theme: "flow",
     primaryLayers: ["trade_routes", "viking_cities", "river_routes"],
@@ -247,9 +249,11 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
     description: { sv: "Provplatser och gravkontext", en: "Sample sites and grave context" },
     icon: "dna",
     basemap: "osm",
-    layers: on("archaeological_sites", "runic_inscriptions"),
+    // Genetiker vill se folkslag + provplatser/DNA — INTE runstenar (de går inte att
+    // stänga av om de är på). Runstenar utelämnas → false via EMPTY_LEGEND_PRESET.
+    layers: on("archaeological_sites", "folk_groups"),
     theme: "genetic",
-    primaryLayers: ["archaeological_sites"],
+    primaryLayers: ["archaeological_sites", "folk_groups"],
     defaultPeriod: "all",
     showTimeline: true,
     panels: {
@@ -327,6 +331,10 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
       break;
     case "folkGroups":
       Object.assign(o, { folk_groups: true, runic_inscriptions: true });
+      break;
+    case "inscriptions":
+      // Fokus på runinskrifterna själva — BÅDE svenska och utländska ifyllda.
+      Object.assign(o, { runic_inscriptions: true, foreign_inscriptions: true });
       break;
   }
   return { ...preset, ...o };
