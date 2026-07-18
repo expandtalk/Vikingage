@@ -5,7 +5,7 @@
 // Kör: node scripts/crosswalk-rundata-coordinates.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const sql = readFileSync('rundata.sql', 'latin1'); // dumpen är utf8mb4 men latin1-läsning bevarar bytes; vi rör bara ASCII-signum/hex/tal
+const sql = readFileSync('rundata.sql', 'utf8'); // utf8mb4-dump → UTF-8 (annars mojibake i åäö-signum som Ög/Sö/Öl → missad match)
 const lines = sql.split('\n');
 
 let cur = null;
