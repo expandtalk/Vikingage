@@ -54,55 +54,15 @@ export const useExplorerState = () => {
     setModalInscription(inscription);
   };
 
-  const handleResultClick = async (inscription: RunicInscription) => {
+  const handleResultClick = (inscription: RunicInscription) => {
     console.log('🖱️ [useExplorerState] handleResultClick triggered for:', inscription.signum);
-    
-    // Always use getEnhancedCoordinates to get the best location info
-    let enhancedCoords = getEnhancedCoordinates(inscription, false);
-    
-    // If no coordinates found but we have location info, try to geocode it
-    if (!enhancedCoords && (inscription.location || inscription.parish)) {
-      console.log(`🔍 Attempting to geocode location for ${inscription.signum}`);
-      
-      // Build location string for geocoding
-      const locationParts = [
-        inscription.location,
-        inscription.parish, 
-        inscription.province || inscription.landscape,
-        inscription.country || 'Sweden'
-      ].filter(Boolean);
-      
-      const locationString = locationParts.join(', ');
-      console.log(`📍 Geocoding: "${locationString}"`);
-      
-      try {
-        // Simple Nominatim geocoding request
-        const encodedLocation = encodeURIComponent(locationString);
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedLocation}&limit=1&countrycodes=se,dk,no,de,is&accept-language=sv,da,no,en`;
-        
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'RunicResearchApp/1.0 (educational use)'
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.length > 0) {
-            const result = data[0];
-            enhancedCoords = {
-              lat: parseFloat(result.lat),
-              lng: parseFloat(result.lon),
-              zoom: 14
-            };
-            console.log(`✅ Geocoded ${inscription.signum} to [${enhancedCoords.lat}, ${enhancedCoords.lng}]`);
-          }
-        }
-      } catch (error) {
-        console.log(`❌ Geocoding failed for ${inscription.signum}:`, error);
-      }
-    }
-    
+
+    // Använd ENBART den kanoniska koordinaten (nu ifylld i DB, 98% täckning).
+    // Ingen klick-tids-geokodning mot Nominatim längre — den gav icke-deterministiska
+    // träffar (fel socken/land) och nätverksberoende + rate-limit-risk. Saknas koord
+    // helt → toast, ingen gissning.
+    const enhancedCoords = getEnhancedCoordinates(inscription, false);
+
     if (enhancedCoords && mapNavigate) {
       console.log(`   -> Navigating to [${enhancedCoords.lat}, ${enhancedCoords.lng}] with zoom ${enhancedCoords.zoom}`);
       mapNavigate(enhancedCoords.lat, enhancedCoords.lng, enhancedCoords.zoom);

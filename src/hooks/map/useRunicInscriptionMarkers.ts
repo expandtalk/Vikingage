@@ -17,7 +17,27 @@ interface RunicInscription {
     lat: number;
     lng: number;
   };
+  coord_confidence?: string | null;
+  coord_source?: string | null;
+  virtual_inscription?: boolean;
 }
+
+/**
+ * Approximativ koordinat = ska tonas ned. Ritas dämpat (ihåligt, halvgenomskinligt)
+ * så forskaren ser vilka punkter som är exakta och vilka som är ungefärliga.
+ * Approximativ om: virtuell (socken-centroid), ELLER explicit låg/medium/okänd
+ * konfidens, ELLER geokodad källa (nominatim/regional_center/socken-lookup).
+ * SÄKER FALLBACK: om vyn ännu inte exponerar coord_confidence/coord_source (båda
+ * undefined) matchar inget → allt ritas solitt (ingen regression innan migrationen
+ * 20260718150000 körts). Verifierat = rundata/RAÄ, manuellt, user-exakt.
+ */
+const isApproximate = (inscription: RunicInscription): boolean => {
+  if (inscription.virtual_inscription === true) return true;
+  const conf = (inscription.coord_confidence ?? '').toLowerCase();
+  if (conf === 'low' || conf === 'medium' || conf === 'unknown') return true;
+  const src = (inscription.coord_source ?? '').toLowerCase();
+  return src.includes('nominatim') || src.includes('regional_center') || src.includes('location lookup');
+};
 
 const getPeriodColor = (period?: string): string => {
   if (!period) return '#6b7280'; // gray-500
@@ -31,7 +51,33 @@ const getPeriodColor = (period?: string): string => {
 
 const createRuneIcon = (inscription: RunicInscription): L.DivIcon => {
   const color = getPeriodColor(inscription.period);
-  const iconHtml = `
+  const approximate = isApproximate(inscription);
+
+  // Verifierad: fylld cirkel, solid vit kant. Approximativ: dämpad (halv opacitet,
+  // ihålig med streckad kant, mindre) så exakta lägen syns tydligt bland ungefärliga.
+  const iconHtml = approximate
+    ? `
+    <div title="Ungefärlig plats (ej verifierad koordinat)" style="
+      background-color: transparent;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px dashed ${color};
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      opacity: 0.55;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: ${color};
+      font-weight: bold;
+      font-family: sans-serif;
+      cursor: pointer;
+    ">
+      ᛘ
+    </div>
+  `
+    : `
     <div style="
       background-color: ${color};
       width: 24px;
@@ -52,12 +98,13 @@ const createRuneIcon = (inscription: RunicInscription): L.DivIcon => {
     </div>
   `;
 
+  const size: [number, number] = approximate ? [18, 18] : [24, 24];
   return L.divIcon({
     html: iconHtml,
-    className: 'custom-rune-icon',
-    iconSize: [24, 24],
-    iconAnchor: [12, 24],
-    popupAnchor: [0, -24],
+    className: approximate ? 'custom-rune-icon custom-rune-icon-approx' : 'custom-rune-icon',
+    iconSize: size,
+    iconAnchor: [size[0] / 2, size[1]],
+    popupAnchor: [0, -size[1]],
   });
 };
 

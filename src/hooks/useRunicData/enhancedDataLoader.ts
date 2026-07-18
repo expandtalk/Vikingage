@@ -17,6 +17,8 @@ interface RunicWithCoordinatesRow {
   additional_longitude?: number | null;
   coordinate_source?: string | null;
   confidence?: string | null;
+  coord_confidence?: string | null;
+  coord_source?: string | null;
   location?: string | null;
   parish?: string | null;
   country?: string | null;
@@ -305,11 +307,18 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
         console.log(`🎯 ÖLAND FINAL RESULT - ${inscription.signum}: coordinates =`, finalCoordinates);
       }
       
+      // Föredra huvudtabellens auktoritativa coord_confidence/coord_source (rundata
+      // = 'high') framför gamla additional_coordinates-fälten. Används av kartan för
+      // att tona osäkra markörer (verifierat vs approximativt).
+      const confidence = inscription.coord_confidence || inscription.confidence || 'unknown';
+      const source = inscription.coord_source || inscription.coordinate_source || 'original';
       return {
         ...inscription,
         coordinates: finalCoordinates,
-        coordinate_source: inscription.coordinate_source || 'original',
-        coordinate_confidence: inscription.confidence || 'unknown'
+        coordinate_source: source,
+        coordinate_confidence: confidence,
+        coord_confidence: confidence,
+        coord_source: source
       };
     });
 
@@ -368,6 +377,8 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
           period_end: 1500,
           coordinate_source: coord.source,
           coordinate_confidence: coord.confidence,
+          coord_confidence: coord.confidence || 'low', // socken-centroid → approximativ
+          coord_source: coord.source,
           province: region,
           landscape: region,
           virtual_inscription: true
