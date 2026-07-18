@@ -79,9 +79,15 @@ Skild från `historical_sources` (som handlar om kungakällor). Detta är inskri
 | **Forskningsnotis** | skalär `scholarly_notes`, `paleographic_notes`, `historical_context` | Vetenskaplig text per inskrift (fylld via notes-crosswalk). | inom E33 |
 | **Arkivbild** | `inscription_media` | Foto/teckning (arkivlänk), matchad på signum. | E36 Visual Item |
 
-**Datakvalitetskonsekvens:** `object_source`/`reference_uri` fylls av
-`scripts/data/rundata-object-source.sql` + `rundata-reference-uri.sql` (bytea/hex, id=objectid).
-Tomma → detaljvyns käll-/URI-flik är tom trots att inskriften finns.
+**Status/modell:** ✅ ifyllt — `object_source` (guardat mot runic_inscriptions.id + sources) och
+`reference_uri`. **Viktig modellavvikelse:** appens hook (`useInscriptionExtendedData`) antar
+`reference_uri.reference_id = sourceid`, men rundatas riktiga kedja är inskrifts-nivå
+(`inscription ← references ← reference_uri → uris`). Vi bygger därför `reference_uri` som
+`(sourceid, uriid)`-par härledda via `inscription→references→reference_uri`, korsat med
+`object_source` (`scripts/crosswalk-rundata-inscription-uris.mjs`). **Känd förfining:** en
+källa som delas av många inskrifter (t.ex. IK-katalogen över brakteater) samlar då *alla* deras
+URI:er → sådana inskrifter visar för många länkar. Rätt lösning på sikt: en äkta inskrift→uri-
+tabell + ändrad hook (frontend). Vanliga runstenar opåverkade.
 
 ### 1e. Onomastik / personnamn (`viking_names`)
 
@@ -230,10 +236,11 @@ Kanoniska: `simple` | `medium` | `complex` | `unknown`.
 - [x] Kanonisk `object_category` (~100 `object_type`-varianter → 13 kategorier via nyckelord) → **migration redo:** `20260718180000_object_category.sql` (icke-destruktiv, ny kolumn).
 - [x] Dela `uncertainty_level` i `condition` + `interpretation_confidence` → **migration redo:** `20260718190000_split_uncertainty_level.sql` (icke-destruktiv, original bevarat).
 - [x] Fullständig import av saknade inskrifter → **klart:** 3067 → 6435 (id=objectid, se §1b).
-- [~] Socken/härad för de ~4200 nya → **SQL redo:** `20260718130000_parish_harad_crosswalk.sql` (dollar-citerat, chunkat i `scripts/data/chunks/parish-*`).
-- [~] Källor/URI:er (§1d) → **SQL redo:** `rundata-object-source.sql` + `rundata-reference-uri.sql` (chunkat `chunks/objsrc-*`, `chunks/refuri-*`).
+- [x] Socken/härad för de ~4200 nya → **klart:** 6291 inskrifter har socken (`20260718130000_parish_harad_crosswalk.sql`).
+- [x] Källor/URI:er (§1d) → **klart:** `object_source` + `reference_uri` ifyllda; hela kedjan tänder detaljvyns käll-/URI-flik.
 - [x] Utöka `viking_names` (§1e) → **klart:** 113 → 139 kurerade namn (`viking-names-expansion.sql`).
 - [ ] Lägg till `runor_uuid` + `wikidata_id` (utlänkning/verifiering).
+- [ ] **Grafkanter** (§8): `king_inscription_links` tom (0), gudar saknar tabell, artefakt↔inskrift saknas → blockerar traversering.
 
 **Kanonisk `object_category` (13):** `runestone` | `rock_carving` | `grave_slab` | `fragment` | `portable_object` | `building_inscription` | `plaster_inscription` | `wood` | `bracteate` | `cross` | `liturgical_object` | `other` | `unknown`.
 
@@ -246,3 +253,52 @@ Kanoniska: `simple` | `medium` | `complex` | `unknown`.
 - **Runor/SNRD** — källmodellen; edition 2020 via runor.raa.se-API.
 - **K-samsök/SOCH, Fornsök/KMR** — RAÄ:s auktoritativa register.
 - **Wikidata, Getty TGN/ULAN** — utlänkning.
+
+---
+
+## 8. Sök & kunskapsgraf
+
+Söket utvecklas från **fältsök** (en entitet) mot **kunskapsgraf** (entiteter + kanter + teman).
+
+### 8a. Federerat sök (`GlobalSearch`, toppnav, Ctrl/Cmd+K)
+Söker parallellt (client-side) över flera entiteter och grupperar resultaten:
+
+| Grupp | Tabell | Rutt |
+|---|---|---|
+| Runinskrifter | `runic_inscriptions` (RPC `search_inscriptions_flexible`) | `/explore?searchQuery=` |
+| Ristare | `carvers` | `/carvers?carver=<id>` (deep-link) |
+| Ortnamn | `places` | `/explore?searchQuery=` |
+| Heliga platser | `christian_sites` | `/explore?searchQuery=` |
+| Försvar / Städer | `viking_fortresses`, `viking_cities` | `/fortresses` |
+| Kungar / Släkter | `historical_kings`, `royal_dynasties` | `/royal-chronicles` |
+| Mynt | `coins` | `/coins` |
+| Namn | `viking_names` | `/explore?focus=names` |
+
+Källorna styrs av `SOURCES` i `GlobalSearch.tsx`. RPC:n matchar nya + gamla signum
+(`alternative_signum`), ort/socken/härad/landskap, namn, translitteration, normalisering,
+båda översättningar, `historical_context`, `scholarly_notes`, `paleographic_notes`.
+
+### 8b. Begreppslager / tematisk graf (`src/config/themes.ts`)
+10 teman (tro, kult, död, resa, vapen, skydd, kärlek, handel, skepp, häst) med nyckelord
+(sv/en/fornnordiska) mappade till relevanta entiteter. Klick på ett tema kör tematiskt sök
+tvärs över inskriftstext + tabeller. **Nyckelordsbaserat**, inte semantiskt (se 8d).
+
+### 8c. Kanter (edges) — det som gör grafen traverserbar
+| Kant | Tabell | Status |
+|---|---|---|
+| inskrift ↔ ristare | `carver_inscription` | ✅ 657 |
+| inskrift ↔ källa/URI | `object_source`/`reference_uri` | ✅ (§1d) |
+| plats → socken → härad | `place_parish`→`parishes`→`hundreds` | ✅ |
+| **kung ↔ inskrift** | `king_inscription_links` | ❌ **0 (tom)** |
+| **gud** som entitet | — | ❌ hårdkodad, ingen tabell |
+| **artefakt ↔ inskrift** | `artefacts` | ❌ ingen kopplingskolumn |
+
+Utan dessa kanter går inte "kung X:s runstenar", "gudens kultplatser som entitet" eller
+"artefakter på denna inskrift". **Nästa bygge (b): fyll kanterna.**
+
+### 8d. Semantiskt sök — ej aktivt
+`search_inscriptions_by_similarity` finns men **0 / 6435** inskrifter har `embedding`.
+Kräver en embedding-genereringspass (edge function, API-kostnad) innan det kan användas.
+Egen fas efter kanterna.
+
+Se [[search-knowledge-graph]].
