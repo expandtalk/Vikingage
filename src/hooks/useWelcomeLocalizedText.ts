@@ -22,7 +22,7 @@ export const useWelcomeLocalizedText = () => {
       parishes: "Socknar",
       folkGroups: "Folkgrupper",
       geneticEvents: "Genetiska händelser",
-      prices: "Priser",
+      prices: "Romersk prisomvandlare",
       language: "sv"
     },
     en: {
@@ -42,7 +42,7 @@ export const useWelcomeLocalizedText = () => {
       parishes: "Parishes",
       folkGroups: "Folk Groups",
       geneticEvents: "Genetic Events",
-      prices: "Prices",
+      prices: "Roman Price Converter",
       language: "en"
     }
   };
