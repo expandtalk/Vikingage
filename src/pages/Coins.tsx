@@ -14,14 +14,15 @@ import { useCoins, parseCoinCoord, type Coin } from '@/hooks/useCoins';
 const CATEGORY_LABEL: Record<string, { sv: string; en: string }> = {
   nordic_royal: { sv: 'Nordisk kunglig myntning', en: 'Nordic royal coinage' },
   runmynt: { sv: 'Runmynt', en: 'Rune coins' },
+  islamic: { sv: 'Islamiska mynt (dirhamer)', en: 'Islamic coins (dirhams)' },
   roman_solidus: { sv: 'Romerska solidi', en: 'Roman solidi' },
   hoard: { sv: 'Skatter', en: 'Hoards' },
   imitation: { sv: 'Imitationer', en: 'Imitations' },
 };
 const CATEGORY_COLOR: Record<string, string> = {
-  nordic_royal: '#f59e0b', runmynt: '#a855f7', roman_solidus: '#eab308', hoard: '#22c55e', imitation: '#0ea5e9',
+  nordic_royal: '#f59e0b', runmynt: '#a855f7', islamic: '#14b8a6', roman_solidus: '#eab308', hoard: '#22c55e', imitation: '#0ea5e9',
 };
-const CATEGORY_ORDER = ['nordic_royal', 'runmynt', 'roman_solidus', 'hoard', 'imitation'];
+const CATEGORY_ORDER = ['nordic_royal', 'runmynt', 'islamic', 'roman_solidus', 'hoard', 'imitation'];
 
 const CoinsMap: React.FC<{ coins: Coin[] }> = ({ coins }) => {
   const mapRef = useRef<L.Map | null>(null);

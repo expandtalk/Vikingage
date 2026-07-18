@@ -135,6 +135,40 @@ select v.* from (values
 ) as v(name, name_en, category, issuer, issuer_king_id, mint, metal, denomination, period_start, period_end, obverse, reverse, find_place, coordinates, significance, description, sources)
 where not exists (select 1 from public.coins c where c.name = v.name);
 
+-- Islamiska mynt (dirhamer) — vikingatidens silverhandel österut (Daniel 2026-07-18).
+-- Källor: Skälby-rapport (Västerås), Manar Hammad (Sorbonne), Jankowiak, Gotlands Museum.
+insert into public.coins (name, name_en, category, issuer, issuer_king_id, mint, metal, denomination, period_start, period_end, obverse, reverse, find_place, coordinates, significance, description, sources)
+select v.* from (values
+  ('Halvdrachm från Tabaristan (Skälby)', 'Half-drachm from Tabaristan (Skälby)', 'islamic', 'Tabaristan (abbasidiska guvernörer)', NULL::uuid,
+    'Tabaristan', 'silver', 'halvdrachm', 770, 780,
+    'Sasanidisk-inspirerad härskarbild', 'Eldaltare med väktare',
+    'Skälby, Västerås', point(16.49, 59.62),
+    'Omgjord till hänge — långväga kontakter på 800-talet',
+    'Islamiskt silvermynt från 770-talet präglat i Tabaristan (norra delarna av dagens Iran), hittat i Skälby, Västerås. Kom troligen till Sverige under första halvan av 800-talet och gjordes om till ett hänge.',
+    'Arkeologisk rapport Skälby, Västerås'),
+  ('Klippt dirham från al-Muhammadiyya (Skälby)', 'Clipped dirham from al-Muhammadiyya (Skälby)', 'islamic', 'Abbasidkalifatet', NULL,
+    'al-Muhammadiyya', 'silver', 'dirham (klippt)', 795, 805,
+    'Kufisk text', 'Kufisk text (trosbekännelse, myntort och år)',
+    'Skälby, Västerås', point(16.49, 59.62),
+    'Tidig import av dirhamer runt år 800',
+    'Klippt islamiskt silvermynt daterat 795–805, präglat i al-Muhammadiyya (dagens Iran). Denna mynttyp började importeras till Norden runt år 800.',
+    'Arkeologisk rapport Skälby, Västerås'),
+  ('Abbasidisk dirham (Bagdad)', 'Abbasid dirham (Baghdad)', 'islamic', 'Abbasidkalifatet', NULL,
+    'Madinat al-Salam (Bagdad)', 'silver', 'dirham', 770, 950,
+    'Kufisk text, ingen bild', 'Kufisk text: kalifens namn, myntort och år',
+    'Sverige (spridda fynd)', point(18.40, 57.50),
+    'Vikingarnas favoritmynt — rent silver',
+    'Abbasidiska dirhamer präglades i rent silver (kalifen i Bagdad blandade inte ut silvret) och var vikingarnas mest eftertraktade betalningsmedel. Skandinaviska museer rymmer nästan 500 000 dirhamer — fler än någon annanstans i världen (Manar Hammad, Sorbonne). Nordborna bytte skinn och slavar mot silver.',
+    'Manar Hammad (Sorbonne); Marek Jankowiak'),
+  ('Spillingsskatten (dirhamer)', 'Spillings hoard (dirhams)', 'hoard', NULL, NULL,
+    'Mellanöstern/Centralasien', 'silver', 'dirham (>14 000)', 770, 870,
+    NULL, NULL, 'Spillings, Othem, Gotland', point(18.83, 57.74),
+    'Världens största vikingatida silverskatt',
+    'Spillingsskatten från Gotland är det största kända skattfyndet från vikingatiden: mer än 14 000 dirhamer jämte silverarmband. Gotland ensamt har fler än 350 nedgrävda dirham-skatter — ön var en central handelsplats i silverhandeln österut.',
+    'Gotlands Museum; Manar Hammad (Sorbonne)')
+) as v(name, name_en, category, issuer, issuer_king_id, mint, metal, denomination, period_start, period_end, obverse, reverse, find_place, coordinates, significance, description, sources)
+where not exists (select 1 from public.coins c where c.name = v.name);
+
 commit;
 
 -- Kontroll: select category, count(*) from public.coins group by category;
