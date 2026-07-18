@@ -26,10 +26,11 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 - [ ] **Kör `20260718140000_drop_superseded_standalone_coords.sql`** — raderar de 1939 superseder-posterna, verkar direkt i redan byggd app (ingen ombyggnad). Sedan `migration repair --status applied 20260718140000`.
 - [ ] De 499 kvarvarande: importera ordentligt (item 5) + verifiera mot Runor/SNRD (Daniels `bautil_lookup.py` / `enriched.json` som mall). Notera Bautil-dubbletter (B 1021/1022=Sm 103, B 1027/1030=Sm 121) och försvunna stenar (extant=false: Sm 20, U 314, U 315).
 
-### 3. Kod-polish: deterministisk karta (kräver deploy)
-- [ ] `useExplorerState.handleResultClick` — **ta bort klick-tids-Nominatim-geokodning**; använd bara den kanoniska koordinaten (nu ifylld). Om ingen coord → toast, ingen gissning.
-- [ ] **Tona osäkra markörer** annorlunda via `coord_confidence` (~53 saknar, + ev. kvarvarande 'low'). Verifierat/approximativt-visualisering.
-- [ ] Bygg om dist + FTP (obs: flera kod-ändringar sedan förra uploaden — rivers-focus m.m. väntar också på deploy).
+### 3. ✅ Kod-polish: deterministisk karta (kod klar, commit 7ebc6af — kräver vy-migration + deploy)
+- [x] `useExplorerState.handleResultClick` — klick-tids-Nominatim-geokodning **borttagen**. Bara kanonisk koord; saknas → toast.
+- [x] **Tona osäkra markörer** via `coord_confidence`: approximativa (virtuell socken-centroid / låg-medium-okänd konfidens / geokodad källa) ritas ihåligt+streckat+halv opacitet; verifierade (rundata/RAÄ, manuellt, user-exakt) solida. Säker fallback innan vy-migration.
+- [ ] **KÖR vy-migration `20260718150000_expose_coord_confidence_in_view.sql`** (CREATE OR REPLACE VIEW, exponerar coord_confidence/coord_source) + `migration repair --status applied 20260718150000`. UTAN denna tonas inget (fältet saknas).
+- [ ] Efter migration: verifiera toning i dev → bygg om dist → FTP. Cache: sätt `Cache-Control: no-cache` på index.html (hashade assets kan cachas hårt) för att undvika chunk-mismatch (som gav 1002/497-synvillan).
 
 ### 4. Socken/härad-feature #1 (data klar → bygg UI)
 - [ ] **Sök socken/härad → visa fynd** + koppling. Datan finns nu (`socken`/`harad` på inskrifter). Ingen extern data krävs för sök/koppling.
