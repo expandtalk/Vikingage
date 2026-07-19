@@ -32,7 +32,38 @@ const ExcursionDetail = () => {
     }).addTo(map).bindPopup(`<strong>${excursion.name}</strong>`);
     mapRef.current = map;
     setTimeout(() => map.invalidateSize(), 100);
-    return () => { map.remove(); mapRef.current = null; };
+
+    // Nivå 2: ladda per-monument-geodata (GeoJSON) om den finns och färga efter typ.
+    // feature.properties.type matchas mot monumentTypes (färg ur legenden).
+    const norm = (s: unknown) => String(s ?? '').toLowerCase().trim();
+    const colorByType = new Map((excursion.monumentTypes ?? []).map((m) => [norm(m.sv), m.color]));
+    let cancelled = false;
+    fetch(`/excursion-data/${excursion.id}.geojson`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((geo) => {
+        if (cancelled || !geo || !mapRef.current) return;
+        const layer = L.geoJSON(geo, {
+          pointToLayer: (feature, latlng) => {
+            const typ = feature?.properties?.type ?? feature?.properties?.typ;
+            const color = colorByType.get(norm(typ)) ?? '#94a3b8';
+            return L.circleMarker(latlng, {
+              radius: 5, color: '#1c1917', weight: 1, fillColor: color, fillOpacity: 0.85,
+            });
+          },
+          onEachFeature: (feature, lyr) => {
+            const p = feature?.properties ?? {};
+            const typ = p.type ?? p.typ ?? '';
+            lyr.bindPopup(`<strong>${typ || 'Lämning'}</strong>${p.raa ? `<br/>${p.raa}` : ''}`);
+          },
+        }).addTo(mapRef.current);
+        try {
+          const b = layer.getBounds();
+          if (b.isValid()) mapRef.current.fitBounds(b, { padding: [30, 30], maxZoom: 17 });
+        } catch { /* tom eller punktlös geojson */ }
+      })
+      .catch(() => { /* ingen geodata än — behåll platsmarkören */ });
+
+    return () => { cancelled = true; map.remove(); mapRef.current = null; };
   }, [excursion]);
 
   if (!excursion) {
