@@ -27,6 +27,8 @@ export interface Excursion {
   relatedSources?: string[];
   /** Namn i historical_kings att lyfta fram. */
   relatedKings?: string[];
+  /** Slug-mapp under /excursion-photos/ med komprimerade platsfoton (se manifest.json). */
+  photoDir?: string;
 }
 
 // Ordning som grupperna visas i på sidan.
@@ -70,6 +72,7 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'broborg',
+    photoDir: 'langhundraleden-broborg',
     name: 'Broborg',
     region: 'Vassunda, Uppland',
     group: 'Uppland & Mälardalen',
@@ -130,6 +133,7 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'stora-rickebyhallen',
+    photoDir: 'rickebyhallen',
     name: 'Stora Rickebyhällen',
     region: 'Rickeby, Boglösa socken, Uppland',
     group: 'Uppland & Mälardalen',
@@ -140,6 +144,7 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'jordbro-gravfalt',
+    photoDir: 'jordbro-gravfalt',
     name: 'Jordbro gravfält',
     region: 'Jordbro, Haninge, Södermanland',
     group: 'Södermanland',
@@ -173,6 +178,17 @@ export const EXCURSIONS: Excursion[] = [
     en: 'A Migration-Period hillfort on a steep hill some 45 m above Lake Mälaren in Järfälla. Massive stone ramparts crown the height with a wide view over the Görväln bay — a refuge and power site in the troubled times after the fall of the Western Roman Empire.',
   },
   {
+    id: 'morastenar',
+    photoDir: 'morastenar',
+    name: 'Mora stenar',
+    region: 'Lagga, Knivsta, Uppland',
+    group: 'Uppland & Mälardalen',
+    period: 'Medeltid (ca 1200–1500)',
+    coords: { lat: 59.686, lng: 17.856 },
+    sv: 'Platsen där Sveriges medeltida kungar valdes och "togs till konung" av folket. På Mora äng låg Morastenen, som de nyvalda kungarna ställde sig på; kringliggande stenar bar inskrifter om valen. Originalstenen är försvunnen, men bevarade fragment skyddas i ett litet stenhus. Hit kom rikets landskap för att ena sig kring en kung.',
+    en: 'The site where medieval Swedish kings were elected and "taken as king" by the people. On the Mora meadow stood the Mora stone, on which the newly chosen kings stood; surrounding stones bore inscriptions about the elections. The original stone is lost, but preserved fragments are protected in a small stone house. Here the provinces of the realm gathered to unite around a king.',
+  },
+  {
     id: 'oland_hillforts',
     name: 'Ölands fornborgar',
     region: 'Öland',
@@ -184,6 +200,7 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'rosaring',
+    photoDir: 'rosaring-processionsvag-labyrint',
     name: 'Rösaringsåsen',
     region: 'Låssa, Upplands-Bro',
     group: 'Uppland & Mälardalen',
@@ -247,6 +264,7 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'haga',
+    photoDir: 'haga-hogen-kungs-bjorns-hog',
     name: 'Hågahögen',
     region: 'Håga, väster om Uppsala, Uppland',
     group: 'Uppland & Mälardalen',
