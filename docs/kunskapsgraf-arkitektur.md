@@ -281,7 +281,28 @@ ortnamn), `norwegian_localities`, täckningsanalys mot fullständigt sockenregis
   (`confidence`-flaggad) + mänsklig granskning — provenance-fälten finns för exakt detta.
 - Frågeyta v1: `get_entity(id)` (nod + kanter + labels), `neighbors(id, predicate?)`.
 
-### P3 — Kontrollerade vokabulärer som tabell
+### P3 — Kontrollerade vokabulärer som tabell ✅ KÄRNAN KLAR 2026-07-19
+
+**Utfall** (migrationer `20260719570000`–`580000`):
+- `vocabulary` (531 termer, 9 scheman): `ornament_style` 9 (Gräslund **med TPQ/TAQ** —
+  härledd dateringskälla: Rak 980–1015 → Pr 5 1100–1130), `material` 441 (hierarki via
+  parent_code, 6 typer), `runetype` 31 (kategori fuþark/stil/schiffer),
+  `object_category` 13, `country` 21, `meter` 6, `coord_confidence` 4, `coord_source` 6.
+  RLS, proveniens (source_uuid = rundata-id).
+- **N:M-länktabeller** (sanningskälla; skalärer = projektion per ontology §1b):
+  `inscription_style` 2 162 (certainty bevarad), `inscription_material` 9 514,
+  `inscription_runetype` 735 — alla via rundata_objectid-bryggan, FK till vocabulary.
+- Deriverade fills där tomt: style_group +1 980, material +1 745.
+- **NBSP-minan desarmerad:** dumpens stilkoder bar U+00A0 ('Pr(nbsp)4') — normaliserat
+  i vocabulary + länkar + skalärer (1 327 + 1 164 rader). Staging rörs ej (rått lyft);
+  normalisering sker vid integrationsgränsen. ⚠ NBSP-audit av övriga staging-textfält
+  hör till kommande integrationer (readings/translations).
+- **Payoff-verifierat:** "Pr 4-stenar per härad" = en SQL-fråga (544 st; Bälinge 27,
+  Seminghundra 21, Slättbo 19) — P1-gazetteer × P3-vokabulär.
+
+**Kvar i P3:** FK-flytt av `country`/`object_category`-kolumnerna (lågprio — värdena
+är redan normaliserade in-place), `dating_period`-schema, wikidata_id på nyckeltermer.
+
 - `vocabulary(scheme, code, label_sv, label_en, parent_code, wikidata_id)` + FK.
   (`label_non` struket efter granskning — kan läggas till när behovet finns.)
 - **Import före design:** dumpens `styles` (Gräslund m. TPQ/TAQ — även en härledd
