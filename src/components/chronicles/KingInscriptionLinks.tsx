@@ -14,6 +14,7 @@ const CONN: Record<string, { sv: string; en: string }> = {
   raised_by: { sv: 'restes av', en: 'raised by' },
   commemorates: { sv: 'till minne av', en: 'in memory of' },
   mentions: { sv: 'nämner', en: 'mentions' },
+  commissioned: { sv: 'beställd av', en: 'commissioned by' },
 };
 const STRENGTH: Record<string, { sv: string; en: string; cls: string }> = {
   certain: { sv: 'säker', en: 'certain', cls: 'bg-green-700 text-white' },
