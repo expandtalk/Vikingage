@@ -58,6 +58,8 @@ const stripTags = (s: string | null) => (s ? s.replace(/<\/?b>/g, '') : undefine
 
 // Presentationsmeta per entitetstyp i search_document.
 const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon; route: (h: Hit) => string }> = {
+  // Region överst: exakt landskapsträff hamnar i topp-tier och länken visar HELA regionen på kartan.
+  landscape:      { labelSv: 'Landskap & regioner', labelEn: 'Landscapes & regions', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   inscription:    { labelSv: 'Runinskrifter', labelEn: 'Inscriptions', icon: BookOpen, route: (h) => `/explore?searchQuery=${enc(h.signum ?? h.label)}` },
   carver:         { labelSv: 'Ristare', labelEn: 'Carvers', icon: Hammer, route: (h) => `/carvers?carver=${h.entity_id}` },
   parish:         { labelSv: 'Socknar', labelEn: 'Parishes', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
@@ -84,7 +86,8 @@ const THEME_ICONS: Record<string, LucideIcon> = {
 const themeIcon = (t: DbTheme): LucideIcon => THEME_ICONS[t.slug ?? ''] ?? Sparkles;
 
 // Gruppera rankade träffar per typ; gruppordning = första (bästa) träffens position.
-const groupHits = (hits: Hit[], perGroup = 6): Group[] => {
+// perGroup 10: regionsökningar (t.ex. Öland: 16 fornborgar) ska inte klippas för hårt.
+const groupHits = (hits: Hit[], perGroup = 10): Group[] => {
   const groups: Group[] = [];
   const byType = new Map<string, Group>();
   for (const h of hits) {
@@ -189,7 +192,7 @@ export const GlobalSearch: React.FC = () => {
     const t = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await sb.rpc('search_v1', { p_q: q, p_limit: 40 });
+        const res = await sb.rpc('search_v1', { p_q: q, p_limit: 60 });
         setGroups(groupHits(res.data ?? []));
       } catch {
         setGroups([]);
