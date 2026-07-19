@@ -10,6 +10,10 @@ interface Carver {
   period_active_end: number | null;
   region: string | null;
   country: string | null;
+  home_farm: string | null;
+  gender: string | null;
+  is_professional: boolean | null;
+  source_ref: string | null;
 }
 
 interface CarverStats {

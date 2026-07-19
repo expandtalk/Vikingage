@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, MapPin, Calendar, ExternalLink, BookOpen, FileText } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, ExternalLink, BookOpen, FileText, Home } from 'lucide-react';
 import { useCarverData } from '@/hooks/useCarverData';
 import { CarverStonesMap } from './CarverStonesMap';
 
@@ -282,7 +282,26 @@ export const CarverDetailPanel: React.FC<CarverDetailPanelProps> = ({
                       {carver.region}{carver.country && `, ${carver.country}`}
                     </div>
                   )}
+
+                  {carver.home_farm && (
+                    <div className="flex items-center gap-1">
+                      <Home className="h-4 w-4" />
+                      {carver.home_farm}
+                    </div>
+                  )}
+
+                  {carver.is_professional != null && (
+                    <Badge variant="outline" className="border-amber-500/50 text-amber-200">
+                      {carver.is_professional ? 'Yrkesristare' : 'Icke yrkesristare'}
+                    </Badge>
+                  )}
                 </div>
+
+                {carver.source_ref && (
+                  <p className="mt-3 text-xs text-slate-500 border-t border-white/10 pt-2">
+                    Källa: {carver.source_ref}
+                  </p>
+                )}
               </div>
             </div>
           </TabsContent>
