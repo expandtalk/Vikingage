@@ -1,0 +1,475 @@
+/* ═══════════════════════════════════════════════════════════════
+   TEMAVARIABLER
+═══════════════════════════════════════════════════════════════ */
+
+/* Hall — vikingasalens mörka atmosfär, björkbräde, glas och bärnsten */
+.kungstavla[data-theme="hall"] {
+  --bg:           #16130d;
+  --bg-2:         #1f1a11;
+  --text:         #e8dcc3;
+  --text-d:       #b6a988;
+  --board-a:      #d4b47c;
+  --board-b:      #b88f50;
+  --grid:         rgba(0,0,0,.36);
+  --grid-hi:      rgba(255,255,255,.06);
+  --frame-a:      #4a3a22;
+  --frame-b:      #332715;
+  --frame-stripe: repeating-linear-gradient(90deg,#3a2c17 0 2px,transparent 2px 10px);
+  --piece-a:      #2c2c30;
+  --piece-a-hi:   #6e727b;
+  --piece-d:      #ece3cf;
+  --piece-d-hi:   #ffffff;
+  --piece-d-sh:   #9a8e72;
+  --piece-k:      #e0a52e;
+  --piece-k-hi:   #f6cf6a;
+  --piece-k-sh:   #9a6c12;
+  --piece-k-gl:   rgba(224,165,46,.4);
+  --accent:       #c2702a;
+  --mark:         rgba(106,77,31,.55);
+  --danger:       #b8412e;
+  --focus:        #f6cf6a;
+  --sel-bg:       rgba(224,165,46,.22);
+  --sel-ring:     #e0a52e;
+  --last-bg:      rgba(194,112,42,.13);
+  --legal-bg:     rgba(58,122,58,.7);
+  --legal-hov:    rgba(58,122,58,.2);
+  --card-bg:      linear-gradient(#211a10,#191309);
+  --card-bd:      #3a2f1c;
+  --ctrl-bg:      linear-gradient(#262015,#1c1810);
+  --ctrl-bd:      #443720;
+  --body-bg:      radial-gradient(1200px 700px at 50% -10%,#241d12 0%,transparent 60%),
+                  radial-gradient(900px 600px at 90% 110%,#20180e 0%,transparent 55%),
+                  #16130d;
+  --hd:           #e8dcc3;
+  --sep:          #3a2f1c;
+  --foot:         #6f6450;
+  --btn-p-bg:     linear-gradient(#caa54f,#a9802f);
+  --btn-p-fg:     #1c1407;
+  --btn-p-bd:     #7a5a22;
+  --toggle-off:   #443720;
+  --toggle-on:    #c2702a;
+}
+
+/* Klippa — runsten, ockrared sten, ben och basalt */
+.kungstavla[data-theme="klippa"] {
+  --bg:           #3a3936;
+  --bg-2:         #464540;
+  --text:         #e4e0d6;
+  --text-d:       #a8a49a;
+  --board-a:      #a4a098;
+  --board-b:      #8a8680;
+  --grid:         rgba(0,0,0,.30);
+  --grid-hi:      rgba(255,255,255,.07);
+  --frame-a:      #686460;
+  --frame-b:      #545250;
+  --frame-stripe: repeating-linear-gradient(90deg,#595754 0 2px,transparent 2px 10px);
+  --piece-a:      #1e1e1c;
+  --piece-a-hi:   #585856;
+  --piece-d:      #dad6ce;
+  --piece-d-hi:   #f4f0e8;
+  --piece-d-sh:   #aaa49e;
+  --piece-k:      #c07830;
+  --piece-k-hi:   #e0a060;
+  --piece-k-sh:   #7a4818;
+  --piece-k-gl:   rgba(192,120,48,.4);
+  --accent:       #a03010;
+  --mark:         rgba(160,48,16,.52);
+  --danger:       #b03020;
+  --focus:        #e0a060;
+  --sel-bg:       rgba(192,120,48,.22);
+  --sel-ring:     #c07830;
+  --last-bg:      rgba(160,48,16,.12);
+  --legal-bg:     rgba(60,110,55,.7);
+  --legal-hov:    rgba(60,110,55,.2);
+  --card-bg:      linear-gradient(#424040,#3a3836);
+  --card-bd:      #585654;
+  --ctrl-bg:      linear-gradient(#484844,#3e3e3c);
+  --ctrl-bd:      #585856;
+  --body-bg:      radial-gradient(1000px 600px at 50% -10%,#4c4a46 0%,transparent 55%),
+                  #3a3936;
+  --hd:           #e4e0d6;
+  --sep:          #525250;
+  --foot:         #787470;
+  --btn-p-bg:     linear-gradient(#a03010,#7c2008);
+  --btn-p-fg:     #f4e8d8;
+  --btn-p-bd:     #622008;
+  --toggle-off:   #585654;
+  --toggle-on:    #a03010;
+}
+
+/* Sol — tablut i dagsljus, benpjäser och äkta bärnsten (von Linné, 1732) */
+.kungstavla[data-theme="sol"] {
+  --bg:           #f2e8d5;
+  --bg-2:         #eadfc8;
+  --text:         #2c2418;
+  --text-d:       #6a5840;
+  --board-a:      #e8dab4;
+  --board-b:      #d6c898;
+  --grid:         rgba(100,70,20,.25);
+  --grid-hi:      rgba(200,160,60,.12);
+  --frame-a:      #d0bc78;
+  --frame-b:      #bca858;
+  --frame-stripe: repeating-linear-gradient(90deg,#c8b460 0 2px,transparent 2px 10px);
+  --piece-a:      #382010;
+  --piece-a-hi:   #785030;
+  --piece-d:      #f8f4ea;
+  --piece-d-hi:   #ffffff;
+  --piece-d-sh:   #ccc0a4;
+  --piece-k:      #cc7e18;
+  --piece-k-hi:   #f0a840;
+  --piece-k-sh:   #885010;
+  --piece-k-gl:   rgba(204,126,24,.35);
+  --accent:       #8a5e18;
+  --mark:         rgba(120,80,20,.40);
+  --danger:       #c03820;
+  --focus:        #cc7e18;
+  --sel-bg:       rgba(204,126,24,.18);
+  --sel-ring:     #cc7e18;
+  --last-bg:      rgba(138,94,24,.12);
+  --legal-bg:     rgba(52,96,40,.65);
+  --legal-hov:    rgba(52,96,40,.15);
+  --card-bg:      linear-gradient(#ede4cc,#e4d8b8);
+  --card-bd:      #caba8c;
+  --ctrl-bg:      linear-gradient(#ede4cc,#e4d8b8);
+  --ctrl-bd:      #caba8c;
+  --body-bg:      radial-gradient(1000px 500px at 50% -5%,#f8f0e0 0%,transparent 55%),
+                  #f2e8d5;
+  --hd:           #2c2418;
+  --sep:          #d0c090;
+  --foot:         #8a7a58;
+  --btn-p-bg:     linear-gradient(#d08020,#a86010);
+  --btn-p-fg:     #fff8e8;
+  --btn-p-bd:     #886010;
+  --toggle-off:   #caba8c;
+  --toggle-on:    #8a5e18;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BASSTIL
+═══════════════════════════════════════════════════════════════ */
+.kungstavla *{ box-sizing:border-box; }
+.kungstavla{ margin:0; }
+.kungstavla{
+  min-height:100vh;
+  background: var(--body-bg);
+  color: var(--text);
+  font-family: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  transition: background .4s, color .3s;
+}
+.wrap{
+  max-width:1040px;
+  margin:0 auto;
+  padding:clamp(16px,3vw,40px) clamp(14px,3vw,28px) 64px;
+}
+
+/* ─── Header ─────────────────────────────────────────────────── */
+header.masthead{
+  display:flex; flex-wrap:wrap; align-items:flex-end; gap:6px 18px;
+  border-bottom:1px solid var(--sep); padding-bottom:18px; margin-bottom:22px;
+}
+.title{
+  font-family:"Marcellus",Georgia,"Times New Roman",serif;
+  font-weight:400; letter-spacing:.06em;
+  font-size:clamp(2rem,5vw,3.1rem); line-height:1; margin:0;
+  color: var(--hd);
+}
+.title .em{ color:var(--piece-k); }
+.tagline{ color:var(--text-d); font-size:.95rem; max-width:46ch; margin:2px 0 0; }
+.tagline .rune{ color:var(--accent); }
+
+/* ─── Layout ─────────────────────────────────────────────────── */
+.game{
+  display:grid; gap:clamp(18px,3vw,34px);
+  grid-template-columns: minmax(0,1fr);
+  align-items:start;
+}
+@media(min-width:880px){ .game{ grid-template-columns:minmax(0,560px) 1fr; } }
+
+/* ─── Kontroller ─────────────────────────────────────────────── */
+.controls{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; align-items:flex-end; }
+.field{ display:flex; flex-direction:column; gap:3px; }
+.field label{ font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-d); }
+
+.kungstavla select, .kungstavla button{
+  font:inherit; color:var(--text);
+  background:var(--ctrl-bg);
+  border:1px solid var(--ctrl-bd); border-radius:8px;
+  padding:8px 12px; cursor:pointer;
+  transition: border-color .2s, background .35s, color .35s;
+}
+.kungstavla select{ padding-right:8px; }
+.kungstavla button.primary{
+  background:var(--btn-p-bg); color:var(--btn-p-fg);
+  border-color:var(--btn-p-bd); font-weight:600;
+}
+.kungstavla button:hover{ border-color:var(--accent); }
+.kungstavla button:focus-visible, .kungstavla select:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; }
+
+/* Temaknappar */
+.theme-btns{ display:flex; gap:7px; }
+.theme-btn{
+  width:30px; height:30px; border-radius:50%; padding:0;
+  border:2px solid var(--ctrl-bd); cursor:pointer;
+  transition: border-color .2s, transform .15s, box-shadow .2s;
+  background:none;
+}
+.theme-btn:hover{ transform:scale(1.12); }
+.theme-btn.active{ border-color:var(--focus); box-shadow:0 0 0 2px var(--focus); }
+.theme-btn[data-t="hall"]  { background:radial-gradient(circle at 38% 32%, #9a8050, #241a0a); }
+.theme-btn[data-t="klippa"]{ background:radial-gradient(circle at 38% 32%, #b8b4aa, #484440); }
+.theme-btn[data-t="sol"]   { background:radial-gradient(circle at 38% 32%, #f4d870, #c8a030); }
+
+/* ─── Status ─────────────────────────────────────────────────── */
+.status{
+  display:flex; align-items:center; gap:12px;
+  background:var(--card-bg);
+  border:1px solid var(--card-bd); border-radius:10px;
+  padding:10px 14px; margin-bottom:14px; min-height:52px;
+  transition: background .35s, border-color .35s;
+}
+.turn-dot{ width:18px; height:18px; border-radius:50%; flex:none; box-shadow:0 0 0 2px rgba(0,0,0,.25) inset; }
+.turn-dot.attacker{ background:radial-gradient(circle at 35% 30%, var(--piece-a-hi), var(--piece-a)); }
+.turn-dot.defender{ background:radial-gradient(circle at 35% 30%, var(--piece-d-hi), var(--piece-d-sh)); }
+.turn-dot.over{     background:radial-gradient(circle at 35% 30%, var(--piece-k-hi), var(--accent)); }
+.status .msg strong{ color:var(--piece-k); }
+
+/* ─── Bräde ──────────────────────────────────────────────────── */
+.board-frame{
+  position:relative;
+  padding:clamp(12px,2.4vw,20px);
+  border-radius:14px;
+  background: var(--frame-stripe), linear-gradient(var(--frame-a),var(--frame-b));
+  box-shadow: 0 18px 44px rgba(0,0,0,.45), 0 2px 0 rgba(0,0,0,.35) inset;
+  transition: background .35s;
+}
+.kungstavla[data-theme="sol"] .board-frame{
+  box-shadow: 0 8px 28px rgba(160,120,30,.22), 0 1px 0 rgba(255,255,255,.5) inset;
+}
+.board{
+  display:grid; gap:0;
+  width:100%; aspect-ratio:1/1;
+  border:2px solid rgba(0,0,0,.28);
+  border-radius:5px;
+  overflow:hidden;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.2) inset;
+  touch-action:manipulation;
+  transition: background .35s;
+  /* Board texture per theme via data-theme on root */
+}
+.kungstavla[data-theme="hall"] .board{
+  background:
+    repeating-linear-gradient(180deg,transparent 0 14px,rgba(0,0,0,.025) 14px 15px),
+    linear-gradient(135deg, var(--board-a), var(--board-b) 50%, var(--board-a));
+}
+.kungstavla[data-theme="klippa"] .board{
+  background: linear-gradient(165deg, #b0aca4 0%, var(--board-b) 40%, var(--board-a) 65%, #8a8680 100%);
+}
+.kungstavla[data-theme="sol"] .board{
+  background:
+    repeating-linear-gradient(90deg,transparent 0 12px,rgba(180,140,60,.06) 12px 13px),
+    linear-gradient(135deg, #eeddb0, var(--board-a) 50%, #dccf9a);
+}
+
+.cell{
+  position:relative; border:0; margin:0; padding:0;
+  background:transparent;
+  border-right:1px solid var(--grid);
+  border-bottom:1px solid var(--grid);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: background-color .14s;
+}
+.cell:nth-child(odd){ background:var(--grid-hi); }
+.cell:hover{ background:rgba(255,255,255,.12); }
+.kungstavla[data-theme="sol"] .cell:hover{ background:rgba(0,0,0,.06); }
+.cell:focus-visible{ outline:3px solid var(--focus); outline-offset:-3px; z-index:3; }
+
+/* Tron + flyktshörn */
+.cell.throne::before, .cell.corner::before{
+  content:""; position:absolute; inset:14%;
+  border:2px solid var(--mark); border-radius:50%; pointer-events:none;
+}
+.cell.corner::after{
+  content:"\16C9";  /* ᛉ algiz */
+  position:absolute; font-size:clamp(10px,2.2vw,17px); color:var(--mark);
+  font-family:"Segoe UI Symbol","Noto Sans Runic",serif; pointer-events:none;
+}
+.cell.throne::after{
+  content:"\16DF";  /* ᛟ othala */
+  position:absolute; font-size:clamp(10px,2.4vw,19px); color:var(--mark);
+  font-family:"Segoe UI Symbol","Noto Sans Runic",serif; pointer-events:none;
+}
+
+/* ─── Pjäser ─────────────────────────────────────────────────── */
+.piece{
+  width:74%; height:74%; border-radius:50%;
+  position:relative; pointer-events:none;
+  box-shadow: 0 3px 5px rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.28) inset;
+  animation: place .22s ease-out;
+  transition: background .35s;
+}
+@keyframes place{ from{ transform:scale(.35); opacity:0; } to{ transform:scale(1); opacity:1; } }
+
+.piece.attacker{
+  background: radial-gradient(circle at 34% 28%, var(--piece-a-hi), var(--piece-a) 62%, #0a0a0c);
+}
+.piece.defender{
+  background: radial-gradient(circle at 34% 28%, var(--piece-d-hi), var(--piece-d) 55%, var(--piece-d-sh));
+}
+.piece.king{
+  width:84%; height:84%;
+  background: radial-gradient(circle at 36% 26%, var(--piece-k-hi), var(--piece-k) 55%, var(--piece-k-sh));
+  box-shadow: 0 0 14px var(--piece-k-gl), 0 3px 6px rgba(0,0,0,.45), 0 1px 0 rgba(255,255,255,.4) inset;
+}
+.piece.king::after{
+  content:"\16B7";  /* ᚷ */
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:var(--piece-k-sh); font-size:clamp(13px,3vw,23px);
+  font-family:"Segoe UI Symbol","Noto Sans Runic",serif; font-weight:700;
+}
+
+/* ─── Markeringar ────────────────────────────────────────────── */
+.cell.selected{
+  background:var(--sel-bg) !important;
+  box-shadow:0 0 0 3px var(--sel-ring) inset;
+}
+.cell.lastmove{ background:var(--last-bg); }
+.cell.legal::before{
+  content:""; position:absolute; width:32%; height:32%; border-radius:50%;
+  background:var(--legal-bg); box-shadow:0 0 0 2px rgba(255,255,255,.5);
+  pointer-events:none;
+}
+.cell.legal.capture::before{
+  width:65%; height:65%; background:transparent;
+  border:3px solid var(--danger); box-shadow:0 0 0 2px rgba(0,0,0,.35);
+}
+.cell.legal:hover{ background:var(--legal-hov); }
+.cell.flash{ animation:flash .55s ease-out; }
+@keyframes flash{ 0%{ background:rgba(180,55,30,.75); } 100%{ background:transparent; } }
+
+/* ─── Sidopanel ──────────────────────────────────────────────── */
+.panel h2{
+  font-family:"Marcellus",Georgia,serif; font-weight:400; letter-spacing:.04em;
+  font-size:1.15rem; margin:0 0 8px; color:var(--hd);
+  border-bottom:1px solid var(--sep); padding-bottom:6px;
+}
+.scoreboard{ display:flex; gap:14px; margin-bottom:12px; flex-wrap:wrap; }
+.side-card{
+  flex:1 1 150px; min-width:140px;
+  background:var(--card-bg);
+  border:1px solid var(--card-bd); border-radius:10px; padding:12px 14px;
+  transition: background .35s, border-color .25s;
+}
+.side-card.active{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+.side-card .who{ display:flex; align-items:center; gap:9px; font-weight:600; }
+.swatch{ width:20px; height:20px; border-radius:50%; flex:none; }
+.swatch.attacker{ background:radial-gradient(circle at 35% 30%, var(--piece-a-hi), var(--piece-a)); }
+.swatch.defender{ background:radial-gradient(circle at 35% 30%, var(--piece-d-hi), var(--piece-d-sh)); }
+.side-card .role{ font-size:.82rem; color:var(--text-d); margin:2px 0 8px; }
+.side-card .count{ font-family:"Marcellus",serif; font-size:1.8rem; line-height:1; color:var(--piece-k); }
+.side-card .count small{ font-family:inherit; font-size:.7rem; color:var(--text-d); letter-spacing:.08em; }
+
+/* ─── Dragräknare ────────────────────────────────────────────── */
+.move-row{
+  display:flex; align-items:baseline; gap:8px;
+  padding:6px 2px; margin-bottom:2px;
+}
+.move-label{ font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-d); }
+.move-count{
+  font-family:"Marcellus",serif; font-size:1.55rem; line-height:1;
+  color:var(--piece-k); min-width:2ch;
+}
+
+/* ─── Spelhistorik ───────────────────────────────────────────── */
+.history-box{
+  background:var(--card-bg);
+  border:1px solid var(--card-bd); border-radius:10px;
+  padding:10px 14px 8px; margin-top:8px;
+  transition: background .35s, border-color .35s;
+}
+.history-head{
+  font-family:"Marcellus",serif; font-size:.9rem; letter-spacing:.04em;
+  color:var(--text-d); margin-bottom:6px; text-transform:uppercase; letter-spacing:.1em; font-size:.72rem;
+}
+.history-list{
+  margin:0; padding:0 0 0 18px; list-style:decimal;
+}
+.history-list li{
+  font-size:.83rem; color:var(--text); padding:3px 0;
+  border-bottom:1px solid var(--sep);
+  display:flex; justify-content:space-between; gap:10px; align-items:baseline;
+}
+.history-list li:last-child{ border-bottom:none; }
+.h-winner{ font-weight:600; }
+.h-winner.att{ color:var(--piece-a-hi); }
+.kungstavla[data-theme="sol"] .h-winner.att{ color:var(--piece-a); }
+.h-winner.def{ color:var(--piece-k); }
+.h-moves{ color:var(--text-d); font-size:.78rem; white-space:nowrap; }
+.h-rules{ font-size:.72rem; color:var(--accent); margin-top:1px; }
+
+/* ─── Details (regler + alternativregler) ────────────────────── */
+.kungstavla details{
+  background:var(--card-bg);
+  border:1px solid var(--card-bd); border-radius:10px;
+  padding:4px 16px; margin-top:8px;
+  transition: background .35s, border-color .35s;
+}
+.kungstavla details summary{
+  cursor:pointer; padding:10px 0;
+  font-family:"Marcellus",serif; font-size:1.05rem; letter-spacing:.03em;
+  list-style:none; color:var(--hd);
+}
+.kungstavla details summary::-webkit-details-marker{ display:none; }
+.kungstavla details summary::before{ content:"\203A "; color:var(--accent); margin-right:6px; }
+.kungstavla details[open] summary::before{ content:"\2304 "; }
+.kungstavla details ul{ margin:0 0 14px; padding-left:20px; }
+.kungstavla details li{ margin:5px 0; font-size:.92rem; }
+.rules-note{ font-size:.82rem; color:var(--text-d); border-top:1px dashed var(--card-bd); padding-top:10px; }
+.rules-note a{ color:var(--piece-k); }
+
+/* Alternativregler — toggle-switchar */
+.alt-grid{ display:flex; flex-direction:column; gap:12px; padding:4px 0 14px; }
+.tog-row{
+  display:flex; align-items:flex-start; gap:12px;
+  cursor:pointer; user-select:none;
+}
+.tog-row input[type=checkbox]{ position:absolute; opacity:0; width:0; height:0; }
+.tog-sw{
+  flex:none; width:38px; height:22px; border-radius:11px;
+  background:var(--toggle-off); position:relative; top:2px;
+  transition: background .2s;
+}
+.tog-sw::after{
+  content:""; position:absolute;
+  width:16px; height:16px; border-radius:50%;
+  background:#fff; top:3px; left:3px;
+  transition: transform .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.35);
+}
+.tog-row input:checked + .tog-sw{ background:var(--toggle-on); }
+.tog-row input:checked + .tog-sw::after{ transform:translateX(16px); }
+.tog-row input:focus-visible + .tog-sw{ outline:3px solid var(--focus); outline-offset:2px; }
+.tog-lbl strong{ display:block; font-size:.9rem; }
+.tog-lbl small{ font-size:.8rem; color:var(--text-d); }
+.badge{
+  display:inline-block; margin-left:6px;
+  font-size:.62rem; padding:1px 5px; border-radius:4px;
+  background:var(--last-bg); color:var(--accent);
+  font-weight:700; letter-spacing:.06em; text-transform:uppercase; vertical-align:middle;
+}
+
+/* ─── Övrigt ─────────────────────────────────────────────────── */
+.thinking{ font-size:.85rem; color:var(--accent); margin-left:auto; display:none; }
+.thinking.on{ display:inline; }
+footer.cred{ margin-top:34px; font-size:.8rem; color:var(--foot); border-top:1px solid var(--sep); padding-top:14px; }
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+
+@media(prefers-reduced-motion:reduce){
+  .piece{ animation:none; }
+  .cell.flash{ animation:none; }
+  .kungstavla *{ transition:none !important; }
+}
+
+.kungstavla .msg-sub{ color:var(--text-d); }

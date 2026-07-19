@@ -136,7 +136,7 @@ export const EXCURSIONS: Excursion[] = [
     region: 'Jordbro, Haninge, Södermanland',
     group: 'Södermanland',
     period: 'Järnålder (ca 500 f.Kr.–1000 e.Kr.)',
-    coords: { lat: 59.152, lng: 18.122 },
+    coords: { lat: 59.131, lng: 18.122 },
     sv: 'Ett av Sveriges största järnåldersgravfält, på Södertörn — omkring tusen synliga gravar: stensättningar, domarringar, resta stenar och skeppssättningar, använt i över tusen år, intill den forntida farleden. Under äldre järnålder (ca 500 f.Kr.) kremerades den döde; ibland följde en gåva med på bålet — en kniv, en skära, en vävtyngd eller ett smycke. De brända benen samlades sedan ihop och lades i en kruka av keramik eller en träask som grävdes ner, ibland direkt i jorden.',
     en: 'One of Sweden\'s largest Iron Age grave fields, on Södertörn — around a thousand visible graves: stone settings, judge circles (domarringar), raised stones and stone ships, used for over a thousand years, beside the ancient waterway. In the older Iron Age (c. 500 BCE) the dead were cremated; sometimes a gift went onto the pyre — a knife, a sickle, a loom weight or a piece of jewellery. The burnt bones were then gathered and placed in a ceramic pot or a wooden box buried in the ground, sometimes directly in the earth.',
     monumentTypes: [
