@@ -2506,4 +2506,8 @@ from (values
 ('b28dc11e253e4b36b59dd419683941d9','04acb21e733346d3bc6d2cfd26e132a8')
 ) as m(inscid, objid)
 where ci.inscriptionid = decode(m.inscid,'hex')
-  and exists (select 1 from public.runic_inscriptions r where replace(r.id::text,'-','') = m.objid);
+  and exists (select 1 from public.runic_inscriptions r where replace(r.id::text,'-','') = m.objid)
+  and not exists (
+    select 1 from public.carver_inscription x
+    where x.carverid = ci.carverid and x.inscriptionid = decode(m.objid,'hex')
+  );
