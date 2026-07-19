@@ -25,6 +25,7 @@ const RoyalChronicles = lazy(() => import("./pages/RoyalChronicles"));
 const Prices = lazy(() => import("./pages/Prices"));
 const Excursions = lazy(() => import("./pages/Excursions"));
 const Coins = lazy(() => import("./pages/Coins"));
+const Kungstavla = lazy(() => import("./pages/Kungstavla"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -87,6 +88,8 @@ const App = () => (
                   <Route path="/sv/utflykter" element={<Excursions />} />
                   <Route path="/coins" element={<Coins />} />
                   <Route path="/sv/mynt" element={<Coins />} />
+                  <Route path="/kungstavla" element={<Kungstavla />} />
+                  <Route path="/kings-board" element={<Kungstavla />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/profile" element={<Profile />} />

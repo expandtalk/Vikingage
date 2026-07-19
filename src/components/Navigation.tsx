@@ -20,6 +20,7 @@ import {
   Map,
   Compass,
   Scale,
+  Swords,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -136,6 +137,13 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Diocletianus prisedikt (301 e.Kr.) — romerska priser omräknade.',
     descEn: "Diocletian's Price Edict (301 AD) — Roman prices converted.",
     icon: Scale, category: 'history',
+  },
+  {
+    pathEn: '/kungstavla', pathSv: '/kungstavla',
+    labelSv: 'Kungstavla', labelEn: "King's Board",
+    descSv: 'Spela Hnefatafl — vikingatidens strategispel — direkt i webbläsaren.',
+    descEn: "Play Hnefatafl — the Viking-Age strategy game — right in the browser.",
+    icon: Swords, category: 'history',
   },
 ];
 

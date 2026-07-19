@@ -18,7 +18,8 @@ set meter = 'dróttkvätt',
     location = coalesce(location, 'Sigtuna'),
     scholarly_notes = coalesce(scholarly_notes, '') ||
       E'\n\nSigtunadosan — en portabel bronsdosa (vikt-/skåldosa) från Sigtuna, ~900–1000 (Imer 2007), ristad av Värmund. A-sidan är prosa (»Djärv fick dessa (vikt)skålar av en semsk man…«); B-sidan bär en dróttkvätt-strof (»Fugl velva sleit falvan…«) — ett av få runbelägg på skaldisk hovmetrik vid sidan av Karlevistenen. Till skillnad från Karlevi (den enda fullständiga dróttkvätt-strofen på en runsten, bevarad i obetvivlat originalskick) är dosans vers partiell och delvis dunkel, och föremålet är ett lösföremål, inte en runsten.'
-where id = '86f8acd4-2d18-4b48-bd8f-1b31c72b3f8b';   -- U Fv1912;8 (äkta)
+where id = '86f8acd4-2d18-4b48-bd8f-1b31c72b3f8b'   -- U Fv1912;8 (äkta)
+  and (scholarly_notes is null or scholarly_notes not like '%Sigtunadosan — en portabel%');  -- idempotent: undvik re-append
 
 -- Ta bort den tomma dubbletten (0 länkar, 0 attribueringar).
 delete from public.runic_inscriptions

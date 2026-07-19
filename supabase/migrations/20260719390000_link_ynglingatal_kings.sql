@@ -14,7 +14,8 @@ begin;
 update public.royal_dynasties
 set description = coalesce(description, '') ||
   E'\n\nLitterär grund: Ynglingaätten definieras av skaldedikten Ynglingatal (Tjodolf ur Hvin, ca 890) och Snorre Sturlasons Ynglingasaga (Heimskringla), som räknar upp de legendariska Ynglingakungarna (Fjölne, Sveigde … Ingjald illråde). Flertalet av dessa legendariska kungar är ännu inte inlagda i databasen.'
-where id = '22d68f9b-1733-4cee-9bfc-2fd51ff84981';
+where id = '22d68f9b-1733-4cee-9bfc-2fd51ff84981'
+  and (description is null or description not like '%Litterär grund:%');  -- idempotent: undvik re-append
 
 -- Semi-legendariska svearkungar i Yngling-traditionen → Ynglingatal + Ynglingasagan.
 update public.historical_kings
