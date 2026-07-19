@@ -1,6 +1,14 @@
 // Utflyktsmål från vikingatiden och äldre. Delad datakälla så att både
 // Excursions-sidan och welcome-kortet (HeroStatsGrid) räknar samma lista.
 
+/** En monument-/lämningstyp för legenden på en utflykts detaljsida. */
+export interface MonumentType {
+  sv: string;
+  en: string;
+  /** Legendfärg (hex) för symbolen. */
+  color: string;
+}
+
 export interface Excursion {
   id: string;
   name: string;
@@ -11,6 +19,8 @@ export interface Excursion {
   en: string;
   /** Region-/temagrupp för sektionsindelning på utflyktssidan. */
   group?: string;
+  /** Typologi över monument på platsen — visas som färgkodad legend på detaljsidan. */
+  monumentTypes?: MonumentType[];
 }
 
 // Ordning som grupperna visas i på sidan.
@@ -127,8 +137,32 @@ export const EXCURSIONS: Excursion[] = [
     group: 'Södermanland',
     period: 'Järnålder (ca 500 f.Kr.–1000 e.Kr.)',
     coords: { lat: 59.152, lng: 18.122 },
-    sv: 'Ett av Sveriges största järnåldersgravfält, på Södertörn — omkring tusen synliga gravar: stensättningar, domarringar, resta stenar och skeppssättningar, använt i över tusen år. Ett monumentalt dödens landskap intill den forntida farleden.',
-    en: 'One of Sweden\'s largest Iron Age grave fields, on Södertörn — around a thousand visible graves: stone settings, judge circles (domarringar), raised stones and stone ships, used for over a thousand years. A monumental landscape of the dead beside the ancient waterway.',
+    sv: 'Ett av Sveriges största järnåldersgravfält, på Södertörn — omkring tusen synliga gravar: stensättningar, domarringar, resta stenar och skeppssättningar, använt i över tusen år, intill den forntida farleden. Under äldre järnålder (ca 500 f.Kr.) kremerades den döde; ibland följde en gåva med på bålet — en kniv, en skära, en vävtyngd eller ett smycke. De brända benen samlades sedan ihop och lades i en kruka av keramik eller en träask som grävdes ner, ibland direkt i jorden.',
+    en: 'One of Sweden\'s largest Iron Age grave fields, on Södertörn — around a thousand visible graves: stone settings, judge circles (domarringar), raised stones and stone ships, used for over a thousand years, beside the ancient waterway. In the older Iron Age (c. 500 BCE) the dead were cremated; sometimes a gift went onto the pyre — a knife, a sickle, a loom weight or a piece of jewellery. The burnt bones were then gathered and placed in a ceramic pot or a wooden box buried in the ground, sometimes directly in the earth.',
+    monumentTypes: [
+      { sv: 'Övertorvad gravsättning', en: 'Turf-covered burial', color: '#6b7280' },
+      { sv: 'Stensättning med kantkedja', en: 'Stone setting with kerb', color: '#22c55e' },
+      { sv: 'Stensättning med mittkonstruktion & kantränna', en: 'Stone setting with central construction & edge channel', color: '#10b981' },
+      { sv: 'Rest sten', en: 'Raised stone', color: '#eab308' },
+      { sv: 'Triangulär stenkrets', en: 'Triangular stone circle', color: '#f97316' },
+      { sv: 'Kvadratisk stenkrets', en: 'Square stone circle', color: '#ef4444' },
+      { sv: 'Domarring', en: 'Judge circle (stone circle)', color: '#a855f7' },
+      { sv: 'Skeppsformig stensättning', en: 'Ship-shaped stone setting', color: '#3b82f6' },
+      { sv: 'Röse', en: 'Cairn', color: '#78716c' },
+      { sv: 'Stensättning med koncentriska stenkretsar', en: 'Stone setting with concentric circles', color: '#ec4899' },
+      { sv: 'Byggnad', en: 'Building', color: '#14b8a6' },
+      { sv: 'Grop', en: 'Pit', color: '#84cc16' },
+    ],
+  },
+  {
+    id: 'gaseborg',
+    name: 'Gåseborg',
+    region: 'Görväln, Järfälla, Uppland',
+    group: 'Uppland & Mälardalen',
+    period: 'Folkvandringstid (ca 400–500 e.Kr.)',
+    coords: { lat: 59.418, lng: 17.836 },
+    sv: 'En folkvandringstida fornborg på ett brant, ~45 m högt berg vid Mälaren i Järfälla. Kraftiga stenmurar kröner höjden med milsvid utsikt över Görvälnfjärden — en tillflykts- och maktplats under orostiderna efter Västroms fall.',
+    en: 'A Migration-Period hillfort on a steep hill some 45 m above Lake Mälaren in Järfälla. Massive stone ramparts crown the height with a wide view over the Görväln bay — a refuge and power site in the troubled times after the fall of the Western Roman Empire.',
   },
   {
     id: 'oland_hillforts',
