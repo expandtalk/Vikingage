@@ -212,7 +212,10 @@ const ExcursionDetail = () => {
             <aside className="lg:col-span-1">
               <div className="viking-card rounded-lg border border-border p-4">
                 <h2 className="text-lg font-semibold text-foreground mb-1">{sv ? 'Monument på platsen' : 'Monuments on site'}</h2>
-                <p className="text-xs text-muted-foreground mb-3">{sv ? 'Gravtyper enligt informationsskylten. Kartan visar gravfältets registrerade yta (RAÄ, CC0); de ~1000 enskilda gravarna finns inte som öppen geodata.' : 'Grave types per the information sign. The map shows the registered extent (RAÄ, CC0); the ~1000 individual graves are not open geodata.'}</p>
+                {/* Jordbro-specifik förklaring — övriga utflykter får generisk legendtext */}
+                <p className="text-xs text-muted-foreground mb-3">{excursion.id === 'jordbro-gravfalt'
+                  ? (sv ? 'Gravtyper enligt informationsskylten. Kartan visar gravfältets registrerade yta (RAÄ, CC0); de ~1000 enskilda gravarna finns inte som öppen geodata.' : 'Grave types per the information sign. The map shows the registered extent (RAÄ, CC0); the ~1000 individual graves are not open geodata.')
+                  : (sv ? 'Färgerna motsvarar kartans markörer.' : 'Colours correspond to the map markers.')}</p>
                 <ul className="space-y-2">
                   {excursion.monumentTypes.map((m) => (
                     <li key={m.sv} className="flex items-start gap-2 text-sm text-muted-foreground">
