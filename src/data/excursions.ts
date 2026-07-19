@@ -29,6 +29,8 @@ export interface Excursion {
   relatedKings?: string[];
   /** Slug-mapp under /excursion-photos/ med komprimerade platsfoton (se manifest.json). */
   photoDir?: string;
+  /** Alternativ thumbnail-fil i photoDir (default thumb.jpg) — när flera utflykter delar fotomapp. */
+  thumbFile?: string;
   /** Hämta ALLA fornborgar i denna region ur viking_fortresses (live DB) och plotta på kartan. */
   fortressRegion?: string;
 }
@@ -66,6 +68,7 @@ export const EXCURSIONS: Excursion[] = [
   {
     id: 'langhundraleden',
     photoDir: 'langhundraleden-broborg',
+    thumbFile: 'thumb-2.jpg',
     name: 'Långhundraleden',
     region: 'Uppland (Trälhavet–Uppsala)',
     group: 'Uppland & Mälardalen',
@@ -208,6 +211,7 @@ export const EXCURSIONS: Excursion[] = [
   {
     id: 'oland_hillforts',
     photoDir: 'ismantorp-borg-oland',
+    thumbFile: 'thumb-2.jpg',
     fortressRegion: 'Öland',
     name: 'Ölands fornborgar',
     region: 'Öland',

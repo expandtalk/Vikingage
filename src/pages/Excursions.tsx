@@ -153,7 +153,7 @@ const Excursions = () => {
                 {e.photoDir && (
                   <Link to={`/excursions/${e.id}`} className="block relative h-40 w-full overflow-hidden">
                     <img
-                      src={`/excursion-photos/${e.photoDir}/thumb.jpg`}
+                      src={`/excursion-photos/${e.photoDir}/${e.thumbFile ?? 'thumb.jpg'}`}
                       alt={e.name}
                       loading="lazy"
                       decoding="async"
