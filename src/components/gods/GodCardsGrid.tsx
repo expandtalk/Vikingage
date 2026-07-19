@@ -126,6 +126,19 @@ const VIKING_GODS_SORTED: GodData[] = [
   }
 ];
 
+// Komprimerade gudabilder (public/excursion-photos/gudar/), mappade på gudsnamn.
+const GOD_IMAGES: Record<string, string> = {
+  Oden: '/excursion-photos/gudar/oden-styrka-beskydd.jpg',
+  Tor: '/excursion-photos/gudar/tor-aska-styrka-beskydd.jpg',
+  Frej: '/excursion-photos/gudar/frej-fruktbarhet.jpg',
+  Freja: '/excursion-photos/gudar/freja-karlek-skonhet-fruktbarhet.jpg',
+  Frigg: '/excursion-photos/gudar/frigg-moderskap-aktenskap.jpg',
+  Balder: '/excursion-photos/gudar/balder-godhet-renhet.jpg',
+  Njord: '/excursion-photos/gudar/njord-hav-land-rikedom.jpg',
+  Tyr: '/excursion-photos/gudar/tyr-krig-rattvisa-mod.jpg',
+  Idun: '/excursion-photos/gudar/idun-ungdom-fornyelse.jpg',
+};
+
 interface GodCardsGridProps {
   // Fokusera EN guds kultplatser på kartan (legend-nyckel religious_<deity>), null = alla.
   onFocusDeity?: (deityKey: string | null) => void;
@@ -189,22 +202,38 @@ export const GodCardsGrid: React.FC<GodCardsGridProps> = ({ onFocusDeity }) => {
           {VIKING_GODS_SORTED.map((god) => {
             // Verklig siffra: antal katalogförda, koordinatsatta kultplatser för guden.
             const cultSiteCount = getDeityPlaces(DEITY_KEY[god.name] ?? '').length;
+            const image = GOD_IMAGES[god.name];
             return (
             <Card
               key={god.name}
-              className={`transition-all duration-200 group ${
+              className={`overflow-hidden transition-all duration-200 group ${
                 cultSiteCount > 0 ? 'cursor-pointer hover:shadow-lg' : 'opacity-70 cursor-default'
               } ${selectedGod === god.name ? 'ring-2 ring-accent shadow-lg' : ''}`}
               onClick={() => handleGodClick(god.name, cultSiteCount)}
             >
+              {image && (
+                <div className="relative h-44 w-full overflow-hidden">
+                  <img
+                    src={image}
+                    alt={`${god.name} (${god.nameOldNorse})`}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
+                  <Badge className={`absolute top-2 right-2 ${getCategoryBadgeColor(god.category)}`}>
+                    {getCategoryName(god.category)}
+                  </Badge>
+                </div>
+              )}
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${god.color} flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-200`}>
                     {god.icon}
                   </div>
-                  <Badge className={getCategoryBadgeColor(god.category)} variant="secondary">
-                    {getCategoryName(god.category)}
-                  </Badge>
+                  {!image && (
+                    <Badge className={getCategoryBadgeColor(god.category)} variant="secondary">
+                      {getCategoryName(god.category)}
+                    </Badge>
+                  )}
                 </div>
                 <div>
                   <CardTitle className="text-lg">{god.name}</CardTitle>
