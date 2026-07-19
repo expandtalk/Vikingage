@@ -181,7 +181,29 @@ Snabbfixar: pg_trgm ✅, ANALYZE ✅, `staleTime` 0→5 min ✅.
   på fulla tabeller); fixa `useRunicData` `staleTime: 0` (laddar om ~3 000 rader per
   filterändring); installera `pg_trgm` (behövs i P1).
 
-### P1 — Försona geografin (sanningskälla för PLATS) · *högst hävstång*
+### P1 — Försona geografin (sanningskälla för PLATS) · *högst hävstång* ✅ KÄRNAN KLAR 2026-07-19
+
+**Utfall** (migration `20260719530000_p1_parish_reconciliation.sql`):
+- `public.parishes` = enad gazetteer, 927 → **1 726** rader. Befintliga KMR-rader fick
+  rundata-identitet via **empirisk samförekomst-brygga** (897 kopplade — objekt länkade
+  till både rundata-socken och KMR-lämning, ingen namnmatchning behövdes); 799 nya
+  (DK sogn, IS sókn, NO sogn, städer, PL/DE/UK m.fl.). Nya kolumner:
+  `rundata_parishid, rundata_name, hundred_external_id, parish_type, country`.
+- `runic_inscriptions.parish_id` (FK) + `parish_match_method` + `parish_match_score`:
+  **6 356 / 6 434 (98,8 %) EXAKT lösta** — `rundata_objectid` 4 232,
+  `rundata_signum` 1 473, `rundata_signum_alias` 651. **Ingen fuzzy behövdes för
+  bulken** — trigram-fallbacken blev överflödig när kedjan+signum-crosswalken användes.
+- 78 olösta (view `v_parish_unresolved`) — samtliga UTAN socken-fritext (KJ-nummer,
+  Hagia Sofia, handinlagda platser); manuell granskning, textmatchning kan inte hjälpa.
+- **Gränsöverskridande verifierat via FK-kedjan:** SE 4 446, NO 757, DK 738, GR 101,
+  Skottland 86, IS 49, Man 36, England 29 + FR/IT/GR/TR/UA/RU/PL/NL/LV/FI/FO/DE.
+  Stickprov: U 337 → Orkesta ✓, DR 42 → Jelling ✓.
+- Norge-frågan löst i praktiken: N/Bergen-inskrifterna fick sogn via kedjan.
+
+**Kvar i P1 (följdposter, externa källor):** `place_names` (Lantmäteriet, teofora
+ortnamn), `norwegian_localities`, täckningsanalys mot fullständigt sockenregister
+(~2 500) för socknar utan runstenar.
+
 - **Täckning före matchning:** lyft dumpens resterande `parishes` (927→1 696) +
   `municipalities`/`provinces`/`counties` från staging. Gör täckningsanalys mot ~2 500
   historiska socknar; komplettera vid behov (Riksarkivets/SCB:s sockenregister).
