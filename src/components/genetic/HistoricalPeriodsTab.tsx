@@ -3,12 +3,23 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import { DatabasePeriod } from '@/hooks/useGeneticData';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface HistoricalPeriodsTabProps {
   filteredPeriods: DatabasePeriod[];
 }
 
 export const HistoricalPeriodsTab: React.FC<HistoricalPeriodsTabProps> = ({ filteredPeriods }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const c = sv ? {
+    geneticCharacteristics: 'Genetiska kännetecken:',
+    noResults: 'Inga historiska perioder hittades som matchar sökkriterier.',
+  } : {
+    geneticCharacteristics: 'Genetic characteristics:',
+    noResults: 'No historical periods found matching your search criteria.',
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {filteredPeriods.map((period) => (
@@ -32,7 +43,7 @@ export const HistoricalPeriodsTab: React.FC<HistoricalPeriodsTabProps> = ({ filt
             {period.genetic_characteristics && (
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="text-slate-200 text-sm">
-                  <strong>Genetiska kännetecken:</strong> {period.genetic_characteristics}
+                  <strong>{c.geneticCharacteristics}</strong> {period.genetic_characteristics}
                 </div>
               </div>
             )}
@@ -43,7 +54,7 @@ export const HistoricalPeriodsTab: React.FC<HistoricalPeriodsTabProps> = ({ filt
       {filteredPeriods.length === 0 && (
         <div className="col-span-full text-center text-slate-300 py-8">
           <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>Inga historiska perioder hittades som matchar sökkriterier.</p>
+          <p>{c.noResults}</p>
         </div>
       )}
     </div>

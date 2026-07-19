@@ -18,7 +18,47 @@ import { bulkImportExtendedSwedishHillforts } from '../utils/swedishHillfortsBul
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Fortresses = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const sv = language === 'sv';
+  const L = sv
+    ? {
+        allTypes: 'Alla typer', ringForts: 'Ringborgar', hillforts: 'Fornborgar', longphorts: 'Longphorts',
+        royalCentres: 'Kungliga centra', coastalDef: 'Kustförsvar', fortTrade: 'Befästa handelsplatser', linearDef: 'Linjära försvar',
+        allCategories: 'Alla kategorier', estCities: 'Etablerade städer', tradingPosts: 'Handelsplatser',
+        relCentres: 'Religiösa centrum', gotlandicCentres: 'Gotländska centrum', kopings: 'Köpingar',
+        loadError: 'Fel vid laddning', swedishHillforts: 'Svenska fornborgar', vikingFortifications: 'Vikingatida befästningar',
+        cities: 'Centra', hillfortsDesc: 'Fornborgar från hela Sverige med RAÄ-nummer och historisk dokumentation',
+        total: 'Totalt antal', landscapeN: 'Landskap', confirmedN: 'Bekräftade', municipalities: 'Kommuner',
+        importing: 'Importerar…', importOlandSmaland: 'Importera Öland & Småland', importNarkeUppland: 'Importera Närke & Uppland',
+        allLandscapes: 'Alla landskap', namelessHillfort: 'Namnlös fornborg', confirmed: 'Bekräftad',
+        period: 'Period', culturalSig: 'Kulturell betydelse', noHillforts: 'Inga fornborgar hittades',
+        noHillfortsDesc: 'Inga fornborgar från det valda landskapet hittades.',
+        fortsOverview: 'Befästningar översikt', excavatedN: 'Utgrävda', unescoSites: 'UNESCO-platser', countries: 'Länder',
+        unescoBadge: 'UNESCO', excavated: 'Utgrävd', diameter: 'Diameter', area: 'Yta', hectares: 'hektar',
+        historicalSig: 'Historisk betydelse', noForts: 'Inga befästningar hittades',
+        noFortsDesc: 'Inga befästningar av den valda typen hittades.',
+        citiesOverview: 'Centra översikt', population: 'Befolkning', noCities: 'Inga centra hittades',
+        noCitiesDesc: 'Inga centra av den valda kategorin hittades.',
+      }
+    : {
+        allTypes: 'All types', ringForts: 'Ring fortresses', hillforts: 'Hillforts', longphorts: 'Longphorts',
+        royalCentres: 'Royal centres', coastalDef: 'Coastal defence', fortTrade: 'Fortified trading posts', linearDef: 'Linear defences',
+        allCategories: 'All categories', estCities: 'Established cities', tradingPosts: 'Trading posts',
+        relCentres: 'Religious centres', gotlandicCentres: 'Gotlandic centres', kopings: 'Market towns',
+        loadError: 'Error loading', swedishHillforts: 'Swedish hillforts', vikingFortifications: 'Viking Age fortifications',
+        cities: 'Centres', hillfortsDesc: 'Hillforts from across Sweden with RAÄ numbers and historical documentation',
+        total: 'Total', landscapeN: 'Provinces', confirmedN: 'Confirmed', municipalities: 'Municipalities',
+        importing: 'Importing…', importOlandSmaland: 'Import Öland & Småland', importNarkeUppland: 'Import Närke & Uppland',
+        allLandscapes: 'All provinces', namelessHillfort: 'Unnamed hillfort', confirmed: 'Confirmed',
+        period: 'Period', culturalSig: 'Cultural significance', noHillforts: 'No hillforts found',
+        noHillfortsDesc: 'No hillforts found for the selected province.',
+        fortsOverview: 'Fortifications overview', excavatedN: 'Excavated', unescoSites: 'UNESCO sites', countries: 'Countries',
+        unescoBadge: 'UNESCO', excavated: 'Excavated', diameter: 'Diameter', area: 'Area', hectares: 'hectares',
+        historicalSig: 'Historical significance', noForts: 'No fortifications found',
+        noFortsDesc: 'No fortifications of the selected type found.',
+        citiesOverview: 'Centres overview', population: 'Population', noCities: 'No centres found',
+        noCitiesDesc: 'No centres of the selected category found.',
+      };
   const { fortresses, isLoading: fortressesLoading, error: fortressesError } = useVikingFortresses(true);
   const { data: cities, isLoading: citiesLoading, error: citiesError } = useVikingCities(true);
   const { hillforts, isLoading: hillfortsLoading, error: hillfortsError } = useSwedishHillforts(true);
@@ -34,23 +74,23 @@ const Fortresses = () => {
   const [highlightedLocation, setHighlightedLocation] = useState<{ id: string; type: 'fortress' | 'city' | 'hillfort' } | null>(null);
 
   const fortressTypes = [
-    { value: 'all', label: 'Alla typer' },
-    { value: 'ring_fortress', label: 'Ringborgar' },
-    { value: 'hillfort', label: 'Fornborgar' },
-    { value: 'longphort', label: 'Longphorts' },
-    { value: 'royal_center', label: 'Kungliga centra' },
-    { value: 'coastal_defense', label: 'Kustförsvar' },
-    { value: 'trading_post_fortress', label: 'Befästa handelsplatser' },
-    { value: 'linear_defense', label: 'Linjära försvar' }
+    { value: 'all', label: L.allTypes },
+    { value: 'ring_fortress', label: L.ringForts },
+    { value: 'hillfort', label: L.hillforts },
+    { value: 'longphort', label: L.longphorts },
+    { value: 'royal_center', label: L.royalCentres },
+    { value: 'coastal_defense', label: L.coastalDef },
+    { value: 'trading_post_fortress', label: L.fortTrade },
+    { value: 'linear_defense', label: L.linearDef }
   ];
 
   const cityCategories = [
-    { value: 'all', label: 'Alla kategorier' },
-    { value: 'established_city', label: 'Etablerade städer' },
-    { value: 'trading_post', label: 'Handelsplatser' },
-    { value: 'religious_center', label: 'Religiösa centrum' },
-    { value: 'gotlandic_center', label: 'Gotländska centrum' },
-    { value: 'koping', label: 'Köpingar' }
+    { value: 'all', label: L.allCategories },
+    { value: 'established_city', label: L.estCities },
+    { value: 'trading_post', label: L.tradingPosts },
+    { value: 'religious_center', label: L.relCentres },
+    { value: 'gotlandic_center', label: L.gotlandicCentres },
+    { value: 'koping', label: L.kopings }
   ];
 
   const filteredFortresses = selectedFortressType === 'all' 
@@ -126,7 +166,7 @@ const Fortresses = () => {
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="text-center text-red-400">
-            Fel vid laddning: {String(fortressesError || citiesError)}
+            {L.loadError}: {String(fortressesError || citiesError)}
           </div>
         </main>
       </div>
@@ -138,8 +178,8 @@ const Fortresses = () => {
       <PageMeta
         title="Vikingaborgar"
         titleEn="Viking Fortresses"
-        description="Utforska vikingatida borgar, städer och fornborgar i Skandinavien. Interaktiva kartor med detaljerad information om varje plats."
-        descriptionEn="Explore Viking Age fortresses, cities and hillforts in Scandinavia. Interactive maps with detailed information about each location."
+        description="Utforska vikingatida borgar, handelscentra och fornborgar i Skandinavien. Interaktiva kartor med detaljerad information om varje plats."
+        descriptionEn="Explore Viking Age fortresses, trade centres and hillforts in Scandinavia. Interactive maps with detailed information about each location."
         keywords="vikingaborgar, fornborgar, vikingastäder, vikingatid, arkeologi, skandinavisk historia"
       />
       <Header />
@@ -148,7 +188,7 @@ const Fortresses = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4 flex items-center gap-3">
-            <Castle className="h-8 w-8 text-accent" />
+            <Castle className="h-8 w-8 text-gold" />
             {t('fortressesCitiesTitle')}
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -177,15 +217,15 @@ const Fortresses = () => {
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="hillforts" className="flex items-center gap-2">
               <Castle className="h-4 w-4" />
-              Svenska Fornborgar ({hillforts.length})
+              {L.swedishHillforts} ({hillforts.length})
             </TabsTrigger>
             <TabsTrigger value="fortresses" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              Vikingatida Befästningar ({fortresses.length})
+              {L.vikingFortifications} ({fortresses.length})
             </TabsTrigger>
             <TabsTrigger value="cities" className="flex items-center gap-2">
               <Building className="h-4 w-4" />
-              Städer ({cities?.length || 0})
+              {L.cities} ({cities?.length || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -193,36 +233,36 @@ const Fortresses = () => {
             <Card className="viking-card">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
-                  <Castle className="h-5 w-5 text-accent" />
-                  Svenska Fornborgar
+                  <Castle className="h-5 w-5 text-gold" />
+                  {L.swedishHillforts}
                 </CardTitle>
                 <CardDescription>
-                  Fornborgar från hela Sverige med RAÄ-nummer och historisk dokumentation
+                  {L.hillfortsDesc}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{hillforts.length}</div>
-                    <div className="text-sm text-muted-foreground">Totalt antal</div>
+                    <div className="text-2xl font-bold text-gold">{hillforts.length}</div>
+                    <div className="text-sm text-muted-foreground">{L.total}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {new Set(hillforts.map(h => h.landscape)).size}
                     </div>
-                    <div className="text-sm text-muted-foreground">Landskap</div>
+                    <div className="text-sm text-muted-foreground">{L.landscapeN}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {hillforts.filter(h => h.status === 'confirmed').length}
                     </div>
-                    <div className="text-sm text-muted-foreground">Bekräftade</div>
+                    <div className="text-sm text-muted-foreground">{L.confirmedN}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {new Set(hillforts.map(h => h.municipality)).size}
                     </div>
-                    <div className="text-sm text-muted-foreground">Kommuner</div>
+                    <div className="text-sm text-muted-foreground">{L.municipalities}</div>
                   </div>
                 </div>
                 
@@ -243,7 +283,7 @@ const Fortresses = () => {
                     variant="outline"
                     size="sm"
                   >
-                    {isImporting ? 'Importerar...' : 'Importera Öland & Småland'}
+                    {isImporting ? L.importing : L.importOlandSmaland}
                   </Button>
                   <Button 
                     onClick={async () => {
@@ -261,7 +301,7 @@ const Fortresses = () => {
                     variant="default"
                     size="sm"
                   >
-                    {isImporting ? 'Importerar...' : 'Importera Närke & Uppland'}
+                    {isImporting ? L.importing : L.importNarkeUppland}
                   </Button>
                 </div>
               </CardContent>
@@ -276,7 +316,7 @@ const Fortresses = () => {
                   onClick={() => setSelectedLandscape(landscape)}
                   className="text-sm"
                 >
-                  {landscape === 'all' ? 'Alla landskap' : landscape}
+                  {landscape === 'all' ? L.allLandscapes : landscape}
                   {landscape !== 'all' && (
                     <Badge variant="secondary" className="ml-2">
                       {hillforts.filter(h => h.landscape === landscape).length}
@@ -292,7 +332,7 @@ const Fortresses = () => {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-foreground text-lg flex items-center gap-2">
                       <Castle className="h-4 w-4" />
-                      {hillfort.name || 'Namnlös fornborg'}
+                      {hillfort.name || L.namelessHillfort}
                     </CardTitle>
                     <div className="flex gap-2 flex-wrap">
                       <Badge variant="secondary" className="text-xs">
@@ -303,7 +343,7 @@ const Fortresses = () => {
                       </Badge>
                       {hillfort.status === 'confirmed' && (
                         <Badge variant="default" className="text-xs bg-green-600">
-                          Bekräftad
+                          {L.confirmed}
                         </Badge>
                       )}
                     </div>
@@ -335,12 +375,12 @@ const Fortresses = () => {
                       <div className="pt-2 border-t border-border">
                         {hillfort.period && (
                           <p className="text-xs text-muted-foreground mb-1">
-                            <strong>Period:</strong> {hillfort.period}
+                            <strong>{L.period}:</strong> {hillfort.period}
                           </p>
                         )}
                         {hillfort.cultural_significance && (
                           <p className="text-xs text-muted-foreground">
-                            <strong>Kulturell betydelse:</strong> {hillfort.cultural_significance}
+                            <strong>{L.culturalSig}:</strong> {hillfort.cultural_significance}
                           </p>
                         )}
                       </div>
@@ -354,9 +394,9 @@ const Fortresses = () => {
               <Card className="viking-card">
                 <CardContent className="text-center py-8">
                   <Castle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Inga fornborgar hittades</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{L.noHillforts}</h3>
                   <p className="text-muted-foreground">
-                    Inga fornborgar från det valda landskapet hittades.
+                    {L.noHillfortsDesc}
                   </p>
                 </CardContent>
               </Card>
@@ -367,33 +407,33 @@ const Fortresses = () => {
             <Card className="viking-card">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
-                  <Castle className="h-5 w-5 text-accent" />
-                  Befästningar översikt
+                  <Castle className="h-5 w-5 text-gold" />
+                  {L.fortsOverview}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{fortresses.length}</div>
-                    <div className="text-sm text-muted-foreground">Totalt antal</div>
+                    <div className="text-2xl font-bold text-gold">{fortresses.length}</div>
+                    <div className="text-sm text-muted-foreground">{L.total}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {fortresses.filter(f => f.excavated).length}
                     </div>
-                    <div className="text-sm text-muted-foreground">Utgrävda</div>
+                    <div className="text-sm text-muted-foreground">{L.excavatedN}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {fortresses.filter(f => f.unesco_site).length}
                     </div>
-                    <div className="text-sm text-muted-foreground">UNESCO-platser</div>
+                    <div className="text-sm text-muted-foreground">{L.unescoSites}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {new Set(fortresses.map(f => f.country)).size}
                     </div>
-                    <div className="text-sm text-muted-foreground">Länder</div>
+                    <div className="text-sm text-muted-foreground">{L.countries}</div>
                   </div>
                 </div>
               </CardContent>
@@ -425,7 +465,7 @@ const Fortresses = () => {
                   id={`fortress-${fortress.id}`}
                   className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
                     highlightedLocation?.id === fortress.id && highlightedLocation?.type === 'fortress' 
-                      ? 'ring-2 ring-accent' 
+                      ? 'ring-2 ring-gold'
                       : ''
                   }`}
                   onMouseEnter={() => handleCardHover(fortress.id, 'fortress')}
@@ -448,7 +488,7 @@ const Fortresses = () => {
                       )}
                       {fortress.excavated && (
                         <Badge variant="outline" className="text-xs">
-                          Utgrävd
+                          {L.excavated}
                         </Badge>
                       )}
                     </div>
@@ -474,14 +514,14 @@ const Fortresses = () => {
                       {fortress.diameter_meters && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Ruler className="h-4 w-4" />
-                          <span>Diameter: {fortress.diameter_meters}m</span>
+                          <span>{L.diameter}: {fortress.diameter_meters}m</span>
                         </div>
                       )}
                       
                       {fortress.area_hectares && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Ruler className="h-4 w-4" />
-                          <span>Yta: {fortress.area_hectares} hektar</span>
+                          <span>{L.area}: {fortress.area_hectares} {L.hectares}</span>
                         </div>
                       )}
                     </div>
@@ -489,7 +529,7 @@ const Fortresses = () => {
                     {fortress.historical_significance && (
                       <div className="pt-2 border-t border-border">
                         <p className="text-xs text-muted-foreground">
-                          <strong>Historisk betydelse:</strong> {fortress.historical_significance}
+                          <strong>{L.historicalSig}:</strong> {fortress.historical_significance}
                         </p>
                       </div>
                     )}
@@ -502,9 +542,9 @@ const Fortresses = () => {
               <Card className="viking-card">
                 <CardContent className="text-center py-8">
                   <Castle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Inga befästningar hittades</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{L.noForts}</h3>
                   <p className="text-muted-foreground">
-                    Inga befästningar av den valda typen hittades.
+                    {L.noFortsDesc}
                   </p>
                 </CardContent>
               </Card>
@@ -515,33 +555,33 @@ const Fortresses = () => {
             <Card className="viking-card">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
-                  <Building className="h-5 w-5 text-accent" />
-                  Städer översikt
+                  <Building className="h-5 w-5 text-gold" />
+                  {L.citiesOverview}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{cities?.length || 0}</div>
-                    <div className="text-sm text-muted-foreground">Totalt antal</div>
+                    <div className="text-2xl font-bold text-gold">{cities?.length || 0}</div>
+                    <div className="text-sm text-muted-foreground">{L.total}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {cities?.filter(c => c.unesco_site).length || 0}
                     </div>
-                    <div className="text-sm text-muted-foreground">UNESCO-platser</div>
+                    <div className="text-sm text-muted-foreground">{L.unescoSites}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {cities?.filter(c => c.category === 'trading_post').length || 0}
                     </div>
-                    <div className="text-sm text-muted-foreground">Handelsplatser</div>
+                    <div className="text-sm text-muted-foreground">{L.tradingPosts}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {new Set(cities?.map(c => c.country) || []).size}
                     </div>
-                    <div className="text-sm text-muted-foreground">Länder</div>
+                    <div className="text-sm text-muted-foreground">{L.countries}</div>
                   </div>
                 </div>
               </CardContent>
@@ -573,7 +613,7 @@ const Fortresses = () => {
                   id={`city-${city.id}`}
                   className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
                     highlightedLocation?.id === city.id && highlightedLocation?.type === 'city' 
-                      ? 'ring-2 ring-accent' 
+                      ? 'ring-2 ring-gold'
                       : ''
                   }`}
                   onMouseEnter={() => handleCardHover(city.id, 'city')}
@@ -619,7 +659,7 @@ const Fortresses = () => {
                       {city.population_estimate && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Users className="h-4 w-4" />
-                          <span>Befolkning: ~{city.population_estimate}</span>
+                          <span>{L.population}: ~{city.population_estimate}</span>
                         </div>
                       )}
                     </div>
@@ -627,7 +667,7 @@ const Fortresses = () => {
                     {city.historical_significance && (
                       <div className="pt-2 border-t border-border">
                         <p className="text-xs text-muted-foreground">
-                          <strong>Historisk betydelse:</strong> {city.historical_significance}
+                          <strong>{L.historicalSig}:</strong> {city.historical_significance}
                         </p>
                       </div>
                     )}
@@ -640,9 +680,9 @@ const Fortresses = () => {
               <Card className="viking-card">
                 <CardContent className="text-center py-8">
                   <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Inga städer hittades</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{L.noCities}</h3>
                   <p className="text-muted-foreground">
-                    Inga städer av den valda kategorin hittades.
+                    {L.noCitiesDesc}
                   </p>
                 </CardContent>
               </Card>

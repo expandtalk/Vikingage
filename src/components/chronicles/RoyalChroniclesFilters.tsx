@@ -38,7 +38,6 @@ export const RoyalChroniclesFilters: React.FC<RoyalChroniclesFiltersProps> = ({
   const genderOptions = [
     { value: 'male', label: language === 'en' ? 'Male rulers' : 'Manliga härskare' },
     { value: 'female', label: language === 'en' ? 'Female rulers' : 'Kvinnliga härskare' },
-    { value: 'unknown', label: language === 'en' ? 'Unknown' : 'Okänt' },
   ];
 
   return (

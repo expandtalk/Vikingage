@@ -2,12 +2,12 @@
 
 ## Projektöversikt
 
-Viking Age är en omfattande plattform för runologisk forskning och analys av skandinaviska runinskrifter. Plattformen kombinerar modern webbteknologi med AI-driven analys (Google Gemini 2.0 Flash) för att hjälpa forskare att analysera, datera och förstå runinskrifter från vikingatiden och tidigare perioder.
+Viking Age är en omfattande plattform för runologisk forskning och analys av skandinaviska runinskrifter. Plattformen kombinerar modern webbteknologi med AI-driven analys (via OpenRouter, modell Claude Sonnet) för att hjälpa forskare att analysera, datera och förstå runinskrifter från vikingatiden och tidigare perioder.
 
 ### Huvudfunktioner
 
 - **Runinskrifter**: Omfattande databas med runinskrifter, inklusive koordinater, dateringar, och metadata
-- **AI-analys**: Automatisk analys och datering av runinskrifter med Google Gemini
+- **AI-analys**: Automatisk analys och datering av runinskrifter via OpenRouter (Claude)
 - **Interaktiva kartor**: Visualisering av runinskrifter, forten, handelsvägar och historiska platser
 - **Kungakrönikor**: Databas över historiska kungar, dynastier och källor
 - **Genetisk data**: Integration av genetisk data från arkeologiska fynd
@@ -38,7 +38,7 @@ Viking Age är en omfattande plattform för runologisk forskning och analys av s
 - **URL**: https://supabase.com/dashboard/project/mnuifmcjspeaauzehasj
 
 ### Externa Tjänster
-- **Google Gemini 2.0 Flash** - AI-analys av runinskrifter
+- **OpenRouter (Claude Sonnet)** - AI-analys av runinskrifter (server-side via edge function)
 - **Google Maps API** - Geokodning och karttjänster
 
 ## Databasstruktur
@@ -128,7 +128,7 @@ vikingage/
 │   │   └── ui/             # UI-komponenter (shadcn)
 │   ├── hooks/              # Custom React hooks
 │   ├── pages/              # Sidor/routes
-│   ├── services/           # Externa tjänster (Gemini, Maps)
+│   ├── services/           # Externa tjänster (aiService, Maps)
 │   ├── types/              # TypeScript-typer
 │   ├── utils/              # Hjälpfunktioner
 │   └── integrations/       # Supabase-integration
@@ -158,9 +158,10 @@ vikingage/
 
 ## AI-integration
 
-### Google Gemini Service
-- **Tjänst**: `src/services/geminiService.ts`
-- **Edge Function**: `analyze-runic`
+### AI-tjänst (OpenRouter)
+- **Klient**: `src/services/aiService.ts` (anropar edge function, ingen nyckel i klienten)
+- **Edge Function**: `analyze-runic` (kallar OpenRouter, modell `anthropic/claude-sonnet-4-5`)
+- **Nyckel**: `OPENROUTER_API_KEY` som Supabase-secret (server-side, exponeras aldrig i browsern)
 - **Funktion**: Analyserar runinskrifter och ger:
   - Datering
   - Språklig analys
@@ -178,9 +179,9 @@ Projektet har omfattande importverktyg för:
 ## Miljövariabler
 
 För att köra projektet lokalt behövs:
-- Supabase URL och keys (redan konfigurerade i `client.ts`)
-- Google Gemini API key (för AI-analys)
-- Google Maps API key (för geokodning)
+- Supabase URL och keys (via `.env`, med fallback i `client.ts`)
+- `OPENROUTER_API_KEY` som Supabase-secret (för AI-analys, server-side)
+- Google Maps API key (för geokodning, valfritt)
 
 ## Utveckling
 
@@ -303,8 +304,8 @@ Projektet använder följande variabler:
 - `VITE_SUPABASE_PROJECT_ID` - Supabase project ID
 - `VITE_SUPABASE_PUBLISHABLE_KEY` - Anon/publicerbar nyckel
 - `VITE_SUPABASE_URL` - Supabase API URL
-- `VITE_GEMINI_API_KEY` - Google Gemini API (optional)
 - `VITE_GOOGLE_MAPS_API_KEY` - Google Maps API (optional)
+- `OPENROUTER_API_KEY` - sätts som Supabase-secret (server-side), inte som VITE-variabel
 
 Se `.env.example` för mall.
 

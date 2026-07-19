@@ -52,16 +52,9 @@ export const ExplorerModules: React.FC<ExplorerModulesProps> = React.memo(({
         onToggleMinimized={() => setIsSearchMinimized(!isSearchMinimized)}
       />
 
-      {/* Timeline Module - Now positioned under the map as separate module */}
-      {shouldShowTimeline && (
-        <TimelineModule
-          selectedPeriod="all"
-          onPeriodChange={() => {}}
-          mapNavigate={mapNavigate}
-          isMinimized={isTimelineMinimized}
-          onToggleMinimized={() => setIsTimelineMinimized(!isTimelineMinimized)}
-        />
-      )}
+      {/* Tidslinjen renderas (wired) i ExplorerLayout under kartan — INTE här.
+          Denna hade selectedPeriod="all" + onPeriodChange={()=>{}} (no-op), var en
+          dubblett och gjorde att periodval inte påverkade kartan. Borttagen. */}
     </>
   );
 });

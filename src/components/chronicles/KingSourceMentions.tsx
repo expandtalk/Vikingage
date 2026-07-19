@@ -3,12 +3,18 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { KingSourceMention } from '@/hooks/useRoyalChronicles';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface KingSourceMentionsProps {
   sourceMentions: KingSourceMention[];
 }
 
 export const KingSourceMentions: React.FC<KingSourceMentionsProps> = ({ sourceMentions }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const T = sv
+    ? { sources: 'Källor för denna kung', mentionedAs: 'Nämns som', context: 'Sammanhang', critique: 'Källkritik' }
+    : { sources: 'Sources for this king', mentionedAs: 'Mentioned as', context: 'Context', critique: 'Source criticism' };
   const getReliabilityBadge = (reliability: string) => {
     const colors = {
       'primary': 'bg-green-600',
@@ -16,12 +22,17 @@ export const KingSourceMentions: React.FC<KingSourceMentionsProps> = ({ sourceMe
       'tertiary': 'bg-orange-600',
       'legendary': 'bg-red-600'
     };
-    
-    const labels = {
+
+    const labels = sv ? {
       'primary': 'Primärkälla',
       'secondary': 'Sekundärkälla',
       'tertiary': 'Tertiärkälla',
       'legendary': 'Legendarisk'
+    } : {
+      'primary': 'Primary source',
+      'secondary': 'Secondary source',
+      'tertiary': 'Tertiary source',
+      'legendary': 'Legendary'
     };
     
     return (
@@ -32,13 +43,20 @@ export const KingSourceMentions: React.FC<KingSourceMentionsProps> = ({ sourceMe
   };
 
   const getBiasLabels = (biasTypes: string[]) => {
-    const labels: Record<string, string> = {
+    const labels: Record<string, string> = sv ? {
       'christian_anti_pagan': 'Kristet anti-hedniskt bias',
       'nationalist_danish': 'Danskt nationellt bias',
       'nationalist_swedish': 'Svenskt nationellt bias',
       'temporal_distance': 'Tidsmässigt avstånd',
       'political_legitimacy': 'Politisk legitimitet',
       'none': 'Inget känt bias'
+    } : {
+      'christian_anti_pagan': 'Christian anti-pagan bias',
+      'nationalist_danish': 'Danish nationalist bias',
+      'nationalist_swedish': 'Swedish nationalist bias',
+      'temporal_distance': 'Temporal distance',
+      'political_legitimacy': 'Political legitimacy',
+      'none': 'No known bias'
     };
     
     return biasTypes.map(bias => labels[bias] || bias);
@@ -47,7 +65,7 @@ export const KingSourceMentions: React.FC<KingSourceMentionsProps> = ({ sourceMe
   return (
     <Card className="bg-slate-900/60 backdrop-blur-md border-slate-600/30">
       <CardHeader>
-        <CardTitle className="text-white">Källor för denna kung</CardTitle>
+        <CardTitle className="text-white">{T.sources}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -58,16 +76,16 @@ export const KingSourceMentions: React.FC<KingSourceMentionsProps> = ({ sourceMe
                 {mention.source && getReliabilityBadge(mention.source.reliability)}
               </div>
               <p className="text-slate-300 text-sm mb-2">
-                <strong>Nämns som:</strong> {mention.mentioned_name}
+                <strong>{T.mentionedAs}:</strong> {mention.mentioned_name}
               </p>
               {mention.context && (
                 <p className="text-slate-400 text-sm mb-2">
-                  <strong>Sammanhang:</strong> {mention.context}
+                  <strong>{T.context}:</strong> {mention.context}
                 </p>
               )}
               {mention.reliability_note && (
                 <p className="text-slate-500 text-xs mb-2">
-                  <strong>Källkritik:</strong> {mention.reliability_note}
+                  <strong>{T.critique}:</strong> {mention.reliability_note}
                 </p>
               )}
               {mention.source && mention.source.bias_types.length > 0 && (

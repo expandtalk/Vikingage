@@ -3,7 +3,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, Loader2 } from "lucide-react";
-import { useRunicData } from '@/hooks/useRunicData';
+import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { sanitizeFilterValue } from "@/utils/searchFilter";
 
 interface CompactSearchBoxProps {
   onSearch: (query: string) => void;
@@ -16,10 +18,15 @@ interface CompactSearchBoxProps {
 export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
   onSearch,
   onResultSelect,
-  placeholder = "Sök runstenar, platser, translitterationer...",
+  placeholder,
   className = "",
   currentQuery = ""
 }) => {
+  const { language } = useLanguage();
+  const c = language === 'sv'
+    ? { placeholder: 'Sök runstenar, platser, translitterationer...', search: 'Sök', searching: 'Söker...', noResults: 'Inga förslag hittades för' }
+    : { placeholder: 'Search runestones, places, transliterations...', search: 'Search', searching: 'Searching...', noResults: 'No suggestions found for' };
+  const resolvedPlaceholder = placeholder ?? c.placeholder;
   const [query, setQuery] = useState(currentQuery);
   const [isExpanded, setIsExpanded] = useState(false);
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -42,17 +49,20 @@ export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
     const timeoutId = setTimeout(async () => {
       setIsLoadingSuggestions(true);
       try {
-        // Here you would implement the actual search API call
-        // For now, I'll create a mock search that searches your existing data
-        const mockResults = [
-          { id: '1', signum: 'U 1', location: 'Uppland, Stockholms län', type: 'runsten' },
-          { id: '2', signum: 'Sö 1', location: 'Södermanland', type: 'runsten' },
-          { id: '3', signum: 'Ög 1', location: 'Östergötland', type: 'runsten' }
-        ].filter(item => 
-          item.signum.toLowerCase().includes(query.toLowerCase()) ||
-          item.location.toLowerCase().includes(query.toLowerCase())
-        );
-        setSuggestions(mockResults.slice(0, 5));
+        const safe = sanitizeFilterValue(query);
+        if (!safe) {
+          setSuggestions([]);
+          return;
+        }
+        // Smart autocomplete via RPC: matchar även gamla katalogsignum
+        // (alternative_signum, t.ex. "B 894" -> "Ög 212"), translitteration
+        // och normalisering – inte bara nuvarande signum/plats.
+        const { data, error } = await supabase
+          .rpc('search_inscriptions_flexible', { p_search_term: safe })
+          .limit(5);
+
+        if (error) throw error;
+        setSuggestions((data ?? []).slice(0, 5));
       } catch (error) {
         console.error('Search error:', error);
         setSuggestions([]);
@@ -120,7 +130,7 @@ export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
             value={query}
             onChange={handleInputChange}
             onFocus={() => setIsExpanded(query.length > 0)}
-            placeholder={placeholder}
+            placeholder={resolvedPlaceholder}
             className="pl-12 pr-20 py-3 text-base bg-slate-700/60 border-2 border-amber-500/30 text-white placeholder-gray-300 rounded-full shadow-sm hover:border-amber-500/50 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
           />
           <div className="absolute right-2 flex items-center gap-1">
@@ -141,7 +151,7 @@ export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
               className="h-8 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-full"
               disabled={!query.trim()}
             >
-              Sök
+              {c.search}
             </Button>
           </div>
         </div>
@@ -153,7 +163,7 @@ export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
           {isLoadingSuggestions ? (
             <div className="p-4 text-center">
               <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2 text-amber-400" />
-              <span className="text-sm text-amber-200">Söker...</span>
+              <span className="text-sm text-amber-200">{c.searching}</span>
             </div>
           ) : (
             suggestions.map((suggestion, index) => (
@@ -168,7 +178,18 @@ export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
                   </div>
                   <div>
                     <div className="font-medium text-amber-100">{suggestion.signum}</div>
-                    <div className="text-sm text-amber-300">{suggestion.location}</div>
+                    <div className="text-sm text-amber-300">
+                      {suggestion.location || suggestion.landscape || suggestion.province || suggestion.country || ''}
+                    </div>
+                    {(() => {
+                      const q = query.trim().toLowerCase();
+                      const alt = (suggestion.alternative_signum || []).find(
+                        (a: string) => a && a.toLowerCase().includes(q)
+                      );
+                      return alt && alt.toLowerCase() !== suggestion.signum?.toLowerCase() ? (
+                        <div className="text-xs text-amber-500/80">äv. {alt}</div>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </button>
@@ -177,7 +198,7 @@ export const CompactSearchBox: React.FC<CompactSearchBoxProps> = ({
           
           {!isLoadingSuggestions && suggestions.length === 0 && query.length >= 2 && (
             <div className="p-4 text-center text-amber-300 text-sm">
-              Inga förslag hittades för "{query}"
+              {c.noResults} "{query}"
             </div>
           )}
         </div>

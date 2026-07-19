@@ -4,7 +4,6 @@ import { generateBasicInscriptionItems } from './legend/legendItemGenerators';
 import { processLegendItems } from './legend/legendItemProcessor';
 import { filterInscriptionsByLegend } from './useLegendManager/inscriptionFilters';
 import { useFocusManager } from './useFocusManager';
-import { getCombinedLegendPresets, UserRole } from './legend/rolePresets';
 import { useChristianSites } from './useChristianSites';
 import type { LegendPreset } from '@/types/legend';
 
@@ -12,7 +11,7 @@ export const useLegendManager = (
   inscriptions: any[],
   isVikingMode: boolean,
   selectedTimePeriod: string,
-  userRole: UserRole = 'explorer',
+  roleLayerPreset: LegendPreset,
   dbStats?: any,
   hasActiveSearch?: boolean,
   searchResultInscriptions?: any[]
@@ -23,20 +22,16 @@ export const useLegendManager = (
   // Fetch Christian sites data
   const { data: christianSites = [] } = useChristianSites();
 
-  // Initialize and update legend based on role and focus
+  // Initialize and update legend based on resolved profile preset (focus already merged upstream)
   useEffect(() => {
-    console.log(`🎭 Legend Manager: Focus changed to -> ${currentFocus}, Role: ${userRole}. Updating presets.`);
-    const presets = getCombinedLegendPresets(userRole, currentFocus);
-    // Convert LegendPreset to generic object
-    const presetsObject: { [key: string]: boolean } = { ...presets };
-    setEnabledLegendItems(presetsObject);
-  }, [currentFocus, userRole]);
+    setEnabledLegendItems({ ...roleLayerPreset });
+  }, [roleLayerPreset]);
   
   console.log(`🎭 Legend Manager Debug (UPDATED):`);
   console.log(`  - Total inscriptions received: ${inscriptions.length}`);
   console.log(`  - Runic inscriptions enabled: ${enabledLegendItems.runic_inscriptions}`);
   console.log(`  - Current focus: ${currentFocus}`);
-  console.log(`  - User role: ${userRole}`);
+  console.log(`  - Role layer preset:`, roleLayerPreset);
   
   // Filter inscriptions based on enabled legend items or use search results if active search
   const mapInscriptions = useMemo(() => {
@@ -112,6 +107,23 @@ export const useLegendManager = (
     });
   }, []);
 
+  // Fokusera EN gud: visa bara den gudens kultplatser (religious_<deity>), dölj övriga.
+  // deity = null → visa alla gudars kultplatser igen. Styr kartans religiösa lager
+  // (useReligiousLocationMarkers gate:ar på religious_<deity> !== false).
+  const DEITY_LEGEND_KEYS = [
+    'religious_odin', 'religious_thor', 'religious_frey', 'religious_freyja',
+    'religious_frigg', 'religious_ull', 'religious_njord', 'religious_other',
+  ];
+  const focusDeity = useCallback((deityKey: string | null) => {
+    setEnabledLegendItems(prevState => {
+      const newState = { ...prevState, religious_places: true, gods: false };
+      DEITY_LEGEND_KEYS.forEach(k => {
+        newState[k] = deityKey ? k === deityKey : true;
+      });
+      return newState;
+    });
+  }, []);
+
   // Handle show all / hide all
   const handleShowAll = useCallback(() => {
     console.log(`👁️ Showing all legend items`);
@@ -128,12 +140,23 @@ export const useLegendManager = (
 
   const handleHideAll = useCallback(() => {
     console.log(`🙈 Hiding all legend items`);
+    // Gate keys that render a layer but may be ABSENT from the generated
+    // legendItems (nested children, or gate-only aliases that differ from the
+    // profile-preset key). Without explicitly clearing these, their
+    // `!== false` gates keep the layer on the map after "hide all".
+    const EXTRA_GATE_KEYS = [
+      'viking_cities', 'historical_events', 'valdemar_route',
+      'road_rullstensas', 'road_halvagar', 'road_vinteragar', 'road_landmarks',
+      'place_names_sacral', 'place_names_power', 'place_names_nature',
+      'religious_center', 'trading_post', 'koping', 'established_city', 'gotlandic_center',
+    ];
     setEnabledLegendItems(prevState => {
       const newState = { ...prevState };
-      // Set all existing legend items to false (hidden)
-      legendItems.forEach(item => {
-        newState[item.id] = false;
-      });
+      // Clear every currently-known key (covers the full profile preset set)…
+      Object.keys(newState).forEach(k => { newState[k] = false; });
+      // …plus the generated legend item ids and the extra gate keys above.
+      legendItems.forEach(item => { newState[item.id] = false; });
+      EXTRA_GATE_KEYS.forEach(k => { newState[k] = false; });
       console.log(`🔧 After hide all:`, newState);
       return newState;
     });
@@ -150,6 +173,7 @@ export const useLegendManager = (
     mapInscriptions,
     handleLegendToggle,
     handleShowAll,
-    handleHideAll
+    handleHideAll,
+    focusDeity
   };
 };

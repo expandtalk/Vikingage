@@ -62,9 +62,10 @@ export const useMapRiverSystems = ({
     });
     riverLayersRef.current = [];
 
-    // Only show river systems if enabled and in appropriate time period
-    const showRivers = enabledLegendItems.river_routes !== false && 
-                      (selectedTimePeriod === 'viking_age' || selectedTimePeriod === 'vendel_period');
+    // Legend is the authority: show rivers whenever the layer is enabled,
+    // regardless of the selected period (dropped the viking_age/vendel period
+    // gate that hid rivers in the default 'all' view).
+    const showRivers = enabledLegendItems.river_routes !== false;
 
     if (!showRivers) return;
 
@@ -115,9 +116,13 @@ export const useMapRiverSystems = ({
           
           const coordinates = route.coordinates.map(coord => [coord.latitude, coord.longitude] as [number, number]);
           
+          // Derive line weight from importance for a consistent visual
+          // hierarchy. The per-row `width` column is inconsistent (some
+          // secondary rivers were wider than some primary ones), so we ignore
+          // it and give primary routes one weight and secondary another.
           const riverLine = L.polyline(coordinates, {
             color: route.color || '#3b82f6',
-            weight: route.width || 3,
+            weight: route.importance === 'primary' ? 4 : 2.5,
             opacity: 0.8,
             dashArray: route.type === 'coastal_route' ? '10, 5' : undefined
           });

@@ -14,8 +14,10 @@ import { RunicInscription } from '@/types/inscription';
 import { Badge } from '@/components/ui/badge';
 import { detectSignumPattern } from '@/utils/coordinateMappingEnhanced';
 import { InscriptionEditModal } from '@/components/inscription/InscriptionEditModal';
+import { MeterBadge } from '@/components/inscription/MeterBadge';
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Edit } from "lucide-react";
 
 interface InscriptionModalProps {
@@ -39,6 +41,35 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
   const { data: extendedData, isLoading: isLoadingExtended } = useInscriptionExtendedData(inscription?.id || null);
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const L = sv
+    ? {
+        name: 'Namn', nameEn: 'Engelskt namn', signum: 'Signum', breakdown: 'Signum-uppdelning',
+        place: 'Plats', parish: 'Socken', municipality: 'Kommun', county: 'Län', landscape: 'Landskap',
+        country: 'Land', coordsCurrent: 'Koordinater (nuvarande)', noCoords: 'Inga koordinater',
+        coordsAlt: 'Koordinater', status: 'Status', translit: 'Transliteration',
+        translationSv: 'Översättning (SV)', translationEn: 'Översättning (EN)', translationOther: 'Översättning',
+        dating: 'Datering', rundataDating: 'Rundata-datering', material: 'Material', objectType: 'Objekttyp',
+        currentLocation: 'Nuvarande plats', dimensions: 'Mått', runeType: 'Runtyp', styleGroup: 'Stilgrupp', meter: 'Versmått',
+        condition: 'Skick', scholarly: 'Forskarnoter', context: 'Historisk kontext', paleo: 'Paleografiska noter',
+        sources: 'Källor & externa länkar', unknownTitle: 'Okänd titel', unknownAuthor: 'Okänd författare',
+        images: 'Bilder från arkiv', loadingImages: 'Laddar bilder…', noImages: 'Inga bilder i arkiven.',
+        edit: 'Redigera', close: 'Stäng',
+      }
+    : {
+        name: 'Name', nameEn: 'English name', signum: 'Signum', breakdown: 'Signum breakdown',
+        place: 'Place', parish: 'Parish', municipality: 'Municipality', county: 'County', landscape: 'Province',
+        country: 'Country', coordsCurrent: 'Coordinates (current)', noCoords: 'No coordinates',
+        coordsAlt: 'Coordinates', status: 'Status', translit: 'Transliteration',
+        translationSv: 'Translation (SV)', translationEn: 'Translation (EN)', translationOther: 'Translation',
+        dating: 'Dating', rundataDating: 'Rundata dating', material: 'Material', objectType: 'Object type',
+        currentLocation: 'Current location', dimensions: 'Dimensions', runeType: 'Rune type', styleGroup: 'Style group', meter: 'Poetic metre',
+        condition: 'Condition', scholarly: 'Scholarly notes', context: 'Historical context', paleo: 'Paleographic notes',
+        sources: 'Sources & external links', unknownTitle: 'Unknown title', unknownAuthor: 'Unknown author',
+        images: 'Images from archives', loadingImages: 'Loading images…', noImages: 'No images found in archives.',
+        edit: 'Edit', close: 'Close',
+      };
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
 
   const {
@@ -61,6 +92,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
     object_type,
     style_group,
     rune_type,
+    meter,
     status,
     scholarly_notes,
     historical_context,
@@ -91,68 +123,69 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
         </DialogHeader>
         <ScrollArea className="max-h-[70vh] pr-4">
           <dl className="space-y-1">
-            <DetailItem label="Namn" value={name} />
-            <DetailItem label="Engelsk namn" value={name_en} />
-            <DetailItem label="Signum" value={signum} />
-            <DetailItem label="Signum Breakdown" value={signumBreakdown} />
-            <DetailItem label="Plats" value={location} />
-            <DetailItem label="Socken" value={parish} />
-            <DetailItem label="Kommun" value={municipality} />
-            <DetailItem label="Län" value={county} />
-            <DetailItem label="Landskap" value={landscape} />
-            <DetailItem label="Land" value={country} />
-            <DetailItem 
-              label="Koordinater (nuvarande)" 
-              value={coordinates ? `${coordinates.lat.toFixed(6)}, ${coordinates.lng.toFixed(6)}` : 'Inga koordinater'} 
+            <DetailItem label={L.name} value={name} />
+            <DetailItem label={L.nameEn} value={name_en} />
+            <DetailItem label={L.signum} value={signum} />
+            <DetailItem label={L.breakdown} value={signumBreakdown} />
+            <DetailItem label={L.place} value={location} />
+            <DetailItem label={L.parish} value={parish} />
+            <DetailItem label={L.municipality} value={municipality} />
+            <DetailItem label={L.county} value={county} />
+            <DetailItem label={L.landscape} value={landscape} />
+            <DetailItem label={L.country} value={country} />
+            <DetailItem
+              label={L.coordsCurrent}
+              value={coordinates ? `${coordinates.lat.toFixed(6)}, ${coordinates.lng.toFixed(6)}` : L.noCoords}
             />
             {extendedData?.additionalCoordinates && extendedData.additionalCoordinates.length > 0 && (
               extendedData.additionalCoordinates.map((coord, index) => (
                 <DetailItem 
                   key={index}
-                  label={coord.source ? `Koordinater (${coord.source})` : `Koordinater (alt ${index + 1})`}
+                  label={coord.source ? `${L.coordsAlt} (${coord.source})` : `${L.coordsAlt} (alt ${index + 1})`}
                   value={`${coord.latitude.toFixed(6)}, ${coord.longitude.toFixed(6)}`}
                 />
               ))
             )}
-            <DetailItem label="Status" value={status ? <Badge variant="outline">{status}</Badge> : null} />
-            <DetailItem label="Transliteration" value={transliteration} />
-            <DetailItem label="Translation (SV)" value={translation_sv} />
-            <DetailItem label="Translation (EN)" value={translation_en} />
+            <DetailItem label={L.status} value={status ? <Badge variant="outline">{status}</Badge> : null} />
+            <DetailItem label={L.translit} value={transliteration} />
+            <DetailItem label={L.translationSv} value={translation_sv} />
+            <DetailItem label={L.translationEn} value={translation_en} />
             {extendedData?.translations && extendedData.translations.length > 0 && (
               extendedData.translations.map((trans, index) => (
-                <DetailItem 
-                  key={index} 
-                  label={`Översättning (${trans.language.toUpperCase()})`} 
-                  value={trans.text} 
+                <DetailItem
+                  key={index}
+                  label={`${L.translationOther} (${trans.language.toUpperCase()})`}
+                  value={trans.text}
                 />
               ))
             )}
-            <DetailItem label="Dating" value={dating_text} />
+            <DetailItem label={L.dating} value={dating_text} />
             {extendedData?.datings && extendedData.datings.length > 0 && (
-              <DetailItem label="Rundata Dating" value={extendedData.datings.join(', ')} />
+              <DetailItem label={L.rundataDating} value={extendedData.datings.join(', ')} />
             )}
-            <DetailItem label="Material" value={material} />
-            <DetailItem label="Object Type" value={object_type} />
-            <DetailItem label="Current Location" value={current_location} />
-            <DetailItem label="Dimensions" value={dimensions} />
-            <DetailItem label="Rune Type" value={rune_type} />
-            <DetailItem label="Style Group" value={style_group} />
-            <DetailItem label="Condition" value={condition_notes} />
-            <DetailItem label="Scholarly Notes" value={<p className="whitespace-pre-wrap">{scholarly_notes}</p>} />
-            <DetailItem label="Historical Context" value={<p className="whitespace-pre-wrap">{historical_context}</p>} />
-            <DetailItem label="Paleographic Notes" value={<p className="whitespace-pre-wrap">{paleographic_notes}</p>} />
+            <DetailItem label={L.material} value={material} />
+            <DetailItem label={L.objectType} value={object_type} />
+            <DetailItem label={L.currentLocation} value={current_location} />
+            <DetailItem label={L.dimensions} value={dimensions} />
+            <DetailItem label={L.runeType} value={rune_type} />
+            <DetailItem label={L.styleGroup} value={style_group} />
+            <DetailItem label={L.meter} value={meter ? <MeterBadge meter={meter} sv={sv} /> : null} />
+            <DetailItem label={L.condition} value={condition_notes} />
+            <DetailItem label={L.scholarly} value={<p className="whitespace-pre-wrap">{scholarly_notes}</p>} />
+            <DetailItem label={L.context} value={<p className="whitespace-pre-wrap">{historical_context}</p>} />
+            <DetailItem label={L.paleo} value={<p className="whitespace-pre-wrap">{paleographic_notes}</p>} />
 
             {extendedData?.sources && extendedData.sources.length > 0 && (
               <div className="pt-4">
-                <h4 className="font-semibold text-slate-300 mb-2">Källor & Externa Länkar</h4>
+                <h4 className="font-semibold text-slate-300 mb-2">{L.sources}</h4>
                 <div className="space-y-3">
                   {extendedData.sources.map((source) => (
                     <div key={source.sourceid} className="text-sm p-3 bg-black/20 rounded-md border border-white/10">
                       <p className="font-semibold text-white">
-                        {source.title || 'Okänd titel'}
+                        {source.title || L.unknownTitle}
                       </p>
                       <p className="text-slate-400 text-xs">
-                        {source.author || 'Okänd författare'}
+                        {source.author || L.unknownAuthor}
                         {source.publication_year && ` (${source.publication_year})`}
                       </p>
                       <ul className="mt-2 space-y-1">
@@ -176,9 +209,9 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
             )}
 
             <div className="pt-4">
-              <h4 className="font-semibold text-slate-300 mb-2">Images from Archives</h4>
+              <h4 className="font-semibold text-slate-300 mb-2">{L.images}</h4>
               {isLoadingExtended ? (
-                <p>Loading images...</p>
+                <p>{L.loadingImages}</p>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {extendedData?.images && extendedData.images.length > 0 ? (
@@ -188,7 +221,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
                       </a>
                     ))
                   ) : (
-                    <p className="text-slate-400">No images found in archives.</p>
+                    <p className="text-slate-400">{L.noImages}</p>
                   )}
                 </div>
               )}
@@ -202,10 +235,10 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Edit className="h-4 w-4 mr-1" />
-              Redigera
+              {L.edit}
             </Button>
           )}
-          <Button onClick={onClose} variant="outline">Close</Button>
+          <Button onClick={onClose} variant="outline">{L.close}</Button>
         </DialogFooter>
       </DialogContent>
       

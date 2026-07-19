@@ -117,6 +117,15 @@ export const routes: RouteConfig[] = [
     titleEn: 'Viking Fortresses',
     descriptionSv: 'Utforska vikingatida borgar, städer och fornborgar i Skandinavien. Interaktiva kartor med detaljerad information.',
     descriptionEn: 'Explore Viking Age fortresses, cities and hillforts in Scandinavia. Interactive maps with detailed information.'
+  },
+  {
+    pathEn: '/coins',
+    pathSv: '/sv/mynt',
+    component: 'Coins',
+    titleSv: 'Mynt',
+    titleEn: 'Coins',
+    descriptionSv: 'Mynt från nordisk historia: vikingatidens första svenska mynt, runmynt och romerska solidusskatter, kopplade till härskare och fyndplatser.',
+    descriptionEn: 'Coins from Nordic history: the first Swedish Viking-Age coins, rune coins and Roman solidus hoards, linked to rulers and find sites.'
   }
 ];
 

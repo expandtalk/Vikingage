@@ -15,6 +15,9 @@ export interface BaseInscription {
   period?: string;
   status?: string;
   object_type?: string;
+  coord_confidence?: string | null;
+  coord_source?: string | null;
+  virtual_inscription?: boolean;
 }
 
 export interface RunicInscription extends BaseInscription {
@@ -50,6 +53,7 @@ export interface RunicInscription extends BaseInscription {
   paleographic_notes?: string;
   historical_context?: string;
   style_group?: string;
+  meter?: string | null;
   rune_type?: string;
   rune_variant?: string;
   dimensions?: string;

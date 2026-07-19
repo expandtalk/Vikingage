@@ -131,6 +131,15 @@ export const loadDatabaseStats = async (): Promise<DbStats> => {
 
     const totalRoyalChroniclesEntries = (historicalKingsCount || 0) + (historicalSourcesCount || 0) + (royalDynastiesCount || 0);
 
+    // Get river systems count
+    const { count: riversCount, error: riversError } = await supabase
+      .from('river_systems')
+      .select('*', { count: 'exact', head: true });
+
+    if (riversError) {
+      console.error('Error loading river systems count:', riversError);
+    }
+
     const stats: DbStats = {
       totalInscriptions: inscriptionsCount || 0,
       totalCoordinates: coordinatesCount || 0,
@@ -144,6 +153,7 @@ export const loadDatabaseStats = async (): Promise<DbStats> => {
       totalFolkGroups: folkGroupsCount || 0,
       totalGeneticEvents: geneticIndividualsCount || 0,
       totalRoyalChronicles: totalRoyalChroniclesEntries,
+      totalRivers: riversCount || 0,
     };
 
     console.log('📊 Database statistics loaded:', stats);
@@ -163,6 +173,7 @@ export const loadDatabaseStats = async (): Promise<DbStats> => {
       totalFolkGroups: 0,
       totalGeneticEvents: 0,
       totalRoyalChronicles: 0,
+      totalRivers: 0,
     };
   }
 };

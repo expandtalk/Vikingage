@@ -13,10 +13,10 @@ import { useMapCounts } from "./hooks/useMapCounts";
 import { useMapValidation } from "./hooks/useMapValidation";
 import { useMapNavigation } from "./hooks/useMapNavigation";
 import { useMapLayers } from "./hooks/useMapLayers";
-import { usePanelManager } from "@/hooks/usePanelManager";
 import { MapLegend } from "../MapLegend";
 import { VikingRoadsRenderer } from "./layers/VikingRoadsRenderer";
 import { TradeRoutesLayer } from "./layers/TradeRoutesLayer";
+import { PlaceNamesLayer } from "./layers/PlaceNamesLayer";
 import { useTradeRoutes } from "@/hooks/useTradeRoutes";
 import { InteractiveMapProps } from './types';
 import 'leaflet/dist/leaflet.css';
@@ -34,8 +34,6 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
   legendItems = [],
   onLegendToggle
 }) => {
-  const { activePreset } = usePanelManager();
-  const showLegend = activePreset === 'explorer';
 
   useMapValidation({ selectedTimePeriod });
 
@@ -71,9 +69,7 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
     selectedTimePeriod
   });
 
-  const shouldShowTradeRoutes = enabledLegendItems.trade_routes !== false && 
-                                (enabledLegendItems.water_routes !== false || 
-                                 selectedTimePeriod === 'viking_age');
+  const shouldShowTradeRoutes = enabledLegendItems.trade_routes !== false;
   
   console.log('🚢 Trade Routes MapCore:', {
     tradeRoutesYear,
@@ -155,7 +151,14 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
             routes={activeRoutes}
             isVisible={shouldShowTradeRoutes && isMapReady}
           />
-          
+
+          {/* Place Names Layer (ortnamnslager / GIS-pilot) */}
+          <PlaceNamesLayer
+            map={map}
+            enabledLegendItems={enabledLegendItems}
+            isVisible={isMapReady}
+          />
+
           <MapInfoPanel
             isVikingMode={isVikingMode}
             inscriptionsCount={inscriptionsWithCoords.length}

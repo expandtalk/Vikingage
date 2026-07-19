@@ -1,9 +1,12 @@
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRunicData } from '@/hooks/useRunicData';
 import { useLegendManager } from '@/hooks/useLegendManager';
 import { useFilterState } from '../FilterState';
 import { useFocusManager } from '@/hooks/useFocusManager';
+import { useActiveExploreProfile } from '@/hooks/useExploreProfiles';
+import { resolveProfileLayers } from '@/config/exploreProfiles';
+import { filterInscriptionsByPeriod } from '@/utils/timePeriods';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface UseExplorerDataProps {
@@ -21,6 +24,7 @@ export const useExplorerData = ({
 }: UseExplorerDataProps) => {
   const queryClient = useQueryClient();
   const { currentFocus } = useFocusManager();
+  const activeProfile = useActiveExploreProfile();
   
   const {
     searchQuery,
@@ -41,18 +45,21 @@ export const useExplorerData = ({
     handleClearFilters
   } = useFilterState();
 
-  // Automatically switch to appropriate periods for different focuses
-  const selectedTimePeriod = useMemo(() => {
-    if (currentFocus === 'rivers') {
-      console.log('🌊 Rivers focus detected - switching to viking_age time period');
-      return 'viking_age';
+  // Startperiod = profilens default; focus kan tvinga viking_age; reglaget kan sedan ändra.
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>(activeProfile.defaultPeriod);
+
+  useEffect(() => {
+    if (currentFocus === 'rivers' || currentFocus === 'inscriptions') {
+      setSelectedTimePeriod('viking_age');
+    } else {
+      setSelectedTimePeriod(activeProfile.defaultPeriod);
     }
-    if (currentFocus === 'inscriptions') {
-      console.log('📿 Inscriptions focus detected - switching to viking_age time period');
-      return 'viking_age';
-    }
-    return 'all';
-  }, [currentFocus]);
+  }, [currentFocus, activeProfile.id, activeProfile.defaultPeriod]);
+
+  const roleLayerPreset = useMemo(
+    () => resolveProfileLayers(activeProfile, currentFocus),
+    [activeProfile, currentFocus],
+  );
 
   const enhancedFilterState = {
     ...filterState,
@@ -76,12 +83,13 @@ export const useExplorerData = ({
     mapInscriptions: legendFilteredInscriptions,
     handleLegendToggle,
     handleShowAll,
-    handleHideAll
+    handleHideAll,
+    focusDeity
   } = useLegendManager(
-    inscriptions, 
-    false, 
-    selectedTimePeriod, 
-    'explorer', 
+    inscriptions,
+    false,
+    selectedTimePeriod,
+    roleLayerPreset,
     dbStats,
     hasActiveSearch,
     inscriptions
@@ -90,14 +98,13 @@ export const useExplorerData = ({
   // FIXED: When there's an active search, show only search results on map
   // Otherwise show legend-filtered inscriptions
   const mapInscriptions = useMemo(() => {
-    if (hasActiveSearch) {
-      console.log(`🗺️ Active search detected - showing ${inscriptions.length} search results on map`);
-      return inscriptions;
-    } else {
-      console.log(`🗺️ No active search - showing ${legendFilteredInscriptions.length} legend-filtered inscriptions on map`);
-      return legendFilteredInscriptions;
-    }
-  }, [hasActiveSearch, inscriptions, legendFilteredInscriptions]);
+    const base = hasActiveSearch ? inscriptions : legendFilteredInscriptions;
+    // Filtrera på vald tidslinjeperiod — runor fanns inte i förhistorien, så
+    // förhistoriska perioder tömmer runstenarna (istället för att alltid visa dem).
+    const byPeriod = filterInscriptionsByPeriod(base, selectedTimePeriod);
+    console.log(`🗺️ Map inscriptions: ${base.length} → ${byPeriod.length} efter period '${selectedTimePeriod}' (search=${hasActiveSearch})`);
+    return byPeriod;
+  }, [hasActiveSearch, inscriptions, legendFilteredInscriptions, selectedTimePeriod]);
 
   // Calculate pagination
   const totalPages = Math.ceil(inscriptions.length / itemsPerPage);
@@ -168,10 +175,13 @@ export const useExplorerData = ({
     handleLegendToggle,
     handleShowAll,
     handleHideAll,
-    
+    focusDeity,
+
     // Time period (critical for rivers focus)
     selectedTimePeriod,
-    
+    setSelectedTimePeriod,
+    showTimeline: activeProfile.showTimeline,
+
     // Pagination
     totalPages,
     currentPage,

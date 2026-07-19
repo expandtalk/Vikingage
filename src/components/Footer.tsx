@@ -14,7 +14,7 @@ export const Footer: React.FC = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="text-center text-muted-foreground text-sm">
           <p>
-            &copy; 2025{' '}
+            &copy; {new Date().getFullYear()}{' '}
             <a
               href="https://expandtalk.se"
               target="_blank"

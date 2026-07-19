@@ -177,6 +177,147 @@ const DiocletianConverter = () => {
     { item: "Nummus (brons/silver)", price: 25, category: "Mynt" },
   ];
   
+  // Engelska etiketter (nyckel = svensk sträng). Prislistan visades tidigare bara på
+  // svenska även i EN-läge (#11). Priser/kategorinycklar oförändrade.
+  const CATEGORY_EN: Record<string, string> = {
+    'Spannmål': 'Grain', 'Vin & drycker': 'Wine & drinks', 'Mat - olja': 'Food & oil',
+    'Kött': 'Meat', 'Fisk': 'Fish', 'Grönsaker & frukt': 'Vegetables & fruit',
+    'Löner - arbetare': 'Wages – laborers', 'Löner - utbildning': 'Wages – education',
+    'Boskap': 'Livestock', 'Slavar': 'Slaves', 'Vilda djur': 'Wild animals',
+    'Kläder': 'Clothing', 'Silke & purpur': 'Silk & purple', 'Metaller': 'Metals', 'Mynt': 'Coins',
+  };
+  const ITEM_EN: Record<string, string> = {
+    'Vete (1 kastrensis modius ≈ 17.5 liter)': 'Wheat (1 castrensis modius ≈ 17.5 L)',
+    'Korn (1 k. modius)': 'Barley (1 c. modius)',
+    'Råg (1 k. modius)': 'Rye (1 c. modius)',
+    'Bönor, skalade (1 k. modius)': 'Beans, hulled (1 c. modius)',
+    'Linser (1 k. modius)': 'Lentils (1 c. modius)',
+    'Ris, skalat (1 k. modius)': 'Rice, hulled (1 c. modius)',
+    'Havre (1 k. modius)': 'Oats (1 c. modius)',
+    'Vin från Picenum (bästa kvalitet, 1 sextarius ≈ 0.5 liter)': 'Picene wine (best quality, 1 sextarius ≈ 0.5 L)',
+    'Falerner vin (1 sextarius)': 'Falernian wine (1 sextarius)',
+    'Vin, 1 år gammalt, första kvalitet': 'Wine, 1 year old, first quality',
+    'Vanligt vin (1 sextarius)': 'Ordinary wine (1 sextarius)',
+    'Veteöl (1 sextarius)': 'Wheat beer (1 sextarius)',
+    'Kornöl (1 sextarius)': 'Barley beer (1 sextarius)',
+    'Olivolja, jungfruolja, första kvalitet (1 sextarius)': 'Olive oil, virgin, first quality (1 sextarius)',
+    'Olivolja, andra pressning (1 sextarius)': 'Olive oil, second pressing (1 sextarius)',
+    'Vanlig olivolja (1 sextarius)': 'Ordinary olive oil (1 sextarius)',
+    'Vinäger (1 sextarius)': 'Vinegar (1 sextarius)',
+    'Fiskås, första kvalitet (1 sextarius)': 'Fish sauce (garum), first quality (1 sextarius)',
+    'Salt (1 k. modius)': 'Salt (1 c. modius)',
+    'Honung, bästa kvalitet (1 sextarius)': 'Honey, best quality (1 sextarius)',
+    'Fläsk (1 pund ≈ 327g)': 'Pork (1 pound ≈ 327 g)',
+    'Nötkött (1 pund)': 'Beef (1 pound)',
+    'Get- eller fårkött (1 pund)': 'Goat or mutton (1 pound)',
+    'Suggas lever (1 pund)': "Sow's liver (1 pound)",
+    'Fläsk, saltat, bästa kvalitet (1 pund)': 'Pork, salted, best quality (1 pound)',
+    'Skinka, Menapisk eller Cerritansk (1 pund)': 'Ham, Menapian or Cerretan (1 pound)',
+    'Fläskkorv (1 uncia ≈ 27g)': 'Pork sausage (1 uncia ≈ 27 g)',
+    'Nötkorv (1 pund)': 'Beef sausage (1 pound)',
+    'Rökt Lucanisk fläskkorv (1 pund)': 'Smoked Lucanian pork sausage (1 pound)',
+    'Fasan, gödda (1 st)': 'Pheasant, fattened (1)',
+    'Gås, gödda (1 st)': 'Goose, fattened (1)',
+    'Kyckling (par)': 'Chicken (pair)',
+    'Hare (1 st)': 'Hare (1)',
+    'Kanin (1 st)': 'Rabbit (1)',
+    'Påfågel (1 st)': 'Peacock (1)',
+    'Smör (1 pund)': 'Butter (1 pound)',
+    'Havsfisk, inte benigare, första kvalitet (1 pund)': 'Sea fish, non-bony, first quality (1 pound)',
+    'Havsfisk, andra kvalitet (1 pund)': 'Sea fish, second quality (1 pound)',
+    'Flodsfisk, första kvalitet (1 pund)': 'River fish, first quality (1 pound)',
+    'Saltad fisk (1 pund)': 'Salted fish (1 pound)',
+    'Ostron (100 st)': 'Oysters (100)',
+    'Sardin (1 pund)': 'Sardines (1 pound)',
+    'Torr ost (1 pund)': 'Dry cheese (1 pound)',
+    'Ägg (4 st)': 'Eggs (4)',
+    'Lök, torkad (1 modius ≈ 8.7 liter)': 'Onions, dried (1 modius ≈ 8.7 L)',
+    'Vitlök (1 modius)': 'Garlic (1 modius)',
+    'Äpplen, Matianska, bästa kvalitet (10 st)': 'Apples, Matian, best quality (10)',
+    'Päron, största (10 st)': 'Pears, largest (10)',
+    'Persikor (10 st)': 'Peaches (10)',
+    'Granatäpplen, största (10 st)': 'Pomegranates, largest (10)',
+    'Dadlar, Nicolanska, bästa kvalitet (8 st)': 'Dates, Nicolaus, best quality (8)',
+    'Fikon, bästa kvalitet (25 st)': 'Figs, best quality (25)',
+    'Tryffel (1 pund)': 'Truffles (1 pound)',
+    'Fårsmjölk (1 sextarius)': "Sheep's milk (1 sextarius)",
+    'Färsk ost (1 pund)': 'Fresh cheese (1 pound)',
+    'Lantarbetare med uppehälle (per dag)': 'Farm laborer with maintenance (per day)',
+    'Stenhuggare med uppehälle (per dag)': 'Stonemason with maintenance (per day)',
+    'Snickare med uppehälle (per dag)': 'Carpenter with maintenance (per day)',
+    'Väggmålare med uppehälle (per dag)': 'Wall painter with maintenance (per day)',
+    'Figurmålare med uppehälle (per dag)': 'Figure painter with maintenance (per day)',
+    'Bagare med uppehälle (per dag)': 'Baker with maintenance (per day)',
+    'Barberare (per kund)': 'Barber (per customer)',
+    'Skräddare för finaste huva (per plagg)': 'Tailor, finest hood (per garment)',
+    'Vattenbärare, hel dag, med uppehälle': 'Water carrier, full day, with maintenance',
+    'Kloak-rensare, hel dag, med uppehälle': 'Sewer cleaner, full day, with maintenance',
+    'Gymnastiklärare (per månad, per elev)': 'Gymnastics teacher (per month, per pupil)',
+    'Grundskolelärare (per månad, per elev)': 'Elementary teacher (per month, per pupil)',
+    'Matematik-lärare (per månad, per elev)': 'Mathematics teacher (per month, per pupil)',
+    'Stenografi-lärare (per månad, per elev)': 'Shorthand teacher (per month, per pupil)',
+    'Grekisk/latinsk litteratur-lärare (per månad, per elev)': 'Greek/Latin literature teacher (per month, per pupil)',
+    'Retoriklärare (per månad, per elev)': 'Rhetoric teacher (per month, per pupil)',
+    'Arkitekturlärare (per månad, per elev)': 'Architecture teacher (per month, per pupil)',
+    'Advokat för att öppna mål': 'Advocate, opening a case',
+    'Advokat för att föra talan': 'Advocate, pleading a case',
+    'Skrivare, bästa skrift (per 100 rader)': 'Scribe, best script (per 100 lines)',
+    'Notarie för juridiska dokument (per 100 rader)': 'Notary for legal documents (per 100 lines)',
+    'Tävlingshäst': 'Racehorse',
+    'Bästa stridshäst': 'Best warhorse',
+    'Bästa mulåsna': 'Best mule',
+    'Baktrisk kamel': 'Bactrian camel',
+    'Kamel med två pucklar': 'Two-humped camel',
+    'Bästa arabisk kamel': 'Best Arabian camel',
+    'Bästa dromedar': 'Best dromedary',
+    'Ridåsna': 'Riding donkey',
+    'Packning-åsna': 'Pack donkey',
+    'Par oxar, bästa kvalitet': 'Pair of oxen, best quality',
+    'Tjur för avel, bästa kvalitet': 'Breeding bull, best quality',
+    'Ko, bästa kvalitet': 'Cow, best quality',
+    'Kastrerad bagge, bästa kvalitet': 'Castrated ram, best quality',
+    'Får, bästa kvalitet': 'Sheep, best quality',
+    'Bock, bästa kvalitet': 'Billy goat, best quality',
+    'Get, bästa kvalitet': 'Goat, best quality',
+    'Slav, man, 16-40 år': 'Slave, male, 16–40 years',
+    'Slav, kvinna, 16-40 år': 'Slave, female, 16–40 years',
+    'Slav, man, 40-60 år': 'Slave, male, 40–60 years',
+    'Slav, kvinna, 40-60 år': 'Slave, female, 40–60 years',
+    'Slav, pojke/flicka, 8-16 år': 'Slave, boy/girl, 8–16 years',
+    'Slav, man över 60 år eller pojke under 8': 'Slave, male over 60 or boy under 8',
+    'Slav, kvinna över 60 eller flicka under 8': 'Slave, female over 60 or girl under 8',
+    'Lejon, första klass': 'Lion, first class',
+    'Lejonhona, första klass': 'Lioness, first class',
+    'Leopard, första klass': 'Leopard, first class',
+    'Struts': 'Ostrich',
+    'Björn, första klass': 'Bear, first class',
+    'Vildsvin, första klass': 'Wild boar, first class',
+    'Hjort, första klass': 'Deer, first class',
+    'Militär mantel, bästa kvalitet': 'Military cloak, best quality',
+    'Skjorta enligt indictio': 'Tunic (per indictio)',
+    'Par skor för patricier': 'Pair of shoes for patricians',
+    'Par skor för senatorer': 'Pair of shoes for senators',
+    'Soldatskor': "Soldier's shoes",
+    'Militärsadel': 'Military saddle',
+    'Mulåsnesadel med piska': 'Mule saddle with whip',
+    'Vit obearbetad silke (1 pund)': 'White raw silk (1 pound)',
+    'Purpurfärgat silke (1 pund)': 'Purple-dyed silk (1 pound)',
+    'Ull färgad purpur (1 pund)': 'Wool dyed purple (1 pound)',
+    'Ull färgad ljusare purpur (1 pund)': 'Wool dyed lighter purple (1 pound)',
+    'Ull färgad Tyrisk purpur (1 pund)': 'Wool dyed Tyrian purple (1 pound)',
+    'Guld, raffinerat, i tackor eller mynt (1 pund)': 'Gold, refined, in bars or coin (1 pound)',
+    'Silver, raffinerat, första kvalitet (1 pund)': 'Silver, refined, first quality (1 pound)',
+    'Mässing (1 pund)': 'Brass (1 pound)',
+    'Koppar (1 pund)': 'Copper (1 pound)',
+    'Brons (1 pund)': 'Bronze (1 pound)',
+    'Solidus (guldmynt = 1000 denarii)': 'Solidus (gold coin = 1000 denarii)',
+    'Aureus (guldmynt)': 'Aureus (gold coin)',
+    'Argenteus (silvermynt)': 'Argenteus (silver coin)',
+    'Nummus (brons/silver)': 'Nummus (bronze/silver)',
+  };
+  const tItem = (s: string) => (language === 'sv' ? s : ITEM_EN[s] ?? s);
+  const tCategory = (s: string) => (language === 'sv' ? s : CATEGORY_EN[s] ?? s);
+
   const categories = [...new Set(historicalPrices.map(p => p.category))];
 
   return (
@@ -343,7 +484,7 @@ const DiocletianConverter = () => {
           {categories.map((category) => (
             <div key={category} className="mb-8 last:mb-0">
               <h3 className="text-lg font-semibold text-amber-800 mb-3 border-b-2 border-amber-200 pb-2">
-                {category}
+                {tCategory(category)}
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -366,7 +507,7 @@ const DiocletianConverter = () => {
                         const modern = item.price * denariusValue;
                         return (
                           <tr key={idx} className="border-b border-amber-100 hover:bg-amber-50 transition-colors">
-                            <td className="py-3 px-2 text-amber-900">{item.item}</td>
+                            <td className="py-3 px-2 text-amber-900">{tItem(item.item)}</td>
                             <td className="py-3 px-2 text-right font-mono text-amber-700">
                               {item.price.toLocaleString('sv-SE')}
                             </td>
@@ -413,7 +554,7 @@ const DiocletianConverter = () => {
                 </a>
               </li>
               <li>
-                <strong>Komplett översättning:</strong> Antony Kropff (2016), "An English translation of the Edict on Maximum Prices" -{' '}
+                <strong>{language === 'sv' ? 'Komplett översättning:' : 'Complete translation:'}</strong> Antony Kropff (2016), "An English translation of the Edict on Maximum Prices" -{' '}
                 <a 
                   href="https://kark.uib.no/antikk/dias/priceedict.pdf" 
                   target="_blank" 
@@ -424,11 +565,13 @@ const DiocletianConverter = () => {
                 </a>
               </li>
               <li>
-                <strong>Originalforskning:</strong> Crawford & Reynolds (1979), Lauffer (1971), Graser (1940)
+                <strong>{language === 'sv' ? 'Originalforskning:' : 'Original research:'}</strong> Crawford & Reynolds (1979), Lauffer (1971), Graser (1940)
               </li>
             </ul>
             <p className="text-xs text-gray-600 mt-3 italic">
-              Alla priser är verifierade mot det kompletta ediktet. Ediktet finns bevarat i fragmentform från 40+ platser i det östra romarriket.
+              {language === 'sv'
+                ? 'Alla priser är verifierade mot det kompletta ediktet. Ediktet finns bevarat i fragmentform från 40+ platser i det östra romarriket.'
+                : 'All prices are verified against the complete edict. The edict survives in fragmentary form from 40+ sites across the eastern Roman Empire.'}
             </p>
           </div>
         </div>

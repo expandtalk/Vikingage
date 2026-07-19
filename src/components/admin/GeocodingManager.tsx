@@ -367,7 +367,7 @@ export const GeocodingManager: React.FC = () => {
     <Card className="viking-card relative z-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-accent" />
+          <MapPin className="h-5 w-5 text-gold" />
           Geografisk Kodning
         </CardTitle>
         <CardDescription>

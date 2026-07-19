@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, Calendar, Dna } from "lucide-react";
 import { DatabaseSite, DatabaseIndividual } from '@/hooks/useGeneticData';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StudyDataTabProps {
   filteredSites: DatabaseSite[];
@@ -11,6 +12,28 @@ interface StudyDataTabProps {
 }
 
 export const StudyDataTab: React.FC<StudyDataTabProps> = ({ filteredSites, individuals }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const c = sv ? {
+    dating: 'Datering:',
+    notSpecified: 'Ej specificerad',
+    individuals: 'Individer:',
+    burialType: 'Begravningstyp:',
+    noDescription: 'Ingen beskrivning tillgänglig',
+    geneticData: 'Genetiska data:',
+    coordinates: 'Koordinater:',
+    noResults: 'Inga arkeologiska platser hittades som matchar sökkriterier.',
+  } : {
+    dating: 'Dating:',
+    notSpecified: 'Not specified',
+    individuals: 'Individuals:',
+    burialType: 'Burial type:',
+    noDescription: 'No description available',
+    geneticData: 'Genetic data:',
+    coordinates: 'Coordinates:',
+    noResults: 'No archaeological sites found matching your search criteria.',
+  };
+
   const getIndividualCountBadgeColor = (count: number) => {
     if (count === 1) return 'bg-blue-100 text-blue-800';
     if (count <= 3) return 'bg-green-100 text-green-800';
@@ -57,32 +80,32 @@ export const StudyDataTab: React.FC<StudyDataTabProps> = ({ filteredSites, indiv
             <CardContent className="space-y-3">
               <div className="text-slate-300 text-sm">
                 <Calendar className="h-4 w-4 inline mr-1" />
-                <strong>Datering:</strong> {site.dating || 'Ej specificerad'}
+                <strong>{c.dating}</strong> {site.dating || c.notSpecified}
               </div>
 
               <div className="text-slate-300 text-sm">
                 <Users className="h-4 w-4 inline mr-1" />
-                <strong>Individer:</strong> 
+                <strong>{c.individuals}</strong>
                 <Badge className={`ml-2 ${getIndividualCountBadgeColor(siteIndividuals.length)}`}>
                   {siteIndividuals.length}
                 </Badge>
               </div>
 
               <div className="text-slate-300 text-sm">
-                <strong>Begravningstyp:</strong> {site.burial_type || 'Ej specificerad'}
+                <strong>{c.burialType}</strong> {site.burial_type || c.notSpecified}
               </div>
 
               <p className="text-slate-200 text-sm">
-                {site.description && site.description.length > 150 
-                  ? `${site.description.substring(0, 150)}...` 
-                  : site.description || 'Ingen beskrivning tillgänglig'}
+                {site.description && site.description.length > 150
+                  ? `${site.description.substring(0, 150)}...`
+                  : site.description || c.noDescription}
               </p>
 
               {siteIndividuals.length > 0 && (
                 <div className="bg-white/5 rounded-lg p-3">
                   <div className="text-slate-200 text-sm">
                     <Dna className="h-4 w-4 inline mr-1" />
-                    <strong>Genetiska data:</strong>
+                    <strong>{c.geneticData}</strong>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {siteIndividuals.map((individual) => (
                         <Badge key={individual.id} variant="outline" className="text-xs">
@@ -96,7 +119,7 @@ export const StudyDataTab: React.FC<StudyDataTabProps> = ({ filteredSites, indiv
 
               {site.coordinates && site.coordinates.y && site.coordinates.x && (
                 <div className="text-slate-400 text-xs">
-                  <strong>Koordinater:</strong> {site.coordinates.y.toFixed(4)}, {site.coordinates.x.toFixed(4)}
+                  <strong>{c.coordinates}</strong> {site.coordinates.y.toFixed(4)}, {site.coordinates.x.toFixed(4)}
                 </div>
               )}
             </CardContent>
@@ -107,7 +130,7 @@ export const StudyDataTab: React.FC<StudyDataTabProps> = ({ filteredSites, indiv
       {filteredSites.length === 0 && (
         <div className="col-span-full text-center text-slate-300 py-8">
           <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>Inga arkeologiska platser hittades som matchar sökkriterier.</p>
+          <p>{c.noResults}</p>
         </div>
       )}
     </div>

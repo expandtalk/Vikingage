@@ -12,7 +12,7 @@ import { usePanelManager } from '@/hooks/usePanelManager';
 
 const LEGEND_ITEMS = [
   { id: 'runic_inscriptions', label: 'Runinskrifter', category: 'primary' },
-  { id: 'valdemars_route', label: 'Valdemars rutt', category: 'routes' },
+  { id: 'valdemar_route', label: 'Valdemars rutt', category: 'routes' },
   { id: 'river_routes', label: 'Flodvägar', category: 'routes' },
   { id: 'ring_fortress', label: 'Ringborgar', category: 'fortifications' },
   { id: 'hillfort', label: 'Fornborgar', category: 'fortifications' },
@@ -35,7 +35,7 @@ const PANEL_TYPES = [
 
 export const PanelLayoutManager: React.FC = () => {
   const { presets } = usePanelManager();
-  const [selectedPreset, setSelectedPreset] = useState<string>('explorer');
+  const [selectedPreset, setSelectedPreset] = useState<string>('explore');
   const [presetConfig, setPresetConfig] = useState<any>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 

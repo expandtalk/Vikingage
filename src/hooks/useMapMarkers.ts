@@ -8,6 +8,8 @@ import { processInscriptionCoordinates } from './useMapMarkers/coordinateProcess
 import { addMapMarkers } from './useMapMarkers/markerManager';
 import { RunicInscription } from '@/types/inscription';
 import { UseMapMarkersReturn } from '@/types/map';
+import { useActiveExploreProfile } from './useExploreProfiles';
+import { layerEmphasis, emphasisStyle } from '@/config/exploreProfiles';
 
 export const useMapMarkers = (
   map: L.Map | null,
@@ -23,7 +25,10 @@ export const useMapMarkers = (
 ): UseMapMarkersReturn => {
   const [markers, setMarkers] = useState<L.Marker[]>([]);
   const markersRef = useRef<L.Marker[]>([]);
-  
+
+  const activeProfile = useActiveExploreProfile();
+  const inscriptionEmphasis = emphasisStyle(layerEmphasis(activeProfile, 'runic_inscriptions'));
+
   const { generateLegendData } = useLegendData(
     inscriptions,
     isVikingMode,
@@ -76,7 +81,8 @@ export const useMapMarkers = (
           enabledLegendItems,
           selectedTimePeriod,
           historicalEvents,
-          vikingCities
+          vikingCities,
+          inscriptionEmphasis.opacity
         );
 
         markersRef.current = newMarkers;
@@ -114,7 +120,8 @@ export const useMapMarkers = (
     selectedTimePeriod,
     onMarkerClick,
     enabledLegendItems,
-    historicalEvents
+    historicalEvents,
+    inscriptionEmphasis.opacity
   ]);
 
   return { generateLegendData };

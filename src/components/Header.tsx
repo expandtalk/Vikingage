@@ -11,7 +11,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
-import { Navigation } from './Navigation';
+import { Navigation, MobileNav } from './Navigation';
+import { GlobalSearch } from './search/GlobalSearch';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -62,7 +63,9 @@ export const Header = () => {
           <Navigation />
 
           <div className="flex items-center space-x-3 shrink-0">
+            <GlobalSearch />
             <LanguageSwitcher />
+            <MobileNav />
             
             {user ? (
               <>

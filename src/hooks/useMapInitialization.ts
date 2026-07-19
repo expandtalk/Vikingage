@@ -3,9 +3,9 @@ import { useRef, useEffect, useState } from 'react';
 import L from 'leaflet';
 import { useMapInstance } from './useMapInstance';
 import { useMapTileLayer } from './useMapTileLayer';
-import { useMapRoute } from './useMapRoute';
 import { useMapRiverSystems } from './useMapRiverSystems';
 import { useMapValdemarsRoute } from './useMapValdemarsRoute';
+import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
   isVikingMode: boolean;
@@ -27,6 +27,10 @@ export const useMapInitialization = ({
   const isMapReadyRef = useRef<boolean>(false);
   
   const { mapContainer, map } = useMapInstance({ isVikingMode });
+  const activeProfile = useActiveExploreProfile();
+
+  const geoControlAdded = useRef(false);
+  const geoMarker = useRef<L.CircleMarker | null>(null);
 
   // Wait for map to be initialized
   useEffect(() => {
@@ -35,6 +39,48 @@ export const useMapInitialization = ({
       isMapReadyRef.current = true;
     }
   }, [map]);
+
+  // "Visa min plats" — geolokaliseringsknapp som zoomar till användarens position.
+  useEffect(() => {
+    if (!map.current || !isMapReady || geoControlAdded.current) return;
+    geoControlAdded.current = true;
+
+    const GeoControl = L.Control.extend({
+      options: { position: 'topleft' as L.ControlPosition },
+      onAdd: () => {
+        const btn = L.DomUtil.create('a', 'leaflet-bar leaflet-control leaflet-control-custom');
+        btn.href = '#';
+        btn.title = 'Visa min plats / Show my location';
+        btn.setAttribute('role', 'button');
+        btn.setAttribute('aria-label', 'Visa min plats');
+        btn.innerHTML = '📍';
+        btn.style.cssText =
+          'display:flex;align-items:center;justify-content:center;width:30px;height:30px;font-size:16px;background:#fff;text-decoration:none;cursor:pointer;';
+        L.DomEvent.on(btn, 'click', (e: Event) => {
+          L.DomEvent.stop(e);
+          if (!navigator.geolocation || !map.current) return;
+          btn.innerHTML = '⏳';
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              btn.innerHTML = '📍';
+              const { latitude, longitude } = pos.coords;
+              map.current!.setView([latitude, longitude], 12);
+              if (geoMarker.current) geoMarker.current.remove();
+              geoMarker.current = L.circleMarker([latitude, longitude], {
+                radius: 8, color: '#2563eb', fillColor: '#3b82f6', fillOpacity: 0.6, weight: 2,
+              }).addTo(map.current!).bindPopup('Din plats').openPopup();
+            },
+            () => { btn.innerHTML = '📍'; },
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+          );
+        });
+        return btn;
+      },
+    });
+
+    const ctrl = new GeoControl();
+    map.current.addControl(ctrl);
+  }, [map, isMapReady]);
 
   // Safe layer addition function
   const safelyAddLayer = (layer: L.Layer): boolean => {
@@ -62,24 +108,13 @@ export const useMapInitialization = ({
   }, [onRefreshRivers]);
 
   // Add tile layer with proper parameters
-  useMapTileLayer({ 
-    map: map.current, 
-    isVikingMode, 
-    enabledLegendItems,
-    isMapReady: isMapReadyRef,
-    mapContainer,
-    safelyAddLayer
-  });
-
-  // Add Valdemar's route only if enabled - pass object parameters
-  useMapRoute({
+  useMapTileLayer({
     map: map.current,
-    isVikingMode,
+    basemap: activeProfile.basemap,
     enabledLegendItems,
     isMapReady: isMapReadyRef,
     mapContainer,
     safelyAddLayer,
-    selectedTimePeriod
   });
 
   // Add river systems only if enabled - pass object parameters with all required props

@@ -37,7 +37,8 @@ export const OFFERING_SPRINGS: OfferingSpring[] = [
   {
     id: 'kalla_gamla_kyrka_oland',
     name: 'Källa gamla kyrka offerkälla',
-    coordinates: { lat: 57.2167, lng: 17.0333 },
+    // Rättad enligt Wikipedia: 57°6′41″N 16°59′11″Ö (Källa socken, norra Öland).
+    coordinates: { lat: 57.1114, lng: 16.9864 },
     type: 'offering_spring',
     evidence: ['place_name', 'church_foundation', 'archaeological'],
     description: 'Hednisk offerkälla som kristnades och helgades åt S:t Olof. Socknen har fått sitt namn av källan.',

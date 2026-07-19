@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFocusManager } from '@/hooks/useFocusManager';
@@ -8,7 +8,17 @@ import { RunicInscription } from '@/types/inscription';
 
 export const useExplorerState = () => {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
-  const [mapNavigate, setMapNavigate] = useState<((lat: number, lng: number, zoom: number) => void) | null>(null);
+  const [mapNavigate, setMapNavigateState] = useState<((lat: number, lng: number, zoom: number) => void) | null>(null);
+  // Store the nav function via an updater. Passing the function straight to a
+  // useState setter makes React treat it as a functional update — it invokes
+  // the function with prevState and stores the (undefined) return value, so
+  // mapNavigate would always be undefined and every result click would toast
+  // "kunde inte hitta platsen" even when coordinates exist.
+  const setMapNavigate = useCallback(
+    (fn: (lat: number, lng: number, zoom: number) => void) =>
+      setMapNavigateState(() => fn),
+    [],
+  );
   const [godNameSearch, setGodNameSearch] = useState<string>('');
   
   // Clear any active filters on initial load to show ALL inscriptions
@@ -44,55 +54,15 @@ export const useExplorerState = () => {
     setModalInscription(inscription);
   };
 
-  const handleResultClick = async (inscription: RunicInscription) => {
+  const handleResultClick = (inscription: RunicInscription) => {
     console.log('🖱️ [useExplorerState] handleResultClick triggered for:', inscription.signum);
-    
-    // Always use getEnhancedCoordinates to get the best location info
-    let enhancedCoords = getEnhancedCoordinates(inscription, false);
-    
-    // If no coordinates found but we have location info, try to geocode it
-    if (!enhancedCoords && (inscription.location || inscription.parish)) {
-      console.log(`🔍 Attempting to geocode location for ${inscription.signum}`);
-      
-      // Build location string for geocoding
-      const locationParts = [
-        inscription.location,
-        inscription.parish, 
-        inscription.province || inscription.landscape,
-        inscription.country || 'Sweden'
-      ].filter(Boolean);
-      
-      const locationString = locationParts.join(', ');
-      console.log(`📍 Geocoding: "${locationString}"`);
-      
-      try {
-        // Simple Nominatim geocoding request
-        const encodedLocation = encodeURIComponent(locationString);
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedLocation}&limit=1&countrycodes=se,dk,no,de,is&accept-language=sv,da,no,en`;
-        
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'RunicResearchApp/1.0 (educational use)'
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.length > 0) {
-            const result = data[0];
-            enhancedCoords = {
-              lat: parseFloat(result.lat),
-              lng: parseFloat(result.lon),
-              zoom: 14
-            };
-            console.log(`✅ Geocoded ${inscription.signum} to [${enhancedCoords.lat}, ${enhancedCoords.lng}]`);
-          }
-        }
-      } catch (error) {
-        console.log(`❌ Geocoding failed for ${inscription.signum}:`, error);
-      }
-    }
-    
+
+    // Använd ENBART den kanoniska koordinaten (nu ifylld i DB, 98% täckning).
+    // Ingen klick-tids-geokodning mot Nominatim längre — den gav icke-deterministiska
+    // träffar (fel socken/land) och nätverksberoende + rate-limit-risk. Saknas koord
+    // helt → toast, ingen gissning.
+    const enhancedCoords = getEnhancedCoordinates(inscription, false);
+
     if (enhancedCoords && mapNavigate) {
       console.log(`   -> Navigating to [${enhancedCoords.lat}, ${enhancedCoords.lng}] with zoom ${enhancedCoords.zoom}`);
       mapNavigate(enhancedCoords.lat, enhancedCoords.lng, enhancedCoords.zoom);

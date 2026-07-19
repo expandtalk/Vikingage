@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Layers, MapPin, ZoomIn } from "lucide-react";
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Fix för Leaflet ikoner
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -94,6 +95,11 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
   onToggleCities,
   onToggleHillforts = () => {}
 }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const M = sv
+    ? { interactiveMap: 'Interaktiv karta', fortifications: 'Befästningar', cities: 'Centra', hillforts: 'Fornborgar', showAll: 'Visa alla', legend: 'Förklaring' }
+    : { interactiveMap: 'Interactive map', fortifications: 'Fortifications', cities: 'Centres', hillforts: 'Hillforts', showAll: 'Show all', legend: 'Legend' };
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
@@ -318,8 +324,8 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
         <div className="p-4 border-b border-border">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-accent" />
-              <h3 className="font-semibold text-foreground">Interaktiv karta</h3>
+              <MapPin className="h-5 w-5 text-gold" />
+              <h3 className="font-semibold text-foreground">{M.interactiveMap}</h3>
             </div>
             
             <div className="flex flex-wrap items-center gap-2">
@@ -332,7 +338,7 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
                 <Badge variant="secondary" className="mr-1">
                   {fortresses.length}
                 </Badge>
-                Befästningar
+                {M.fortifications}
               </Button>
               
               <Button
@@ -344,7 +350,7 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
                 <Badge variant="secondary" className="mr-1">
                   {cities.length}
                 </Badge>
-                Städer
+                {M.cities}
               </Button>
 
               {hillforts && hillforts.length > 0 && (
@@ -357,7 +363,7 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
                   <Badge variant="secondary" className="mr-1">
                     {hillforts.length}
                   </Badge>
-                  Fornborgar
+                  {M.hillforts}
                 </Button>
               )}
 
@@ -368,7 +374,7 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
                 className="text-xs"
               >
                 <ZoomIn className="h-3 w-3 mr-1" />
-                Visa alla
+                {M.showAll}
               </Button>
             </div>
           </div>
@@ -384,18 +390,18 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
         {/* Legend */}
         <div className="p-4 border-t border-border">
           <div className="text-xs text-muted-foreground">
-            <p className="mb-2 font-medium">Förklaring:</p>
+            <p className="mb-2 font-medium">{M.legend}:</p>
             <div className="flex flex-wrap gap-4">
               {showFortresses && (
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 rounded-full bg-amber-600 flex items-center justify-center text-white text-xs">🏰</div>
-                  <span>Befästningar</span>
+                  <span>{M.fortifications}</span>
                 </div>
               )}
               {showCities && (
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs">🏛️</div>
-                  <span>Städer</span>
+                  <span>{M.cities}</span>
                 </div>
               )}
             </div>

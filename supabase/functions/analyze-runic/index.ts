@@ -1,10 +1,38 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+// Restrict CORS to known origins instead of '*'. Add deployment origins here.
+const ALLOWED_ORIGINS = [
+  'https://vikingage.se',
+  'https://www.vikingage.se',
+  'http://localhost:5176',
+  'http://localhost:8080',
+];
+
+const buildCorsHeaders = (origin: string | null) => {
+  const allowOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Vary': 'Origin',
+  };
+};
+
+// Best-effort in-memory rate limiter to protect the OpenRouter quota.
+// NOTE: edge-function instances are ephemeral and not shared, so this only
+// throttles bursts hitting the same warm instance. For durable, cross-instance
+// limits use Deno KV or a Supabase table keyed by IP/user.
+const RATE_LIMIT = 10;          // max requests
+const RATE_WINDOW_MS = 60_000;  // per minute, per client IP
+const requestLog = new Map<string, number[]>();
+
+const isRateLimited = (clientId: string): boolean => {
+  const now = Date.now();
+  const recent = (requestLog.get(clientId) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
+  recent.push(now);
+  requestLog.set(clientId, recent);
+  return recent.length > RATE_LIMIT;
+};
 
 interface AnalysisRequest {
   transliteration: string;
@@ -13,9 +41,23 @@ interface AnalysisRequest {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
+  const origin = req.headers.get('origin');
+  const corsHeaders = buildCorsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Throttle per client IP (best-effort; see note above).
+  const clientId =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('cf-connecting-ip') ||
+    'unknown';
+  if (isRateLimited(clientId)) {
+    return new Response(
+      JSON.stringify({ error: 'Rate limit exceeded. Please wait a moment and try again.' }),
+      { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {
@@ -24,91 +66,74 @@ serve(async (req) => {
     if (!transliteration || transliteration.trim().length === 0) {
       return new Response(
         JSON.stringify({ error: 'Transliteration is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-    if (!GEMINI_API_KEY) {
-      console.error('GEMINI_API_KEY environment variable not set');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      console.error('OPENROUTER_API_KEY environment variable not set');
       return new Response(
         JSON.stringify({ error: 'API configuration error' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const prompt = buildRunicAnalysisPrompt({ transliteration, location, objectType });
-    
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{ 
-            role: "user", 
-            parts: [{ text: prompt }] 
-          }],
-          generationConfig: {
-            temperature: 0.1,
-            topK: 1,
-            topP: 1,
-            maxOutputTokens: 2048,
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://vikingage.se',
+        'X-Title': 'Viking Age Runological Research Platform',
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-sonnet-4-5',
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
           },
-        }),
-      }
-    );
+        ],
+        temperature: 0.1,
+        max_tokens: 2048,
+      }),
+    });
 
     if (!response.ok) {
-      console.error('Gemini API error:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('OpenRouter API error:', response.status, errorText);
       return new Response(
         JSON.stringify({ error: 'AI analysis service temporarily unavailable' }),
-        { 
-          status: 503, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const result = await response.json();
-    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-    
+    const text = result.choices?.[0]?.message?.content;
+
     if (!text) {
-      console.error('Invalid response from Gemini API');
+      console.error('Invalid response from OpenRouter API:', JSON.stringify(result));
       return new Response(
         JSON.stringify({ error: 'Invalid response from analysis service' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const analysis = parseGeminiResponse(text, { transliteration, location, objectType });
-    
+    const analysis = parseAIResponse(text, { transliteration, location, objectType });
+
     return new Response(
       JSON.stringify(analysis),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in analyze-runic function:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
@@ -127,13 +152,13 @@ Analysera följande aspekter:
 3. Formulärtyp och konventioner
 4. Historisk kontext
 
-Ge svar i exakt detta JSON-format:
+Ge svar i exakt detta JSON-format (inga andra ord, bara JSON):
 {
   "period": "Period med årtal",
   "confidence": 0.0-1.0,
   "yearRange": {"start": år, "end": år},
   "reasoning": "Detaljerad förklaring på svenska",
-  "linguisticFeatures": ["språkdrag1", "språkdrag2", ...],
+  "linguisticFeatures": ["språkdrag1", "språkdrag2"],
   "runType": "Runtyp och variant"
 }
 
@@ -141,60 +166,20 @@ Basera analysen på etablerad runologisk forskning. Var konservativ med datering
 `;
 }
 
-function parseGeminiResponse(text: string, input: AnalysisRequest) {
-  try {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      return {
-        ...parsed,
-        location: input.location || parsed.location || 'Okänd',
-        objectType: input.objectType || parsed.objectType || 'Okänt objekt'
-      };
-    }
-  } catch (error) {
-    console.error('Error parsing Gemini response:', error);
+function parseAIResponse(text: string, input: AnalysisRequest) {
+  // A research tool must never fabricate a dating. If the model does not
+  // return parseable JSON, surface it as an error rather than inventing a
+  // plausible-looking mock result. The outer handler turns a throw into a
+  // 5xx response so the client shows a real failure.
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('AI response did not contain a valid JSON object');
   }
-  
-  // Fallback mock analysis
-  return mockRunicAnalysis(input);
-}
 
-function mockRunicAnalysis(input: AnalysisRequest) {
-  const text = input.transliteration.toLowerCase();
-  
-  if (text.includes('harija') || text.length <= 10) {
-    return {
-      period: 'Proto-nordiska (200-550 e.Kr.)',
-      confidence: 0.85,
-      yearRange: { start: 200, end: 550 },
-      reasoning: 'Kort inskription med arkaiska drag typiska för proto-nordiska perioden.',
-      linguisticFeatures: ['Kort formel typisk för tidiga fynd', 'Urnordiska språkdrag'],
-      runType: 'Äldre futhark (24 runer)',
-      location: input.location || 'Okänd',
-      objectType: input.objectType || 'Okänt objekt'
-    };
-  } else if (text.includes('eftir') || text.includes('eftr') || text.includes('×')) {
-    return {
-      period: 'Vikingatid (800-1100 e.Kr.)',
-      confidence: 0.92,
-      yearRange: { start: 850, end: 1050 },
-      reasoning: 'Innehåller typisk vikingatida minnesformel "eftir".',
-      linguisticFeatures: ['Minnesformel med "eftir"', 'Kryss som ordseparator (×)'],
-      runType: 'Yngre futhark, normala runer',
-      location: input.location || 'Troligen Sverige/Danmark',
-      objectType: input.objectType || 'Runsten'
-    };
-  } else {
-    return {
-      period: 'Vikingatid (800-1100 e.Kr.)',
-      confidence: 0.65,
-      yearRange: { start: 800, end: 1100 },
-      reasoning: 'Allmän vikingatida bedömning baserat på språkdrag.',
-      linguisticFeatures: ['Fornvästnordiska element'],
-      runType: 'Troligen yngre futhark',
-      location: input.location || 'Skandinavien',
-      objectType: input.objectType || 'Runsten eller föremål'
-    };
-  }
+  const parsed = JSON.parse(jsonMatch[0]);
+  return {
+    ...parsed,
+    location: input.location || parsed.location || 'Okänd',
+    objectType: input.objectType || parsed.objectType || 'Okänt objekt',
+  };
 }

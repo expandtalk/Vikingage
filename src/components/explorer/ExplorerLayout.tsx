@@ -9,8 +9,7 @@ import { usePanelManager } from '@/hooks/usePanelManager';
 import { useFocusManager } from '@/hooks/useFocusManager';
 import { LayoutHeader } from './layout/LayoutHeader';
 import { LayoutContent } from './layout/LayoutContent';
-import { HundredsView } from '../hundreds/HundredsView';
-import { ParishesView } from '../parishes/ParishesView';
+import { RegionFindsView } from '../regions/RegionFindsView';
 import { MobileDrawer } from '@/components/ui/mobile-drawer';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { Filter, Map, BarChart3 } from 'lucide-react';
@@ -70,10 +69,13 @@ interface ExplorerLayoutProps {
   
   // God name search props
   onGodNameSearch?: (godName: string) => void;
-  
+  // Fokusera EN guds kultplatser på kartan (null = visa alla)
+  onFocusDeity?: (deityKey: string | null) => void;
+
   // Time period for rivers focus
   selectedTimePeriod?: string;
-  
+  setSelectedTimePeriod?: (value: string) => void;
+
   // Update handling
   onInscriptionUpdate?: (updatedInscription: any) => void;
 }
@@ -119,12 +121,14 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   onObjectTypeChange,
   mapNavigate,
   onGodNameSearch,
+  onFocusDeity,
   selectedTimePeriod = 'all',
+  setSelectedTimePeriod,
   onInscriptionUpdate
 }) => {
   const { activePreset } = usePanelManager();
   const { currentFocus, clearFocus } = useFocusManager();
-  const isExplorerMode = activePreset === 'explorer';
+  const isExplorerMode = activePreset === 'explore';
   const isMobile = useIsMobile();
   
   // Module state management
@@ -173,18 +177,6 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   };
 
   // Handlers for focus views
-  const handleParishSelect = (parishName: string) => {
-    setSearchQuery(parishName);
-    handleSearchWithResults();
-    clearFocus();
-  };
-
-  const handleHundredSelect = (hundredName: string) => {
-    setSearchQuery(hundredName);
-    handleSearchWithResults();
-    clearFocus();
-  };
-
   const handleNameSelect = (name: string) => {
     setSearchQuery(name);
     handleSearchWithResults();
@@ -201,11 +193,20 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   };
 
   // Show specific content for focused views
-  if (currentFocus === 'names' || currentFocus === 'hundreds' || currentFocus === 'parishes' || currentFocus === 'carvers') {
+  if (
+    currentFocus === 'names' ||
+    currentFocus === 'hundreds' ||
+    currentFocus === 'parishes' ||
+    currentFocus === 'carvers' ||
+    currentFocus === 'folkGroups' ||
+    currentFocus === 'geneticEvents'
+  ) {
     const renderFocusContent = () => {
       switch (currentFocus) {
         case 'names':
-        case 'carvers': // Let ExplorerPanels handle these
+        case 'carvers':
+        case 'folkGroups':
+        case 'geneticEvents': // ExplorerPanels renders the right dedicated view
           return (
             <ExplorerPanels
               currentFocus={currentFocus}
@@ -217,9 +218,9 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
             />
           );
         case 'hundreds':
-          return <HundredsView onHundredSelect={handleHundredSelect} />;
+          return <RegionFindsView inscriptions={allInscriptions} mode="hundreds" onResultClick={onResultClick} />;
         case 'parishes':
-          return <ParishesView onParishSelect={handleParishSelect} />;
+          return <RegionFindsView inscriptions={allInscriptions} mode="parishes" onResultClick={onResultClick} />;
         default:
           return null;
       }
@@ -261,7 +262,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         onLegendToggle={onLegendToggle}
         isSearchMinimized={isSearchMinimized}
         setIsSearchMinimized={setIsSearchMinimized}
-        shouldShowTimeline={shouldShowTimeline}
+        shouldShowTimeline={false}
         mapNavigate={mapNavigate}
         isTimelineMinimized={isTimelineMinimized}
         setIsTimelineMinimized={setIsTimelineMinimized}
@@ -410,8 +411,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
       {shouldShowTimeline && (
         <div className="mt-6">
           <TimelineModule
-            selectedPeriod="all"
-            onPeriodChange={() => {}}
+            selectedPeriod={selectedTimePeriod}
+            onPeriodChange={(value: string) => setSelectedTimePeriod?.(value)}
             mapNavigate={mapNavigate}
             isMinimized={isTimelineMinimized}
             onToggleMinimized={() => setIsTimelineMinimized(!isTimelineMinimized)}
@@ -422,7 +423,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
       {/* Gods Cards Grid - only show when in gods focus */}
       {currentFocus === 'gods' && (
         <div className="mt-6">
-          <GodCardsGrid onGodSelect={onGodNameSearch} />
+          <GodCardsGrid onFocusDeity={onFocusDeity} />
         </div>
       )}
     </div>

@@ -19,7 +19,8 @@ interface DatabaseStatsProps {
 }
 
 export const DatabaseStats: React.FC<DatabaseStatsProps> = ({ dbStats }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const sv = language === 'sv';
 
   // Filter categories that have more than the minimum threshold
   const statsToShow = [
@@ -33,35 +34,35 @@ export const DatabaseStats: React.FC<DatabaseStatsProps> = ({ dbStats }) => {
     {
       key: 'coordinates',
       value: dbStats.totalCoordinates || 0,
-      label: 'Koordinater',
+      label: sv ? 'Koordinater' : 'Coordinates',
       icon: Navigation,
       color: 'text-green-400'
     },
     {
       key: 'carvers',
       value: dbStats.totalCarvers || 0,
-      label: 'Runristare',
+      label: sv ? 'Runristare' : 'Rune carvers',
       icon: Users,
       color: 'text-orange-400'
     },
     {
       key: 'artefacts',
       value: dbStats.totalArtefacts || 0,
-      label: 'Artefakter',
+      label: sv ? 'Artefakter' : 'Artefacts',
       icon: Package,
       color: 'text-indigo-400'
     },
     {
       key: 'fortresses',
       value: dbStats.totalFortresses || 0,
-      label: 'Vikingaborgar',
+      label: sv ? 'Vikingaborgar' : 'Viking fortresses',
       icon: Shield,
       color: 'text-red-400'
     },
     {
       key: 'cities',
       value: dbStats.totalCities || 0,
-      label: 'Vikingastäder',
+      label: sv ? 'Vikingastäder' : 'Viking towns',
       icon: MapPin,
       color: 'text-yellow-400'
     },
@@ -92,7 +93,7 @@ export const DatabaseStats: React.FC<DatabaseStatsProps> = ({ dbStats }) => {
     statsToShow.push({
       key: 'total',
       value: dbStats.totalRecords,
-      label: 'Totalt i databasen',
+      label: sv ? 'Totalt i databasen' : 'Total in database',
       icon: Database,
       color: 'text-cyan-400'
     });

@@ -63,21 +63,21 @@ export const generateBasicInscriptionItems = (
   // 2. VIKINGACENTRA - andra prioritet
   if (selectedTimePeriod === 'viking_age' || selectedTimePeriod === 'all') {
     items.push({
-      id: 'viking_centers',
+      id: 'viking_cities',
       label: t('vikingCenters'),
       color: '#8b5cf6',
       count: 49,
-      enabled: enabledLegendItems.viking_centers !== false
+      enabled: enabledLegendItems.viking_cities !== false
     });
   }
 
   // 3. VALDEMARS SEGELLED - ✅ Viktig vattenväg med alla koordinater
   items.push({
-    id: 'valdemars_route',
+    id: 'valdemar_route',
     label: '⚔️ ' + t('valdemarsRoute1230s'),
     color: '#1e3a8a', // Mörkblå för vikingatid
     count: 95, // ✅ Alla vägpunkter visas
-    enabled: enabledLegendItems.valdemars_route !== false || enabledLegendItems.valdemar_route !== false,
+    enabled: enabledLegendItems.valdemar_route !== false,
     type: 'primary' as const // ✅ Gör prominent
   });
 
@@ -177,6 +177,31 @@ export const generateBasicInscriptionItems = (
     color: '#7c3aed',
     count: 12,
     enabled: false
+  });
+
+  // ✅ ORPHAN LAYERS - renderas redan på kartan men saknade kryssruta i legenden
+  items.push({
+    id: 'folk_groups',
+    label: 'Folkgrupper',
+    color: '#0d9488',
+    count: 0,
+    enabled: enabledLegendItems.folk_groups !== false
+  });
+
+  items.push({
+    id: 'historical_events',
+    label: 'Historiska händelser',
+    color: '#FF6B6B',
+    count: 0,
+    enabled: enabledLegendItems.historical_events !== false
+  });
+
+  items.push({
+    id: 'place_names',
+    label: 'Ortnamn',
+    color: '#65a30d',
+    count: 0,
+    enabled: enabledLegendItems.place_names !== false
   });
 
   // Add Christian sites if provided
@@ -450,11 +475,11 @@ export const generateRouteItems = (
   // Valdemar's sailing route (Viking Age specific) - ✅ PROMINENT WATERWAY
   if (selectedTimePeriod === 'viking_age' || selectedTimePeriod === 'vendel_period' || selectedTimePeriod === 'medieval' || selectedTimePeriod === 'all') {
     items.push({
-      id: 'valdemars_route',
+      id: 'valdemar_route',
       label: '⚔️ ' + t('valdemarsRoute') + ' (1230-talet)',
       color: isVikingMode ? '#1e3a8a' : '#3b82f6', // ✅ Consistent colors
       count: 95, // ✅ All route coordinates
-      enabled: enabledLegendItems.valdemars_route ?? true, // ✅ Default enabled for prominence
+      enabled: enabledLegendItems.valdemar_route ?? true, // ✅ Default enabled for prominence
       type: 'primary' as const // ✅ Make it prominent in legend
     });
   }

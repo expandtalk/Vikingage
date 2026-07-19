@@ -1,91 +1,76 @@
-
-import React from 'react';
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Monitor, Microscope, Globe, FlaskConical } from "lucide-react";
-import { usePanelManager } from '@/hooks/usePanelManager';
+import { ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useExploreProfiles } from "@/hooks/useExploreProfiles";
+import { useActiveExploreRole, setActiveExploreRole } from "@/hooks/useActiveExploreRole";
+import { PROFILE_ICONS } from "@/config/exploreCapabilities";
 
 export const PanelLayoutSelector: React.FC = () => {
-  const { activePreset, presets, applyPreset } = usePanelManager();
+  const profiles = useExploreProfiles();
+  const activeId = useActiveExploreRole();
   const { language } = useLanguage();
-
-  const getPresetIcon = (presetName: string) => {
-    switch (presetName) {
-      case 'explorer': return Monitor;
-      case 'linguist': return Microscope;
-      case 'geographer': return Globe;
-      case 'researcher': return FlaskConical;
-      default: return Monitor;
-    }
-  };
-
-  const getLocalizedLabels = (presetName: string) => {
-    const labels = {
-      explorer: {
-        sv: { name: 'Explorer Mode', description: 'Balanserat läge för allmän utforskning' },
-        en: { name: 'Explorer Mode', description: 'Balanced mode for general exploration' }
-      },
-      linguist: {
-        sv: { name: 'Språkvetare', description: 'Fokus på text och språkanalys' },
-        en: { name: 'Linguist', description: 'Focus on text and linguistic analysis' }
-      },
-      geographer: {
-        sv: { name: 'Kulturgeograf', description: 'Stor karta och rumslig analys' },
-        en: { name: 'Cultural Geographer', description: 'Large map and spatial analysis' }
-      },
-      researcher: {
-        sv: { name: 'Forskare', description: 'Alla verktyg tillgängliga' },
-        en: { name: 'Researcher', description: 'All tools available' }
-      }
-    };
-    
-    return labels[presetName as keyof typeof labels]?.[language as keyof typeof labels.explorer] || labels.explorer.en;
-  };
+  const lang = language === "en" ? "en" : "sv";
+  const activeProfile = profiles.find((p) => p.id === activeId) ?? profiles[0];
+  // Kondenserad som standard — visar bara aktiv profil tills man fäller ut.
+  const [expanded, setExpanded] = useState(false);
+  const ActiveIcon = activeProfile ? PROFILE_ICONS[activeProfile.icon] : null;
 
   return (
     <Card className="bg-slate-800/60 backdrop-blur-md border-slate-600/30">
       <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium text-slate-200">
-            {language === 'en' ? 'Panel Layout' : 'Panellayout'}
-          </h3>
-          <Badge variant="outline" className="text-xs text-slate-300 border-slate-500">
-            {getLocalizedLabels(activePreset).name}
-          </Badge>
-        </div>
-        
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-          {Object.entries(presets).map(([key, preset]) => {
-            const IconComponent = getPresetIcon(key);
-            const isActive = activePreset === key;
-            const localizedLabels = getLocalizedLabels(key);
-            
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className={`flex w-full items-center justify-between text-left ${expanded ? "mb-3" : ""}`}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <h3 className="text-sm font-medium text-slate-200 shrink-0">
+              {lang === "en" ? "Interest profile" : "Intresseprofil"}
+            </h3>
+            {!expanded && ActiveIcon ? <ActiveIcon className="h-4 w-4 text-blue-400 shrink-0" /> : null}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Badge variant="outline" className="text-xs text-slate-300 border-slate-500">
+              {activeProfile?.label[lang]}
+            </Badge>
+            <ChevronDown
+              className={`h-4 w-4 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`}
+            />
+          </div>
+        </button>
+
+        {expanded && (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+          {profiles.map((profile) => {
+            const IconComponent = PROFILE_ICONS[profile.icon];
+            const isActive = activeId === profile.id;
+
             return (
               <Button
-                key={key}
-                onClick={() => {
-                  console.log('Switching to preset:', key);
-                  applyPreset(key);
-                }}
+                key={profile.id}
+                onClick={() => setActiveExploreRole(profile.id)}
                 variant={isActive ? "default" : "outline"}
                 size="sm"
                 className={`h-auto p-3 flex flex-col items-center gap-2 transition-all ${
-                  isActive 
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-500' 
-                    : 'bg-slate-700/50 hover:bg-slate-600/60 text-slate-200 border-slate-500/50'
+                  isActive
+                    ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
+                    : "bg-slate-700/50 hover:bg-slate-600/60 text-slate-200 border-slate-500/50"
                 }`}
               >
-                <IconComponent className="h-4 w-4" />
+                {IconComponent ? <IconComponent className="h-4 w-4" /> : null}
                 <div className="text-center">
-                  <div className="text-xs font-medium">{localizedLabels.name}</div>
-                  <div className="text-xs opacity-75 mt-1">{localizedLabels.description}</div>
+                  <div className="text-xs font-medium">{profile.label[lang]}</div>
+                  <div className="text-xs opacity-75 mt-1">{profile.description[lang]}</div>
                 </div>
               </Button>
             );
           })}
         </div>
+        )}
       </CardContent>
     </Card>
   );

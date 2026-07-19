@@ -5,7 +5,7 @@ import { Crown, Users, Book, Sparkles } from 'lucide-react';
 import { KingCard } from '../KingCard';
 import { SourceCard } from '../SourceCard';
 import { DynastyCard } from '../DynastyCard';
-import { KingSourceMentions } from '../KingSourceMentions';
+import { KingDetailPanel } from '../KingDetailPanel';
 import { SagaKingsView } from '../SagaKingsView';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { HistoricalKing, HistoricalSource, RoyalDynasty, KingSourceMention } from '@/hooks/useRoyalChronicles';
@@ -38,6 +38,9 @@ export const TabsView: React.FC<TabsViewProps> = ({
   onKingSelect,
 }) => {
   const { language } = useLanguage();
+  const selectedKingObj = selectedKing
+    ? [...(regularKings ?? []), ...(legendaryKings ?? [])].find((k) => k.id === selectedKing)
+    : undefined;
 
   const getNoResultsMessage = () => {
     const genderText = selectedGender === 'female' ? (language === 'en' ? 'queens' : 'drottningar') :
@@ -97,8 +100,8 @@ export const TabsView: React.FC<TabsViewProps> = ({
           </div>
         )}
         
-        {selectedKing && sourceMentions && sourceMentions.length > 0 && (
-          <KingSourceMentions sourceMentions={sourceMentions} />
+        {selectedKingObj && (
+          <KingDetailPanel king={selectedKingObj} sourceMentions={sourceMentions} />
         )}
       </TabsContent>
 
@@ -132,7 +135,7 @@ export const TabsView: React.FC<TabsViewProps> = ({
         {dynasties && dynasties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {dynasties.map((dynasty) => (
-              <DynastyCard key={dynasty.id} dynasty={dynasty} />
+              <DynastyCard key={dynasty.id} dynasty={dynasty} onMemberSelect={onKingSelect} />
             ))}
           </div>
         ) : (

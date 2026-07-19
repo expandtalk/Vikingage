@@ -1,0 +1,138 @@
+belongs_on_signum,note_text,link_count,certainty,tier
+"DR 154","Samma som gjort DR 155",1,true,A_same_hand_resolved
+"DR 160","Troligen samma som gjort DR 161",1,false,A_same_hand_resolved
+"DR 219","Samma som gjort DR 218",1,true,A_same_hand_resolved
+"DR 293","Eventuellt samma som gjort DR 294 och 343",1,false,A_same_hand_resolved
+"DR 294","Eventuellt samma som gjort DR 293 och 343",1,false,A_same_hand_resolved
+"DR 295","Troligen samma som gjort DR 297",1,false,A_same_hand_resolved
+"DR 297","Troligen samma som gjort DR 295",1,false,A_same_hand_resolved
+"DR 334","Samma som gjort DR 335",1,true,A_same_hand_resolved
+"DR 335","Samma som gjort DR 334",1,true,A_same_hand_resolved
+"DR 343","Eventuellt samma som gjort DR 293 och 294",1,false,A_same_hand_resolved
+"DR 351","Eventuellt samma som gjort DR 270",1,false,A_same_hand_resolved
+"DR 379","Eventuellt samma som gjort DR 372, 380, 387 och 389",1,false,A_same_hand_resolved
+"DR 387","Eventuellt samma som gjort DR 372, 379, 380 och 389",1,false,A_same_hand_resolved
+"DR 389","Eventuellt samma som gjort DR 372, 379, 380 och 387",1,false,A_same_hand_resolved
+"DR 392","Samma som gjort DR 401, 402, 406 och 408",1,true,A_same_hand_resolved
+"DR 406","Samma som gjort DR 392, 401, 402 och 408",1,true,A_same_hand_resolved
+"DR 408","Samma som gjort DR 392, 401, 402 och 406",1,true,A_same_hand_resolved
+"DR 63","Eventuellt samma som gjort DR 68",1,false,A_same_hand_resolved
+"DR 69","Eventuellt samma som gjort DR 67",1,false,A_same_hand_resolved
+"DR 96","Eventuellt samma som gjort DR 97",1,false,A_same_hand_resolved
+"DR AUD1998;302","Förmodligen samma som gjort DR AUD1996;276",1,false,A_same_hand_resolved
+"G 208","Samma ristare som gjort G 207.",1,true,A_same_hand_resolved
+"Gs 19","Samma som gjort Gs 2.",1,true,A_same_hand_resolved
+"IM MM128","Samma som IM MM131.",1,true,A_same_hand_resolved
+"IM MM144","Samma ristare som IM MM145",1,true,A_same_hand_resolved
+"Ög 235","Samma som gjort Ög 234 ATA 8141/74.",1,true,A_same_hand_resolved
+"Ög Hov22-23;25","Samma som gjort Ög Hov24;25.",1,true,A_same_hand_resolved
+"Ög Hov24;25","Samma som gjort Ög Hov22-23;25.",1,true,A_same_hand_resolved
+"Öl 26","Samma som gjort Öl 27.",1,true,A_same_hand_resolved
+"Öl 27","Samma som gjort Öl 26.",1,true,A_same_hand_resolved
+"Sm SvS1973;4","Samma som gjort Sm 143.",1,true,A_same_hand_resolved
+"Sö 158","Tidigare tolkad som signerad av Traen.",1,true,reading_history
+"Sö 198","Samma som gjort Sö 200, 207, U 792",1,true,A_same_hand_resolved
+"Sö 324","Troligen samma ristare som gjort Sö 327.",1,false,A_same_hand_resolved
+"Sö 332","Troligen samme ristare som gjort Sö 331",1,false,A_same_hand_resolved
+"Sö 91","Troligen samma ristare som gjort Sö Fv1986;218.",1,false,A_same_hand_resolved
+"U 1015","Troligen samma som gjort U 1017-1024.",1,false,A_same_hand_resolved
+"U 1023","Samma som gjort U 1015, 1017-1022, 1024.",1,true,A_same_hand_resolved
+"U 1026","Samma som gjort U 1027.",1,true,A_same_hand_resolved
+"U 1027","Samma som gjort U 1026.",1,true,A_same_hand_resolved
+"U 1050","Samma som gjort U 1048 och 1060.",1,true,A_same_hand_resolved
+"U 665","Samma som gjort U 672.",1,true,A_same_hand_resolved
+"U 672","Samma som gjort U 665.",1,true,A_same_hand_resolved
+"U Fv1953;270","Samma som gjort U 297 och U Fv1979;245.",1,true,A_same_hand_resolved
+"Vg 85","Eventuellt samma som gjort Vg 90.",1,false,A_same_hand_resolved
+"Vs 18","Samma som gjort Vs 19.",1,true,A_same_hand_resolved
+"Vs 19","Samma som gjort Vs 18.",1,true,A_same_hand_resolved
+"Vs 2","Ovan ristare.",1,true,skill_note
+"Vs 4","Eventuellt samma som gjort Sö 82.",1,false,A_same_hand_resolved
+"","Eventuellt samma som gjort Nä 9.",1,false,B_source_missing_reimport
+"","Eventuellt samma som gjort U 1146.",1,false,B_source_missing_reimport
+"","Samma som gjort Gs 19.",1,true,B_source_missing_reimport
+"","Samma som gjort Nä 27 och eventuellt 23 samt 32.",1,true,B_source_missing_reimport
+"","Samma som gjort Sö 198, 200, 207",1,true,B_source_missing_reimport
+"","Samma som gjort U 1016.",1,true,B_source_missing_reimport
+"","Samma som gjort U 124.",1,true,B_source_missing_reimport
+"","Samma som gjort U 135.",1,true,B_source_missing_reimport
+"","Samma som gjort U 201",1,true,B_source_missing_reimport
+"","Samma som gjort U 251.",1,true,B_source_missing_reimport
+"","Samma som gjort U 496",1,true,B_source_missing_reimport
+"","Samma som gjort U 509",1,true,B_source_missing_reimport
+"","Samma som gjort U 701",1,true,B_source_missing_reimport
+"","Samma som gjort U 803",1,true,B_source_missing_reimport
+"","tillsammans med Livsten",2,true,co_carver_Livsten
+"","Troligen samma som gjort U 52.",1,false,B_source_missing_reimport
+"","Antagligen samma som gjort U 466.",0,,C_orphan_note
+"","Antagligen samma som gjort U 468",0,,C_orphan_note
+"","En ovan och osäker ristare.",0,,skill_note
+"","En van och konstnärligt framstående ristare.",0,,skill_note
+"","Eventuellt samma som gjort DR 351",0,,C_orphan_note
+"","Eventuellt samma som gjort DR 372, 379, 387 och 389",0,,C_orphan_note
+"","Eventuellt samma som gjort DR 379, 380, 387 och 389",0,,C_orphan_note
+"","Eventuellt samma som gjort DR 63",0,,C_orphan_note
+"","Eventuellt samma som gjort DR 69",0,,C_orphan_note
+"","Eventuellt samma som gjort DR 96",0,,C_orphan_note
+"","Eventuellt samma som gjort Nä 12.",0,,C_orphan_note
+"","Eventuellt samma som gjort Nä 23, 26 och 27.",0,,C_orphan_note
+"","Eventuellt samma som gjort Nä 26, 27 och 32.",0,,C_orphan_note
+"","Eventuellt samma som gjort Vg 85.",0,,C_orphan_note
+"","Förmodligen samma som gjort DR AUD1998;302",0,,C_orphan_note
+"","Imitation av U 372.",0,,imitation
+"","Samma ristare som gjort G 208.",0,,C_orphan_note
+"","Samma ristare som IM MM144",0,,C_orphan_note
+"","Samma som gjort DR 129",0,,C_orphan_note
+"","Samma som gjort DR 131",0,,C_orphan_note
+"","Samma som gjort DR 154",0,,C_orphan_note
+"","Samma som gjort DR 219",0,,C_orphan_note
+"","Samma som gjort DR 392, 401, 406 och 408",0,,C_orphan_note
+"","Samma som gjort DR 392, 402, 406 och 408",0,,C_orphan_note
+"","Samma som gjort DR 397",0,,C_orphan_note
+"","Samma som gjort DR 409",0,,C_orphan_note
+"","Samma som gjort Nä 26 och eventuellt 23 samt 32.",0,,C_orphan_note
+"","Samma som gjort Ög 235 ATA 8141/74",0,,C_orphan_note
+"","Samma som gjort Ög Hov14;22",0,,C_orphan_note
+"","Samma som gjort Ög Hov15;22",0,,C_orphan_note
+"","Samma som gjort Sm SvS1973;4.",0,,C_orphan_note
+"","Samma som gjort Sö 198, 200, U 792",0,,C_orphan_note
+"","Samma som gjort Sö 198, 207, U 792",0,,C_orphan_note
+"","Samma som gjort U 1015, 1017-1018, 1020-1024.",0,,C_orphan_note
+"","Samma som gjort U 1015, 1017-1019, 1021-1024.",0,,C_orphan_note
+"","Samma som gjort U 1015, 1017, 1019-1024",0,,C_orphan_note
+"","Samma som gjort U 1015, 1017-1020, 1022-1024.",0,,C_orphan_note
+"","Samma som gjort U 1015, 1017-1021, 1023-1024",0,,C_orphan_note
+"","Samma som gjort U 1015, 1017-1023.",0,,C_orphan_note
+"","Samma som gjort U 1015 och 1018-1024.",0,,C_orphan_note
+"","Samma som gjort U 1048 och 1050.",0,,C_orphan_note
+"","Samma som gjort U 1050 och 1060",0,,C_orphan_note
+"","Samma som gjort U 1051.",0,,C_orphan_note
+"","Samma som gjort U 1146.",0,,C_orphan_note
+"","Samma som gjort U 136.",0,,C_orphan_note
+"","Samma som gjort U 244",0,,C_orphan_note
+"","Samma som gjort U 276",0,,C_orphan_note
+"","Samma som gjort U 297 och Fv1953;270.",0,,C_orphan_note
+"","Samma som gjort U 323 och U 518",0,,C_orphan_note
+"","Samma som gjort U 49.",0,,C_orphan_note
+"","Samma som gjort U 497",0,,C_orphan_note
+"","Samma som gjort U 50.",0,,C_orphan_note
+"","Samma som gjort U 60.",0,,C_orphan_note
+"","Samma som gjort U 685.",0,,C_orphan_note
+"","Samma som gjort U 686.",0,,C_orphan_note
+"","Samma som gjort U 700",0,,C_orphan_note
+"","Samma som gjort U 763",0,,C_orphan_note
+"","Samma som gjort U 764",0,,C_orphan_note
+"","Samma som gjort U 800",0,,C_orphan_note
+"","Samma som gjort U Fv1953;270 och U Fv1979;245.",0,,C_orphan_note
+"","Samma som gjort Vg 193.",0,,C_orphan_note
+"","Samma som gjort Vg 195.",0,,C_orphan_note
+"","Samma som IM MM128.",0,,C_orphan_note
+"","Samma som ristat U 309.",0,,C_orphan_note
+"","Samma som ristat U 310.",0,,C_orphan_note
+"","Troligen samma ornamentik som Sö 350-52.",0,,ornament_note
+"","Troligen samma ristare som gjort Sö 324.",0,,C_orphan_note
+"","Troligen samma ristare som gjort Sö 91.",0,,C_orphan_note
+"","Troligen samma som gjort DR 160",0,,C_orphan_note
+"","Troligen samma som gjort U 40.",0,,C_orphan_note
+"","Troligen samme ristare som gjort Sö 332",0,,C_orphan_note
+"","Visar vissa likheter med U",0,,skill_note

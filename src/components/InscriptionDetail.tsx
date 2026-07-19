@@ -21,10 +21,12 @@ import { useInscriptionExtendedData } from '@/hooks/useInscriptionExtendedData';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InscriptionName } from "@/components/inscription/InscriptionName";
+import { MeterBadge } from "@/components/inscription/MeterBadge";
 import { InscriptionEditModal } from "@/components/inscription/InscriptionEditModal";
 import { RunicInscription } from "@/types/inscription";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface InscriptionDetailProps {
   inscription: RunicInscription;
@@ -41,15 +43,46 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
 }) => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const t = sv
+    ? {
+        unknownPeriod: 'Okänd period', ad: 'e.Kr.', complex: 'Komplex', medium: 'Medel', simple: 'Enkel',
+        edit: 'Redigera', hide: 'Dölj', showMore: 'Visa mer', images: 'Bilder',
+        noImages: 'Inga bilder tillgängliga för denna inskrift.',
+        contribute: 'Vill du bidra med en bild? Kontakta oss eller använd upload-funktionen.',
+        imgFail: 'Bild kunde inte laddas', detailedDating: 'Detaljerad datering (från Rundata)',
+        overview: 'Översikt', text: 'Text', analysis: 'Analys', context: 'Kontext',
+        basicInfo: 'Grundläggande information', material: 'Material', objectType: 'Objekttyp',
+        styleGroup: 'Stilgrupp', uncertaintyLevel: 'Osäkerhetsnivå', unknownN: 'Okänt', unknownG: 'Okänd',
+        scholarly: 'Forskningsnoter', translitLines: 'Translitteration (rad för rad)',
+        svLines: 'Svensk översättning (rad för rad)', normalizedOwn: 'Normaliserad fornnordiska',
+        paleo: 'Paleografiska noter', condition: 'Skick/tillstånd', historical: 'Historisk kontext',
+        country: 'Land', uncertainty: 'Osäkerhet', normalization: 'Normalisering',
+      }
+    : {
+        unknownPeriod: 'Unknown period', ad: 'AD', complex: 'Complex', medium: 'Medium', simple: 'Simple',
+        edit: 'Edit', hide: 'Hide', showMore: 'Show more', images: 'Images',
+        noImages: 'No images available for this inscription.',
+        contribute: 'Want to contribute an image? Contact us or use the upload function.',
+        imgFail: 'Image could not be loaded', detailedDating: 'Detailed dating (from Rundata)',
+        overview: 'Overview', text: 'Text', analysis: 'Analysis', context: 'Context',
+        basicInfo: 'Basic information', material: 'Material', objectType: 'Object type',
+        styleGroup: 'Style group', uncertaintyLevel: 'Uncertainty level', unknownN: 'Unknown', unknownG: 'Unknown',
+        scholarly: 'Scholarly notes', translitLines: 'Transliteration (line by line)',
+        svLines: 'Swedish translation (line by line)', normalizedOwn: 'Normalized Old Norse',
+        paleo: 'Paleographic notes', condition: 'Condition', historical: 'Historical context',
+        country: 'Country', uncertainty: 'Uncertainty', normalization: 'Normalization',
+      };
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const { data: extendedData, isLoading: isLoadingExtendedData } = useInscriptionExtendedData(isExpanded ? inscription.id : null);
 
   const formatPeriod = () => {
     if (inscription.period_start && inscription.period_end) {
-      return `${inscription.period_start}-${inscription.period_end} e.Kr.`;
+      return `${inscription.period_start}-${inscription.period_end} ${t.ad}`;
     }
-    return inscription.dating_text || 'Okänd period';
+    return inscription.dating_text || t.unknownPeriod;
   };
 
   const getPeriodColor = () => {
@@ -93,10 +126,11 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
               )}
               {inscription.complexity_level && (
                 <Badge className={`${getComplexityColor()} text-white border-0 text-xs`}>
-                  {inscription.complexity_level === 'complex' ? 'Komplex' : 
-                   inscription.complexity_level === 'medium' ? 'Medel' : 'Enkel'}
+                  {inscription.complexity_level === 'complex' ? t.complex :
+                   inscription.complexity_level === 'medium' ? t.medium : t.simple}
                 </Badge>
               )}
+              <MeterBadge meter={inscription.meter} sv={sv} />
             </div>
           </div>
           <div className="flex gap-2">
@@ -108,7 +142,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                 className="text-white hover:bg-white/20"
               >
                 <Edit className="h-4 w-4 mr-1" />
-                Redigera
+                {t.edit}
               </Button>
             )}
             <Button
@@ -120,12 +154,12 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
               {isExpanded ? (
                 <>
                   <EyeOff className="h-4 w-4 mr-1" />
-                  Dölj
+                  {t.hide}
                 </>
               ) : (
                 <>
                   <Eye className="h-4 w-4 mr-1" />
-                  Visa mer
+                  {t.showMore}
                 </>
               )}
             </Button>
@@ -182,7 +216,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
             <div>
               <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
                 <ImageIcon className="h-4 w-4" />
-                Bilder
+                {t.images}
               </h4>
               {isLoadingExtendedData ? (
                 <div className="flex space-x-4">
@@ -206,7 +240,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                                   target.onerror = null; 
                                   // Instead of hiding, show a placeholder
                                   target.src = '/placeholder.svg';
-                                  target.alt = 'Bild kunde inte laddas';
+                                  target.alt = t.imgFail;
                                 }}
                                 onClick={() => window.open(img, '_blank')}
                                 style={{ cursor: 'pointer' }}
@@ -222,9 +256,9 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                 </Carousel>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-slate-400 text-sm mb-2">Inga bilder tillgängliga för denna inskrift.</p>
+                  <p className="text-slate-400 text-sm mb-2">{t.noImages}</p>
                   <p className="text-slate-500 text-xs">
-                    Vill du bidra med en bild? Kontakta oss eller använd upload-funktionen.
+                    {t.contribute}
                   </p>
                 </div>
               )}
@@ -235,7 +269,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                <div className="border-t border-white/10 pt-4">
                 <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
                   <CalendarDays className="h-4 w-4" />
-                  Detaljerad Datering (från Rundata)
+                  {t.detailedDating}
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {extendedData.datings.map((datingText, index) => (
@@ -252,10 +286,10 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
               {isComplex ? (
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-4 mb-4">
-                    <TabsTrigger value="overview">Översikt</TabsTrigger>
-                    <TabsTrigger value="text">Text</TabsTrigger>
-                    <TabsTrigger value="analysis">Analys</TabsTrigger>
-                    <TabsTrigger value="context">Kontext</TabsTrigger>
+                    <TabsTrigger value="overview">{t.overview}</TabsTrigger>
+                    <TabsTrigger value="text">{t.text}</TabsTrigger>
+                    <TabsTrigger value="analysis">{t.analysis}</TabsTrigger>
+                    <TabsTrigger value="context">{t.context}</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="overview" className="space-y-4">
@@ -263,13 +297,13 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                       <div>
                         <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
                           <FileText className="h-4 w-4" />
-                          Grundläggande information
+                          {t.basicInfo}
                         </h4>
                         <div className="space-y-1 text-slate-300">
-                          <div><strong>Material:</strong> {inscription.material || 'Okänt'}</div>
-                          <div><strong>Objekttyp:</strong> {inscription.object_type || 'Okänt'}</div>
-                          <div><strong>Stilgrupp:</strong> {inscription.style_group || 'Okänd'}</div>
-                          <div><strong>Osäkerhetsnivå:</strong> {inscription.uncertainty_level || 'Okänd'}</div>
+                          <div><strong>{t.material}:</strong> {inscription.material || t.unknownN}</div>
+                          <div><strong>{t.objectType}:</strong> {inscription.object_type || t.unknownN}</div>
+                          <div><strong>{t.styleGroup}:</strong> {inscription.style_group || t.unknownG}</div>
+                          <div><strong>{t.uncertaintyLevel}:</strong> {inscription.uncertainty_level || t.unknownG}</div>
                         </div>
                       </div>
                       
@@ -277,7 +311,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                         <div>
                           <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
                             <Award className="h-4 w-4" />
-                            Forskningsnoter
+                            {t.scholarly}
                           </h4>
                           <p className="text-slate-300 text-sm">
                             {inscription.scholarly_notes}
@@ -292,7 +326,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                       <div>
                         <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
                           <Scroll className="h-4 w-4" />
-                          Translitteration (rad för rad)
+                          {t.translitLines}
                         </h4>
                         <div className="space-y-1">
                           {inscription.text_segments.transliteration_lines.map((line: string, index: number) => (
@@ -308,7 +342,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                     {inscription.text_segments?.swedish_lines && (
                       <div>
                         <h4 className="text-white font-semibold mb-3">
-                          Svensk översättning (rad för rad)
+                          {t.svLines}
                         </h4>
                         <div className="space-y-1">
                           {inscription.text_segments.swedish_lines.map((line: string, index: number) => (
@@ -324,7 +358,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                     {inscription.text_segments?.normalized && (
                       <div>
                         <h4 className="text-white font-semibold mb-3">
-                          Normaliserad fornnordiska
+                          {t.normalizedOwn}
                         </h4>
                         <div className="p-3 bg-black/20 rounded font-mono text-sm text-slate-200">
                           {inscription.text_segments.normalized}
@@ -336,7 +370,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                   <TabsContent value="analysis" className="space-y-4">
                     {inscription.paleographic_notes && (
                       <div>
-                        <h4 className="text-white font-semibold mb-2">Paleografiska noter</h4>
+                        <h4 className="text-white font-semibold mb-2">{t.paleo}</h4>
                         <p className="text-slate-300 text-sm">
                           {inscription.paleographic_notes}
                         </p>
@@ -345,7 +379,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                     
                     {inscription.condition_notes && (
                       <div>
-                        <h4 className="text-white font-semibold mb-2">Skick/Tillstånd</h4>
+                        <h4 className="text-white font-semibold mb-2">{t.condition}</h4>
                         <p className="text-slate-300 text-sm">
                           {inscription.condition_notes}
                         </p>
@@ -358,7 +392,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                       <div>
                         <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
                           <Clock className="h-4 w-4" />
-                          Historisk kontext
+                          {t.historical}
                         </h4>
                         <p className="text-slate-300 text-sm">
                           {inscription.historical_context}
@@ -370,7 +404,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                       <div>
                         <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
                           <Award className="h-4 w-4" />
-                          Forskningsnoter
+                          {t.scholarly}
                         </h4>
                         <p className="text-slate-300 text-sm">
                           {inscription.scholarly_notes}
@@ -383,18 +417,18 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div className="space-y-1 text-slate-300">
-                      <div><strong>Material:</strong> {inscription.material || 'Okänt'}</div>
-                      <div><strong>Stilgrupp:</strong> {inscription.style_group || 'Okänd'}</div>
+                      <div><strong>{t.material}:</strong> {inscription.material || t.unknownN}</div>
+                      <div><strong>{t.styleGroup}:</strong> {inscription.style_group || t.unknownG}</div>
                     </div>
                     <div className="space-y-1 text-slate-300">
-                      <div><strong>Land:</strong> {inscription.country || 'Okänt'}</div>
-                      <div><strong>Osäkerhet:</strong> {inscription.uncertainty_level || 'Okänd'}</div>
+                      <div><strong>{t.country}:</strong> {inscription.country || t.unknownN}</div>
+                      <div><strong>{t.uncertainty}:</strong> {inscription.uncertainty_level || t.unknownG}</div>
                     </div>
                   </div>
                   
                   {inscription.normalization && (
                     <div>
-                      <h4 className="text-white font-semibold mb-2">Normalisering</h4>
+                      <h4 className="text-white font-semibold mb-2">{t.normalization}</h4>
                       <div className="p-3 bg-black/20 rounded font-mono text-sm text-slate-200">
                         {inscription.normalization}
                       </div>
@@ -405,7 +439,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                     <div>
                       <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
                         <Clock className="h-4 w-4" />
-                        Historisk kontext
+                        {t.historical}
                       </h4>
                       <p className="text-slate-300 text-sm">
                         {inscription.historical_context}
@@ -415,7 +449,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                   
                   {inscription.condition_notes && (
                     <div>
-                      <h4 className="text-white font-semibold mb-2">Skick/Tillstånd</h4>
+                      <h4 className="text-white font-semibold mb-2">{t.condition}</h4>
                       <p className="text-slate-300 text-sm">
                         {inscription.condition_notes}
                       </p>

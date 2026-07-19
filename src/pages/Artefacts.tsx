@@ -30,7 +30,7 @@ const ArtefactsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedArtefact, setSelectedArtefact] = useState<ArtefactWithCategory | null>(null);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const { data: artefacts, isLoading, error } = useQuery({
     queryKey: ['artefacts-with-categories'],
@@ -211,7 +211,7 @@ const ArtefactsPage = () => {
           <div className="text-center py-12">
             <Package className="h-16 w-16 text-slate-500 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-white mb-2">
-              {searchTerm || selectedCategory !== 'all' ? t('noMatchingArtefacts') : t('noHillfortsFound')}
+              {searchTerm || selectedCategory !== 'all' ? t('noMatchingArtefacts') : t('noArtefactsFound')}
             </h3>
             <p className="text-slate-400">
               {searchTerm || selectedCategory !== 'all' 
@@ -246,7 +246,7 @@ const ArtefactsPage = () => {
                       </Badge>
                       <div className="flex items-center gap-1 text-slate-400">
                         <Info className="h-3 w-3" />
-                        <span className="text-xs">Klicka för detaljer</span>
+                        <span className="text-xs">{language === 'sv' ? 'Klicka för detaljer' : 'Click for details'}</span>
                       </div>
                     </div>
                     <div className="text-xs text-slate-500">

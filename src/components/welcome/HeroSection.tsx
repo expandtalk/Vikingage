@@ -39,7 +39,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     <section className="relative overflow-hidden min-h-[calc(70vh-50px)] lg:min-h-[calc(80vh-50px)]">
       <div className="absolute inset-0">
         <img 
-          src="/lovable-uploads/e553c7be-a7a5-4fca-9376-bbb9dbb31d47.png" 
+          src="/images/viking-hero.png"
           alt="Three Viking warriors with traditional armor, helmets and shields"
           className="w-full h-full object-cover object-center"
           style={{ objectPosition: 'center 30%' }}

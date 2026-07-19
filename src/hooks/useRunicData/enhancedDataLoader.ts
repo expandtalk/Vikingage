@@ -2,7 +2,66 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getEnhancedCoordinates } from '../../utils/coordinateMappingEnhanced';
 import { parseCoordinates } from './coordinateUtils';
-import type { UseRunicDataProps } from './types';
+import { sanitizeFilterValue } from '@/utils/searchFilter';
+import { getCountryFromSignum, getRegionFromSignum } from '@/utils/signumValidator';
+import type { UseRunicDataProps, RunicInscription } from './types';
+
+/** A row from the `runic_with_coordinates` view (only the fields we read). */
+interface RunicWithCoordinatesRow {
+  signum?: string | null;
+  original_coordinates?: string | null;
+  coordinates?: string | null;
+  coordinates_latitude?: number | null;
+  coordinates_longitude?: number | null;
+  additional_latitude?: number | null;
+  additional_longitude?: number | null;
+  coordinate_source?: string | null;
+  confidence?: string | null;
+  coord_confidence?: string | null;
+  coord_source?: string | null;
+  location?: string | null;
+  parish?: string | null;
+  country?: string | null;
+}
+
+/** A standalone row from `additional_coordinates` (inscription_id IS NULL). */
+interface StandaloneCoordinateRow {
+  id: string | number;
+  signum?: string | null;
+  notes?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  source?: string | null;
+  confidence?: string | null;
+}
+
+/**
+ * Hämtar ALLA rader från en PostgREST-query genom att paginera med .range().
+ * PostgREST kapar varje svar vid `db-max-rows` (1000 hos oss) OAVSETT .limit(),
+ * så en enda query gav bara 1000 av 3067 inskrifter. Vi loopar i sidor om 1000
+ * tills en sida kommer tillbaka kort (färre än PAGE_SIZE = sista sidan).
+ *
+ * OBS: .order() måste appliceras EN gång före loopen (stabil sortering krävs för
+ * korrekt paginering). .range() använder searchParams.set för offset/limit i
+ * supabase-js v2, så samma builder kan återanvändas per sida (overwrite, inte append).
+ */
+const PAGE_SIZE = 1000;
+async function fetchAllPages<T>(
+  builder: { range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }> }
+): Promise<T[]> {
+  const all: T[] = [];
+  let from = 0;
+  // Skyddsvakt mot oändlig loop (max 100 000 rader).
+  for (let guard = 0; guard < 100; guard++) {
+    const { data, error } = await builder.range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    const batch = data || [];
+    all.push(...batch);
+    if (batch.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+  return all;
+}
 
 export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRunicDataProps) => {
   console.log('🔄 Loading enhanced runic data with improved coordinate system...');
@@ -20,18 +79,21 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
     // Also fetch standalone coordinates from additional_coordinates table
     // for inscriptions that don't exist in the main table (like Icelandic ones)
     console.log('🔍 ICELAND DEBUG: Fetching standalone coordinates from additional_coordinates...');
-    const { data: standaloneCoords, error: standaloneError } = await supabase
-      .from('additional_coordinates')
-      .select('*')
-      .is('inscription_id', null);
-    
-    if (standaloneError) {
-      console.error('❌ Error fetching standalone coordinates:', standaloneError);
-    } else {
-      console.log(`📍 Found ${standaloneCoords?.length || 0} standalone coordinate entries`);
+    let standaloneCoords: StandaloneCoordinateRow[] = [];
+    try {
+      // Paginerad (PostgREST kapar vid 1000) — ordna på 'id' för stabil sidindelning.
+      const standaloneQuery = supabase
+        .from('additional_coordinates')
+        .select('*')
+        .is('inscription_id', null)
+        .order('id', { ascending: true });
+      standaloneCoords = await fetchAllPages<StandaloneCoordinateRow>(standaloneQuery as never);
+      console.log(`📍 Found ${standaloneCoords.length} standalone coordinate entries`);
       // Debug: Log any Icelandic entries
-      const icelandicEntries = standaloneCoords?.filter(coord => coord.signum.startsWith('IS ')) || [];
+      const icelandicEntries = standaloneCoords.filter(coord => coord.signum?.startsWith('IS '));
       console.log(`🇮🇸 ICELAND DEBUG: Found ${icelandicEntries.length} Icelandic entries:`, icelandicEntries.map(e => e.signum));
+    } catch (standaloneError) {
+      console.error('❌ Error fetching standalone coordinates:', standaloneError);
     }
 
     // VIKTIGT: Hantera problematiska söktermer som orsakar SQL-fel
@@ -41,6 +103,7 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
     // KRITISKT: Endast applicera filter om de verkligen har värden
     if (filters.searchQuery && filters.searchQuery.trim()) {
       const searchTerm = filters.searchQuery.trim();
+      const safeSearch = sanitizeFilterValue(searchTerm);
       console.log('🔍 Search query detected:', searchTerm);
       
       // Check if searching for countries/regions that might have standalone coordinates
@@ -61,7 +124,7 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
       if (isProblematic) {
         console.log('⚠️ Using safe search for problematic term:', searchTerm);
         // Använd enkel ILIKE-sökning för problematiska termer - inkludera landskap, kommun och socken
-        query = query.or(`signum.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,landscape.ilike.%${searchTerm}%,municipality.ilike.%${searchTerm}%,parish.ilike.%${searchTerm}%,transliteration.ilike.%${searchTerm}%,translation_en.ilike.%${searchTerm}%,translation_sv.ilike.%${searchTerm}%`);
+        query = query.or(`signum.ilike.%${safeSearch}%,location.ilike.%${safeSearch}%,landscape.ilike.%${safeSearch}%,municipality.ilike.%${safeSearch}%,parish.ilike.%${safeSearch}%,transliteration.ilike.%${safeSearch}%,translation_en.ilike.%${safeSearch}%,translation_sv.ilike.%${safeSearch}%`);
       } else {
         // FIXAD: Hantera exakta signum-sökningar först (t.ex. "G 1", "U 370")
         // Kolla om det är en exakt signum-sökning (kort term som kan vara ett signum)
@@ -92,7 +155,7 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
               
               if (error) {
                 console.error('❌ RPC search failed, falling back to simple search:', error);
-                query = query.or(`signum.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,landscape.ilike.%${searchTerm}%,municipality.ilike.%${searchTerm}%,parish.ilike.%${searchTerm}%,transliteration.ilike.%${searchTerm}%,translation_en.ilike.%${searchTerm}%,translation_sv.ilike.%${searchTerm}%`);
+                query = query.or(`signum.ilike.%${safeSearch}%,location.ilike.%${safeSearch}%,landscape.ilike.%${safeSearch}%,municipality.ilike.%${safeSearch}%,parish.ilike.%${safeSearch}%,transliteration.ilike.%${safeSearch}%,translation_en.ilike.%${safeSearch}%,translation_sv.ilike.%${safeSearch}%`);
               } else if (rpcData && rpcData.length > 0) {
                 console.log(`✅ RPC search returned ${rpcData.length} results`);
                 
@@ -109,7 +172,7 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
               }
             } catch (error) {
               console.error('❌ RPC search error, using fallback:', error);
-              query = query.or(`signum.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,transliteration.ilike.%${searchTerm}%,translation_en.ilike.%${searchTerm}%,translation_sv.ilike.%${searchTerm}%`);
+              query = query.or(`signum.ilike.%${safeSearch}%,location.ilike.%${safeSearch}%,transliteration.ilike.%${safeSearch}%,translation_en.ilike.%${safeSearch}%,translation_sv.ilike.%${safeSearch}%`);
             }
           }
         } else {
@@ -121,7 +184,7 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
             
             if (error) {
               console.error('❌ RPC search failed, falling back to simple search:', error);
-              query = query.or(`signum.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,landscape.ilike.%${searchTerm}%,municipality.ilike.%${searchTerm}%,parish.ilike.%${searchTerm}%,transliteration.ilike.%${searchTerm}%,translation_en.ilike.%${searchTerm}%,translation_sv.ilike.%${searchTerm}%`);
+              query = query.or(`signum.ilike.%${safeSearch}%,location.ilike.%${safeSearch}%,landscape.ilike.%${safeSearch}%,municipality.ilike.%${safeSearch}%,parish.ilike.%${safeSearch}%,transliteration.ilike.%${safeSearch}%,translation_en.ilike.%${safeSearch}%,translation_sv.ilike.%${safeSearch}%`);
             } else if (rpcData && rpcData.length > 0) {
               console.log(`✅ RPC search returned ${rpcData.length} results`);
               
@@ -138,7 +201,7 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
             }
           } catch (error) {
             console.error('❌ RPC search error, using fallback:', error);
-            query = query.or(`signum.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,transliteration.ilike.%${searchTerm}%,translation_en.ilike.%${searchTerm}%,translation_sv.ilike.%${searchTerm}%`);
+            query = query.or(`signum.ilike.%${safeSearch}%,location.ilike.%${safeSearch}%,transliteration.ilike.%${safeSearch}%,translation_en.ilike.%${safeSearch}%,translation_sv.ilike.%${safeSearch}%`);
           }
         }
       }
@@ -147,8 +210,9 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
     // KRITISKT: Hantera godNameSearch - applicera endast om det verkligen finns ett värde
     if (filters.godNameSearch && filters.godNameSearch.trim()) {
       const godSearchTerm = filters.godNameSearch.trim();
+      const safeGodSearch = sanitizeFilterValue(godSearchTerm);
       console.log('🔍 God name search detected:', godSearchTerm);
-      query = query.or(`transliteration.ilike.%${godSearchTerm}%,translation_en.ilike.%${godSearchTerm}%,translation_sv.ilike.%${godSearchTerm}%,historical_context.ilike.%${godSearchTerm}%`);
+      query = query.or(`transliteration.ilike.%${safeGodSearch}%,translation_en.ilike.%${safeGodSearch}%,translation_sv.ilike.%${safeGodSearch}%,historical_context.ilike.%${safeGodSearch}%`);
     }
 
     // Övriga filter
@@ -160,21 +224,21 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
       query = query.ilike('country', `%${filters.selectedCountry}%`);
     }
 
-    // ✅ Användning av den förbättrade sorteringen via signum
-    console.log('✅ Fetching inscriptions with improved sorting and landscape filtering');
-    const { data, error } = await query
-      .limit(50000) // Öka gränsen för att säkerställa att vi får alla inskrifter
-      .order('signum', { ascending: true }); // ✅ Sortera på signum från runic_with_coordinates view
-
-    if (error) {
+    // ✅ Användning av den förbättrade sorteringen via signum.
+    // PAGINERAT: PostgREST kapar svaret vid 1000 rader (db-max-rows) oavsett .limit(),
+    // så tidigare laddades bara 1000 av 3067 inskrifter. fetchAllPages loopar .range()
+    // tills alla rader hämtats. .order() appliceras EN gång (stabil sidindelning).
+    console.log('✅ Fetching inscriptions with improved sorting and landscape filtering (paginated)');
+    let data: RunicWithCoordinatesRow[];
+    try {
+      const orderedQuery = query.order('signum', { ascending: true });
+      data = await fetchAllPages<RunicWithCoordinatesRow>(orderedQuery as never);
+    } catch (error) {
       console.error('❌ Error loading runic data:', error);
       throw error;
     }
 
-    console.log(`📊 SUCCESS: Loaded ${data?.length || 0} inscriptions from database (limit: 50000)`);
-    if (data && data.length >= 50000) {
-      console.warn(`⚠️ WARNING: Hit the 50000 limit! There might be more data. Total loaded: ${data.length}`);
-    }
+    console.log(`📊 SUCCESS: Loaded ${data.length} inscriptions from database (paginated, page size ${PAGE_SIZE})`);
     
     // ✅ Special debug for Iceland and Denmark
     const icelandicCount = data?.filter(d => d.signum?.startsWith('IS ') || d.country?.toLowerCase()?.includes('island')).length || 0;
@@ -183,7 +247,7 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
     console.log(`🇩🇰 DENMARK: Found ${danishCount} Danish inscriptions in main data`);
     
     // Process data with enhanced coordinate system  
-    const enhancedData = (data || []).map((inscription: any) => {
+    const enhancedData = ((data || []) as RunicWithCoordinatesRow[]).map((inscription) => {
       let finalCoordinates = null;
       
       // DEBUG: Log Öland inscriptions specifically
@@ -231,7 +295,7 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
       }
       // Fallback: Try enhanced mapping
       else {
-        const enhanced = getEnhancedCoordinates(inscription, false);
+        const enhanced = getEnhancedCoordinates(inscription as unknown as RunicInscription, false);
         if (enhanced) {
           finalCoordinates = { lat: enhanced.lat, lng: enhanced.lng };
           console.log(`🔧 Using enhanced mapping for ${inscription.signum}: [${finalCoordinates.lat}, ${finalCoordinates.lng}]`);
@@ -243,53 +307,80 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
         console.log(`🎯 ÖLAND FINAL RESULT - ${inscription.signum}: coordinates =`, finalCoordinates);
       }
       
+      // Föredra huvudtabellens auktoritativa coord_confidence/coord_source (rundata
+      // = 'high') framför gamla additional_coordinates-fälten. Används av kartan för
+      // att tona osäkra markörer (verifierat vs approximativt).
+      const confidence = inscription.coord_confidence || inscription.confidence || 'unknown';
+      const source = inscription.coord_source || inscription.coordinate_source || 'original';
       return {
         ...inscription,
         coordinates: finalCoordinates,
-        coordinate_source: inscription.coordinate_source || 'original',
-        coordinate_confidence: inscription.confidence || 'unknown'
+        coordinate_source: source,
+        coordinate_confidence: confidence,
+        coord_confidence: confidence,
+        coord_source: source
       };
     });
 
-    // Add standalone coordinates as virtual inscriptions
-    if (standaloneCoords && standaloneCoords.length > 0) {
-      console.log(`🌍 Adding ${standaloneCoords.length} standalone coordinates as virtual inscriptions`);
-      
-      const virtualInscriptions = standaloneCoords.map((coord: any) => {
+    // Add standalone coordinates as virtual inscriptions.
+    // DEDUP: additional_coordinates innehåller ~1393 rader vars signum REDAN finns i
+    // huvudtabellen (skulle ge dubbla markörer på kartan + felräkning i legenden).
+    // Lägg bara till de som saknas i huvuddatan (normaliserat signum) och har koordinat.
+    const normSignum = (s?: string | null) => (s ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const mainSigna = new Set(enhancedData.map((i) => normSignum(i.signum)));
+    const newStandalone = standaloneCoords.filter((coord) => {
+      const n = normSignum(coord.signum);
+      const hasCoord = coord.latitude != null && coord.longitude != null;
+      return n !== '' && hasCoord && !mainSigna.has(n);
+    });
+    console.log(`🌍 Standalone coords: ${standaloneCoords.length} total, ${standaloneCoords.length - newStandalone.length} redan i huvuddatan (dedup), ${newStandalone.length} nya virtuella`);
+
+    if (newStandalone.length > 0) {
+      const virtualInscriptions = newStandalone.map((coord) => {
+        // Guard against null signum/notes on standalone coordinate rows
+        const signum = coord.signum ?? '';
+        const notes = coord.notes ?? '';
         // Extract basic info from the notes field
-        const location = coord.notes ? coord.notes.split(',')[0] : coord.signum;
-        const description = coord.notes || '';
-        
+        const location = notes ? notes.split(',')[0] : signum;
+        const description = notes;
+        const yearMatch = notes.match(/\d{4}/);
+
         // Debug for Icelandic entries
-        if (coord.signum.startsWith('IS ')) {
-          console.log(`🇮🇸 ICELAND VIRTUAL: Creating virtual inscription for ${coord.signum} at [${coord.latitude}, ${coord.longitude}]`);
+        if (signum.startsWith('IS ')) {
+          console.log(`🇮🇸 ICELAND VIRTUAL: Creating virtual inscription for ${signum} at [${coord.latitude}, ${coord.longitude}]`);
         }
-        
+
+        // Land/region från signum-prefix (samma logik som huvudinskrifterna),
+        // så Sö/U/Öl m.fl. klassas som svenska istället för 'Unknown' (→ tidigare
+        // felräknade som utländska i legenden). IS = Island (saknas i prefix-mappen).
+        const isIceland = signum.startsWith('IS ');
+        const country = isIceland ? 'Island' : getCountryFromSignum(signum);
+        const region = isIceland ? 'Island' : getRegionFromSignum(signum);
+
         return {
           id: `virtual-${coord.id}`,
           signum: coord.signum,
           location: location,
-          country: coord.signum.startsWith('IS ') ? 'Island' : 
-                   coord.signum.startsWith('Vr ') ? 'Sverige' : 'Unknown',
+          country,
           coordinates: {
             lat: coord.latitude,
             lng: coord.longitude
           },
-          translation_en: description.includes('gravsten') ? 'Gravestone inscription' : 
-                         description.includes('kyrkdörr') ? 'Church door inscription' : 
+          translation_en: description.includes('gravsten') ? 'Gravestone inscription' :
+                         description.includes('kyrkdörr') ? 'Church door inscription' :
                          'Runic inscription',
-          object_type: description.includes('runsten') ? 'runsten' : 
-                      description.includes('kyrkdörr') ? 'kyrkdörr' : 
+          object_type: description.includes('runsten') ? 'runsten' :
+                      description.includes('kyrkdörr') ? 'kyrkdörr' :
                       description.includes('sländtrissa') ? 'sländtrissa' : 'okänd',
-          dating_text: coord.notes ? coord.notes.match(/\d{4}/) ? coord.notes.match(/\d{4}/)[0] + '-talet' : 'medeltid' : 'okänd',
+          dating_text: yearMatch ? `${yearMatch[0]}-talet` : (notes ? 'medeltid' : 'okänd'),
           period_start: 1200,
           period_end: 1500,
           coordinate_source: coord.source,
           coordinate_confidence: coord.confidence,
-          province: coord.signum.startsWith('IS ') ? 'Island' : 
-                   coord.signum.startsWith('Vr ') ? 'Värmland' : 'Unknown',
-          landscape: coord.signum.startsWith('IS ') ? 'Island' : 
-                    coord.signum.startsWith('Vr ') ? 'Värmland' : 'Unknown',
+          coord_confidence: coord.confidence || 'low', // socken-centroid → approximativ
+          coord_source: coord.source,
+          province: region,
+          landscape: region,
           virtual_inscription: true
         };
       });
@@ -298,7 +389,7 @@ export const loadEnhancedRunicDataWithBetterCoordinates = async (filters: UseRun
       console.log(`✅ Total inscriptions after adding virtual ones: ${enhancedData.length}`);
     }
 
-    console.log(`✅ Enhanced ${enhancedData.length} inscriptions with coordinates (including ${standaloneCoords?.length || 0} virtual)`);
+    console.log(`✅ Enhanced ${enhancedData.length} inscriptions with coordinates (including ${newStandalone.length} virtual standalone)`);
     return enhancedData;
 
   } catch (error) {

@@ -2,6 +2,12 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Crown, Sword, Heart, Shield, Mountain, Eye, Trees } from "lucide-react";
+import { getDeityPlaces } from '@/utils/religiousLocations/religiousPlacesData';
+
+// Endast gudar med faktiska, koordinatsatta kultplatser. Inga påhittade tal.
+const DEITY_KEY: Record<string, string> = {
+  Oden: 'odin', Tor: 'thor', Frej: 'frey', Frigg: 'frigg', 'Njörd': 'njord', Ull: 'ull',
+};
 
 interface GodData {
   name: string;
@@ -10,7 +16,6 @@ interface GodData {
   domain: string[];
   description: string;
   symbols: string[];
-  mentions: number;
   icon: React.ReactNode;
   color: string;
 }
@@ -23,7 +28,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Visdom', 'Krig', 'Död', 'Poesi'],
     description: 'Allfather, högste gud bland asarna. Envägd gud som offrade sitt öga för visdom.',
     symbols: ['Gungnir', 'Sleipner', 'Huginn & Muninn'],
-    mentions: 145,
     icon: <Eye className="h-5 w-5" />,
     color: 'from-blue-600 to-purple-700'
   },
@@ -34,7 +38,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Åska', 'Styrka', 'Beskydd'],
     description: 'Åskguden, folkets beskyddare mot jättar och ondska. Son till Oden.',
     symbols: ['Mjölnir', 'Järnhandskar', 'Megingjörð'],
-    mentions: 287,
     icon: <Zap className="h-5 w-5" />,
     color: 'from-yellow-500 to-red-600'
   },
@@ -45,7 +48,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Fruktbarhet', 'Välstånd', 'Fred'],
     description: 'Fruktbarhets- och välståndsgud från vanernas släkt. Herre över Alfheim.',
     symbols: ['Gullinbursti', 'Skidbladner', 'Kornax'],
-    mentions: 89,
     icon: <Mountain className="h-5 w-5" />,
     color: 'from-green-500 to-emerald-600'
   },
@@ -56,7 +58,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Kärlek', 'Skönhet', 'Fruktbarhet'],
     description: 'Kärleks- och skönhetsgudinnan. Äger hälften av de stupade krigarna.',
     symbols: ['Brísingamen', 'Falkdräkt', 'Hildisvíni'],
-    mentions: 76,
     icon: <Heart className="h-5 w-5" />,
     color: 'from-pink-500 to-rose-600'
   },
@@ -67,7 +68,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Ljus', 'Renhet', 'Rättvisa'],
     description: 'Ljusets gud, vackrast och visast bland gudarna. Odens son.',
     symbols: ['Draupner', 'Hringhorni', 'Ljus'],
-    mentions: 34,
     icon: <Crown className="h-5 w-5" />,
     color: 'from-amber-400 to-yellow-500'
   },
@@ -78,7 +78,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['List', 'Förändring', 'Eld'],
     description: 'Trickster-guden, asarnas blodsbror men också deras fiende. Föränderlig natur.',
     symbols: ['Eld', 'Nät', 'Förvandling'],
-    mentions: 67,
     icon: <Sword className="h-5 w-5" />,
     color: 'from-orange-500 to-red-700'
   },
@@ -89,7 +88,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Krig', 'Rättvisa', 'Mod'],
     description: 'Krigsguden som offrade sin hand för att binda Fenrir. Symbol för rättvisa.',
     symbols: ['Svärd', 'Rättvåg', 'Enhandsgestalt'],
-    mentions: 43,
     icon: <Shield className="h-5 w-5" />,
     color: 'from-red-600 to-red-800'
   },
@@ -100,7 +98,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Vakt', 'Ljus', 'Hörsel'],
     description: 'Regnbågsbrons väktare, ser och hör allt. Vaktar Bifrost.',
     symbols: ['Gjallarhorn', 'Bifrost', 'Ljus'],
-    mentions: 29,
     icon: <Eye className="h-5 w-5" />,
     color: 'from-indigo-500 to-purple-600'
   },
@@ -111,7 +108,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Äktenskap', 'Hem', 'Moderlighet'],
     description: 'Odens hustru, drottning bland asarna. Beskyddar hem och familj.',
     symbols: ['Spinnrock', 'Nyckel', 'Fjäder'],
-    mentions: 51,
     icon: <Heart className="h-5 w-5" />,
     color: 'from-blue-400 to-blue-600'
   },
@@ -122,7 +118,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Sjöfart', 'Vind', 'Fiske'],
     description: 'Havs- och vindguden från vanernas släkt. Frej och Frejas fader.',
     symbols: ['Skepp', 'Vågor', 'Vind'],
-    mentions: 21,
     icon: <Mountain className="h-5 w-5" />,
     color: 'from-blue-500 to-teal-600'
   },
@@ -133,7 +128,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Hämnd', 'Tystnad', 'Skogar'],
     description: 'Den tyste guden, ska hämnas på Fenrir vid Ragnarök. Odens son.',
     symbols: ['Tjocka skor', 'Skog', 'Tystnad'],
-    mentions: 15,
     icon: <Trees className="h-5 w-5" />,
     color: 'from-green-700 to-green-900'
   },
@@ -144,7 +138,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Hämnd', 'Rättvisa'],
     description: 'Född för att hämnas Balders död. En dag gammal när han dödade Höder.',
     symbols: ['Pilbåge', 'Hämnd'],
-    mentions: 12,
     icon: <Sword className="h-5 w-5" />,
     color: 'from-gray-600 to-gray-800'
   },
@@ -155,7 +148,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Jakt', 'Skidor', 'Pilbågsskytte'],
     description: 'Jakt- och skidguden, mästare med pilbågen. Balders styvson.',
     symbols: ['Pilbåge', 'Skidor', 'Sköld'],
-    mentions: 18,
     icon: <Mountain className="h-5 w-5" />,
     color: 'from-emerald-600 to-green-700'
   },
@@ -166,7 +158,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Mörker', 'Vinter'],
     description: 'Den blinde guden som av misstag dödade Balder, lurad av Loke.',
     symbols: ['Mörker', 'Mistel'],
-    mentions: 9,
     icon: <Eye className="h-5 w-5" />,
     color: 'from-gray-700 to-black'
   },
@@ -177,7 +168,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Poesi', 'Visdom', 'Vältalighet'],
     description: 'Skaldernas gud, mästare av poesi och vältalighet.',
     symbols: ['Harpa', 'Runor', 'Ord'],
-    mentions: 24,
     icon: <Crown className="h-5 w-5" />,
     color: 'from-purple-500 to-purple-700'
   },
@@ -188,7 +178,6 @@ const VIKING_GODS: GodData[] = [
     domain: ['Ungdom', 'Förnyelse'],
     description: 'Vårdens gudinna som bevarar gudarnas ungdom med sina äpplen.',
     symbols: ['Äpplen', 'Vår', 'Ungdom'],
-    mentions: 16,
     icon: <Heart className="h-5 w-5" />,
     color: 'from-green-400 to-lime-500'
   }
@@ -240,8 +229,10 @@ export const GodNamesView: React.FC<GodNamesViewProps> = ({ onGodSelect, searchQ
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredGods.map((god) => (
-          <Card 
+        {filteredGods.map((god) => {
+          const cultSiteCount = getDeityPlaces(DEITY_KEY[god.name] ?? '').length;
+          return (
+          <Card
             key={god.name}
             className={`viking-card hover:scale-105 transition-all duration-300 cursor-pointer bg-gradient-to-br ${god.color} text-white border-0 shadow-lg hover:shadow-xl`}
             onClick={() => onGodSelect?.(god.name)}
@@ -256,9 +247,11 @@ export const GodNamesView: React.FC<GodNamesViewProps> = ({ onGodSelect, searchQ
                     {getCategoryName(god.category)}
                   </Badge>
                 </div>
-                <div className="text-xs bg-white/20 px-2 py-1 rounded-full">
-                  {god.mentions} nämnanden
-                </div>
+                {cultSiteCount > 0 && (
+                  <div className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                    {cultSiteCount} {cultSiteCount === 1 ? 'kultplats' : 'kultplatser'}
+                  </div>
+                )}
               </div>
               <CardTitle className="text-lg text-white">
                 {god.name}
@@ -295,7 +288,8 @@ export const GodNamesView: React.FC<GodNamesViewProps> = ({ onGodSelect, searchQ
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       {filteredGods.length === 0 && (

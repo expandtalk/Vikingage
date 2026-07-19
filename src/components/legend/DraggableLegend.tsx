@@ -3,6 +3,7 @@ import { Map } from 'lucide-react';
 import { DraggablePanel } from '@/components/draggable/DraggablePanel';
 import { MapLegend } from '@/components/MapLegend';
 import { LegendItem } from '@/types/common';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DraggableLegendProps {
   visible: boolean;
@@ -35,10 +36,12 @@ export const DraggableLegend: React.FC<DraggableLegendProps> = ({
   onShowAll,
   onHideAll
 }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
   return (
     <DraggablePanel
       id="legend"
-      title="Teckenförklaring"
+      title={sv ? 'Teckenförklaring' : 'Legend'}
       icon={<Map className="h-4 w-4" />}
       visible={visible}
       minimized={minimized}

@@ -34,9 +34,10 @@ export const useMapValdemarsRoute = ({
     });
     routeLayersRef.current = [];
 
-    // Only show Valdemar's route if enabled and in Viking Age
-    const showValdemarsRoute = (enabledLegendItems.valdemars_route !== false || enabledLegendItems.valdemar_route !== false) && 
-                              selectedTimePeriod === 'viking_age';
+    // Legend is the authority: show the route whenever the layer is enabled
+    // (gate on the same key the legend item uses, 'valdemar_route'). Dropped
+    // the viking_age period gate that hid it in the default 'all' view.
+    const showValdemarsRoute = enabledLegendItems.valdemar_route !== false;
 
     if (!showValdemarsRoute) return;
 

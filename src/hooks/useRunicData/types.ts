@@ -12,6 +12,7 @@ export interface DbStats {
   totalFolkGroups: number;
   totalGeneticEvents: number;
   totalRoyalChronicles: number;
+  totalRivers: number;
 }
 
 export interface UseRunicDataProps {
