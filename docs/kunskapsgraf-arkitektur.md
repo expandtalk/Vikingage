@@ -224,7 +224,32 @@ ortnamn), `norwegian_localities`, täckningsanalys mot fullständigt sockenregis
 - **PostGIS-beslut:** spatialt = join-baserat per socken/härad tills behov av
   radie/polygon-frågor visats; då aktiveras PostGIS + GiST. (Beslut, inte glömska.)
 
-### P2 — Enhetlig graf: vaktad kant-tabell + frågeyta
+### P2 — Enhetlig graf: vaktad kant-tabell + frågeyta ✅ KÄRNAN KLAR 2026-07-19
+
+**Utfall** (migrationer `20260719540000`–`560000`):
+- **Grafgrund:** `entity_registry` (7 486 noder, trigger-synkad från 10 nodtabeller,
+  äkta FK), `rel_predicates` (9 predikat med typkontrakt + qualifier-schema),
+  `relationship` med typvalideringstrigger, unique-kant, RLS.
+- **Identitetsbryggan persisterad:** `runic_inscriptions.rundata_objectid` (6 356) —
+  återanvänds av ALLA kommande integrationer (readings, translations, styles...).
+- **Kanter: 14 386** — `carved_by` 1 318 (staging 1 290 + kurerade 28; upp från 631!),
+  `has_artefact` 12 995, `has_theme` 52, `mentions_person` 13, `mentions_inscription` 8.
+  Full proveniens (source_ref) + konfidens (signed→certain, attributed→probable,
+  similar→possible; Ousbäck-hypotesen korrekt `contested`).
+- **Ristare:** +138 rundata-ristare (207→345), `rundata_carverid` på alla.
+- **K1-kompat:** `theme_links`/`king_inscription_links`/`source_inscription_links`/
+  `carver_inscription` är nu VYER över relationship (original → `_retired_*` för
+  rollback). bytea+enum-formen bevarad → `get_carver_inscriptions()` läser 1 318 rader
+  oförändrad. INSTEAD OF-triggers: insert/delete via vyerna skriver till relationship.
+- **Äkta URI-kedjan:** `inscription_uri` (4 243) ur rundata `object_uri` — ersätter
+  reference_uri-workaroundens IK-katalog-fel. *(Frontend-hooken byts i P6.)*
+- **Frågeyta v1:** `get_entity_v1(p_id|p_signum)` (nod + kanter båda riktningar, labels,
+  proveniens), `neighbors_v1(p_id, p_predicate?)`. Test: Rök i EN fråga → Varin,
+  Brage Boddason, Kung Björn (contested), Gudruns eggelse, Hamdesmål, tema, artefakttyp.
+
+**Kvar i P2:** gud-kanter (kult/omnämnanden — kureringsspår), same_hand_as-kurering,
+`api`-schema med versionerad exponering (P5).
+
 - `relationship(subject_id, subject_type, predicate, object_id, object_type,
   qualifiers jsonb, source_ref, confidence, created_by, created_at)`.
 - **Skyddsräcken (granskningens villkor K3 — bindande):**
