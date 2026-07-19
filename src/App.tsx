@@ -26,6 +26,7 @@ const Excursions = lazy(() => import("./pages/Excursions"));
 const Coins = lazy(() => import("./pages/Coins"));
 const Kungstavla = lazy(() => import("./pages/Kungstavla"));
 const ExcursionDetail = lazy(() => import("./pages/ExcursionDetail"));
+const SourceDetail = lazy(() => import("./pages/SourceDetail"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -90,6 +91,8 @@ const App = () => (
                   <Route path="/excursions" element={<Excursions />} />
                   <Route path="/sv/utflykter" element={<Excursions />} />
                   <Route path="/excursions/:id" element={<ExcursionDetail />} />
+                  <Route path="/sources/text/:textId" element={<SourceDetail />} />
+                  <Route path="/sources/:id" element={<SourceDetail />} />
                   <Route path="/utflykter/:id" element={<ExcursionDetail />} />
                   <Route path="/coins" element={<Coins />} />
                   <Route path="/sv/mynt" element={<Coins />} />

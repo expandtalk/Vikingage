@@ -34,6 +34,7 @@ interface Row {
   key: string;
   title: string;
   subtitle?: string;
+  signum?: string;
   snippet?: string;
   route: string;
 }
@@ -72,8 +73,8 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   coin:           { labelSv: 'Mynt', labelEn: 'Coins', icon: CoinsIcon, route: () => '/coins' },
   god:            { labelSv: 'Gudar', labelEn: 'Gods', icon: Sparkles, route: () => '/explore?focus=gods' },
   viking_name:    { labelSv: 'Namn', labelEn: 'Names', icon: Users, route: () => '/explore?focus=names' },
-  source:         { labelSv: 'Källor', labelEn: 'Sources', icon: ScrollText, route: () => '/royal-chronicles' },
-  source_text:    { labelSv: 'Källtexter', labelEn: 'Source texts', icon: ScrollText, route: () => '/royal-chronicles' },
+  source:         { labelSv: 'Källor', labelEn: 'Sources', icon: ScrollText, route: (h) => `/sources/${h.entity_id}` },
+  source_text:    { labelSv: 'Källtexter', labelEn: 'Source texts', icon: ScrollText, route: (h) => `/sources/text/${h.entity_id}` },
   road:           { labelSv: 'Vägar & leder', labelEn: 'Roads', icon: MapPin, route: () => '/explore' },
   theme:          { labelSv: 'Teman', labelEn: 'Themes', icon: Sparkles, route: () => '/explore' },
 };
@@ -102,14 +103,24 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
       groups.push(g);
     }
     if (g.rows.length >= (GROUP_CAP[h.entity_type] ?? defaultCap)) continue;
+    // Namngivna stenar (label = "Karlevistenen") får signum i undertexten.
+    const subtitle = h.signum && h.signum !== h.label
+      ? [h.signum, h.sublabel].filter(Boolean).join(' · ')
+      : h.sublabel ?? undefined;
     g.rows.push({
       key: `${h.entity_type}-${h.entity_id}`,
       title: h.label,
-      subtitle: h.sublabel ?? undefined,
+      subtitle,
+      signum: h.signum ?? undefined,
       snippet: stripTags(h.snippet),
       route: meta.route(h),
     });
   }
+  // Inskrifter visas i signumordning (Öl 1 före Öl 13) — urvalet är fortfarande
+  // relevans-topp-N, men presentationen numerisk (Daniels önskemål 2026-07-20).
+  const insc = byType.get('inscription');
+  insc?.rows.sort((a, b) =>
+    (a.signum ?? a.title).localeCompare(b.signum ?? b.title, 'sv', { numeric: true, sensitivity: 'base' }));
   return groups;
 };
 

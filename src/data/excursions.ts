@@ -31,6 +31,8 @@ export interface Excursion {
   photoDir?: string;
   /** Alternativ thumbnail-fil i photoDir (default thumb.jpg) — när flera utflykter delar fotomapp. */
   thumbFile?: string;
+  /** Fotokreditering när thumbnail kommer från extern källa (Wikimedia Commons: upphovsman + licens). */
+  thumbCredit?: string;
   /** Hämta ALLA fornborgar i denna region ur viking_fortresses (live DB) och plotta på kartan. */
   fortressRegion?: string;
 }
@@ -56,6 +58,8 @@ export const EXCURSION_GROUPS = [
 export const EXCURSIONS: Excursion[] = [
   {
     id: 'birka',
+    photoDir: 'birka',
+    thumbCredit: 'Lars Kennerstedt / Kulturmiljöbild, RAÄ (PD)',
     name: 'Birka',
     region: 'Björkö, Mälaren (Ekerö)',
     group: 'Uppland & Mälardalen',
@@ -70,13 +74,15 @@ export const EXCURSIONS: Excursion[] = [
     id: 'langhundraleden',
     photoDir: 'langhundraleden-broborg',
     thumbFile: 'thumb-2.jpg',
+    // U 357 (Skepptuna) hör till leden — detaljsidan visar inskrift+ristare via RPC.
+    signum: 'U 357',
     name: 'Långhundraleden',
     region: 'Uppland (Trälhavet–Uppsala)',
     group: 'Uppland & Mälardalen',
     period: 'Järnålder–vikingatid',
     coords: { lat: 59.55, lng: 18.05 },
-    sv: 'En forntida vattenled från Trälhavet vid Östersjön genom sjöar och åar upp mot Uppsala — kartan visar hela sträckningen. En pulsåder för transport och handel under järnålder och vikingatid, kantad av gravfält och runstenar; kring 500 e.Kr. låg vattnet 6–7 m högre än idag. Vid ledens trängsta passage vakar fornborgen Broborg med sin förglasade mur — resande syntes på långt håll, och med vårdkasar (signaleldar på höjderna) kunde en varning nå Gamla Uppsala, 3–4 mil bort, på några minuter. På andra sidan borgberget ligger Hönsgärde med ett järnåldersgravfält om över 100 gravar; bebyggelsen låg troligen i anslutning till den nuvarande byn. Landhöjningen har sedan dess torrlagt delar av leden.',
-    en: 'An ancient waterway from Trälhavet on the Baltic through lakes and streams up towards Uppsala — the map shows the full route. A transport and trade artery during the Iron Age and Viking Age, lined with grave fields and runestones; around AD 500 the water stood 6–7 m higher than today. At the narrowest passage the hillfort Broborg keeps watch with its vitrified wall — travellers were visible from afar, and with beacon fires (vårdkasar) on the heights a warning could reach Gamla Uppsala, 30–40 km away, within minutes. On the far side of the fort hill lies Hönsgärde with an Iron Age grave field of over 100 graves; the settlement probably lay by the present-day village. Land uplift has since dried out parts of the route.',
+    sv: 'En forntida vattenled från Trälhavet vid Östersjön genom sjöar och åar upp mot Uppsala — kartan visar hela sträckningen. En pulsåder för transport och handel under järnålder och vikingatid, kantad av gravfält och runstenar; kring 500 e.Kr. låg vattnet 6–7 m högre än idag. Vid ledens övre lopp står runstenen U 357 vid Skepptuna kyrka — ett av flera vittnesbörd om bygdens välstånd när leden ännu band samman Uppsala med Östersjön. Vid ledens trängsta passage vakar fornborgen Broborg med sin förglasade mur — resande syntes på långt håll, och med vårdkasar (signaleldar på höjderna) kunde en varning nå Gamla Uppsala, 3–4 mil bort, på några minuter. På andra sidan borgberget ligger Hönsgärde med ett järnåldersgravfält om över 100 gravar; bebyggelsen låg troligen i anslutning till den nuvarande byn. Landhöjningen har sedan dess torrlagt delar av leden.',
+    en: 'An ancient waterway from Trälhavet on the Baltic through lakes and streams up towards Uppsala — the map shows the full route. A transport and trade artery during the Iron Age and Viking Age, lined with grave fields and runestones; around AD 500 the water stood 6–7 m higher than today. On the upper reaches stands runestone U 357 by Skepptuna church — one of several witnesses to the district\'s prosperity when the route still linked Uppsala with the Baltic. At the narrowest passage the hillfort Broborg keeps watch with its vitrified wall — travellers were visible from afar, and with beacon fires (vårdkasar) on the heights a warning could reach Gamla Uppsala, 30–40 km away, within minutes. On the far side of the fort hill lies Hönsgärde with an Iron Age grave field of over 100 graves; the settlement probably lay by the present-day village. Land uplift has since dried out parts of the route.',
     monumentTypes: [
       { sv: 'Fornborg', en: 'Hillfort', color: '#ef4444' },
       { sv: 'Gravfält', en: 'Grave field', color: '#a855f7' },
@@ -102,6 +108,8 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'valsgarde',
+    photoDir: 'valsgarde',
+    thumbCredit: 'Joe Mabel, CC BY-SA 4.0, Wikimedia Commons',
     name: 'Valsgärde',
     region: 'Gamla Uppsala, Uppland',
     group: 'Uppland & Mälardalen',
@@ -112,6 +120,8 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'sigtuna',
+    photoDir: 'sigtuna',
+    thumbCredit: 'Brorsson, CC BY-SA 3.0, Wikimedia Commons',
     name: 'Sigtuna',
     region: 'Sigtuna, Uppland',
     group: 'Uppland & Mälardalen',
@@ -262,6 +272,8 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'sigurdsristningen',
+    photoDir: 'sigurdristningen',
+    thumbCredit: 'Berig, CC BY 2.5, Wikimedia Commons',
     name: 'Sigurdsristningen (Ramsundsberget)',
     region: 'Sundbyholm, Södermanland',
     group: 'Södermanland',
@@ -572,6 +584,8 @@ export const EXCURSIONS: Excursion[] = [
   // === Anundshög (Västmanland/Mälardalen) ===
   {
     id: 'anundshog',
+    photoDir: 'anundshog',
+    thumbCredit: 'Christer Johansson, CC BY-SA 2.5, Wikimedia Commons',
     name: 'Anundshög',
     region: 'Badelunda, Västerås',
     group: 'Uppland & Mälardalen',
@@ -797,6 +811,8 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'uppsala',
+    photoDir: 'uppsala-domkyrka',
+    thumbCredit: 'Arild Vågen, CC BY-SA 3.0, Wikimedia Commons',
     name: 'Uppsala (domkyrkan)',
     region: 'Uppsala, Uppland',
     group: 'Ting & eriksgata',

@@ -6,56 +6,10 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Compass, Calendar, Sparkles, Landmark, ExternalLink } from 'lucide-react';
+import { MapPin, Compass, Calendar, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EXCURSIONS, EXCURSION_GROUPS } from '@/data/excursions';
 import { ExcursionsMap } from '@/components/excursions/ExcursionsMap';
-import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
-import { ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFinds';
-import { nearestWithin } from '@/utils/geoDistance';
-
-// Radie (km) och antal för "relaterat i närheten" per utflykt.
-const RADIUS_KM = 40;
-const MAX_NEARBY = 5;
-
-const PLACE_TYPE_LABEL: Record<string, { sv: string; en: string }> = {
-  temple: { sv: 'tempel', en: 'temple' },
-  sacred_grove: { sv: 'offerlund', en: 'sacred grove' },
-  offering_spring: { sv: 'offerkälla', en: 'offering spring' },
-  royal_center: { sv: 'kungsgård', en: 'royal centre' },
-  cult_site: { sv: 'kultplats', en: 'cult site' },
-  rock_carving: { sv: 'hällristning', en: 'rock carving' },
-  archbishop_seat: { sv: 'ärkebiskopssäte', en: 'archbishop seat' },
-  bishop_seat: { sv: 'biskopssäte', en: 'bishop seat' },
-  monastery: { sv: 'kloster', en: 'monastery' },
-  mission_site: { sv: 'missionsplats', en: 'mission site' },
-  franciscan: { sv: 'franciskankloster', en: 'Franciscan' },
-  dominican: { sv: 'dominikankloster', en: 'Dominican' },
-  cistercian: { sv: 'cistercienskloster', en: 'Cistercian' },
-  birgittine: { sv: 'birgittinkloster', en: 'Birgittine' },
-  carmelite: { sv: 'karmelitkloster', en: 'Carmelite' },
-  augustinian: { sv: 'augustinkloster', en: 'Augustinian' },
-};
-
-const FIND_TYPE_LABEL: Record<string, { sv: string; en: string }> = {
-  settlement: { sv: 'boplats', en: 'settlement' },
-  burial: { sv: 'grav', en: 'burial' },
-  artifacts: { sv: 'föremål', en: 'artefacts' },
-  human_remains: { sv: 'skelett', en: 'human remains' },
-  weapons: { sv: 'vapen', en: 'weapons' },
-  boats: { sv: 'båt', en: 'boat' },
-  cave: { sv: 'grotta', en: 'cave' },
-  workshop: { sv: 'verkstad', en: 'workshop' },
-  trade: { sv: 'handel', en: 'trade' },
-  ritual: { sv: 'ritual', en: 'ritual' },
-  city: { sv: 'stad', en: 'city' },
-  boat_graves: { sv: 'båtgravar', en: 'boat graves' },
-  royal_burial: { sv: 'kungagrav', en: 'royal burial' },
-  metalwork: { sv: 'metallarbete', en: 'metalwork' },
-  trading_post: { sv: 'handelsplats', en: 'trading post' },
-  trading_city: { sv: 'handelsstad', en: 'trading city' },
-  raid: { sv: 'räd', en: 'raid' },
-};
 
 const Excursions = () => {
   const { language } = useLanguage();
@@ -127,20 +81,6 @@ const Excursions = () => {
           ];
 
           const renderCard = (e: (typeof EXCURSIONS)[number]) => {
-            const nearbyPlaces = nearestWithin(
-              e.coords,
-              RELIGIOUS_PLACES,
-              (p) => p.coordinates,
-              RADIUS_KM,
-              MAX_NEARBY,
-            );
-            const nearbyFinds = nearestWithin(
-              e.coords,
-              ARCHAEOLOGICAL_FINDS,
-              (f) => ({ lat: f.lat, lng: f.lng }),
-              RADIUS_KM,
-              MAX_NEARBY,
-            );
             const exploreUrl = `/explore?lat=${e.coords.lat}&lng=${e.coords.lng}`;
 
             return (
@@ -155,11 +95,17 @@ const Excursions = () => {
                     <img
                       src={`/excursion-photos/${e.photoDir}/${e.thumbFile ?? 'thumb.jpg'}`}
                       alt={e.name}
+                      title={e.thumbCredit ? `${sv ? 'Foto' : 'Photo'}: ${e.thumbCredit}` : undefined}
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
+                    {e.thumbCredit && (
+                      <span className="absolute bottom-1 right-2 text-[9px] text-white/60">
+                        {sv ? 'Foto' : 'Photo'}: {e.thumbCredit}
+                      </span>
+                    )}
                   </Link>
                 )}
                 <CardHeader className="pb-3">
@@ -175,53 +121,8 @@ const Excursions = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <p className="text-sm text-muted-foreground">{sv ? e.sv : e.en}</p>
-
-                  {nearbyPlaces.length > 0 && (
-                    <div>
-                      <p className="text-xs font-semibold text-foreground/80 flex items-center gap-1.5 mb-1">
-                        <Sparkles className="h-3.5 w-3.5 text-blue-400" />
-                        {sv ? 'Kultplatser & kyrkor i närheten' : 'Cult sites & churches nearby'}
-                      </p>
-                      <ul className="space-y-0.5">
-                        {nearbyPlaces.map(({ item, km }) => (
-                          <li key={item.id} className="text-xs text-muted-foreground flex justify-between gap-2">
-                            <span className="truncate">
-                              {item.name}
-                              <span className="text-muted-foreground/60">
-                                {' · '}
-                                {(PLACE_TYPE_LABEL[item.type]?.[sv ? 'sv' : 'en']) ?? item.type}
-                              </span>
-                            </span>
-                            <span className="shrink-0 tabular-nums">{km.toFixed(0)} km</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {nearbyFinds.length > 0 && (
-                    <div>
-                      <p className="text-xs font-semibold text-foreground/80 flex items-center gap-1.5 mb-1">
-                        <Landmark className="h-3.5 w-3.5 text-amber-500" />
-                        {sv ? 'Arkeologiska fynd i närheten' : 'Archaeological finds nearby'}
-                      </p>
-                      <ul className="space-y-0.5">
-                        {nearbyFinds.map(({ item, km }) => (
-                          <li key={item.id} className="text-xs text-muted-foreground flex justify-between gap-2">
-                            <span className="truncate">
-                              {sv ? item.name : item.nameEn}
-                              <span className="text-muted-foreground/60">
-                                {' · '}
-                                {(FIND_TYPE_LABEL[item.findType]?.[sv ? 'sv' : 'en']) ?? item.findType}
-                              </span>
-                            </span>
-                            <span className="shrink-0 tabular-nums">{km.toFixed(0)} km</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {/* Teaser — hela texten + närhetslistorna bor på detaljsidan (nyfikenhet > vägg av text). */}
+                  <p className="text-sm text-muted-foreground line-clamp-3">{sv ? e.sv : e.en}</p>
 
                   <div className="flex flex-wrap gap-3 pt-1">
                     <Link

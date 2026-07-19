@@ -9,11 +9,14 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Badge } from '@/components/ui/badge';
 import { MeterBadge } from '@/components/inscription/MeterBadge';
-import { MapPin, Calendar, Compass, ArrowLeft, ExternalLink, Scroll, User, BookOpen, Crown, Navigation } from 'lucide-react';
+import { MapPin, Calendar, Compass, ArrowLeft, ExternalLink, Scroll, User, BookOpen, Crown, Navigation, Sparkles, Landmark } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EXCURSIONS } from '@/data/excursions';
 import { supabase } from '@/integrations/supabase/client';
 import { nearestWithin } from '@/utils/geoDistance';
+import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
+import { ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFinds';
+import { PLACE_TYPE_LABEL, FIND_TYPE_LABEL } from '@/components/excursions/nearbyLabels';
 
 const ATTR_LABEL: Record<string, { sv: string; en: string }> = {
   signed: { sv: 'signerad', en: 'signed' },
@@ -86,6 +89,14 @@ const ExcursionDetail = () => {
 
   const nearby = excursion
     ? nearestWithin(excursion.coords, EXCURSIONS.filter((e) => e.id !== excursion.id), (e) => e.coords, 45, 5)
+    : [];
+
+  // Kultplatser & fynd inom 40 km (flyttat hit från listkorten 2026-07-20).
+  const nearbyPlaces = excursion
+    ? nearestWithin(excursion.coords, RELIGIOUS_PLACES, (p) => p.coordinates, 40, 5)
+    : [];
+  const nearbyFinds = excursion
+    ? nearestWithin(excursion.coords, ARCHAEOLOGICAL_FINDS, (f) => ({ lat: f.lat, lng: f.lng }), 40, 5)
     : [];
 
   useEffect(() => {
@@ -310,6 +321,46 @@ const ExcursionDetail = () => {
                   <li key={k.name} className="text-sm">
                     <div className="font-semibold text-foreground">{k.name}{(k.reign_start || k.reign_end) ? <span className="text-muted-foreground font-normal"> ({k.reign_start}–{k.reign_end})</span> : null}</div>
                     {k.description && <p className="text-sm text-muted-foreground mt-1">{k.description}</p>}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* Kultplatser & kyrkor i närheten */}
+          {nearbyPlaces.length > 0 && (
+            <Section icon={<Sparkles className="h-5 w-5 text-blue-400" />} title={sv ? 'Kultplatser & kyrkor i närheten' : 'Cult sites & churches nearby'}>
+              <ul className="space-y-1">
+                {nearbyPlaces.map(({ item, km }) => (
+                  <li key={item.id} className="text-sm text-muted-foreground flex justify-between gap-2">
+                    <span className="truncate">
+                      {item.name}
+                      <span className="text-muted-foreground/60">
+                        {' · '}
+                        {(PLACE_TYPE_LABEL[item.type]?.[sv ? 'sv' : 'en']) ?? item.type}
+                      </span>
+                    </span>
+                    <span className="shrink-0 tabular-nums">{km.toFixed(0)} km</span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* Arkeologiska fynd i närheten */}
+          {nearbyFinds.length > 0 && (
+            <Section icon={<Landmark className="h-5 w-5 text-amber-500" />} title={sv ? 'Arkeologiska fynd i närheten' : 'Archaeological finds nearby'}>
+              <ul className="space-y-1">
+                {nearbyFinds.map(({ item, km }) => (
+                  <li key={item.id} className="text-sm text-muted-foreground flex justify-between gap-2">
+                    <span className="truncate">
+                      {sv ? item.name : item.nameEn}
+                      <span className="text-muted-foreground/60">
+                        {' · '}
+                        {(FIND_TYPE_LABEL[item.findType]?.[sv ? 'sv' : 'en']) ?? item.findType}
+                      </span>
+                    </span>
+                    <span className="shrink-0 tabular-nums">{km.toFixed(0)} km</span>
                   </li>
                 ))}
               </ul>

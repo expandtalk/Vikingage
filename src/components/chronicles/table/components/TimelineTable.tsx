@@ -1,12 +1,11 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Crown } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { KingCell } from './KingCell';
 import { HistoricalEventBadge } from './HistoricalEventBadge';
 import { HistoricalEventModal } from './HistoricalEventModal';
-import { getTableHeaders, getSectionTitles } from '../utils/labelUtils';
+import { getTableHeaders } from '../utils/labelUtils';
 import type { HistoricalKing } from '@/hooks/useRoyalChronicles';
 import type { HistoricalEvent } from '@/hooks/useHistoricalEvents';
 
@@ -32,7 +31,6 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({ timelineData, onSe
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const tableHeaders = getTableHeaders(language);
-  const sectionTitles = getSectionTitles(language);
 
   // Update table headers for period-based view
   const periodHeaders = {
@@ -53,14 +51,9 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({ timelineData, onSe
 
   return (
     <>
+      {/* Rubriken ägs av TableModeView (ovanför togglen) — dubblerades tidigare här. */}
       <Card className="bg-white/10 backdrop-blur-md border-white/20">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <Crown className="h-5 w-5" />
-            {sectionTitles.nordicKings}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
