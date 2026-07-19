@@ -32,6 +32,8 @@ const REL_LABEL: Record<string, { sv: string; en: string }> = {
   tjänst_hos: { sv: 'i tjänst hos', en: 'in service of' },
   fadderskap: { sv: 'fadderskap', en: 'godparent' },
   'dråp/strid': { sv: 'dråp/strid', en: 'killing/battle' },
+  skald: { sv: 'skald', en: 'skald (court poet)' },
+  hovskald: { sv: 'hovskald', en: 'court skald' },
 };
 
 export const KingDetailPanel: React.FC<KingDetailPanelProps> = ({ king, sourceMentions }) => {
