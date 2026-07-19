@@ -39,6 +39,7 @@ export interface Excursion {
 export const EXCURSION_GROUPS = [
   'Uppland & Mälardalen',
   'Ting & eriksgata',
+  'Österleden & skärgårdshavet',
   'Södermanland',
   'Östergötland',
   'Västergötland',
@@ -336,6 +337,41 @@ export const EXCURSIONS: Excursion[] = [
     coords: { lat: 59.298, lng: 18.050 },
     sv: 'Vid Brunnbyvägen i Årsta söder om Stockholm ligger en skålgropssten — Sveriges vanligaste typ av hällristning, även kallad älvkvarn. Groparna tros ha använts som offer- och blotstenar under bronsåldern, och längs stenen löper en form som påminner om en livmoder. I Mälardalen offrade man ännu i historisk tid i älvkvarnar för att bota sjukdomar som troddes orsakade av älvor. Trakten var bebodd tidigt: vid den forna vikens stränder har flera stenyxor hittats, från omkring 2000 f.Kr. Inom Stockholms stad finns ett tjugotal skålgropslokaler.',
     en: 'By Brunnbyvägen in Årsta, south of Stockholm, lies a cup-mark stone — Sweden\'s most common type of rock carving, also called an "elf mill" (älvkvarn). The cups are thought to have served as offering stones in the Bronze Age, and a womb-like form runs along the stone. In the Mälaren valley, offerings were still made in elf mills in historical times to cure illnesses believed to be caused by elves. The area was settled early: several stone axes, from around 2000 BC, have been found along the shores of the former inlet. Some twenty cup-mark sites are known within the City of Stockholm.',
+  },
+
+  // === Österleden & skärgårdshavet ===
+  {
+    id: 'aland-vikingatid',
+    name: 'Åland — Österledens nav',
+    region: 'Saltvik/Finström, Åland (Finland)',
+    group: 'Österleden & skärgårdshavet',
+    period: 'Yngre järnålder–vikingatid (550–1050)',
+    coords: { lat: 60.28, lng: 19.95 },
+    sv: 'Åland — svenskspråkigt, i århundraden svenskt, idag finländskt — var Österledens nav: sjövägen Birka → Åland → Skärgårdshavet → Ladoga passerade här, och senare följer Kung Valdemars segelled (ca 1300) samma stråk via hamnen Lemböte. Ön är exceptionellt rik på vikingatid: talrika höggravfält med kremeringsgravar, undersökta gårdar som Bartsgårda i Finström (Helsingfors universitet), fynd av pärlor, spännbucklor och Birka-kopplade spännen, och export av fisk, sältran och sälskinn. Mest gåtfull är lertass-riten: en tass av bränd lera lades på gravurnan — unik för Åland i Skandinavien, men med paralleller i Volgaområdet i Ryssland, ett direkt arkeologiskt spår av österledskontakterna. Och mitt i all denna rikedom: INTE EN ENDA runsten — en av runologins olösta gåtor. (Källa: Ålands kulturhistoriska museum, museum.ax.)',
+    en: 'Åland — Swedish-speaking, for centuries Swedish, today Finnish — was the hub of the Eastern Route: the sea road Birka → Åland → Archipelago Sea → Ladoga passed here, and King Valdemar\'s sailing route (c. 1300) later follows the same corridor via the harbour of Lemböte. The island is exceptionally rich in Viking Age remains: numerous mound cemeteries with cremation graves, excavated farms such as Bartsgårda in Finström, finds of beads, oval brooches and Birka-linked jewellery, and exports of fish, seal oil and seal skins. Most enigmatic is the clay-paw rite: a paw of fired clay placed on the burial urn — unique to Åland within Scandinavia, but paralleled in the Volga region of Russia, a direct archaeological trace of the eastern connections. And amid all this wealth: NOT A SINGLE runestone — one of runology\'s unsolved riddles. (Source: Åland Museum, museum.ax.)',
+    relatedSources: ['Kung Valdemars jordebok (Det danska itinerariet)'],
+    monumentTypes: [
+      { sv: 'Farled (Österleden)', en: 'Route (Eastern route)', color: '#b45309' },
+      { sv: 'Farled (Valdemars segelled)', en: 'Route (Valdemar\'s route)', color: '#7c3aed' },
+      { sv: 'Plats', en: 'Site', color: '#eab308' },
+    ],
+  },
+  {
+    id: 'hitis-kyrksundet',
+    name: 'Hitis & Kyrksundet — Finlands första runsten',
+    region: 'Hitis (Hiittinen), Skärgårdshavet, Finland',
+    group: 'Österleden & skärgårdshavet',
+    period: 'Vikingatid (800–1050)',
+    coords: { lat: 59.90, lng: 22.43 },
+    sv: 'Vid Kyrksundet i Hitis skärgård låg en vikingatida handelsplats vid Österledens stråk — samma sund som itinerariets Jungfrusund i Kung Valdemars segelled. Här gjordes 1997 sensationsfyndet: en boende på Stora Ängesön fick upp ett runstensfragment av sandsten ur sjöbottnen vid sin brygga — Finlands första runsten. Av inskriften kan namnet Torfast läsas samt "raþi" ("må tyda"), med parallell i Ågerstastenens (U 729) berömda "Tyde den man som runkunnig är...". Magnus Källström (Riksantikvarieämbetet) har pekat på reliefhuggningen och de ovala skiljetecknen som knyter fragmentet till ristaren Balles krets kring Löts kyrka i Uppland — men o-runans vänsterlutande bistavar talar emot Balle själv, och fyndplatsens karaktär av lastageplats gör att stenen kan ha kommit dit som barlast. En öppen forskningsfråga, redovisad med alla förbehåll. (Källa: K-blogg/RAÄ 2016-04-20.)',
+    en: 'At Kyrksundet in the Hitis archipelago lay a Viking-Age trading site on the Eastern Route — the same sound as the Jungfrusund of King Valdemar\'s itinerary. Here, in 1997, came the sensational find: a resident of Stora Ängesön pulled a sandstone runestone fragment from the seabed by his jetty — Finland\'s first runestone. The inscription yields the name Torfast and "raþi" ("may interpret"), paralleling the famous Ågersta stone (U 729). Magnus Källström (Swedish National Heritage Board) has pointed to the relief carving and oval word-dividers linking the fragment to the carver Balle\'s circle around Löt church in Uppland — but the o-rune\'s left-leaning branches argue against Balle himself, and the find spot\'s character as a loading place means the stone may have arrived as ship ballast. An open research question, presented with all caveats. (Source: K-blogg/RAÄ, 20 Apr 2016.)',
+    signum: 'FI NOR1998;14',
+    monumentTypes: [
+      { sv: 'Farled (Österleden)', en: 'Route (Eastern route)', color: '#b45309' },
+      { sv: 'Farled (Valdemars segelled)', en: 'Route (Valdemar\'s route)', color: '#7c3aed' },
+      { sv: 'Fyndplats', en: 'Find spot', color: '#ef4444' },
+      { sv: 'Handelsplats', en: 'Trading site', color: '#22c55e' },
+    ],
   },
 
   // === Öland ===
