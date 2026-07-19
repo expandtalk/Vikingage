@@ -8,7 +8,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import Index from "./pages/Index";
+import Welcome from "./pages/Welcome";
 
 // Route-level code splitting: each page becomes its own chunk, loaded on demand.
 // Keep the landing page (Index) eager so first paint has no extra round-trip.
@@ -50,7 +50,9 @@ const App = () => (
               <Sonner />
               <Suspense fallback={<RouteFallback />}>
                 <Routes>
-                  <Route path="/" element={<Index />} />
+                  {/* Startsidan renderas DIREKT på roten (tidigare Index → navigate('/welcome')
+                      + /welcome → / gav en oändlig redirect-loop). */}
+                  <Route path="/" element={<Welcome />} />
                   {/* /welcome var en dublett av startsidan — 301 i .htaccess + client-redirect här */}
                   <Route path="/welcome" element={<Navigate to="/" replace />} />
                   <Route path="/explore" element={<Explore />} />
