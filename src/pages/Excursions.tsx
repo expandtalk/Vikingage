@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
@@ -210,6 +211,15 @@ const Excursions = () => {
                   )}
 
                   <div className="flex flex-wrap gap-3 pt-1">
+                    <Link
+                      to={`/excursions/${e.id}`}
+                      className="inline-flex items-center gap-1 text-xs text-gold hover:underline font-medium"
+                    >
+                      <MapPin className="h-3 w-3" />
+                      {e.monumentTypes?.length
+                        ? (sv ? 'Detaljsida & gravtyper' : 'Details & grave types')
+                        : (sv ? 'Detaljsida' : 'Details')}
+                    </Link>
                     <a
                       href={exploreUrl}
                       className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
