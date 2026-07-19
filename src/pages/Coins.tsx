@@ -98,7 +98,7 @@ const Coins = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-foreground mb-4 flex items-center gap-3">
-            <CoinsIcon className="h-8 w-8 text-accent" />
+            <CoinsIcon className="h-8 w-8 text-gold" />
             {sv ? 'Mynt' : 'Coins'}
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -138,7 +138,7 @@ const Coins = () => {
                         {period(c.period_start, c.period_end) && (
                           <div className="text-muted-foreground">{period(c.period_start, c.period_end)}</div>
                         )}
-                        {c.significance && <div className="text-accent text-xs font-medium">{c.significance}</div>}
+                        {c.significance && <div className="text-gold text-xs font-medium">{c.significance}</div>}
                         <p className="text-muted-foreground">{sv ? c.description : c.description_en ?? c.description}</p>
                         {(c.obverse || c.reverse) && (
                           <div className="text-xs text-muted-foreground/80">

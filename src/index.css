@@ -20,6 +20,10 @@
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
+    /* Läsbar guld-accent (vejde-gul) för framträdande text/siffror. --accent är en
+       mörk bakgrundston (shadcn) och får INTE användas som textfärg — kontrast <1,4:1.
+       --gold ger ~8:1 mot korten och uppfyller WCAG 1.4.3 AA/AAA. */
+    --gold: 46 68% 52%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
@@ -48,6 +52,7 @@
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
+    --gold: 46 68% 52%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;

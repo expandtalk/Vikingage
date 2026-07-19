@@ -21,6 +21,7 @@ import { useInscriptionExtendedData } from '@/hooks/useInscriptionExtendedData';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InscriptionName } from "@/components/inscription/InscriptionName";
+import { MeterBadge } from "@/components/inscription/MeterBadge";
 import { InscriptionEditModal } from "@/components/inscription/InscriptionEditModal";
 import { RunicInscription } from "@/types/inscription";
 import { useAuth } from "@/contexts/AuthContext";
@@ -129,6 +130,7 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                    inscription.complexity_level === 'medium' ? t.medium : t.simple}
                 </Badge>
               )}
+              <MeterBadge meter={inscription.meter} sv={sv} />
             </div>
           </div>
           <div className="flex gap-2">

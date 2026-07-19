@@ -63,8 +63,8 @@ const Excursions = () => {
   const handleSelect = useCallback((id: string) => {
     const el = document.getElementById(`exc-${id}`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el?.classList.add('ring-2', 'ring-accent');
-    window.setTimeout(() => el?.classList.remove('ring-2', 'ring-accent'), 1600);
+    el?.classList.add('ring-2', 'ring-gold');
+    window.setTimeout(() => el?.classList.remove('ring-2', 'ring-gold'), 1600);
   }, []);
 
   return (
@@ -81,7 +81,7 @@ const Excursions = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-foreground mb-4 flex items-center gap-3">
-            <Compass className="h-8 w-8 text-accent" />
+            <Compass className="h-8 w-8 text-gold" />
             {sv ? 'Utflykter' : 'Excursions'}
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -150,7 +150,7 @@ const Excursions = () => {
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="text-foreground text-lg flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-accent" />
+                    <MapPin className="h-5 w-5 text-gold" />
                     {e.name}
                   </CardTitle>
                   <div className="flex flex-wrap gap-2">
@@ -212,7 +212,7 @@ const Excursions = () => {
                   <div className="flex flex-wrap gap-3 pt-1">
                     <a
                       href={exploreUrl}
-                      className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                      className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
                     >
                       <Compass className="h-3 w-3" />
                       {sv ? 'Utforska i kartan' : 'Explore on map'}
@@ -221,7 +221,7 @@ const Excursions = () => {
                       href={`https://www.openstreetmap.org/?mlat=${e.coords.lat}&mlon=${e.coords.lng}#map=13/${e.coords.lat}/${e.coords.lng}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                      className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
                     >
                       <ExternalLink className="h-3 w-3" />
                       {sv ? 'Öppna i OpenStreetMap' : 'Open in OpenStreetMap'}

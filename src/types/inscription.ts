@@ -53,6 +53,7 @@ export interface RunicInscription extends BaseInscription {
   paleographic_notes?: string;
   historical_context?: string;
   style_group?: string;
+  meter?: string | null;
   rune_type?: string;
   rune_variant?: string;
   dimensions?: string;

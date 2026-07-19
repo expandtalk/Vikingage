@@ -14,6 +14,7 @@ import { RunicInscription } from '@/types/inscription';
 import { Badge } from '@/components/ui/badge';
 import { detectSignumPattern } from '@/utils/coordinateMappingEnhanced';
 import { InscriptionEditModal } from '@/components/inscription/InscriptionEditModal';
+import { MeterBadge } from '@/components/inscription/MeterBadge';
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -50,7 +51,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
         coordsAlt: 'Koordinater', status: 'Status', translit: 'Transliteration',
         translationSv: 'Översättning (SV)', translationEn: 'Översättning (EN)', translationOther: 'Översättning',
         dating: 'Datering', rundataDating: 'Rundata-datering', material: 'Material', objectType: 'Objekttyp',
-        currentLocation: 'Nuvarande plats', dimensions: 'Mått', runeType: 'Runtyp', styleGroup: 'Stilgrupp',
+        currentLocation: 'Nuvarande plats', dimensions: 'Mått', runeType: 'Runtyp', styleGroup: 'Stilgrupp', meter: 'Versmått',
         condition: 'Skick', scholarly: 'Forskarnoter', context: 'Historisk kontext', paleo: 'Paleografiska noter',
         sources: 'Källor & externa länkar', unknownTitle: 'Okänd titel', unknownAuthor: 'Okänd författare',
         images: 'Bilder från arkiv', loadingImages: 'Laddar bilder…', noImages: 'Inga bilder i arkiven.',
@@ -63,7 +64,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
         coordsAlt: 'Coordinates', status: 'Status', translit: 'Transliteration',
         translationSv: 'Translation (SV)', translationEn: 'Translation (EN)', translationOther: 'Translation',
         dating: 'Dating', rundataDating: 'Rundata dating', material: 'Material', objectType: 'Object type',
-        currentLocation: 'Current location', dimensions: 'Dimensions', runeType: 'Rune type', styleGroup: 'Style group',
+        currentLocation: 'Current location', dimensions: 'Dimensions', runeType: 'Rune type', styleGroup: 'Style group', meter: 'Poetic metre',
         condition: 'Condition', scholarly: 'Scholarly notes', context: 'Historical context', paleo: 'Paleographic notes',
         sources: 'Sources & external links', unknownTitle: 'Unknown title', unknownAuthor: 'Unknown author',
         images: 'Images from archives', loadingImages: 'Loading images…', noImages: 'No images found in archives.',
@@ -91,6 +92,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
     object_type,
     style_group,
     rune_type,
+    meter,
     status,
     scholarly_notes,
     historical_context,
@@ -167,6 +169,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
             <DetailItem label={L.dimensions} value={dimensions} />
             <DetailItem label={L.runeType} value={rune_type} />
             <DetailItem label={L.styleGroup} value={style_group} />
+            <DetailItem label={L.meter} value={meter ? <MeterBadge meter={meter} sv={sv} /> : null} />
             <DetailItem label={L.condition} value={condition_notes} />
             <DetailItem label={L.scholarly} value={<p className="whitespace-pre-wrap">{scholarly_notes}</p>} />
             <DetailItem label={L.context} value={<p className="whitespace-pre-wrap">{historical_context}</p>} />

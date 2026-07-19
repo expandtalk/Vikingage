@@ -188,7 +188,7 @@ const Fortresses = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4 flex items-center gap-3">
-            <Castle className="h-8 w-8 text-accent" />
+            <Castle className="h-8 w-8 text-gold" />
             {t('fortressesCitiesTitle')}
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -233,7 +233,7 @@ const Fortresses = () => {
             <Card className="viking-card">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
-                  <Castle className="h-5 w-5 text-accent" />
+                  <Castle className="h-5 w-5 text-gold" />
                   {L.swedishHillforts}
                 </CardTitle>
                 <CardDescription>
@@ -243,23 +243,23 @@ const Fortresses = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{hillforts.length}</div>
+                    <div className="text-2xl font-bold text-gold">{hillforts.length}</div>
                     <div className="text-sm text-muted-foreground">{L.total}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {new Set(hillforts.map(h => h.landscape)).size}
                     </div>
                     <div className="text-sm text-muted-foreground">{L.landscapeN}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {hillforts.filter(h => h.status === 'confirmed').length}
                     </div>
                     <div className="text-sm text-muted-foreground">{L.confirmedN}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {new Set(hillforts.map(h => h.municipality)).size}
                     </div>
                     <div className="text-sm text-muted-foreground">{L.municipalities}</div>
@@ -407,30 +407,30 @@ const Fortresses = () => {
             <Card className="viking-card">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
-                  <Castle className="h-5 w-5 text-accent" />
+                  <Castle className="h-5 w-5 text-gold" />
                   {L.fortsOverview}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{fortresses.length}</div>
+                    <div className="text-2xl font-bold text-gold">{fortresses.length}</div>
                     <div className="text-sm text-muted-foreground">{L.total}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {fortresses.filter(f => f.excavated).length}
                     </div>
                     <div className="text-sm text-muted-foreground">{L.excavatedN}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {fortresses.filter(f => f.unesco_site).length}
                     </div>
                     <div className="text-sm text-muted-foreground">{L.unescoSites}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {new Set(fortresses.map(f => f.country)).size}
                     </div>
                     <div className="text-sm text-muted-foreground">{L.countries}</div>
@@ -465,7 +465,7 @@ const Fortresses = () => {
                   id={`fortress-${fortress.id}`}
                   className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
                     highlightedLocation?.id === fortress.id && highlightedLocation?.type === 'fortress' 
-                      ? 'ring-2 ring-accent' 
+                      ? 'ring-2 ring-gold'
                       : ''
                   }`}
                   onMouseEnter={() => handleCardHover(fortress.id, 'fortress')}
@@ -555,30 +555,30 @@ const Fortresses = () => {
             <Card className="viking-card">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
-                  <Building className="h-5 w-5 text-accent" />
+                  <Building className="h-5 w-5 text-gold" />
                   {L.citiesOverview}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{cities?.length || 0}</div>
+                    <div className="text-2xl font-bold text-gold">{cities?.length || 0}</div>
                     <div className="text-sm text-muted-foreground">{L.total}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {cities?.filter(c => c.unesco_site).length || 0}
                     </div>
                     <div className="text-sm text-muted-foreground">{L.unescoSites}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {cities?.filter(c => c.category === 'trading_post').length || 0}
                     </div>
                     <div className="text-sm text-muted-foreground">{L.tradingPosts}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">
+                    <div className="text-2xl font-bold text-gold">
                       {new Set(cities?.map(c => c.country) || []).size}
                     </div>
                     <div className="text-sm text-muted-foreground">{L.countries}</div>
@@ -613,7 +613,7 @@ const Fortresses = () => {
                   id={`city-${city.id}`}
                   className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
                     highlightedLocation?.id === city.id && highlightedLocation?.type === 'city' 
-                      ? 'ring-2 ring-accent' 
+                      ? 'ring-2 ring-gold'
                       : ''
                   }`}
                   onMouseEnter={() => handleCardHover(city.id, 'city')}

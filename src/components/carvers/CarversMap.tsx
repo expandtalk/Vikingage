@@ -278,7 +278,7 @@ export const CarversMap: React.FC<CarversMapProps> = ({
         <div className="p-4 border-b border-border">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-accent" />
+              <MapPin className="h-5 w-5 text-gold" />
               <h3 className="font-semibold text-foreground">{t.title}</h3>
             </div>
 

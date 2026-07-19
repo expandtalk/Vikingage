@@ -60,7 +60,7 @@ const Explore = () => {
               <Card className="viking-card max-w-4xl mx-auto">
                 <CardHeader className="text-center">
                   <CardTitle className="text-foreground flex items-center justify-center gap-2">
-                    <Brain className="h-5 w-5 text-accent" />
+                    <Brain className="h-5 w-5 text-gold" />
                     {t.signInTitle}
                   </CardTitle>
                   <CardDescription className="text-muted-foreground">

@@ -15,7 +15,7 @@ import { CarverDetailPanel } from '../components/carvers/CarverDetailPanel';
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Carvers = () => {
-  const { carvers, namedCarvers, attributionCarvers, namedCount, isLoading, totalCarvers } = useCarverData();
+  const { carvers, namedCarvers, attributionCarvers, namedCount, isLoading } = useCarverData();
   const [showAttributions, setShowAttributions] = useState(false);
   const [selectedCarver, setSelectedCarver] = useState<string | null>(null);
   const [highlightedCarver, setHighlightedCarver] = useState<{ id: string } | null>(null);
@@ -133,16 +133,25 @@ const Carvers = () => {
     <Card
       key={carver.id}
       id={`carver-${carver.id}`}
-      className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
-        highlightedCarver?.id === carver.id ? 'ring-2 ring-accent' : ''
+      role="button"
+      tabIndex={0}
+      aria-label={`${carver.name}, ${c.badgeStones(carver.inscriptionCount)}`}
+      className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+        highlightedCarver?.id === carver.id ? 'ring-2 ring-gold' : ''
       }`}
       onMouseEnter={() => handleCardHover(carver.id)}
       onMouseLeave={handleCardLeave}
       onClick={() => handleCardClick(carver)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleCardClick(carver);
+        }
+      }}
     >
       <CardHeader className="pb-3">
         <CardTitle className="text-foreground text-lg flex items-center gap-2">
-          <User className="h-5 w-5 text-accent" />
+          <User className="h-5 w-5 text-gold" />
           {carver.name}
         </CardTitle>
         <div className="flex gap-2 flex-wrap">
@@ -220,7 +229,7 @@ const Carvers = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4 flex items-center gap-3">
-            <User className="h-8 w-8 text-accent" />
+            <User className="h-8 w-8 text-gold" />
             {c.title}
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -259,26 +268,26 @@ const Carvers = () => {
             <Card className="viking-card">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
-                  <User className="h-5 w-5 text-accent" />
+                  <User className="h-5 w-5 text-gold" />
                   {c.statsTitle}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{totalCarvers}</div>
+                    <div className="text-2xl font-bold text-gold">{namedCount}</div>
                     <div className="text-sm text-muted-foreground">{c.identified}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{totalInscriptions}</div>
+                    <div className="text-2xl font-bold text-gold">{totalInscriptions}</div>
                     <div className="text-sm text-muted-foreground">{c.stonesTotal}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{totalSigned}</div>
+                    <div className="text-2xl font-bold text-gold">{totalSigned}</div>
                     <div className="text-sm text-muted-foreground">{c.signedStones}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">{carversWithLocation}</div>
+                    <div className="text-2xl font-bold text-gold">{carversWithLocation}</div>
                     <div className="text-sm text-muted-foreground">{c.knownLocation}</div>
                   </div>
                 </div>
@@ -294,7 +303,7 @@ const Carvers = () => {
                   {carvers.slice(0, 10).map((carver, index) => (
                     <div key={carver.id} className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="text-accent font-bold text-lg">#{index + 1}</div>
+                        <div className="text-gold font-bold text-lg">#{index + 1}</div>
                         <div>
                           <div className="font-semibold text-foreground">{carver.name}</div>
                           <div className="text-sm text-muted-foreground">
@@ -303,7 +312,7 @@ const Carvers = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-accent">{carver.inscriptionCount}</div>
+                        <div className="text-lg font-bold text-gold">{carver.inscriptionCount}</div>
                         <div className="text-xs text-muted-foreground">{c.stones}</div>
                       </div>
                     </div>
@@ -332,12 +341,13 @@ const Carvers = () => {
                 <button
                   type="button"
                   onClick={() => setShowAttributions((v) => !v)}
-                  className="w-full flex items-center justify-between text-left group"
+                  aria-expanded={showAttributions}
+                  className="w-full flex items-center justify-between text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-gold rounded"
                 >
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">
+                    <h2 className="text-lg font-semibold text-foreground">
                       {c.attribTitle(attributionCarvers.length)}
-                    </h3>
+                    </h2>
                     <p className="text-sm text-muted-foreground mt-1 max-w-3xl">{c.attribIntro}</p>
                   </div>
                   <Badge variant="outline" className="ml-4 shrink-0">

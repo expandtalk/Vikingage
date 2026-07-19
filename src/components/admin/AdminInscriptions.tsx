@@ -129,7 +129,7 @@ export const AdminInscriptions: React.FC = () => {
     <Card className="viking-card relative z-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Search className="h-5 w-5 text-accent" />
+          <Search className="h-5 w-5 text-gold" />
           Runstenshantering
         </CardTitle>
         <CardDescription>
