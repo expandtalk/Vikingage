@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, MapPin, Calendar, ExternalLink, BookOpen, FileText, Home } from 'lucide-react';
 import { useCarverData } from '@/hooks/useCarverData';
 import { CarverStonesMap } from './CarverStonesMap';
+import { CarverAttributes } from './CarverAttributes';
 
 interface CarverDetailPanelProps {
   carverId: string;
@@ -296,6 +297,8 @@ export const CarverDetailPanel: React.FC<CarverDetailPanelProps> = ({
                     </Badge>
                   )}
                 </div>
+
+                <CarverAttributes carverId={carver.id} />
 
                 {carver.source_ref && (
                   <p className="mt-3 text-xs text-slate-500 border-t border-white/10 pt-2">
