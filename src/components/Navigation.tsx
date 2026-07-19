@@ -138,13 +138,6 @@ const EXTRA_LINKS: NavLink[] = [
     descEn: "Diocletian's Price Edict (301 AD) — Roman prices converted.",
     icon: Scale, category: 'history',
   },
-  {
-    pathEn: '/kungstavla', pathSv: '/kungstavla',
-    labelSv: 'Kungstavla', labelEn: "King's Board",
-    descSv: 'Spela Hnefatafl — vikingatidens strategispel — direkt i webbläsaren.',
-    descEn: "Play Hnefatafl — the Viking-Age strategy game — right in the browser.",
-    icon: Swords, category: 'history',
-  },
 ];
 
 const home: NavLink = {
@@ -159,6 +152,13 @@ const profile: NavLink = {
   labelSv: 'Profil', labelEn: 'Profile',
   descSv: 'Din profil', descEn: 'Your profile',
   icon: User, authOnly: true,
+};
+
+const game: NavLink = {
+  pathEn: '/kungstavla', pathSv: '/kungstavla',
+  labelSv: 'Spel', labelEn: 'Game',
+  descSv: 'Spela Hnefatafl (kungstavla)', descEn: "Play Hnefatafl (the king's board)",
+  icon: Swords,
 };
 
 /** Single source of truth for the app's navigation links, in both languages. */
@@ -178,7 +178,7 @@ const useNavLinks = (): NavLink[] => {
     };
   });
 
-  return [home, ...routeLinks, ...EXTRA_LINKS, profile];
+  return [home, game, ...routeLinks, ...EXTRA_LINKS, profile];
 };
 
 const useResolveLink = () => {
@@ -267,6 +267,21 @@ export const Navigation: React.FC = () => {
             </NavigationMenuItem>
           );
         })}
+
+        {/* Spel/Game — direct link */}
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild>
+            <Link
+              to={pathOf(game)}
+              className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ${
+                isActive(game) ? 'bg-slate-800 text-white' : ''
+              }`}
+            >
+              <Swords className="h-4 w-4 mr-1.5" />
+              {labelOf(game)}
+            </Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
 
         {/* Profile — direct link when logged in */}
         {user && (
