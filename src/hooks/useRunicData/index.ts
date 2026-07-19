@@ -6,7 +6,6 @@ import { loadDatabaseStats } from './statsLoader';
 import type { UseRunicDataProps } from './types';
 
 export const useRunicData = (filters: UseRunicDataProps) => {
-  console.log('🔄 useRunicData called with enhanced coordinate mapping');
 
   // Query for inscriptions with enhanced coordinate mapping
   const {
@@ -57,15 +56,6 @@ export const useRunicData = (filters: UseRunicDataProps) => {
       console.error('Error loading data:', error);
     }
   };
-
-  // Enhanced logging
-  console.log(`📊 Enhanced useRunicData state:`, {
-    inscriptionsCount: inscriptions.length,
-    withCoordinates: inscriptions.filter(i => i.coordinates).length,
-    isLoading,
-    hasError: !!connectionError,
-    dbStats
-  });
 
   return {
     inscriptions,

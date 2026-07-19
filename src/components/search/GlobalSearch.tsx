@@ -86,8 +86,10 @@ const THEME_ICONS: Record<string, LucideIcon> = {
 const themeIcon = (t: DbTheme): LucideIcon => THEME_ICONS[t.slug ?? ''] ?? Sparkles;
 
 // Gruppera rankade träffar per typ; gruppordning = första (bästa) träffens position.
-// perGroup 10: regionsökningar (t.ex. Öland: 16 fornborgar) ska inte klippas för hårt.
-const groupHits = (hits: Hit[], perGroup = 10): Group[] => {
+// Per-typ-tak: regionsökningar ska visa ALLA borgar (Öland har 16), men inskrifter
+// klipps tidigare — där finns alltid "visa alla på kartan"-länken.
+const GROUP_CAP: Record<string, number> = { fortress: 16, parish: 12, inscription: 8 };
+const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
   const groups: Group[] = [];
   const byType = new Map<string, Group>();
   for (const h of hits) {
@@ -99,7 +101,7 @@ const groupHits = (hits: Hit[], perGroup = 10): Group[] => {
       byType.set(h.entity_type, g);
       groups.push(g);
     }
-    if (g.rows.length >= perGroup) continue;
+    if (g.rows.length >= (GROUP_CAP[h.entity_type] ?? defaultCap)) continue;
     g.rows.push({
       key: `${h.entity_type}-${h.entity_id}`,
       title: h.label,

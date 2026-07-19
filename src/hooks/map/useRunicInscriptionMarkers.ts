@@ -113,19 +113,8 @@ export const addRunicInscriptionMarkers = (
   inscriptions: RunicInscription[],
   onMarkerClick?: (inscription: RunicInscription) => void
 ): L.Marker[] => {
-  console.log(`🗺️ addRunicInscriptionMarkers called with ${inscriptions.length} inscriptions`);
-  
-  // Debug: Log structure of first few inscriptions
-  console.log('📊 Sample inscription data for markers:', inscriptions.slice(0, 5).map(i => ({
-    signum: i.signum,
-    hasCoordinates: !!i.coordinates,
-    hasLatLng: !!i.latitude && !!i.longitude,
-    coordinates: i.coordinates,
-    lat: i.latitude,
-    lng: i.longitude,
-    location: i.location
-  })));
-
+  // OBS: ingen per-markör-loggning här — 6 000+ console.log per omritning
+  // frös renderingen (prestandafix 2026-07-20). En summeringsrad i slutet räcker.
   const markers: L.Marker[] = [];
   let validCoordinatesCount = 0;
   let invalidCoordinatesCount = 0;
@@ -138,11 +127,9 @@ export const addRunicInscriptionMarkers = (
     if (inscription.coordinates) {
       lat = inscription.coordinates.lat;
       lng = inscription.coordinates.lng;
-      console.log(`📍 Using coordinates field for ${inscription.signum}: [${lat}, ${lng}]`);
     } else if (inscription.latitude && inscription.longitude) {
       lat = inscription.latitude;
       lng = inscription.longitude;
-      console.log(`📍 Using lat/lng fields for ${inscription.signum}: [${lat}, ${lng}]`);
     }
 
     if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
@@ -152,8 +139,6 @@ export const addRunicInscriptionMarkers = (
       const icon = createRuneIcon(inscription);
       
       try {
-        console.log(`🎯 Creating marker for ${inscription.signum} at [${lat}, ${lng}]`);
-        
         const marker = L.marker([lat, lng], { icon, riseOnHover: true })
           .addTo(map);
 
@@ -184,7 +169,6 @@ export const addRunicInscriptionMarkers = (
 
         if (onMarkerClick) {
           marker.on('click', () => {
-            console.log(`🖱️ Marker clicked for ${inscription.signum}`);
             onMarkerClick({
               id: inscription.id,
               signum: inscription.signum,
@@ -204,33 +188,18 @@ export const addRunicInscriptionMarkers = (
         }
 
         markers.push(marker);
-        
-        console.log(`✅ Successfully added marker for ${inscription.signum} at [${lat}, ${lng}]`);
       } catch (error) {
         console.error(`❌ Error creating marker for ${inscription.signum}:`, error);
         invalidCoordinatesCount++;
       }
     } else {
       invalidCoordinatesCount++;
-      if (invalidCoordinatesCount <= 5) {
-        console.log(`❌ No valid coordinates for ${inscription.signum}: lat=${lat}, lng=${lng}`);
-      }
     }
   });
 
-  console.log(`📍 Marker creation summary:`);
-  console.log(`  - Total inscriptions processed: ${inscriptions.length}`);
-  console.log(`  - Valid coordinates found: ${validCoordinatesCount}`);
-  console.log(`  - Invalid/missing coordinates: ${invalidCoordinatesCount}`);
-  console.log(`  - Markers added to map: ${markers.length}`);
-
-  // Force map to refresh/redraw
-  if (map && markers.length > 0) {
-    console.log(`🔄 Forcing map refresh after adding ${markers.length} markers`);
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 100);
-  }
+  // EN summeringsrad i stället för tusentals loggar; invalidateSize borttagen —
+  // markörer kräver ingen container-omätning och timeouten bidrog till hoppandet.
+  console.log(`🗺️ Markörer: ${markers.length} tillagda (${validCoordinatesCount} med koordinater, ${invalidCoordinatesCount} utan)`);
 
   return markers;
 };
