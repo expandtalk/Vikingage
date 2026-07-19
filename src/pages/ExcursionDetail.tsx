@@ -91,7 +91,7 @@ const ExcursionDetail = () => {
   useEffect(() => {
     if (!excursion || !containerRef.current || mapRef.current) return;
     const { lat, lng } = excursion.coords;
-    const map = L.map(containerRef.current, { center: [lat, lng], zoom: 14, scrollWheelZoom: true });
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [lat, lng], zoom: 14, scrollWheelZoom: true });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors', maxZoom: 19,
     }).addTo(map);

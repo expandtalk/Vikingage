@@ -31,7 +31,7 @@ const CoinsMap: React.FC<{ coins: Coin[] }> = ({ coins }) => {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { center: [58, 16], zoom: 4, scrollWheelZoom: true });
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [58, 16], zoom: 4, scrollWheelZoom: true });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors', maxZoom: 19,
     }).addTo(map);

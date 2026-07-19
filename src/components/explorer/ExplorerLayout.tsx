@@ -268,6 +268,11 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         setIsTimelineMinimized={setIsTimelineMinimized}
       />
 
+      {/* Gudakorten FÖRST i gods-fokus — bilderna är huvudinnehållet, kartan stöd */}
+      {currentFocus === 'gods' && (
+        <GodCardsGrid onFocusDeity={onFocusDeity} />
+      )}
+
       {/* Mobile Quick Actions */}
       {isMobile && (
         <div className="flex gap-2 justify-center mb-4">
@@ -420,12 +425,6 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         </div>
       )}
 
-      {/* Gods Cards Grid - only show when in gods focus */}
-      {currentFocus === 'gods' && (
-        <div className="mt-6">
-          <GodCardsGrid onFocusDeity={onFocusDeity} />
-        </div>
-      )}
     </div>
   );
 };

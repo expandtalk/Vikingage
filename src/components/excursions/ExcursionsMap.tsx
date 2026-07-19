@@ -28,6 +28,7 @@ export const ExcursionsMap: React.FC<ExcursionsMapProps> = ({ onSelect }) => {
     if (!containerRef.current || mapRef.current) return;
 
     const map = L.map(containerRef.current, {
+      preferCanvas: true,
       center: [58.6, 16.3],
       zoom: 5,
       scrollWheelZoom: true,

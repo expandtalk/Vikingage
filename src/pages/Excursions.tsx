@@ -147,8 +147,21 @@ const Excursions = () => {
               <Card
                 id={`exc-${e.id}`}
                 key={e.id}
-                className="viking-card hover:bg-card/80 transition-all scroll-mt-24"
+                className="viking-card hover:bg-card/80 transition-all scroll-mt-24 overflow-hidden group"
               >
+                {/* Snabbladdad thumbnail (480×300 q70, ~25 KB) — konvention: photoDir ⇒ thumb.jpg finns */}
+                {e.photoDir && (
+                  <Link to={`/excursions/${e.id}`} className="block relative h-40 w-full overflow-hidden">
+                    <img
+                      src={`/excursion-photos/${e.photoDir}/thumb.jpg`}
+                      alt={e.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
+                  </Link>
+                )}
                 <CardHeader className="pb-3">
                   <CardTitle className="text-foreground text-lg flex items-center gap-2">
                     <MapPin className="h-5 w-5 text-gold" />

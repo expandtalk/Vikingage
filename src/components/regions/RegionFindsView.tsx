@@ -189,7 +189,7 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { center: [59.5, 16.5], zoom: 5, scrollWheelZoom: true });
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [59.5, 16.5], zoom: 5, scrollWheelZoom: true });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 18,

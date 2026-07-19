@@ -33,11 +33,29 @@ for (const d of dirs) {
   }
 }
 
-// Manifest (slug-mapp -> filer) för galleriet på utflyktsdetaljsidan.
+// Thumbnails: en snabbladdad thumb.jpg (480×300, q70) per mapp ur första bilden —
+// används av utflyktslistan (/excursions). Konvention: finns photoDir → finns thumb.
+const THUMB_W = 480, THUMB_H = 300, THUMB_Q = 70;
+for (const d of await readdir(DEST_ROOT, { withFileTypes: true }).catch(() => [])) {
+  if (!d.isDirectory()) continue;
+  const dir = path.join(DEST_ROOT, d.name);
+  const files = (await readdir(dir)).filter((f) => /\.jpg$/i.test(f) && f !== 'thumb.jpg').sort();
+  if (!files.length) continue;
+  const out = path.join(dir, 'thumb.jpg');
+  await sharp(path.join(dir, files[0]))
+    .resize({ width: THUMB_W, height: THUMB_H, fit: 'cover', position: 'attention' })
+    .jpeg({ quality: THUMB_Q, mozjpeg: true })
+    .toFile(out);
+  const { size } = await stat(out);
+  console.log(`${out}  (${(size / 1024).toFixed(0)} KB)`);
+}
+
+// Manifest (slug-mapp -> filer, exkl. thumb) för galleriet på utflyktsdetaljsidan.
 const manifest = {};
 for (const d of await readdir(DEST_ROOT, { withFileTypes: true }).catch(() => [])) {
   if (!d.isDirectory()) continue;
-  const files = (await readdir(path.join(DEST_ROOT, d.name))).filter((f) => /\.jpg$/i.test(f)).sort();
+  const files = (await readdir(path.join(DEST_ROOT, d.name)))
+    .filter((f) => /\.jpg$/i.test(f) && f !== 'thumb.jpg').sort();
   if (files.length) manifest[d.name] = files;
 }
 await writeFile(path.join(DEST_ROOT, 'manifest.json'), JSON.stringify(manifest));
