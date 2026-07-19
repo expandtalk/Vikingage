@@ -43,6 +43,8 @@ const ExcursionDetail = () => {
       .then((geo) => {
         if (cancelled || !geo || !mapRef.current) return;
         const layer = L.geoJSON(geo, {
+          // Ytor (t.ex. gravfältets registrerade RAÄ-polygon) stylas i guld.
+          style: () => ({ color: '#eab308', weight: 2, fillColor: '#eab308', fillOpacity: 0.12 }),
           pointToLayer: (feature, latlng) => {
             const typ = feature?.properties?.type ?? feature?.properties?.typ;
             const color = colorByType.get(norm(typ)) ?? '#94a3b8';
@@ -138,8 +140,8 @@ const ExcursionDetail = () => {
                 </h2>
                 <p className="text-xs text-muted-foreground mb-3">
                   {sv
-                    ? 'Gravtyper och lämningar enligt informationsskylten. Kommande: varje monument utplacerat på kartan (RAÄ/K-samsök).'
-                    : 'Grave types and remains per the information sign. Coming: each monument plotted on the map (RAÄ/K-samsök).'}
+                    ? 'Gravtyper enligt informationsskylten. Kartan visar gravfältets registrerade yta (RAÄ, CC0); de ~1000 enskilda gravarna finns inte som öppen geodata och är därför inte utplacerade var för sig.'
+                    : 'Grave types per the information sign. The map shows the registered extent of the grave field (RAÄ, CC0); the ~1000 individual graves are not available as open geodata and are therefore not plotted individually.'}
                 </p>
                 <ul className="space-y-2">
                   {excursion.monumentTypes.map((m) => (
