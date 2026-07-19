@@ -1,0 +1,29 @@
+{
+ "type": "FeatureCollection",
+ "name": "broborg",
+ "_kommentar": "Broborg vid Långhundraleden (ledsegmentet för kontext). Hönsgärde: UNGEFÄRLIGT läge vid byn på andra sidan borgberget. WGS84 [lng,lat].",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": { "type": "Farled", "raa": "Långhundraleden — vattennivån ca 500 e.Kr. låg 6–7 m högre; dalen nedanför borgen var en bred segelbar farled" },
+   "geometry": { "type": "LineString", "coordinates": [
+     [18.2088, 59.5790], [17.9516, 59.7556], [17.7000, 59.8600]
+   ] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Fornborg", "raa": "Broborg (95×85 m) — förglasad ringmur, utkik/tull/signalplats; borgen reste sig ~40 m över vattnet" },
+   "geometry": { "type": "Point", "coordinates": [17.9516, 59.7556] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Gravfält", "raa": "Hönsgärde — järnåldersgravfält, 100+ gravar; trolig boplats vid nuvarande byn (ungefärligt läge)" },
+   "geometry": { "type": "Point", "coordinates": [17.9640, 59.7500] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Gravhög", "raa": "Grimsahögen — gravhög intill borgen, namnbelagd sedan 1500-talet (sägnen om hövdingadottern Grimsa)" },
+   "geometry": { "type": "Point", "coordinates": [17.9490, 59.7570] }
+  }
+ ]
+}
