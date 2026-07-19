@@ -72,6 +72,18 @@ const ExcursionDetail = () => {
     },
   });
 
+  const { data: photoManifest } = useQuery({
+    queryKey: ['excursion-photos-manifest'],
+    enabled: !!excursion?.photoDir,
+    queryFn: async () => {
+      const r = await fetch('/excursion-photos/manifest.json');
+      return r.ok ? (await r.json() as Record<string, string[]>) : {};
+    },
+  });
+  const photos = excursion?.photoDir && photoManifest?.[excursion.photoDir]
+    ? photoManifest[excursion.photoDir].map((f) => `/excursion-photos/${excursion.photoDir}/${f}`)
+    : [];
+
   const nearby = excursion
     ? nearestWithin(excursion.coords, EXCURSIONS.filter((e) => e.id !== excursion.id), (e) => e.coords, 45, 5)
     : [];
@@ -178,6 +190,19 @@ const ExcursionDetail = () => {
             </aside>
           )}
         </div>
+
+        {photos.length > 0 && (
+          <section className="mb-6">
+            <h2 className="text-lg font-semibold text-foreground mb-3">{sv ? 'Bilder från platsen' : 'Photos from the site'}</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {photos.map((src, i) => (
+                <a key={src} href={src} target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden border border-border bg-card">
+                  <img src={src} alt={`${excursion.name} — ${sv ? 'foto' : 'photo'} ${i + 1}`} loading="lazy" className="w-full h-40 object-cover hover:opacity-90 transition-opacity" />
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Runsten */}
