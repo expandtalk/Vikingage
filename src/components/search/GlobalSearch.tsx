@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Loader2, CornerDownLeft, BookOpen, Hammer, MapPin, Church,
-  Castle, Crown, Users2, Coins as CoinsIcon, Users, Sparkles, X, type LucideIcon,
+  Castle, Crown, Users2, Coins as CoinsIcon, Users, Sparkles, Gem, X, type LucideIcon,
 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -95,6 +95,12 @@ const SOURCES: Source[] = [
     table: 'coins', select: 'id,name,name_en,category,issuer,description',
     orFields: ['name', 'name_en', 'issuer', 'description', 'find_place', 'mint'],
     map: (r) => ({ key: `coin-${r.id}`, title: r.name, subtitle: [r.category, r.issuer].filter(Boolean).join(' · '), snippet: truncate(r.description), route: '/coins' }),
+  },
+  {
+    type: 'finds', labelSv: 'Fynd', labelEn: 'Finds', icon: Gem,
+    table: 'finds', select: 'id,name,find_type,material,find_place,landscape,description',
+    orFields: ['name', 'find_place', 'parish', 'landscape', 'material', 'find_type', 'description'],
+    map: (r) => ({ key: `find-${r.id}`, title: r.name, subtitle: [r.material, r.find_place || r.landscape].filter(Boolean).join(' · '), snippet: truncate(r.description), route: `/explore?searchQuery=${encodeURIComponent(r.find_place || r.name)}` }),
   },
   {
     type: 'gods', labelSv: 'Gudar', labelEn: 'Gods', icon: Sparkles,

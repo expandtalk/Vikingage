@@ -1,5 +1,5 @@
 import {
-  Cross, Sparkles, Skull, Compass, Swords, Shield, Heart, Coins, Ship, PawPrint,
+  Cross, Sparkles, Skull, Compass, Swords, Shield, Heart, Coins, Ship, PawPrint, Dog,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -55,7 +55,7 @@ export const THEMES: Theme[] = [
   {
     id: 'trade', labelSv: 'Handel & rikedom', labelEn: 'Trade & wealth', icon: Coins,
     keywords: ['silfr', 'silver', 'gull', 'guld', 'gold', 'mynt', 'coin', 'penning', 'köpman', 'merchant', 'skatt', 'treasure', 'dirham', 'handel', 'gæld'],
-    entities: ['inscriptions', 'coins', 'cities'],
+    entities: ['inscriptions', 'coins', 'cities', 'finds'],
   },
   {
     id: 'ships', labelSv: 'Skepp & hav', labelEn: 'Ships & sea', icon: Ship,
@@ -66,5 +66,10 @@ export const THEMES: Theme[] = [
     id: 'horse', labelSv: 'Häst', labelEn: 'Horse', icon: PawPrint,
     keywords: ['hross', 'häst', 'jór', 'hestr', 'horse', 'mare', 'stóð', 'hingst', 'sto'],
     entities: ['inscriptions'],
+  },
+  {
+    id: 'pets', labelSv: 'Husdjur', labelEn: 'Pets', icon: Dog,
+    keywords: ['hundr', 'hund', 'dog', 'hound', 'køttr', 'katt', 'cat', 'hvelpr', 'valp', 'rakki'],
+    entities: ['inscriptions', 'finds'],
   },
 ];
