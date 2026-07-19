@@ -12,7 +12,6 @@ import Index from "./pages/Index";
 
 // Route-level code splitting: each page becomes its own chunk, loaded on demand.
 // Keep the landing page (Index) eager so first paint has no extra round-trip.
-const Welcome = lazy(() => import("./pages/Welcome"));
 const Explore = lazy(() => import("./pages/Explore"));
 const Inscriptions = lazy(() => import("./pages/Inscriptions"));
 const Artefacts = lazy(() => import("./pages/Artefacts"));
@@ -52,7 +51,8 @@ const App = () => (
               <Suspense fallback={<RouteFallback />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
-                  <Route path="/welcome" element={<Welcome />} />
+                  {/* /welcome var en dublett av startsidan — 301 i .htaccess + client-redirect här */}
+                  <Route path="/welcome" element={<Navigate to="/" replace />} />
                   <Route path="/explore" element={<Explore />} />
 
                   {/* Dedicated pages */}

@@ -8,7 +8,6 @@ const __dirname = dirname(__filename);
 
 const routes = [
   { path: '/', priority: 1.0 },
-  { path: '/welcome', priority: 0.9 },
   { path: '/explore', priority: 0.8 },
   // English routes
   { path: '/inscriptions', priority: 0.9 },
