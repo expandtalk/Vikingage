@@ -29,6 +29,8 @@ export interface Excursion {
   relatedKings?: string[];
   /** Slug-mapp under /excursion-photos/ med komprimerade platsfoton (se manifest.json). */
   photoDir?: string;
+  /** Hämta ALLA fornborgar i denna region ur viking_fortresses (live DB) och plotta på kartan. */
+  fortressRegion?: string;
 }
 
 // Ordning som grupperna visas i på sidan.
@@ -205,13 +207,20 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'oland_hillforts',
+    photoDir: 'ismantorp-borg-oland',
+    fortressRegion: 'Öland',
     name: 'Ölands fornborgar',
     region: 'Öland',
     group: 'Öland',
     period: 'Järnålder–folkvandringstid',
-    coords: { lat: 56.62, lng: 16.54 },
-    sv: 'Öland har en unik täthet av fornborgar. Ismantorp med sina nio portar och gåtfulla husgrunder, det väldiga Gråborg, och Eketorp som grävts ut och rekonstruerats. Tillflykt, kult och maktcentra under orostider.',
-    en: "Öland has a unique density of hillforts. Ismantorp with its nine gates and enigmatic house foundations, the vast Gråborg, and Eketorp which has been excavated and reconstructed. Refuge, cult and centres of power in troubled times.",
+    coords: { lat: 56.65, lng: 16.60 },
+    sv: 'Öland har en unik täthet av fornborgar — kartan visar samtliga 16 i databasen, från Vedby borg i norr till Eketorp i söder. De fyra viktigaste: det väldiga Gråborg (Ölands största ringborg, romerska guldsolidi funna), Eketorp (tre bosättningsfaser, helt rekonstruerad som friluftsmuseum), Ismantorp med sina nio portar och 88 husgrunder, och Sandby borg — platsen för massakern ca 480 e.Kr., där de dräpta lämnades kvar i husen och allt frystes i tiden. Även Bårby borg (bysantinskt guldmynt från Justinus I) och det nyligen återupptäckta Sörby borg — möjligen Ölands största — hör till bilden. Tillflykt, kult och maktcentra under folkvandringstidens orostider. Fotona nedan är från Ismantorp.',
+    en: "Öland has a unique density of ring forts — the map shows all 16 in the database, from Vedby borg in the north to Eketorp in the south. The four most important: the vast Gråborg (Öland's largest, Roman gold solidi found), Eketorp (three occupation phases, fully reconstructed as an open-air museum), Ismantorp with its nine gates and 88 house foundations, and Sandby borg — scene of the massacre c. AD 480, where the slain were left in the houses and time stood still. Add Bårby borg (a Byzantine gold coin of Justin I) and the recently rediscovered Sörby borg — possibly Öland's largest. Refuge, cult and power centres in the troubled Migration Period. The photos below are from Ismantorp.",
+    monumentTypes: [
+      { sv: 'Rekonstruerad', en: 'Reconstructed', color: '#22c55e' },
+      { sv: 'Utgrävd', en: 'Excavated', color: '#eab308' },
+      { sv: 'Ej utgrävd', en: 'Not excavated', color: '#ef4444' },
+    ],
   },
   {
     id: 'rosaring',

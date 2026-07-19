@@ -122,6 +122,41 @@ const ExcursionDetail = () => {
       })
       .catch(() => { /* ingen geodata */ });
 
+    // Regionens ALLA fornborgar live ur DB:n (single source of truth — ingen statisk kopia).
+    // Färg efter status: rekonstruerad/utgrävd/ej utgrävd (matchar monumentTypes-legenden).
+    if (excursion.fortressRegion) {
+      const statusColor = (f: { status?: string | null; excavated?: boolean | null }) =>
+        f.status === 'reconstructed' ? '#22c55e' : f.excavated ? '#eab308' : '#ef4444';
+      const parsePoint = (c: unknown): [number, number] | null => {
+        // Postgres point(lng,lat): PostgREST ger "(lng,lat)"-sträng eller {x,y}-objekt
+        if (typeof c === 'string') {
+          const m = c.match(/\(([-\d.]+),([-\d.]+)\)/);
+          return m ? [parseFloat(m[2]), parseFloat(m[1])] : null; // [lat, lng]
+        }
+        if (c && typeof c === 'object' && 'x' in (c as object)) {
+          const p = c as { x: number; y: number };
+          return [p.y, p.x];
+        }
+        return null;
+      };
+      supabase.from('viking_fortresses')
+        .select('name, fortress_type, status, excavated, description, coordinates')
+        .ilike('region', `%${excursion.fortressRegion}%`)
+        .then(({ data }) => {
+          if (cancelled || !mapRef.current || !data?.length) return;
+          const group = L.featureGroup();
+          for (const f of data) {
+            const ll = parsePoint(f.coordinates);
+            if (!ll) continue;
+            L.circleMarker(ll, { radius: 7, color: '#1c1917', weight: 1, fillColor: statusColor(f), fillOpacity: 0.9 })
+              .bindPopup(`<strong>${f.name}</strong><br/>${f.status === 'reconstructed' ? (sv ? 'Rekonstruerad' : 'Reconstructed') : f.excavated ? (sv ? 'Utgrävd' : 'Excavated') : (sv ? 'Ej utgrävd' : 'Not excavated')}${f.description ? `<br/><em>${f.description}</em>` : ''}`)
+              .addTo(group);
+          }
+          group.addTo(mapRef.current);
+          try { const b = group.getBounds(); if (b.isValid()) mapRef.current.fitBounds(b, { padding: [30, 30] }); } catch { /* tomt */ }
+        });
+    }
+
     return () => { cancelled = true; map.remove(); mapRef.current = null; };
   }, [excursion]);
 
