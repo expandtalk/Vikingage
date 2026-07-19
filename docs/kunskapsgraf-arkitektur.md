@@ -313,7 +313,36 @@ ortnamn), `norwegian_localities`, täckningsanalys mot fullständigt sockenregis
   normaliserade in-place — börja där; migrera övriga kolumner till FK stegvis, inte
   alla åtta scheman dag ett.
 
-### P4 — Sök: rankad hybrid + väck vilande infra
+### P4 — Sök: rankad hybrid + väck vilande infra ✅ KÄRNAN KLAR 2026-07-19
+
+**Utfall** (migrationer `20260719590000`–`610000` + GlobalSearch-omskrivning):
+- **Satelliterna integrerade FÖRE FTS** (förutsättningen): readings +6 124,
+  interpretations +9 198 (ny tabell), translations +5 970 (innehållsdeduperade —
+  legacy 1 657 var till 98 % dubbletter från äldre edition). Versioner P/Q/R/S bevarade.
+- **`search_document`**: EN projektionstabell, 14 159 dokument över 16 entitetstyper
+  (inkl. socknar, ortnamn, källtexter/Edda-strofer). FTS-configs per fält: `simple`
+  för fornnordiska/translitteration, `swedish`/`english` för översättningar; label
+  viktas A, brödtext B; NBSP normaliseras vid projektion. GIN ×3 + trigram + signum_norm.
+- **`search_v1(q, limit, types[])`**: exakt signum/label + pg_trgm + FTS fuserade med
+  viktad RRF (3.0/1.5/1.0, k=60) → `{entity_type, entity_id, signum, label, sublabel,
+  snippet(ts_headline), score}`. Färskhet: triggers på 9 nodtabeller + readings/
+  interpretations → radvis ombyggnad; `rebuild_search_document()` för full.
+- **Verifierat:** "U 337"→Granbyhällen (exakt), "Jellinge"→Jelling (stavfel/trigram),
+  "þur uiki"→Vg 150/DR 110/DR 209 (simple-FTS på translitteration),
+  "Gullveig"→Valans spådom strof 21 (**Edda-FTS äntligen inkopplad**), "Orkesta"→
+  socken+ort+kyrka+Orkestastenen.
+- **GlobalSearch omskriven**: EN RPC ersätter 12 parallella ILIKE-frågor;
+  gruppordning = relevansordning (inte längre fast ordning). Tema-läget läser
+  **themes-tabellen** (slug/keywords/icon tillagda, 11 sök-linser seedade — 
+  `src/config/themes.ts` RADERAD, sanningskälla-krocken löst) och visar
+  **grafkanterna (has_theme via neighbors_v1) först**, nyckelordsträffar efter.
+- RPC-parametrar = inga PostgREST-filteruttryck → fornnordiska tecken (þ/ð) söker
+  nu korrekt (sanitizern strippade dem tidigare).
+
+**Kvar i P4 (uppföljning):** vektor-benet — embedding-pass över 6 434 inskrifter +
+edge-function-väg för full hybrid (K2). Kräver beslut om embedding-API/nyckel
+(engångskostnad trivial, <10 USD). Gold-set för RRF-tuning (V5).
+
 - **Förutsättning:** satelliterna (`readings` 7k, `interpretations` 10k, `translations`
   8.5k) integrerade från staging FÖRE FTS-indexeringen — annars indexerar söket bara
   P-projektionen och missar läsningsvarianter (löftet till språkvetarna).
