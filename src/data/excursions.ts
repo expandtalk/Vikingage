@@ -21,6 +21,12 @@ export interface Excursion {
   group?: string;
   /** Typologi över monument på platsen — visas som färgkodad legend på detaljsidan. */
   monumentTypes?: MonumentType[];
+  /** Signum för en runsten att lyfta fram på detaljsidan (inskrift + ristare + edda-länkar via RPC get_excursion_detail). */
+  signum?: string;
+  /** Titlar i historical_sources att lyfta fram som källor. */
+  relatedSources?: string[];
+  /** Namn i historical_kings att lyfta fram. */
+  relatedKings?: string[];
 }
 
 // Ordning som grupperna visas i på sidan.
@@ -49,6 +55,8 @@ export const EXCURSIONS: Excursion[] = [
     coords: { lat: 59.336, lng: 17.542 },
     sv: 'Vikingatidens främsta handelsstad, på ön Björkö i Mälaren. Här landsteg Ansgar på sin mission 829/830. Gravfält med tusentals högar, en befäst stadsvall och hamnlämningar. Världsarv tillsammans med Hovgården.',
     en: "The foremost Viking-Age trading town, on the island of Björkö in Lake Mälaren. Ansgar landed here on his mission in 829/830. Grave fields with thousands of mounds, a fortified town rampart and harbour remains. A World Heritage Site together with Hovgården.",
+    relatedKings: ['Kung Björn'],
+    relatedSources: ['Ansgars levnad (Vita Ansgarii)'],
   },
   {
     id: 'langhundraleden',
@@ -67,8 +75,8 @@ export const EXCURSIONS: Excursion[] = [
     group: 'Uppland & Mälardalen',
     period: 'Vendeltid–vikingatid',
     coords: { lat: 59.72, lng: 17.87 },
-    sv: 'En fornborg i Uppland med delvis förglasade (vitrifierade) vallar — stenmurar som utsatts för så hög värme att de smält samman. Ett fenomen som fortfarande diskuteras: rituell bränning eller försvarsverk?',
-    en: 'A hillfort in Uppland with partly vitrified ramparts — stone walls exposed to heat so intense they fused together. A phenomenon still debated: ritual burning or defensive work?',
+    sv: 'En fornborg i Uppland med dubbla stenmurar och ett medvetet förglasat (vitrifierat) murkrön — stenar som utsatts för så hög värme (över 1000 °C) att de smält samman. Byggarna valde ut särskilda bergarter: gnejs, granit och amfibolit. Förglasade fornborgar finns även på kontinenten (Storbritannien, Frankrike, Tyskland), och fenomenet diskuteras fortfarande: rituell bränning eller ett sätt att härda muren?',
+    en: 'A hillfort in Uppland with double stone walls and a deliberately vitrified rampart crown — stones exposed to heat so intense (over 1000 °C) that they fused together. The builders selected particular rock types: gneiss, granite and amphibolite. Vitrified forts also occur on the continent (Britain, France, Germany), and the phenomenon is still debated: ritual burning or a way to harden the wall?',
   },
   {
     id: 'valsgarde',
@@ -193,6 +201,7 @@ export const EXCURSIONS: Excursion[] = [
     coords: { lat: 59.2531, lng: 17.2140 },
     sv: 'Omkring 1041 ledde Ingvar den vittfarne en storslagen vikingafärd österut mot Serkland (Kaspiska havet) — som slutade i katastrof; nästan ingen kom hem. Ett tjugotal "Ingvarsstenar" i Mälardalen minner om de stupade. Mest berömd är Gripsholmsstenen (Sö 179) vid Gripsholms slott, rest av Tola efter sonen Harald, Ingvars bror: "De for manligen, fjärran efter guld, och österut gav de örnen föda. De dog söderut i Serkland."',
     en: 'Around 1041 Ingvar the Far-Travelled led a grand Viking expedition eastward toward Serkland (the Caspian Sea) — which ended in catastrophe; almost no one returned. Some two dozen "Ingvar runestones" across the Mälaren region commemorate the fallen. The most famous is the Gripsholm stone (Sö 179) at Gripsholm Castle, raised by Tóla after her son Haraldr, Ingvar\'s brother: "They fared like men far after gold, and in the east fed the eagle. They died in the south in Serkland."',
+    signum: 'Sö 179',
   },
   {
     id: 'tanum',
@@ -213,6 +222,7 @@ export const EXCURSIONS: Excursion[] = [
     coords: { lat: 59.3772, lng: 16.6156 },
     sv: 'En runristning (Sö 101) på en flat berghäll som avbildar sagan om Sigurd Fafnesbane — draksläparen. Sigurd sticker svärdet genom draken Fafner, steker dess hjärta och förstår fåglarnas tal. Nordisk hjältemytologi i sten, rest av Sigrid till minne av sin man.',
     en: 'A rune carving (Sö 101) on a flat rock face depicting the legend of Sigurd Fáfnisbani — the dragon slayer. Sigurd thrusts his sword through the dragon Fáfnir, roasts its heart and understands the speech of birds. Norse heroic mythology in stone, raised by Sigríðr in memory of her husband.',
+    signum: 'Sö 101',
   },
   {
     id: 'himmelstalund',
@@ -233,6 +243,7 @@ export const EXCURSIONS: Excursion[] = [
     coords: { lat: 58.2958, lng: 14.7752 },
     sv: 'Världens mest kända runsten, rest vid Röks kyrka omkring år 800. Med drygt 700 runor bär den den längsta kända runinskriften — en gåtfull text som Varin ristade till minne av sin son Vämod, full av anspelningar på hjältesägner och kanske Teoderik den store.',
     en: 'The world\'s most famous runestone, raised by Rök church around the year 800. With over 700 runes it bears the longest known runic inscription — an enigmatic text that Varinn carved in memory of his son Vámóðr, full of allusions to heroic legends and perhaps Theoderic the Great.',
+    signum: 'Ög 136',
   },
   {
     id: 'haga',
