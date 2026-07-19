@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { detectSignumPattern } from '@/utils/coordinateMappingEnhanced';
 import { InscriptionEditModal } from '@/components/inscription/InscriptionEditModal';
 import { MeterBadge } from '@/components/inscription/MeterBadge';
+import { AIAnalysisPanel } from '@/components/inscription/AIAnalysisPanel';
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -174,6 +175,13 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
             <DetailItem label={L.scholarly} value={<p className="whitespace-pre-wrap">{scholarly_notes}</p>} />
             <DetailItem label={L.context} value={<p className="whitespace-pre-wrap">{historical_context}</p>} />
             <DetailItem label={L.paleo} value={<p className="whitespace-pre-wrap">{paleographic_notes}</p>} />
+
+            {/* P5: graf-RAG-analys — servern hämtar källkontexten ur kunskapsgrafen */}
+            {signum && (
+              <div className="pt-4">
+                <AIAnalysisPanel signum={signum} sv={sv} />
+              </div>
+            )}
 
             {extendedData?.sources && extendedData.sources.length > 0 && (
               <div className="pt-4">
