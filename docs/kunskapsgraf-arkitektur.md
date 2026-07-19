@@ -153,8 +153,17 @@ via OpenRouter.
 
 ## 3. Faser (icke-störande, var och en självständigt shippbar)
 
-### P0 — Komplett rundata-lyft till staging + akuta fixar
+### P0 — Komplett rundata-lyft till staging + akuta fixar ✅ KLAR 2026-07-19
 *Granskningens tillägg: "lyft allt rått en gång, integrera selektivt per fas".*
+
+**Utfall:** `rundata_raw` laddat och verifierat — **92 tabeller, 211 787 rader, 92/92
+exakta radantal mot dumpen** (`scripts/verify-rundata-raw.mjs`). Teckenkodning intakt
+(þ/ð/ǫ verifierade i interpretations/readings). uuid-bryggan bekräftad: 4 232 objekt
+matchar `runic_inscriptions.id` direkt (= de nyimporterade; äldre 3 067 mappas via
+signum i integrationsfaserna). 0 grants till anon/authenticated. Pipeline:
+`scripts/rundata-to-postgres.mjs` → `scripts/data/rundata-raw/` (genererad, gitignorerad)
+→ `scripts/load-rundata-raw.sh` (psql via session-pooler, lösenord ur `.env`).
+Snabbfixar: pg_trgm ✅, ANALYZE ✅, `staleTime` 0→5 min ✅.
 - **Staging-schema `rundata_raw`** (ej PostgREST-exponerat, ej publikt RLS): lyft ALLA
   dumpens tabeller mekaniskt via EN konverteringspipeline. Timeboxa hårt — ingen
   datamodellering i P0, den sker i faserna.

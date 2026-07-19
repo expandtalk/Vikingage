@@ -15,9 +15,11 @@ export const useRunicData = (filters: UseRunicDataProps) => {
     error: inscriptionsError,
     refetch: refetchInscriptions
   } = useQuery({
-    queryKey: ['runic-inscriptions-enhanced-v2', filters], // Changed key to force refresh
+    queryKey: ['runic-inscriptions-enhanced-v2', filters],
     queryFn: () => loadEnhancedRunicDataWithBetterCoordinates(filters),
-    staleTime: 0, // Force fresh data
+    // 5 min cache per filterkombination — staleTime: 0 laddade om ~3000 rader
+    // vid varje filterändring (P0-fix, se docs/kunskapsgraf-arkitektur.md).
+    staleTime: 5 * 60 * 1000,
     retry: 2,
   });
 
