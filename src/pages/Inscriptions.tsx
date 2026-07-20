@@ -4,6 +4,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { RunicExplorerSimple } from '../components/RunicExplorerSimple';
+import { NamedStonesSection } from '../components/inscriptions/NamedStonesSection';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Inscriptions = () => {
@@ -32,6 +33,13 @@ const Inscriptions = () => {
               : 'Explore and analyze runic inscriptions from the Viking Age with advanced search and filter tools.'}
           </p>
         </div>
+        {/* Nivå 1: namngivna stenar som ingång (landskaps-grupperade) */}
+        <NamedStonesSection />
+
+        {/* Nivå 2: hela materialet med sök/filter */}
+        <h2 className="text-2xl font-bold text-white mb-4">
+          {language === 'sv' ? 'Alla inskrifter' : 'All inscriptions'}
+        </h2>
         <RunicExplorerSimple />
       </main>
       <Footer />
