@@ -47,6 +47,7 @@ export const EXCURSION_GROUPS = [
   'Södermanland',
   'Östergötland',
   'Västergötland',
+  'Småland & Kalmarsund',
   'Öland',
   'Gotland – Visby',
   'Gotland – Norra',
@@ -58,6 +59,54 @@ export const EXCURSION_GROUPS = [
 ];
 
 export const EXCURSIONS: Excursion[] = [
+  {
+    id: 'kalmar-jarnalder',
+    name: 'Kalmar – järnåldersgravfälten & Hossmo',
+    region: 'Kalmar, Småland',
+    group: 'Småland & Kalmarsund',
+    period: 'Brons-/järnålder–vikingatid',
+    coords: { lat: 56.6860, lng: 16.3250 },
+    points: [
+      { name: 'Brukshagen', lat: 56.6850, lng: 16.3250, note: 'Stort järnåldersgravfält med domarring; informationstavla.' },
+      { name: 'Djurängshagen', lat: 56.6877, lng: 16.3323, note: 'Gravfält — här begravdes en vikingatida kvinna för ~1200 år sedan (skylt).' },
+      { name: 'Tjuvbackarna', lat: 56.6791, lng: 16.3104, note: 'Gravfält med informationstavla; betesdjur delar av året.' },
+      { name: 'Mobackarna', lat: 56.6825, lng: 16.3180, note: 'Gravfält och spår av forntida åkrar (ungefärligt läge).' },
+      { name: 'Skälby gård', lat: 56.6880, lng: 16.3200, note: 'Förhistorisk gård, senare kungsgård under Gustav Vasa; idag 4H-gård (ungefärligt läge).' },
+      { name: 'Hossmo kyrka', lat: 56.6372, lng: 16.2252, note: 'Romansk 1100-talskyrka söder om Kalmar vid Ljungbyåns mynning — järnålderns och medeltidens Möre-bygd.' },
+    ],
+    sv: `## Varför är det värt ett besök
+Kalmar var en viktig plats långt före medeltidsstaden. På järnåldern sköt en havsvik in i landet (havet stod ~1,5 m högre) och den skyddade naturhamnen lockade till bosättning och handel. Runt dagens Hansa City, mellan industriområden och bostäder, ligger ett grönt stråk — Brukshagen, Tjuvbackarna, Mobackarna och Djurängshagen — med stora gravfält från järnåldern och spår av dåtidens åkrar. Mängden stora gravfält och rika fynd visar att trakten var betydelsefull redan för 1000–1500 år sedan.
+
+## Vad man kan se
+Rösen, stensättningar och stenkretsar från brons- och järnålder. En **domarring** (rund stenkrets, som man förr trodde var en tingsplats) står i Brukshagen. I Djurängen begravdes en vikingatida kvinna för omkring 1200 år sedan — det berättas på informationstavlan. Mellan gravfälten syns låga stenhägnader kring forntida åkrar. Vid stråket ligger även anrika Skälby gård.
+
+Söder om staden, vid Ljungbyåns mynning, står **Hossmo kyrka** — en av Sveriges äldsta romanska kyrkor (1100-tal) i den gamla Möre-bygden.
+
+## Hitta hit
+Gravfälten når du lätt till fots, med cykel eller på joggingrundan i stråket kring Djurängen/Brukshagen i norra Kalmar. Informationstavlor finns vid Tjuvbackarna, Brukshagen och östra Djurängshagen. Hossmo ligger några kilometer söderut.
+
+## Barnvänligt
+Ja — lättgångna stigar och tydliga skyltar. OBS: betesdjur finns vid Mobackarna, Tjuvbackarna och östra Brukshagen delar av året; gå inte in med hund i hagarna då, och mata inte djuren.
+
+## Andra saker att upptäcka i närheten
+[Öland](/explore?searchQuery=Öland) och Kalmarsund; den medeltida [Kung Valdemars segelled](/explore?focus=rivers) passerade rakt utanför. Möreleden, den gamla färdvägen från Bottorp till Stuvenäs, löper genom bygden söderut.`,
+    en: `## Why it is worth a visit
+Kalmar was an important place long before the medieval town. In the Iron Age a bay of the sea reached inland (the sea stood ~1.5 m higher) and the sheltered natural harbour drew settlement and trade. Around today's Hansa City, between industrial estates and housing, runs a green corridor — Brukshagen, Tjuvbackarna, Mobackarna and Djurängshagen — with large Iron-Age grave fields and traces of ancient fields. The many great grave fields and rich finds show the district mattered already 1000–1500 years ago.
+
+## What you can see
+Cairns, stone settings and stone circles from the Bronze and Iron Ages. A **judge's ring** (round stone circle, once thought to be a thing-site) stands in Brukshagen. At Djurängen a Viking-Age woman was buried about 1200 years ago — told on the information sign. Between the grave fields you can see low stone banks around ancient fields. By the corridor lies the historic Skälby manor.
+
+South of town, at the mouth of the Ljungbyån, stands **Hossmo church** — one of Sweden's oldest Romanesque churches (12th century) in the old Möre district.
+
+## Getting there
+The grave fields are easily reached on foot, by bike or on a jog in the corridor around Djurängen/Brukshagen in northern Kalmar. Information boards stand at Tjuvbackarna, Brukshagen and eastern Djurängshagen. Hossmo lies a few kilometres to the south.
+
+## Family-friendly
+Yes — easy paths and clear signs. Note: grazing animals are present at Mobackarna, Tjuvbackarna and eastern Brukshagen part of the year; don't enter the enclosures with a dog then, and don't feed the animals.
+
+## More to discover nearby
+[Öland](/explore?searchQuery=Öland) and the Kalmar Strait; the medieval [King Valdemar's sailing route](/explore?focus=rivers) passed just offshore. The Möre road, the old route from Bottorp to Stuvenäs, runs through the district to the south.`,
+  },
   {
     id: 'birka',
     photoDir: 'birka',
@@ -358,18 +407,14 @@ export const EXCURSIONS: Excursion[] = [
     region: 'Årsta, Stockholm',
     group: 'Södermanland',
     period: 'Sten-/bronsålder–vikingatid',
-    coords: { lat: 59.2922, lng: 18.0306 },
+    coords: { lat: 59.29224, lng: 18.03064 },
     relatedKings: ['Emund den gamle'],
+    // Endast verifierade lägen får markör: skålgropsstenens adress (geokodad) och
+    // Vallagravfältet vid Valla torg. Övriga skålgropar i trakten nämns i texten
+    // men plottas INTE — vi har inte exakta positioner och gissar inte.
     points: [
-      { name: 'Offerstenen (Brunnbyvägen 20)', lat: 59.2922, lng: 18.0306, note: 'Skålgropsstenen/älvkvarnen vid Brunnbyvägen 20, 120 44 Årsta.' },
-      { name: 'Skålgropar, Åbyvägen (Östberga)', lat: 59.2909, lng: 18.0237, note: 'Hällristning med skålgropar vid Åbyvägen.' },
-      { name: 'Skålgropar, Östbergavägen (Östberga)', lat: 59.2862, lng: 18.0368, note: 'Hällristning med skålgropar.' },
-      { name: 'Skålgropssten, Partihallarna (Årsta)', lat: 59.2935, lng: 18.0520, note: 'Ungefärligt läge.' },
-      { name: 'Skålgropssten, Lerkrogen (Älvsjö)', lat: 59.2795, lng: 18.0082 },
-      { name: 'Skålgropssten, Klockhuset (Älvsjö)', lat: 59.2808, lng: 18.0075, note: 'Ungefärligt läge.' },
-      { name: 'Skålgropssten, sydvästra Älvsjöskogen', lat: 59.2666, lng: 17.9923, note: 'Ungefärligt läge.' },
-      { name: 'Skålgropssten, Högdalen (vid pendeltågsspåret)', lat: 59.2638, lng: 18.0431, note: 'Ungefärligt läge.' },
-      { name: 'Vallagravfältet — kungagraven', lat: 59.3020, lng: 18.0575, note: 'Vikingatida gravfält med minnesskylt (ungefärligt läge). Folktraditionens kungagrav — sveakungen Emund den gamle (d. ~1060).' },
+      { name: 'Skålgropsstenen (offerstenen)', lat: 59.29224, lng: 18.03064, note: 'Brunnbyvägen 20, 120 44 Årsta.' },
+      { name: 'Vallagravfältet — kungagraven', lat: 59.29378, lng: 18.04961, note: 'Vikingatida gravfält vid Valla torg (minnesskylt). Folktraditionens kungagrav — sveakungen Emund den gamle (d. ~1060).' },
     ],
     sv: `## Varför är det värt ett besök
 Vid Brunnbyvägen 20 i Årsta ligger en skålgropssten — även kallad offersten eller älvkvarn. Årsta är ovanligt rikt på skålgropar: inom gång- och cykelavstånd finns ett halvdussin lokaler till, i Östberga, Älvsjö och Högdalen (se markörerna på kartan). Det gör trakten till ett av Stockholms bästa ställen att på nära håll förstå den här gåtfulla ristningstypen.
@@ -385,10 +430,12 @@ I skogen vid Valla står en kulturminnesskylt vid ett vikingatida gravfält. Enl
 Vägen förbi platsen är den gamla sträckningen ner mot Göta landsväg, medeltidens pulsåder söderut från Stockholm.
 
 ## Hitta hit
-Offerstenen ligger vid Brunnbyvägen 20, 120 44 Årsta — nås lätt med tunnelbana (Gullmarsplan) eller pendeltåg (Årstaberg/Älvsjö) och kort promenad. De övriga skålgroparna i Östberga, Älvsjö och Högdalen ligger utspridda; kartan visar var.
+Offerstenen ligger vid Brunnbyvägen 20, 120 44 Årsta — nås lätt med tunnelbana (Gullmarsplan) eller pendeltåg (Årstaberg/Älvsjö) och kort promenad. Vallagravfältet ligger nära Valla torg.
+
+Flera andra skålgropar finns i trakten — i Östberga (Åbyvägen och Östbergavägen), Älvsjö (Lerkrogen, Klockhuset, sydvästra Älvsjöskogen) och Högdalen. Vi plottar bara de lägen vi kunnat verifiera; de övriga går att hitta via RAÄ Fornsök.
 
 ## Barnvänligt
-Ja — korta, lättgångna stopp i stadsnära natur. Skålgroparna är tacksamma att låta barn hitta och räkna, och flera lokaler kan kombineras till en skattjakt.`,
+Ja — korta, lättgångna stopp i stadsnära natur. Skålgroparna är tacksamma att låta barn hitta och räkna.`,
     en: `## Why it is worth a visit
 By Brunnbyvägen 20 in Årsta lies a cup-mark stone — also called an offering stone or "elf mill" (älvkvarn). Årsta is unusually rich in cup marks: within walking and cycling distance there are half a dozen more sites, in Östberga, Älvsjö and Högdalen (see the map markers). That makes the district one of Stockholm's best places to get close to this enigmatic type of carving.
 
@@ -403,10 +450,12 @@ In the woods at Valla a heritage sign marks a Viking-Age grave field. Folk tradi
 The road past the site is the old course down towards Göta landsväg, the medieval artery running south from Stockholm.
 
 ## Getting there
-The offering stone lies at Brunnbyvägen 20, 120 44 Årsta — easily reached by metro (Gullmarsplan) or commuter train (Årstaberg/Älvsjö) and a short walk. The other cup marks in Östberga, Älvsjö and Högdalen are spread out; the map shows where.
+The offering stone lies at Brunnbyvägen 20, 120 44 Årsta — easily reached by metro (Gullmarsplan) or commuter train (Årstaberg/Älvsjö) and a short walk. The Valla grave field is near Valla torg.
+
+Several other cup marks lie in the district — in Östberga (Åbyvägen and Östbergavägen), Älvsjö (Lerkrogen, Klockhuset, south-western Älvsjöskogen) and Högdalen. We only plot locations we could verify; the others can be found via the National Heritage Board's Fornsök.
 
 ## Family-friendly
-Yes — short, easy stops in urban nature. The cup marks are fun for children to find and count, and several sites can be combined into a treasure hunt.`,
+Yes — short, easy stops in urban nature. The cup marks are fun for children to find and count.`,
   },
 
   // === Österleden & skärgårdshavet ===
