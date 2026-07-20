@@ -29,7 +29,7 @@ export const southernRoutePoints: RoutePoint[] = [
   {
     id: 'kristianopel',
     name: 'Kristianopel',
-    coordinates: { lat: 56.2536, lng: 16.0392 },
+    coordinates: { lat: 56.2536, lng: 16.0520 }, // i vattnet öster om Kristianopels udde
     description: 'Kristianopel - skyddat läge, sannolikt god hamnstad',
     section: 'Blekinge östkust',
     isMajorWaypoint: true
@@ -46,15 +46,16 @@ export const southernRoutePoints: RoutePoint[] = [
   {
     id: 'bergkvara',
     name: 'Bergkvara',
-    coordinates: { lat: 56.3844, lng: 16.0503 },
-    description: 'Bergkvara - naturlig hamn på Smålandskusten',
+    // Utanför hamnpiren — 16.05 låg ~2,5 km inne på land (leden red förbi hamnen, inte genom byn).
+    coordinates: { lat: 56.3840, lng: 16.1050 },
+    description: 'Bergkvara - naturlig hamn på Smålandskusten, leden passerar utanför hamnen',
     section: 'Småland östkust',
     isMajorWaypoint: true
   },
   {
     id: 'ljungbyan_vassmolosa',
     name: 'Ljungbyåns mynning (Vassmolösa)',
-    coordinates: { lat: 56.5350, lng: 16.2100 }, // Ljungbyåns/Vassmolösaåns utlopp
+    coordinates: { lat: 56.5270, lng: 16.2450 }, // strax utanför utloppet vid Ljungnäs — 16.21 låg på land
     description: 'Ljungbyån / Vassmolösaån - god ankarpunkt med tillgång till sötvatten',
     section: 'Småland östkust'
   },

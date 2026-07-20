@@ -85,7 +85,8 @@ export const HeroStatsGrid: React.FC<HeroStatsGridProps> = ({
     {
       label: localizedText.language === 'en' ? 'Holy springs & cult sites' : 'Heliga källor & kultplatser',
       value: fmt(CULT_SITE_COUNT),
-      onClick: goFocus('gods'),
+      // Egen vy (platslistan), INTE gudakorten — korten delade URL tidigare.
+      onClick: goFocus('cultSites'),
     },
     {
       label: localizedText.language === 'en' ? 'Excursions' : 'Utflykter',

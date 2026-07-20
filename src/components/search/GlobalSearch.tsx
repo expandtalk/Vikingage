@@ -167,12 +167,17 @@ export const GlobalSearch: React.FC = () => {
     setLoading(true);
     (async () => {
       try {
+        // OBS: supabase-js-buildern är en thenable UTAN .catch — att kedja .catch
+        // direkt kastade TypeError och gav "No matches" för alla teman.
+        // Promise.resolve() assimilerar buildern så .then/felgren funkar.
+        const safe = (p: unknown) =>
+          Promise.resolve(p).then((r) => r as { data: any[] | null }, () => ({ data: [] as any[] }));
         const [edgesRes, kwRes] = await Promise.all([
-          sb.rpc('neighbors_v1', { p_id: theme.id, p_predicate: 'has_theme' }).catch(() => ({ data: [] })),
-          sb.rpc('search_v1', {
+          safe(sb.rpc('neighbors_v1', { p_id: theme.id, p_predicate: 'has_theme' })),
+          safe(sb.rpc('search_v1', {
             p_q: (theme.keywords?.length ? theme.keywords : [theme.name]).join(' OR '),
             p_limit: 48,
-          }).catch(() => ({ data: [] })),
+          })),
         ]);
         if (cancelled) return;
         const out: Group[] = [];

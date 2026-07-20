@@ -5,6 +5,7 @@ import { FiltersStatusSection } from './FiltersStatusSection';
 import { ExplorerPanels } from './ExplorerPanels';
 import { TimelineModule } from '../modules/TimelineModule';
 import { GodCardsGrid } from '../gods/GodCardsGrid';
+import { CultSitesView } from '../gods/CultSitesView';
 import { usePanelManager } from '@/hooks/usePanelManager';
 import { useFocusManager } from '@/hooks/useFocusManager';
 import { LayoutHeader } from './layout/LayoutHeader';
@@ -271,6 +272,11 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
       {/* Gudakorten FÖRST i gods-fokus — bilderna är huvudinnehållet, kartan stöd */}
       {currentFocus === 'gods' && (
         <GodCardsGrid onFocusDeity={onFocusDeity} />
+      )}
+
+      {/* Heliga källor & kultplatser: PLATSLISTAN i fokus (Frej/Freja först), klick zoomar kartan */}
+      {currentFocus === 'cultSites' && (
+        <CultSitesView onNavigate={mapNavigate ? (lat, lng, zoom) => mapNavigate(lat, lng, zoom ?? 12) : undefined} />
       )}
 
       {/* Mobile Quick Actions */}

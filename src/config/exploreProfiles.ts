@@ -323,6 +323,22 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         religious_other: true,
       });
       break;
+    case "cultSites":
+      // Heliga källor & kultplatser: PLATSERNA i fokus (lista + karta), inga gudakort.
+      Object.assign(o, {
+        gods: false,
+        religious_places: true,
+        runic_inscriptions: false,
+        religious_odin: true,
+        religious_thor: true,
+        religious_frey: true,
+        religious_freyja: true,
+        religious_frigg: true,
+        religious_ull: true,
+        religious_njord: true,
+        religious_other: true,
+      });
+      break;
     case "hundreds":
       Object.assign(o, { hundreds: true, runic_inscriptions: true });
       break;
