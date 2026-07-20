@@ -63,7 +63,9 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   landscape:      { labelSv: 'Landskap & regioner', labelEn: 'Landscapes & regions', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   inscription:    { labelSv: 'Runinskrifter', labelEn: 'Inscriptions', icon: BookOpen, route: (h) => `/explore?searchQuery=${enc(h.signum ?? h.label)}` },
   carver:         { labelSv: 'Ristare', labelEn: 'Carvers', icon: Hammer, route: (h) => `/carvers?carver=${h.entity_id}` },
-  parish:         { labelSv: 'Socknar', labelEn: 'Parishes', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  // Socknar går till socken-vyn (förvald via ?region=) — INTE textsök: sockennamn
+  // som "Runsten" är också vanliga ord och geokodas fel som fritext.
+  parish:         { labelSv: 'Socknar', labelEn: 'Parishes', icon: MapPin, route: (h) => `/explore?focus=parishes&region=${enc(h.label)}` },
   place:          { labelSv: 'Ortnamn', labelEn: 'Place names', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   christian_site: { labelSv: 'Heliga platser', labelEn: 'Holy sites', icon: Church, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   fortress:       { labelSv: 'Försvar', labelEn: 'Fortresses', icon: Castle, route: () => '/fortresses' },
@@ -89,7 +91,7 @@ const themeIcon = (t: DbTheme): LucideIcon => THEME_ICONS[t.slug ?? ''] ?? Spark
 // Gruppera rankade träffar per typ; gruppordning = första (bästa) träffens position.
 // Per-typ-tak: regionsökningar ska visa ALLA borgar (Öland har 16), men inskrifter
 // klipps tidigare — där finns alltid "visa alla på kartan"-länken.
-const GROUP_CAP: Record<string, number> = { fortress: 16, parish: 12, inscription: 8 };
+const GROUP_CAP: Record<string, number> = { fortress: 16, parish: 12, inscription: 20 };
 const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
   const groups: Group[] = [];
   const byType = new Map<string, Group>();
@@ -103,14 +105,12 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
       groups.push(g);
     }
     if (g.rows.length >= (GROUP_CAP[h.entity_type] ?? defaultCap)) continue;
-    // Namngivna stenar (label = "Karlevistenen") får signum i undertexten.
-    const subtitle = h.signum && h.signum !== h.label
-      ? [h.signum, h.sublabel].filter(Boolean).join(' · ')
-      : h.sublabel ?? undefined;
+    // Inskrifter: signum först, populärnamnet efter ("Öl 1 — Karlevistenen").
+    const isNamedInscription = h.entity_type === 'inscription' && h.signum && h.signum !== h.label;
     g.rows.push({
       key: `${h.entity_type}-${h.entity_id}`,
-      title: h.label,
-      subtitle,
+      title: isNamedInscription ? `${h.signum} — ${h.label}` : h.label,
+      subtitle: h.sublabel ?? undefined,
       signum: h.signum ?? undefined,
       snippet: stripTags(h.snippet),
       route: meta.route(h),

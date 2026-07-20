@@ -146,6 +146,21 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
   const [selected, setSelected] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'name' | 'count' | 'country'>('name');
 
+  // Deep-link: /explore?focus=parishes&region=Runsten förväljer socknen/häradet.
+  // (Globalsökets socken-träffar länkar hit — textsök på t.ex. "Runsten" är fel
+  // verktyg för ett ortnamn som också är ett vanligt ord.)
+  const appliedRegionParam = useRef(false);
+  useEffect(() => {
+    if (appliedRegionParam.current || regions.length === 0) return;
+    const param = new URLSearchParams(window.location.search).get('region')?.trim();
+    if (!param) { appliedRegionParam.current = true; return; }
+    const match = regions.find((r) => r.name.toLowerCase() === param.toLowerCase())
+      ?? regions.find((r) => r.name.toLowerCase().startsWith(param.toLowerCase()));
+    if (match) { setSelected(match.name); setQuery(match.name); }
+    else setQuery(param);
+    appliedRegionParam.current = true;
+  }, [regions]);
+
   const filteredRegions = useMemo(() => {
     const q = query.trim().toLowerCase();
     const base = q
