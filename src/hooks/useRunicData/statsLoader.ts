@@ -51,10 +51,14 @@ export const loadDatabaseStats = async (): Promise<DbStats> => {
       console.error('Error loading Viking cities count:', citiesError);
     }
 
-    // Get Viking fortresses count
-    const { count: fortressesCount, error: fortressesError } = await supabase
-      .from('viking_fortresses')
-      .select('*', { count: 'exact', head: true });
+    // Fornborgs-/befästningssiffra = kurerade befästningar (viking_fortresses)
+    // + hela fornborgsregistret (swedish_hillforts, ~1235). Kortet "Fornborgar"
+    // ska visa hela beståndet, inte bara de 49 kurerade.
+    const [{ count: vfCount, error: fortressesError }, { count: hfCount }] = await Promise.all([
+      supabase.from('viking_fortresses').select('*', { count: 'exact', head: true }),
+      supabase.from('swedish_hillforts').select('*', { count: 'exact', head: true }),
+    ]);
+    const fortressesCount = (vfCount || 0) + (hfCount || 0);
 
     if (fortressesError) {
       console.error('Error loading Viking fortresses count:', fortressesError);
