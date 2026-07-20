@@ -21,6 +21,7 @@ import {
   Compass,
   Scale,
   Swords,
+  BarChart3,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -137,6 +138,13 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Diocletianus prisedikt (301 e.Kr.) — romerska priser omräknade.',
     descEn: "Diocletian's Price Edict (301 AD) — Roman prices converted.",
     icon: Scale, category: 'history',
+  },
+  {
+    pathEn: '/statistics', pathSv: '/sv/statistik',
+    labelSv: 'Statistik', labelEn: 'Statistics',
+    descSv: 'Bläddra materialet — antal per landskap, socken, härad och ristare.',
+    descEn: 'Browse the material — counts per province, parish, hundred and carver.',
+    icon: BarChart3, category: 'science',
   },
 ];
 
