@@ -210,7 +210,9 @@ export const GlobalSearch: React.FC = () => {
     const t = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await sb.rpc('search_v1', { p_q: q, p_limit: 60 });
+        // 120: regionsök (t.ex. "Gotland": 400+ inskrifter) tryckte annars ut
+        // fornborgar/socknar ur topp-60; per-typ-taket i groupHits klipper sedan.
+        const res = await sb.rpc('search_v1', { p_q: q, p_limit: 120 });
         setGroups(groupHits(res.data ?? []));
       } catch {
         setGroups([]);
