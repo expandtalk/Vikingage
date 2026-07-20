@@ -69,6 +69,8 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   place:          { labelSv: 'Ortnamn', labelEn: 'Place names', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   christian_site: { labelSv: 'Heliga platser', labelEn: 'Holy sites', icon: Church, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   fortress:       { labelSv: 'Försvar', labelEn: 'Fortresses', icon: Castle, route: () => '/fortresses' },
+  hillfort:       { labelSv: 'Fornborgar', labelEn: 'Hillforts', icon: Castle, route: () => '/fortresses' },
+  folk_group:     { labelSv: 'Folkgrupper', labelEn: 'Peoples', icon: Users2, route: () => '/explore?focus=folkGroups' },
   city:           { labelSv: 'Städer', labelEn: 'Cities', icon: Castle, route: () => '/fortresses' },
   king:           { labelSv: 'Kungar', labelEn: 'Kings', icon: Crown, route: () => '/royal-chronicles' },
   dynasty:        { labelSv: 'Släkter', labelEn: 'Dynasties', icon: Users2, route: () => '/royal-chronicles' },
