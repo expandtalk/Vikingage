@@ -10,6 +10,7 @@ import { MapPin, Compass, Calendar, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EXCURSIONS, EXCURSION_GROUPS } from '@/data/excursions';
 import { ExcursionsMap } from '@/components/excursions/ExcursionsMap';
+import { excerptText } from '@/components/excursions/ExcursionProse';
 
 const Excursions = () => {
   const { language } = useLanguage();
@@ -121,8 +122,8 @@ const Excursions = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {/* Teaser — hela texten + närhetslistorna bor på detaljsidan (nyfikenhet > vägg av text). */}
-                  <p className="text-sm text-muted-foreground line-clamp-3">{sv ? e.sv : e.en}</p>
+                  {/* Teaser — markdown strippad; hela texten + närhetslistor bor på detaljsidan. */}
+                  <p className="text-sm text-muted-foreground line-clamp-3">{excerptText(sv ? e.sv : e.en)}</p>
 
                   <div className="flex flex-wrap gap-3 pt-1">
                     <Link

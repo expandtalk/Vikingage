@@ -35,6 +35,8 @@ export interface Excursion {
   thumbCredit?: string;
   /** Hämta ALLA fornborgar i denna region ur viking_fortresses (live DB) och plotta på kartan. */
   fortressRegion?: string;
+  /** Extra intressepunkter att markera på detaljkartan (t.ex. flera lämningar inom samma utflykt). */
+  points?: { name: string; lat: number; lng: number; note?: string }[];
 }
 
 // Ordning som grupperna visas i på sidan.
@@ -358,8 +360,40 @@ export const EXCURSIONS: Excursion[] = [
     period: 'Sten-/bronsålder–vikingatid',
     coords: { lat: 59.298, lng: 18.050 },
     relatedKings: ['Emund den gamle'],
-    sv: 'Vid Brunnbyvägen i Årsta söder om Stockholm ligger en skålgropssten — Sveriges vanligaste typ av hällristning, även kallad älvkvarn. Groparna tros ha använts som offer- och blotstenar under bronsåldern, och längs stenen löper en form som påminner om en livmoder. I Mälardalen offrade man ännu i historisk tid i älvkvarnar för att bota sjukdomar som troddes orsakade av älvor. Trakten var bebodd tidigt: vid den forna vikens stränder har flera stenyxor hittats, från omkring 2000 f.Kr., och inom Stockholms stad finns ett tjugotal skålgropslokaler. I skogen vid Valla står en kulturminnesskylt vid ett gravfält från vikingatiden. Enligt folktraditionen ska sveakungen Emund den gamle ha begravts här efter sin död omkring 1060. Utgrävningar i slutet av 1990-talet gav inget stöd för hypotesen, men flera arabiska guldmynt från slutet av 900-talet påträffades — det är alltså inte osannolikt att någon betydelsefull person dött här. Vägen förbi platsen är dessutom den gamla sträckningen ner mot Göta landsväg, medeltidens pulsåder söderut från Stockholm.',
-    en: 'By Brunnbyvägen in Årsta, south of Stockholm, lies a cup-mark stone — Sweden\'s most common type of rock carving, also called an "elf mill" (älvkvarn). The cups are thought to have served as offering stones in the Bronze Age, and a womb-like form runs along the stone. In the Mälaren valley, offerings were still made in elf mills in historical times to cure illnesses believed to be caused by elves. The area was settled early: several stone axes from around 2000 BC have been found along the shores of the former inlet, and some twenty cup-mark sites are known within the City of Stockholm. In the woods at Valla a heritage sign marks a Viking-Age grave field. Folk tradition holds that the Swedish king Emund the Old was buried here after his death around 1060. Excavations in the late 1990s gave no support for the hypothesis, but several Arab gold coins from the late 900s were found — so it is not unlikely that someone of importance died here. The road past the site is also the old course down towards Göta landsväg, the medieval artery running south from Stockholm.',
+    points: [
+      { name: 'Skålgropsstenen (offerstenen)', lat: 59.298, lng: 18.050, note: 'Vid Brunnbyvägen — själva älvkvarnen/offerstenen.' },
+      { name: 'Vallagravfältet', lat: 59.3020, lng: 18.0575, note: 'Vikingatida gravfält i skogen vid Valla (ungefärligt läge). Folktraditionens Emundsgrav.' },
+    ],
+    sv: `## Varför är det värt ett besök
+Vid Brunnbyvägen i Årsta ligger en skålgropssten — Sveriges vanligaste typ av hällristning, även kallad älvkvarn. Groparna tros ha använts som offer- och blotstenar under bronsåldern, och längs stenen löper en form som påminner om en livmoder. I Mälardalen offrade man ännu i historisk tid i älvkvarnar för att bota sjukdomar som troddes orsakade av älvor.
+
+Området var bebott tidigt: vid den forna vikens stränder har flera stenyxor hittats från omkring 2000 f.Kr., och inom Stockholms stad finns ett tjugotal skålgropslokaler.
+
+## Andra saker att upptäcka i närheten
+I skogen vid Valla står en kulturminnesskylt vid ett vikingatida gravfält. Enligt folktraditionen ska sveakungen Emund den gamle ha begravts här efter sin död omkring 1060. Utgrävningar i slutet av 1990-talet gav inget stöd för hypotesen, men flera arabiska guldmynt från slutet av 900-talet påträffades — det är alltså inte osannolikt att någon betydelsefull person dött här. Läs mer om kungen på [Kungakrönikorna](/royal-chronicles).
+
+Vägen förbi platsen är den gamla sträckningen ner mot Göta landsväg, medeltidens pulsåder söderut från Stockholm.
+
+## Hitta hit
+Skålgropsstenen ligger vid Brunnbyvägen i Årsta, någon kilometer söder om Stockholms innerstad — nås lätt med tunnelbana (Årsta/Gullmarsplan) och kort promenad. Vallagravfältet ligger i skogspartiet strax nordost om stenen.
+
+## Barnvänligt
+Ja — en kort, lättgången utflykt i stadsnära natur. Skålgroparna är tacksamma att låta barn hitta och räkna, och gravfältet vid Valla nås på en promenad.`,
+    en: `## Why it is worth a visit
+By Brunnbyvägen in Årsta lies a cup-mark stone — Sweden's most common type of rock carving, also called an "elf mill" (älvkvarn). The cups are thought to have served as Bronze Age offering stones, and a womb-like form runs along the stone. In the Mälaren valley, offerings were still made in elf mills in historical times to cure illnesses believed to be caused by elves.
+
+The area was settled early: stone axes from around 2000 BC have been found along the shores of the former inlet, and some twenty cup-mark sites are known within the City of Stockholm.
+
+## More to discover nearby
+In the woods at Valla a heritage sign marks a Viking-Age grave field. Folk tradition holds that the Swedish king Emund the Old was buried here after his death around 1060. Excavations in the late 1990s gave no support, but several Arab gold coins from the late 900s were found — so it is not unlikely that someone of importance died here. Read more about the king in the [Royal Chronicles](/royal-chronicles).
+
+The road past the site is the old course down towards Göta landsväg, the medieval artery running south from Stockholm.
+
+## Getting there
+The cup-mark stone lies by Brunnbyvägen in Årsta, about a kilometre south of central Stockholm — easily reached by metro (Årsta/Gullmarsplan) and a short walk. The Valla grave field is in the woodland just north-east of the stone.
+
+## Family-friendly
+Yes — a short, easy outing in urban nature. The cup marks are fun for children to find and count, and the Valla grave field is a short walk away.`,
   },
 
   // === Österleden & skärgårdshavet ===

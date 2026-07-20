@@ -17,6 +17,7 @@ import { nearestWithin } from '@/utils/geoDistance';
 import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
 import { ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFinds';
 import { PLACE_TYPE_LABEL, FIND_TYPE_LABEL } from '@/components/excursions/nearbyLabels';
+import { ExcursionProse, excerptText } from '@/components/excursions/ExcursionProse';
 
 const ATTR_LABEL: Record<string, { sv: string; en: string }> = {
   signed: { sv: 'signerad', en: 'signed' },
@@ -108,6 +109,17 @@ const ExcursionDetail = () => {
     }).addTo(map);
     L.circleMarker([lat, lng], { radius: 9, color: '#78350f', fillColor: '#eab308', fillOpacity: 0.9, weight: 2 })
       .addTo(map).bindPopup(`<strong>${excursion.name}</strong>`);
+
+    // Extra intressepunkter (t.ex. skålgropsstenen + gravfältet i samma utflykt)
+    const extraPts = excursion.points ?? [];
+    extraPts.forEach((pt) => {
+      L.marker([pt.lat, pt.lng]).addTo(map)
+        .bindPopup(`<strong>${pt.name}</strong>${pt.note ? `<br/>${pt.note}` : ''}`);
+    });
+    if (extraPts.length) {
+      const pts: [number, number][] = [[lat, lng], ...extraPts.map((p) => [p.lat, p.lng] as [number, number])];
+      try { map.fitBounds(L.latLngBounds(pts), { padding: [40, 40], maxZoom: 15 }); } catch { /* enda punkt */ }
+    }
     mapRef.current = map;
     setTimeout(() => map.invalidateSize(), 100);
 
@@ -194,7 +206,7 @@ const ExcursionDetail = () => {
   return (
     <div className="min-h-screen viking-bg">
       <PageMeta title={`${excursion.name} — Utflykt`} titleEn={`${excursion.name} — Excursion`}
-        description={excursion.sv} descriptionEn={excursion.en} />
+        description={excerptText(excursion.sv)} descriptionEn={excerptText(excursion.en)} />
       <Header /><Breadcrumbs />
       <main className="container mx-auto px-4 py-8">
         <Link to="/excursions" className="inline-flex items-center gap-1 text-sm text-gold hover:underline mb-4">
@@ -208,7 +220,7 @@ const ExcursionDetail = () => {
             <Badge variant="outline" className="text-xs flex items-center gap-1"><Calendar className="h-3 w-3" />{excursion.period}</Badge>
             {stone?.meter && <MeterBadge meter={stone.meter} sv={sv} />}
           </div>
-          <p className="text-muted-foreground text-lg max-w-3xl">{sv ? excursion.sv : excursion.en}</p>
+          <ExcursionProse text={sv ? excursion.sv : excursion.en} className="max-w-3xl text-lg" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
