@@ -56,12 +56,36 @@ export const CultSitesView: React.FC<Props> = ({ onNavigate }) => {
 
   return (
     <div className="viking-card rounded-lg border border-border p-4 mb-4">
+      {/* Hero: Freja (fruktbarhetskulten är sektionens signum). Källbilden är 608px —
+          oskarpt cover-lager ger atmosfär, skarp porträttpanel behåller detaljerna. */}
+      <div className="relative h-52 md:h-64 -m-4 mb-4 overflow-hidden rounded-t-lg bg-gradient-to-r from-emerald-950 via-stone-900 to-amber-950">
+        <img
+          src="/excursion-photos/gudar/ungdom-freja.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover blur-2xl scale-125 opacity-45 saturate-150"
+        />
+        <img
+          src="/excursion-photos/gudar/ungdom-freja.jpg"
+          alt="Freja"
+          className="absolute right-0 top-0 h-full object-contain [mask-image:linear-gradient(to_left,black_70%,transparent_100%)]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute left-5 bottom-4 max-w-[60%]">
+          <h2 className="text-2xl md:text-3xl font-bold text-amber-50 drop-shadow flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-gold shrink-0" />
+            {sv ? 'Heliga källor & kultplatser' : 'Holy springs & cult sites'}
+          </h2>
+          <p className="text-sm text-amber-100/80 mt-1 drop-shadow">
+            {sv
+              ? `${total} platser där forntidens kult möter landskapet — offerkällor, lundar och vi.`
+              : `${total} places where ancient cult meets the landscape — springs, groves and sanctuaries.`}
+          </p>
+        </div>
+        <span className="absolute right-2 bottom-1.5 text-[10px] text-white/50">Freja</span>
+      </div>
       <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-gold" />
-          {sv ? 'Heliga källor & kultplatser' : 'Holy springs & cult sites'}
-          <span className="text-sm font-normal text-muted-foreground">· {total}</span>
-        </h2>
         <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => setDeityFilter(null)}
