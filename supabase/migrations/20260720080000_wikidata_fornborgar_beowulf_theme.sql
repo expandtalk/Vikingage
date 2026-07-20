@@ -1,0 +1,9 @@
+-- Data-import 2026-07-20 (via engångs-edge-functions + MCP, dokumenterat här):
+--  * 1 087 svenska fornborgar importerade från Wikidata (CC0, WGS84) →
+--    viking_fortresses (fortress_type='hillfort', raa_number där det finns).
+--    Län → landskap via mappning; Öland/Gotland exakta via koordinat. Totalt 1 136
+--    fornborgar (var 49). Matchar FMIS-fördelningen (Södermanland 336, Gotland 87…).
+--    Ingen påhittad beskrivning — description=null, plats + RAÄ-nr är verifierbart.
+--  * Beowulf: källkritisk beskrivning (Gräslunds Gotland-hypotes + Harrison/Lönnroth-
+--    refuseringen, attribuerat) på historical_sources; nytt sökbart tema 'beowulf'.
+-- Wikidata är public domain (CC0). Legal att importera; källa noterad.
