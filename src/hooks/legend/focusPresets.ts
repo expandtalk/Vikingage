@@ -68,6 +68,8 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
         european_rivers: true, // Europeiska floder
         trade_routes: true, // Handelsrutter
         valdemar_route: true,
+        eriksgatan: true, // Kungavalets riksrunda ritas i farleds-/ruttvyn
+        land_routes: true,
         viking_cities: true, // Aktivera städer för handelskontexten
         stake_barriers: true // Aktivera Danvirke/Götavirke
       };

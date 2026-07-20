@@ -280,6 +280,7 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         water_routes: true,
         trade_routes: true,
         valdemar_route: true,
+        eriksgatan: true,
         stake_barriers: true,
         viking_roads: true,
         viking_cities: true,

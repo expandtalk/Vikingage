@@ -148,11 +148,11 @@ const Kungstavla = () => {
   return (
     <div className="min-h-screen viking-bg">
       <PageMeta
-        title="Kungstavla (Hnefatafl)"
-        titleEn="King's Board (Hnefatafl)"
-        description="Spela Hnefatafl — vikingatidens asymmetriska strategispel (kungstavla) direkt i webbläsaren, med tre teman, AI-motståndare och historisk bakgrund."
+        title="Kungsnäve (Hnefatafl)"
+        titleEn="Kungsnäve (Hnefatafl)"
+        description="Spela Hnefatafl — vikingatidens asymmetriska strategispel (Kungsnäve) direkt i webbläsaren, med tre teman, AI-motståndare och historisk bakgrund."
         descriptionEn="Play Hnefatafl — the Viking Age asymmetric strategy game — in the browser, with three themes, an AI opponent and historical background."
-        keywords="hnefatafl, kungstavla, tafl, vikingaspel, brädspel, strategispel"
+        keywords="hnefatafl, kungsnäve, kungstavla, tafl, vikingaspel, brädspel, strategispel"
       />
       <Header />
       <Breadcrumbs />
@@ -162,7 +162,7 @@ const Kungstavla = () => {
           <div className="wrap">
             <header className="masthead">
               <div>
-                <h1 className="title">Hnefatafl <span className="em">&bull;</span> <span style={{ fontSize: '.5em', letterSpacing: '.18em', color: 'var(--text-d)' }}>KUNGSTAVLA</span></h1>
+                <h1 className="title">Hnefatafl <span className="em">&bull;</span> <span style={{ fontSize: '.5em', letterSpacing: '.18em', color: 'var(--text-d)' }}>KUNGSNÄVE</span></h1>
                 <p className="tagline">Nordiskt strategispel från yngre järnåldern. <span className="rune">&#5921;</span> Anfallarna omringar — kungen flyr till ett hörn.</p>
               </div>
             </header>

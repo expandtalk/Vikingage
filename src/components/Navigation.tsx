@@ -163,9 +163,9 @@ const profile: NavLink = {
 };
 
 const game: NavLink = {
-  pathEn: '/kungstavla', pathSv: '/kungstavla',
+  pathEn: '/kungsnave', pathSv: '/kungsnave',
   labelSv: 'Spel', labelEn: 'Game',
-  descSv: 'Spela Hnefatafl (kungstavla)', descEn: "Play Hnefatafl (the king's board)",
+  descSv: 'Spela Hnefatafl (Kungsnäve)', descEn: "Play Hnefatafl (the king's game)",
   icon: Swords,
 };
 

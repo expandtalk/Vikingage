@@ -101,8 +101,9 @@ const App = () => (
                   <Route path="/utflykter/:id" element={<ExcursionDetail />} />
                   <Route path="/coins" element={<Coins />} />
                   <Route path="/sv/mynt" element={<Coins />} />
-                  <Route path="/kungstavla" element={<Kungstavla />} />
-                  <Route path="/kings-board" element={<Kungstavla />} />
+                  <Route path="/kungsnave" element={<Kungstavla />} />
+                  <Route path="/kungstavla" element={<Navigate to="/kungsnave" replace />} />
+                  <Route path="/kings-board" element={<Navigate to="/kungsnave" replace />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/profile" element={<Profile />} />

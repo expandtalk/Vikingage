@@ -5,6 +5,7 @@ import { useMapInstance } from './useMapInstance';
 import { useMapTileLayer } from './useMapTileLayer';
 import { useMapRiverSystems } from './useMapRiverSystems';
 import { useMapValdemarsRoute } from './useMapValdemarsRoute';
+import { useMapEriksgata } from './useMapEriksgata';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -136,6 +137,14 @@ export const useMapInitialization = ({
     isMapReady: isMapReadyRef,
     safelyAddLayer,
     selectedTimePeriod
+  });
+
+  // Eriksgatan (kungavalets riksrunda) — ritas från DB när legendknappen är på
+  useMapEriksgata({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+    safelyAddLayer,
   });
 
   return { 
