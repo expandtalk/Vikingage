@@ -124,6 +124,44 @@ export const generateBasicInscriptionItems = (
     enabled: enabledLegendItems.viking_fortresses !== false
   });
 
+  // 6b. VÅRDKASAR — RAÄ-lämningar (signaleldsnät). Eget lager, AV som standard.
+  // OBS: === true (inte !== false) så legendknappens läge matchar kartlagrets
+  // gate i useMapBeaconSites (som också kräver === true). Annars visar knappen PÅ
+  // medan lagret är släckt.
+  items.push({
+    id: 'beacon_sites',
+    label: '🔥 Vårdkasar',
+    color: '#f59e0b',
+    count: 211,
+    enabled: enabledLegendItems.beacon_sites === true
+  });
+
+  // Kulturarv (spatialt) — viewport-laddat lager (Steg 1). Skalar till obegränsat
+  // antal punkter; laddar bara det som är i vyn via sites_in_bbox. AV som standard.
+  // Kulturlager (spatialt, viewport-laddat). Kategori med per-typ-kryss — tänd
+  // en typ i taget (sockenkyrkor, kloster, vårdkasar…). Allt AV som standard.
+  // Föräldern 'heritage_sites' = "visa alla typer".
+  items.push({
+    id: 'heritage_sites',
+    label: '🗺️ Kulturlager',
+    color: '#7c3aed',
+    count: 6385,
+    // Föräldern PÅ som standard så per-typ-kryssen är åtkomliga (LegendCategory
+    // döljer barn om parent är av). Kartan drivs av barnen — alla av → tom karta.
+    enabled: enabledLegendItems.heritage_sites !== false,
+    type: 'category',
+    children: [
+      { id: 'heritage_kyrka', label: 'Sockenkyrkor', color: '#e11d48', count: 4223, enabled: enabledLegendItems.heritage_kyrka === true },
+      { id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: enabledLegendItems.heritage_kapell === true },
+      { id: 'heritage_kloster', label: 'Kloster', color: '#c026d3', count: 93, enabled: enabledLegendItems.heritage_kloster === true },
+      { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: enabledLegendItems.heritage_vardkase === true },
+      { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: enabledLegendItems.heritage_dos === true },
+      { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: enabledLegendItems.heritage_ganggrift === true },
+      { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: enabledLegendItems.heritage_bildsten === true },
+      { id: 'heritage_skeppssattning', label: 'Skeppssättningar', color: '#0d9488', count: 865, enabled: enabledLegendItems.heritage_skeppssattning === true },
+    ],
+  });
+
   // 7. RESTEN - kultplatser och andra objekt - dynamisk räkning
   const religiousChildren = [
     { id: 'religious_thor', label: t('thorCultSites'), color: '#ef4444', count: getDeityPlaces('thor', selectedTimePeriod).length },

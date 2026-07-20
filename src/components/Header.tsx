@@ -15,6 +15,14 @@ import { Navigation, MobileNav } from './Navigation';
 import { GlobalSearch } from './search/GlobalSearch';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 export const Header = () => {
   const { user } = useAuth();
@@ -35,9 +43,13 @@ export const Header = () => {
     navigate('/admin');
   };
 
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
   const texts = {
-    sv: { signOut: 'Logga ut', signIn: 'Logga in', admin: 'Admin' },
-    en: { signOut: 'Sign out', signIn: 'Sign in', admin: 'Admin' }
+    sv: { signOut: 'Logga ut', signIn: 'Logga in', admin: 'Admin', profile: 'Profil', account: 'Kontomeny' },
+    en: { signOut: 'Sign out', signIn: 'Sign in', admin: 'Admin', profile: 'Profile', account: 'Account menu' }
   };
   
   const t = texts[language] || texts.en;
@@ -54,9 +66,6 @@ export const Header = () => {
               <h1 className="text-lg font-bold text-white leading-tight">
                 Viking Age
               </h1>
-              <p className="text-xs text-slate-400 leading-tight">
-                Archaeological & Linguistic Database
-              </p>
             </div>
           </Link>
 
@@ -68,32 +77,39 @@ export const Header = () => {
             <MobileNav />
             
             {user ? (
-              <>
-                <div className="hidden lg:flex items-center space-x-2">
-                  <User className="h-4 w-4 text-slate-400" />
-                  <span className="text-sm text-slate-300">{user.email}</span>
-                </div>
-                {isAdmin && (
-                  <Button 
-                    onClick={handleAdminClick}
-                    variant="outline" 
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
                     size="sm"
                     className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                    aria-label={t.account}
                   >
-                    <Settings className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">{t.admin}</span>
+                    <User className="h-4 w-4" />
                   </Button>
-                )}
-                <Button 
-                  onClick={handleSignOut}
-                  variant="outline" 
-                  size="sm"
-                  className="border-slate-600 text-slate-300 hover:bg-slate-800"
-                >
-                  <LogOut className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">{t.signOut}</span>
-                </Button>
-              </>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-slate-900 border-slate-700 text-slate-200">
+                  <DropdownMenuLabel className="truncate font-normal text-slate-400">
+                    {user.email}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-700" />
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={handleAdminClick} className="cursor-pointer focus:bg-slate-800 focus:text-white">
+                      <Settings className="h-4 w-4 mr-2" />
+                      {t.admin}
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer focus:bg-slate-800 focus:text-white">
+                    <User className="h-4 w-4 mr-2" />
+                    {t.profile}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-slate-700" />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer focus:bg-slate-800 focus:text-white">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    {t.signOut}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Button 
                 onClick={handleSignIn}

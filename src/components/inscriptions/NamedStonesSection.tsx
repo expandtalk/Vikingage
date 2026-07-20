@@ -33,6 +33,13 @@ const COUNTRY_SV: Record<string, string> = {
   Germany: 'Tyskland', Ukraine: 'Ukraina', England: 'England', Scotland: 'Skottland',
 };
 
+// Ikoniska stenar överst (Daniel 2026-07-20). Rökstenen först, sedan två av de
+// mest kända. Visas i egen "Mest kända"-rad före de landskaps-/landsgrupperade.
+const FEATURED_SIGNUMS = ['Ög 136', 'Öl 1', 'Sö 101']; // Rökstenen, Karlevistenen, Sigurdsristningen
+// Ordning för utländska grupper (efter alla svenska landskap).
+const FOREIGN_ORDER = ['Norway', 'Denmark', 'England', 'Scotland', 'Ireland', 'Isle of Man',
+  'Germany', 'Latvia', 'Ukraine', 'Russia', 'Turkey', 'Greece', 'Iceland', 'Greenland'];
+
 const COLLAPSED_COUNT = 8;
 
 export const NamedStonesSection: React.FC = () => {
@@ -49,24 +56,35 @@ export const NamedStonesSection: React.FC = () => {
     },
   });
 
-  const groups = useMemo(() => {
-    if (!stones) return [];
-    const byGroup = new Map<string, NamedStone[]>();
+  const { featured, groups } = useMemo(() => {
+    if (!stones) return { featured: [] as NamedStone[], groups: [] as { title: string; foreign: boolean; country: string | null; items: NamedStone[] }[] };
+    const featured = FEATURED_SIGNUMS.map((sig) => stones.find((s) => s.signum === sig)).filter(Boolean) as NamedStone[];
+    const featuredSet = new Set(FEATURED_SIGNUMS);
+    const itemSort = (a: NamedStone, b: NamedStone) =>
+      Number(b.name_source === 'wikipedia-artikel') - Number(a.name_source === 'wikipedia-artikel')
+      || Number(!!b.image_url) - Number(!!a.image_url)
+      || a.name.localeCompare(b.name, 'sv');
+
+    const byGroup = new Map<string, { items: NamedStone[]; country: string | null; foreign: boolean }>();
     for (const s of stones) {
-      const key = s.landscape
-        || (s.country ? (sv ? (COUNTRY_SV[s.country] ?? s.country) : s.country) : (sv ? 'Övriga' : 'Other'));
-      if (!byGroup.has(key)) byGroup.set(key, []);
-      byGroup.get(key)!.push(s);
+      if (featuredSet.has(s.signum)) continue; // ikonerna visas i egen rad
+      const foreign = !!s.country && s.country !== 'Sweden';
+      const key = (!foreign && s.landscape)
+        ? s.landscape
+        : (s.country ? (sv ? (COUNTRY_SV[s.country] ?? s.country) : s.country) : (sv ? 'Övriga' : 'Other'));
+      if (!byGroup.has(key)) byGroup.set(key, { items: [], country: s.country ?? null, foreign });
+      byGroup.get(key)!.items.push(s);
     }
-    return [...byGroup.entries()]
-      .map(([title, items]) => ({
-        title,
-        items: items.sort((a, b) =>
-          Number(b.name_source === 'wikipedia-artikel') - Number(a.name_source === 'wikipedia-artikel')
-          || Number(!!b.image_url) - Number(!!a.image_url)
-          || a.name.localeCompare(b.name, 'sv')),
-      }))
-      .sort((a, b) => b.items.length - a.items.length);
+    const groups = [...byGroup.entries()]
+      .map(([title, g]) => ({ title, foreign: g.foreign, country: g.country, items: g.items.sort(itemSort) }))
+      // Svenska landskap först (störst först), utländska sist (i FOREIGN_ORDER, sedan storlek).
+      .sort((a, b) => {
+        if (a.foreign !== b.foreign) return a.foreign ? 1 : -1;
+        if (!a.foreign) return b.items.length - a.items.length;
+        const ia = FOREIGN_ORDER.indexOf(a.country ?? ''); const ib = FOREIGN_ORDER.indexOf(b.country ?? '');
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || b.items.length - a.items.length;
+      });
+    return { featured, groups };
   }, [stones, sv]);
 
   if (!stones?.length) return null;

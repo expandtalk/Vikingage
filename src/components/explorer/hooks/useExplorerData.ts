@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRunicData } from '@/hooks/useRunicData';
 import { useLegendManager } from '@/hooks/useLegendManager';
 import { useFilterState } from '../FilterState';
@@ -48,7 +48,14 @@ export const useExplorerData = ({
   // Startperiod = profilens default; focus kan tvinga viking_age; reglaget kan sedan ändra.
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>(activeProfile.defaultPeriod);
 
+  // Coerca perioden BARA vid genuint focus-byte. Tidigare re-fyrade denna effekt även när
+  // react-query bytte profilobjekt (placeholder → DB) och skrev då över användarens manuella
+  // val → reglaget "fastnade på Viking". Ref-vakten gör att bara ett faktiskt focus-byte
+  // återställer perioden; efterföljande klick i reglaget behålls.
+  const lastCoercedFocusRef = useRef<string | null>(null);
   useEffect(() => {
+    if (lastCoercedFocusRef.current === currentFocus) return;
+    lastCoercedFocusRef.current = currentFocus;
     if (currentFocus === 'rivers' || currentFocus === 'inscriptions') {
       setSelectedTimePeriod('viking_age');
     } else {

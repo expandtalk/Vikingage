@@ -5,10 +5,11 @@ import { AdminDataManagement } from '../components/AdminDataManagement';
 import { SecurityAuditDashboard } from '../components/SecurityAuditDashboard';
 import { SignumManagement } from '../components/admin/SignumManagement';
 import { AdminRoles } from '../components/admin/AdminRoles';
+import { EntityEditor } from '../components/admin/entity-editor/EntityEditor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, Settings, Database, UserCog } from "lucide-react";
+import { ArrowLeft, Shield, Settings, Database, UserCog, Network } from "lucide-react";
 
 // Åtkomstkontroll sker centralt i <RequireRole roles={['admin']}> (App.tsx).
 const Admin = () => {
@@ -34,8 +35,12 @@ const Admin = () => {
         </div>
 
         {/* Admin functionality */}
-        <Tabs defaultValue="data" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-white/10 border-white/20">
+        <Tabs defaultValue="content" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 bg-white/10 border-white/20">
+            <TabsTrigger value="content" className="data-[state=active]:bg-white/20 text-white">
+              <Network className="h-4 w-4 mr-2" />
+              Innehåll
+            </TabsTrigger>
             <TabsTrigger value="data" className="data-[state=active]:bg-white/20 text-white">
               <Database className="h-4 w-4 mr-2" />
               Data Management
@@ -54,6 +59,12 @@ const Admin = () => {
             </TabsTrigger>
           </TabsList>
           
+          <TabsContent value="content" className="mt-6">
+            <div className="bg-white/5 backdrop-blur-md border-white/10 rounded-lg p-6">
+              <EntityEditor />
+            </div>
+          </TabsContent>
+
           <TabsContent value="data" className="mt-6">
             <AdminDataManagement />
           </TabsContent>

@@ -293,9 +293,16 @@ export const GlobalSearch: React.FC = () => {
                     {sv ? theme.name : (theme.name_en ?? theme.name)}
                     <span className="text-xs text-slate-500">{sv ? '— graf + tematiskt sök' : '— graph + thematic search'}</span>
                   </div>
-                  <button onClick={() => setTheme(null)} className="text-slate-400 hover:text-white" aria-label={sv ? 'Rensa tema' : 'Clear theme'}>
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-3">
+                    {theme.slug && (
+                      <button onClick={() => go(`/tema/${theme.slug}`)} className="text-xs font-medium text-amber-300 hover:text-amber-100">
+                        {sv ? 'Visa hela temat →' : 'View full theme →'}
+                      </button>
+                    )}
+                    <button onClick={() => setTheme(null)} className="text-slate-400 hover:text-white" aria-label={sv ? 'Rensa tema' : 'Clear theme'}>
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               );
             })()}

@@ -6,6 +6,8 @@ import { useMapTileLayer } from './useMapTileLayer';
 import { useMapRiverSystems } from './useMapRiverSystems';
 import { useMapValdemarsRoute } from './useMapValdemarsRoute';
 import { useMapEriksgata } from './useMapEriksgata';
+import { useMapBeaconSites } from './useMapBeaconSites';
+import { useMapHeritageSites } from './useMapHeritageSites';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -145,6 +147,22 @@ export const useMapInitialization = ({
     enabledLegendItems,
     isMapReady: isMapReadyRef,
     safelyAddLayer,
+  });
+
+  // Vårdkasar (RAÄ-lämningar) — eget lager, klustrat, gate: legendknappen
+  useMapBeaconSites({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+    safelyAddLayer,
+  });
+
+  // Kulturarv (spatialt, viewport-laddat) — Steg 1 proof: sites_in_bbox/near.
+  // Laddar bara det som är i vyn → tål obegränsat antal punkter.
+  useMapHeritageSites({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
   });
 
   return { 

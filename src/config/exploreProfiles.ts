@@ -89,6 +89,10 @@ export const EMPTY_LEGEND_PRESET: LegendPreset = {
   religious_places: false,
   place_names: false,
   viking_roads: false,
+  beacon_sites: false,
+  // Kulturlager-kategorin PÅ (så per-typ-kryssen är synliga/åtkomliga) men alla
+  // typ-barn AV → tom karta tills man kryssar i en typ. Driven i useMapHeritageSites.
+  heritage_sites: true,
   religious_odin: false,
   religious_thor: false,
   religious_frey: false,
@@ -202,6 +206,7 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
       "viking_fortresses",
       "runic_inscriptions",
       "battle_sites",
+      "beacon_sites",
     ),
     theme: "chronology",
     primaryLayers: ["archaeological_sites", "runic_inscriptions"],
@@ -303,6 +308,25 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         battle_sites: false,
       });
       break;
+    case "eriksgatan":
+      // Ren Eriksgata-vy: den kungliga riksrundan + vägar/städer som kontext, inget annat brus.
+      Object.assign(o, {
+        eriksgatan: true,
+        viking_roads: true,
+        viking_cities: true,
+        runic_inscriptions: false,
+        foreign_inscriptions: false,
+        viking_fortresses: false,
+        religious_places: false,
+        viking_regions: false,
+        hundreds: false,
+        parishes: false,
+        folk_groups: false,
+        trade_routes: false,
+        river_routes: false,
+        water_routes: false,
+      });
+      break;
     case "fortresses":
       Object.assign(o, { viking_fortresses: true, runic_inscriptions: true });
       break;
@@ -344,7 +368,8 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
       Object.assign(o, { hundreds: true, runic_inscriptions: true });
       break;
     case "parishes":
-      Object.assign(o, { parishes: true, runic_inscriptions: true });
+      // Bara socknen — kulturlagren (sockenkyrkor, kloster, vårdkasar…) tänds via legenden.
+      Object.assign(o, { parishes: true, runic_inscriptions: false });
       break;
     case "folkGroups":
       // Folkgrupper + DNA/provplatser (arkeologiska platser med genetik) — INTE runstenar.

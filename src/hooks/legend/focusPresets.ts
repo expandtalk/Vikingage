@@ -74,6 +74,18 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
         stake_barriers: true // Aktivera Danvirke/Götavirke
       };
       
+    case 'eriksgatan':
+      console.log('👑 Eriksgata focus: den kungliga riksrundan + vägar/städer, inget brus');
+      return {
+        ...basePresets,
+        runic_inscriptions: false,
+        religious_places: false,
+        viking_fortresses: false,
+        eriksgatan: true,
+        land_routes: true,
+        viking_cities: true
+      };
+
     case 'fortresses':
       console.log('🏰 Fortresses focus: Only fortresses and runestones');
       return {
@@ -119,10 +131,11 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
       };
       
     case 'parishes':
-      console.log('⛪ Parishes focus: Only parishes and runestones');
+      console.log('⛪ Parishes focus: bara socknen — tänd kulturlager själv');
       return {
         ...basePresets,
-        parishes: true
+        parishes: true,
+        runic_inscriptions: false // tom utom socknen; kulturlagren tänds via legenden
       };
       
     case 'folkGroups':

@@ -22,6 +22,7 @@ import {
   Scale,
   Swords,
   BarChart3,
+  Library,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -116,21 +117,38 @@ const FOCUS_ROUTES: Record<string, string> = {
   GeneticEvents: 'geneticEvents',
 };
 
+// Explore-länken behövs även som direktlänk i inloggat läge.
+const explore: NavLink = {
+  pathEn: '/explore', pathSv: '/explore',
+  labelSv: 'Utforska', labelEn: 'Explore',
+  descSv: 'Interaktiv karta med alla lager — runinskrifter, platser och intresseprofiler.',
+  descEn: 'Interactive map with every layer — inscriptions, places and interest profiles.',
+  icon: Map, category: 'places',
+};
+
 // Links that aren't in routes.ts but belong in the megamenu.
 const EXTRA_LINKS: NavLink[] = [
-  {
-    pathEn: '/explore', pathSv: '/explore',
-    labelSv: 'Utforska', labelEn: 'Explore',
-    descSv: 'Interaktiv karta med alla lager — runinskrifter, platser och intresseprofiler.',
-    descEn: 'Interactive map with every layer — inscriptions, places and interest profiles.',
-    icon: Map, category: 'places',
-  },
+  explore,
   {
     pathEn: '/excursions', pathSv: '/excursions',
     labelSv: 'Utflykter', labelEn: 'Excursions',
     descSv: 'Platser att besöka på riktigt — hällristningar, gravhögar och fornborgar.',
     descEn: 'Places to visit in real life — rock carvings, burial mounds and hillforts.',
     icon: Compass, category: 'places',
+  },
+  {
+    pathEn: '/texts', pathSv: '/texter',
+    labelSv: 'Texter & källor', labelEn: 'Texts & sources',
+    descSv: 'Läs källorna i fulltext — Poetiska Eddan, lagar, krönikor och sagor, efter typ.',
+    descEn: 'Read the sources in full — the Poetic Edda, laws, chronicles and sagas, by type.',
+    icon: Library, category: 'history',
+  },
+  {
+    pathEn: '/explore?focus=eriksgatan', pathSv: '/explore?focus=eriksgatan',
+    labelSv: 'Eriksgatan', labelEn: 'Eriksgatan',
+    descSv: 'Kungavalets riksrunda genom landskapen — den medeltida Eriksgatan på kartan.',
+    descEn: 'The medieval royal election progress through the provinces, drawn on the map.',
+    icon: Crown, category: 'history',
   },
   {
     pathEn: '/prices', pathSv: '/prices',
@@ -226,7 +244,7 @@ const MegaCard: React.FC<{ link: NavLink }> = ({ link }) => {
   );
 };
 
-/** Desktop navigation: Home + grouped megamenu columns. */
+/** Desktop navigation. Publik megameny utloggad; enklare arbetsmeny inloggad. */
 export const Navigation: React.FC = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
@@ -240,23 +258,43 @@ export const Navigation: React.FC = () => {
     'focus:bg-slate-800/50 focus:text-white data-[state=open]:bg-slate-800/50 ' +
     'data-[state=open]:text-white';
 
+  const directLink = (link: NavLink) => {
+    const Icon = link.icon;
+    return (
+      <NavigationMenuItem key={link.pathEn}>
+        <NavigationMenuLink asChild>
+          <Link
+            to={pathOf(link)}
+            className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ${
+              isActive(link) ? 'bg-slate-800 text-white' : ''
+            }`}
+          >
+            <Icon className="h-4 w-4 mr-1.5" />
+            {labelOf(link)}
+          </Link>
+        </NavigationMenuLink>
+      </NavigationMenuItem>
+    );
+  };
+
+  // Inloggat läge: enklare arbetsmeny (Hem + Utforska). Admin/Profil/Logga ut ligger i
+  // kontomenyn i Header. Publika kategorierna göms för att hålla arbetsläget rent.
+  if (user) {
+    return (
+      <NavigationMenu className="hidden md:flex">
+        <NavigationMenuList>
+          {directLink(home)}
+          {directLink(explore)}
+        </NavigationMenuList>
+      </NavigationMenu>
+    );
+  }
+
+  // Utloggat läge: full publik megameny.
   return (
     <NavigationMenu className="hidden md:flex">
       <NavigationMenuList>
-        {/* Home — direct link, no dropdown */}
-        <NavigationMenuItem>
-          <NavigationMenuLink asChild>
-            <Link
-              to={pathOf(home)}
-              className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ${
-                isActive(home) ? 'bg-slate-800 text-white' : ''
-              }`}
-            >
-              <Home className="h-4 w-4 mr-1.5" />
-              {labelOf(home)}
-            </Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
+        {directLink(home)}
 
         {CATEGORY_ORDER.map((cat) => {
           const catLinks = byCategory(cat);
@@ -276,37 +314,7 @@ export const Navigation: React.FC = () => {
           );
         })}
 
-        {/* Spel/Game — direct link */}
-        <NavigationMenuItem>
-          <NavigationMenuLink asChild>
-            <Link
-              to={pathOf(game)}
-              className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ${
-                isActive(game) ? 'bg-slate-800 text-white' : ''
-              }`}
-            >
-              <Swords className="h-4 w-4 mr-1.5" />
-              {labelOf(game)}
-            </Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
-
-        {/* Profile — direct link when logged in */}
-        {user && (
-          <NavigationMenuItem>
-            <NavigationMenuLink asChild>
-              <Link
-                to={pathOf(profile)}
-                className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ${
-                  isActive(profile) ? 'bg-slate-800 text-white' : ''
-                }`}
-              >
-                <User className="h-4 w-4 mr-1.5" />
-                {labelOf(profile)}
-              </Link>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-        )}
+        {directLink(game)}
       </NavigationMenuList>
     </NavigationMenu>
   );

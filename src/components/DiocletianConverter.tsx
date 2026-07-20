@@ -430,7 +430,7 @@ const DiocletianConverter = () => {
                 type="number"
                 value={denarii}
                 onChange={(e) => setDenarii(Number(e.target.value))}
-                className="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                className="w-full px-4 py-3 border-2 border-amber-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 min="1"
               />
               <p className="text-xs text-amber-600 mt-2">
@@ -447,7 +447,7 @@ const DiocletianConverter = () => {
                 type="number"
                 value={goldPricePerGram}
                 onChange={(e) => setGoldPricePerGram(Number(e.target.value))}
-                className="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                className="w-full px-4 py-3 border-2 border-amber-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 min="1"
               />
               <p className="text-xs text-amber-600 mt-2">
