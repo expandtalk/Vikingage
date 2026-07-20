@@ -231,7 +231,7 @@ const ArtefactsPage = () => {
                     {inscriptions.map((i) => (
                       <li key={i.id}>
                         <Link
-                          to={`/explore?searchQuery=${encodeURIComponent(i.signum)}`}
+                          to={`/inscription/${encodeURIComponent(i.signum)}`}
                           onClick={() => setSelected(null)}
                           className="block px-1 py-2 hover:bg-amber-500/10 rounded"
                         >

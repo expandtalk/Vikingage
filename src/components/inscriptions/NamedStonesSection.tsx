@@ -76,7 +76,7 @@ export const NamedStonesSection: React.FC = () => {
     return (
       <Link
         key={s.id}
-        to={`/explore?searchQuery=${encodeURIComponent(s.signum)}`}
+        to={`/inscription/${encodeURIComponent(s.signum)}`}
         className="viking-card rounded-lg border border-border overflow-hidden hover:bg-card/80 transition-colors group flex flex-col"
       >
         {s.image_url && (

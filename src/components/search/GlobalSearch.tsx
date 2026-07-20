@@ -61,7 +61,7 @@ const stripTags = (s: string | null) => (s ? s.replace(/<\/?b>/g, '') : undefine
 const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon; route: (h: Hit) => string }> = {
   // Region överst: exakt landskapsträff hamnar i topp-tier och länken visar HELA regionen på kartan.
   landscape:      { labelSv: 'Landskap & regioner', labelEn: 'Landscapes & regions', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
-  inscription:    { labelSv: 'Runinskrifter', labelEn: 'Inscriptions', icon: BookOpen, route: (h) => `/explore?searchQuery=${enc(h.signum ?? h.label)}` },
+  inscription:    { labelSv: 'Runinskrifter', labelEn: 'Inscriptions', icon: BookOpen, route: (h) => `/inscription/${enc(h.signum ?? h.label)}` },
   carver:         { labelSv: 'Ristare', labelEn: 'Carvers', icon: Hammer, route: (h) => `/carvers?carver=${h.entity_id}` },
   // Socknar går till socken-vyn (förvald via ?region=) — INTE textsök: sockennamn
   // som "Runsten" är också vanliga ord och geokodas fel som fritext.
