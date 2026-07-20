@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 # Backfyller search_document.embedding via edge-funktionen embed-search (gte-small).
 # Adaptiv batch: försöker 10, faller tillbaka till 5 vid WORKER_RESOURCE_LIMIT.
-# Kör: bash scripts/backfill-embeddings.sh   (säker att avbryta/återuppta — idempotent)
+# Kör: SUPABASE_SERVICE_ROLE_KEY=... bash scripts/backfill-embeddings.sh   (idempotent)
 set -uo pipefail
-ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1udWlmbWNqc3BlYWF1emVoYXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMzQ1MzQsImV4cCI6MjA2MzYxMDUzNH0.ZkAhIwMPRe4lgAH8MxUCNjM39Vh4hyk9IVdmX0jC-z8"
+# Privilegierad funktion — kräver service-role-nyckel (inte den publika anon-nyckeln).
+# Läser i första hand miljövariabeln; faller tillbaka på .env om den råkar finnas där.
+KEY="${SUPABASE_SERVICE_ROLE_KEY:-$(grep '^SUPABASE_SERVICE_ROLE_KEY=' .env 2>/dev/null | cut -d= -f2- | tr -d '\r')}"
+[ -z "$KEY" ] && { echo "Sätt SUPABASE_SERVICE_ROLE_KEY (miljövariabel eller .env) — krävs för embed-search."; exit 1; }
 URL="https://mnuifmcjspeaauzehasj.supabase.co/functions/v1/embed-search"
 BATCH=10
 FAILS=0
 while true; do
-  RES=$(curl -s --max-time 120 -X POST "$URL" -H "Authorization: Bearer $ANON" -H "Content-Type: application/json" -d "{\"batch\":$BATCH}")
+  RES=$(curl -s --max-time 120 -X POST "$URL" -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d "{\"batch\":$BATCH}")
   REMAINING=$(echo "$RES" | grep -oE '"remaining":[0-9]+' | cut -d: -f2)
   if [ -z "$REMAINING" ]; then
     FAILS=$((FAILS+1))

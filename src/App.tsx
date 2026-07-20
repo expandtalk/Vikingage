@@ -8,6 +8,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { RequireRole } from "@/components/auth/RequireRole";
 import Welcome from "./pages/Welcome";
 
 // Route-level code splitting: each page becomes its own chunk, loaded on demand.
@@ -27,6 +28,8 @@ const Coins = lazy(() => import("./pages/Coins"));
 const Kungstavla = lazy(() => import("./pages/Kungstavla"));
 const ExcursionDetail = lazy(() => import("./pages/ExcursionDetail"));
 const SourceDetail = lazy(() => import("./pages/SourceDetail"));
+const SourceLibrary = lazy(() => import("./pages/SourceLibrary"));
+const ThemePage = lazy(() => import("./pages/ThemePage"));
 const InscriptionPage = lazy(() => import("./pages/InscriptionPage"));
 const Statistics = lazy(() => import("./pages/Statistics"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -93,6 +96,10 @@ const App = () => (
                   <Route path="/excursions" element={<Excursions />} />
                   <Route path="/sv/utflykter" element={<Excursions />} />
                   <Route path="/excursions/:id" element={<ExcursionDetail />} />
+                  <Route path="/texts" element={<SourceLibrary />} />
+                  <Route path="/texter" element={<SourceLibrary />} />
+                  <Route path="/tema/:slug" element={<ThemePage />} />
+                  <Route path="/themes/:slug" element={<ThemePage />} />
                   <Route path="/sources/text/:textId" element={<SourceDetail />} />
                   <Route path="/sources/:id" element={<SourceDetail />} />
                   <Route path="/inscription/:signum" element={<InscriptionPage />} />
@@ -105,7 +112,14 @@ const App = () => (
                   <Route path="/kungstavla" element={<Navigate to="/kungsnave" replace />} />
                   <Route path="/kings-board" element={<Navigate to="/kungsnave" replace />} />
                   <Route path="/auth" element={<Auth />} />
-                  <Route path="/admin" element={<Admin />} />
+                  <Route
+                    path="/admin"
+                    element={
+                      <RequireRole roles={['admin']}>
+                        <Admin />
+                      </RequireRole>
+                    }
+                  />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

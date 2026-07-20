@@ -174,11 +174,17 @@ async function fetchGraphContext(signum: string): Promise<GraphContext | null> {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
-  const { data: insc } = await supabase
-    .from('runic_inscriptions')
-    .select('id, signum, primary_signum, name, transliteration, normalization, translation_sv, dating_text, period_start, period_end, meter, style_group, object_category, material, rune_type, location, socken, harad, landscape, country, scholarly_notes, parish_id')
-    .or(`signum.eq.${signum},primary_signum.eq.${signum}`)
-    .limit(1).maybeSingle();
+  // Två parametriserade .eq()-frågor i stället för en interpolerad .or()-sträng
+  // (PostgREST-filterinjektion undviks — signum kommer från användarinput).
+  const cols = 'id, signum, primary_signum, name, transliteration, normalization, translation_sv, dating_text, period_start, period_end, meter, style_group, object_category, material, rune_type, location, socken, harad, landscape, country, scholarly_notes, parish_id';
+  let { data: insc } = await supabase
+    .from('runic_inscriptions').select(cols)
+    .eq('signum', signum).limit(1).maybeSingle();
+  if (!insc) {
+    ({ data: insc } = await supabase
+      .from('runic_inscriptions').select(cols)
+      .eq('primary_signum', signum).limit(1).maybeSingle());
+  }
   if (!insc) return null;
 
   const [entityRes, stylesRes, readingsRes, interpRes] = await Promise.all([

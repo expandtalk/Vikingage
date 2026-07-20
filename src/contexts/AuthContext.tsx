@@ -32,21 +32,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
-        
-        console.log('Auth state changed:', event, session?.user?.email);
-        
-        // Only synchronous state updates here
+
+        // Only synchronous state updates here — avoid logging PII (user email).
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
-        // Defer any additional async operations if needed
-        if (session?.user) {
-          setTimeout(() => {
-            // Any additional user profile fetching can go here
-            console.log('User authenticated:', session.user.email);
-          }, 0);
-        }
       }
     );
 

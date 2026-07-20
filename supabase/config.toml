@@ -2,3 +2,7 @@ project_id = "mnuifmcjspeaauzehasj"
 
 [functions.srd-integration]
 verify_jwt = true
+
+# embed-search gör egen auktorisering (service-role eller admin) i funktionskroppen.
+[functions.embed-search]
+verify_jwt = true

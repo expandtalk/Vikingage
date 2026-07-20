@@ -1,48 +1,47 @@
-
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-export type UserRole = 'admin' | 'user';
+export type UserRole = 'admin' | 'editor' | 'user';
 
+/**
+ * Enda sanningskällan för användarens roll i frontend (RLS är den riktiga gränsen).
+ * En användare kan ha flera roll-rader; vi väljer den högsta (admin > editor > user).
+ * useAuth.useIsAdmin delegerar hit — ändra rollogik på ETT ställe.
+ */
 export const useUserRole = () => {
   const { user } = useAuth();
-  const [role, setRole] = useState<UserRole>('user');
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (!user) {
-        setRole('user');
-        setLoading(false);
-        return;
-      }
+  const { data: role = 'user', isLoading } = useQuery({
+    queryKey: ['user-role', user?.id],
+    enabled: !!user,
+    queryFn: async (): Promise<UserRole> => {
+      if (!user) return 'user';
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
 
-      try {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching user role:', error);
-          setRole('user');
-        } else {
-          setRole(data?.role || 'user');
-        }
-      } catch (error) {
+      if (error) {
         console.error('Error fetching user role:', error);
-        setRole('user');
-      } finally {
-        setLoading(false);
+        return 'user';
       }
-    };
 
-    fetchUserRole();
-  }, [user]);
+      const roles = (data ?? []).map((r) => r.role as UserRole);
+      if (roles.includes('admin')) return 'admin';
+      if (roles.includes('editor')) return 'editor';
+      return 'user';
+    },
+  });
 
-  const isAdmin = role === 'admin';
+  const effectiveRole: UserRole = user ? (role as UserRole) : 'user';
+  const loading = !!user && isLoading;
 
-  return { role, isAdmin, loading };
+  return {
+    role: effectiveRole,
+    isAdmin: effectiveRole === 'admin',
+    isEditor: effectiveRole === 'editor',
+    canEdit: effectiveRole === 'admin' || effectiveRole === 'editor',
+    loading,
+  };
 };
