@@ -18,6 +18,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface Img { url: string; description: string | null; photographer: string | null; credit: string | null; source: string | null; }
 interface Carver { id: string; name: string; }
+interface Reading { type: string | null; text: string; }
+interface Interpretation { version: string | null; language: string | null; text: string; }
 interface LitLink { title: string; source_id: string; relation: string | null; }
 interface InscriptionData {
   id: string; signum: string; name: string | null; name_en: string | null; name_source: string | null;
@@ -30,8 +32,25 @@ interface InscriptionData {
   scholarly_notes: string | null; historical_context: string | null; paleographic_notes: string | null; condition_notes: string | null;
   k_samsok_uri: string | null; raa_number: string | null; bibliography: string | null;
   lat: number | null; lng: number | null;
-  images: Img[]; carvers: Carver[]; literary_links: LitLink[];
+  images: Img[]; carvers: Carver[]; readings: Reading[]; interpretations: Interpretation[]; literary_links: LitLink[];
 }
+
+// Editionsversioner och språklager ur Samnordisk runtextdatabas (samma koder som RAÄ Runor).
+const READING_LABEL: Record<string, { sv: string; en: string }> = {
+  P: { sv: 'primär läsning', en: 'primary reading' },
+  Q: { sv: 'alternativ läsning', en: 'alternative reading' },
+  R: { sv: 'äldre läsning', en: 'older reading' },
+  S: { sv: 'läsvariant', en: 'reading variant' },
+};
+const LANG_LABEL: Record<string, { sv: string; en: string }> = {
+  FVN: { sv: 'fornvästnordiska', en: 'Old West Norse' },
+  RSV: { sv: 'runsvenska', en: 'Runic Swedish' },
+  RDA: { sv: 'rundanska', en: 'Runic Danish' },
+  URN: { sv: 'urnordiska', en: 'Proto-Norse' },
+  FSV: { sv: 'fornsvenska', en: 'Old Swedish' },
+  FDA: { sv: 'forndanska', en: 'Old Danish' },
+  NFS: { sv: 'nyisländska', en: 'Modern Icelandic' },
+};
 
 const sb = supabase as unknown as { rpc: (fn: string, args: Record<string, unknown>) => any };
 
@@ -180,6 +199,43 @@ const InscriptionPage = () => {
                   </Section>
                 )}
 
+                {/* Läsningar & tolkningar — flera forskares läsningar + normaliseringslager,
+                    ur Samnordisk runtextdatabas. Det scenkritiska djupet RAÄ Runor har. */}
+                {(data.readings.length > 1 || data.interpretations.length > 1) && (
+                  <Section icon={<Scroll className="h-5 w-5 text-gold" />} title={sv ? 'Läsningar & tolkningar' : 'Readings & interpretations'}>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      {sv ? 'Varianta läsningar och normaliseringar från olika editioner (Samnordisk runtextdatabas).'
+                          : 'Variant readings and normalisations from different editions (Scandinavian Runic-text Database).'}
+                    </p>
+                    {data.readings.length > 0 && (
+                      <div className="mb-4 space-y-2">
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">{sv ? 'Läsningar' : 'Readings'}</div>
+                        {data.readings.map((r, i) => (
+                          <div key={i}>
+                            {r.type && <span className="text-[10px] uppercase text-gold/80 mr-2">{(READING_LABEL[r.type]?.[sv ? 'sv' : 'en']) ?? r.type}</span>}
+                            <span className="font-mono text-sm text-slate-200">{r.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {data.interpretations.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">{sv ? 'Normaliseringar' : 'Normalisations'}</div>
+                        {data.interpretations.map((it, i) => (
+                          <div key={i} className="text-sm">
+                            <span className="text-[10px] uppercase text-gold/80 mr-2">
+                              {[it.language && (LANG_LABEL[it.language]?.[sv ? 'sv' : 'en'] ?? it.language),
+                                it.version && (READING_LABEL[it.version]?.[sv ? 'sv' : 'en'] ?? `ed. ${it.version}`)]
+                                .filter(Boolean).join(' · ')}
+                            </span>
+                            <span className="text-slate-200 font-serif italic">{it.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </Section>
+                )}
+
                 {(data.scholarly_notes || data.historical_context || data.paleographic_notes || data.condition_notes) && (
                   <Section icon={<BookOpen className="h-5 w-5 text-gold" />} title={sv ? 'Forskning & kontext' : 'Research & context'}>
                     {data.scholarly_notes && <p className="text-sm text-muted-foreground whitespace-pre-wrap mb-3">{data.scholarly_notes}</p>}
@@ -248,8 +304,11 @@ const InscriptionPage = () => {
                   <Section icon={<ExternalLink className="h-5 w-5 text-gold" />} title={sv ? 'Källor' : 'Sources'}>
                     <ul className="space-y-1.5 text-sm">
                       {data.k_samsok_uri && (
-                        <li><a href={data.k_samsok_uri} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline inline-flex items-center gap-1">
-                          <ExternalLink className="h-3 w-3" />Samnordisk runtextdatabas / K-samsök</a></li>
+                        <li>
+                          <a href={data.k_samsok_uri} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline inline-flex items-center gap-1">
+                            <ExternalLink className="h-3 w-3" />RAÄ Runor / Samnordisk runtextdatabas</a>
+                          <span className="block text-[11px] text-muted-foreground/70">{sv ? 'Auktoritativ källa att citera (Riksantikvarieämbetet & Uppsala universitet)' : 'Authoritative source for citation (Swedish National Heritage Board & Uppsala University)'}</span>
+                        </li>
                       )}
                       {data.raa_number && <li className="text-muted-foreground">RAÄ-nr: {data.raa_number}</li>}
                       {data.bibliography && <li className="text-muted-foreground text-xs">{data.bibliography}</li>}
