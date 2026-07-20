@@ -277,17 +277,10 @@ export const Navigation: React.FC = () => {
     );
   };
 
-  // Inloggat läge: enklare arbetsmeny (Hem + Utforska). Admin/Profil/Logga ut ligger i
-  // kontomenyn i Header. Publika kategorierna göms för att hålla arbetsläget rent.
+  // Inloggat läge: inget publikt toppnav alls — rent arbetsläge. All navigation
+  // (Admin, Profil, Logga ut) ligger i kontomenyn i Header; startsidan nås via loggan.
   if (user) {
-    return (
-      <NavigationMenu className="hidden md:flex">
-        <NavigationMenuList>
-          {directLink(home)}
-          {directLink(explore)}
-        </NavigationMenuList>
-      </NavigationMenu>
-    );
+    return null;
   }
 
   // Utloggat läge: full publik megameny.
