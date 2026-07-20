@@ -6,6 +6,7 @@ import { ExplorerPanels } from './ExplorerPanels';
 import { TimelineModule } from '../modules/TimelineModule';
 import { GodCardsGrid } from '../gods/GodCardsGrid';
 import { CultSitesView } from '../gods/CultSitesView';
+import { PanelLayoutSelector } from '../panels/PanelLayoutSelector';
 import { usePanelManager } from '@/hooks/usePanelManager';
 import { useFocusManager } from '@/hooks/useFocusManager';
 import { LayoutHeader } from './layout/LayoutHeader';
@@ -252,22 +253,28 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
 
   return (
     <div className="max-w-7xl mx-auto space-y-3">
-      <LayoutHeader
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        handleSearch={handleSearchWithResults}
-        isLoading={isLoading}
-        totalInscriptions={totalInscriptions}
-        isExplorerMode={isExplorerMode}
-        onGodNameSearchWithLegend={handleGodNameSearchWithLegend}
-        onLegendToggle={onLegendToggle}
-        isSearchMinimized={isSearchMinimized}
-        setIsSearchMinimized={setIsSearchMinimized}
-        shouldShowTimeline={false}
-        mapNavigate={mapNavigate}
-        isTimelineMinimized={isTimelineMinimized}
-        setIsTimelineMinimized={setIsTimelineMinimized}
-      />
+      {/* cultSites: runstenssöket är irrelevant (platserna är innehållet) —
+          behåll profilväljaren men släck sök-/tidslinjemodulen (Daniel 2026-07-20). */}
+      {currentFocus === 'cultSites' ? (
+        <PanelLayoutSelector />
+      ) : (
+        <LayoutHeader
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          handleSearch={handleSearchWithResults}
+          isLoading={isLoading}
+          totalInscriptions={totalInscriptions}
+          isExplorerMode={isExplorerMode}
+          onGodNameSearchWithLegend={handleGodNameSearchWithLegend}
+          onLegendToggle={onLegendToggle}
+          isSearchMinimized={isSearchMinimized}
+          setIsSearchMinimized={setIsSearchMinimized}
+          shouldShowTimeline={false}
+          mapNavigate={mapNavigate}
+          isTimelineMinimized={isTimelineMinimized}
+          setIsTimelineMinimized={setIsTimelineMinimized}
+        />
+      )}
 
       {/* Gudakorten FÖRST i gods-fokus — bilderna är huvudinnehållet, kartan stöd */}
       {currentFocus === 'gods' && (

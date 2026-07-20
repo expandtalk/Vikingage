@@ -25,7 +25,11 @@ language sql stable as $$
     select media_url, photographer, copyright_info
     from public.inscription_media m
     where m.inscription_id = ri.id and m.media_type = 'image'
-    order by (m.source_institution = 'egen dokumentation') desc, m.created_at
+      -- bara direkt visningsbara bild-URL:er (kulturarvsdata-URI:er är metadatasidor)
+      and (m.media_url ~* '\.(jpe?g|png|webp|gif)(\?|$)' or m.media_url like '/excursion-photos/%')
+    -- coalesce: NULL i source_institution sorterade annars FÖRE egen dokumentation
+    -- (Postgres DESC = NULLS FIRST) och museibilder slog egna foton.
+    order by coalesce(m.source_institution = 'egen dokumentation', false) desc, m.created_at
     limit 1
   ) im on true
   where ri.name is not null and ri.name <> ''
