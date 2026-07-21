@@ -52,6 +52,8 @@ export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAdd
       const line = L.polyline(data.pts, { color: '#d97706', weight: 3, opacity: 0.9, dashArray: '10, 6' })
         .bindPopup('<strong>Eriksgatan</strong><br/>Kungavalets riksrunda genom landskapen');
       if (safelyAddLayer(line)) layersRef.current.push(line);
+      // Zooma in på ledens utbredning så man ser detaljerna (Daniel).
+      try { map.fitBounds(line.getBounds(), { padding: [40, 40], maxZoom: 10 }); } catch { /* noop */ }
       data.wps.forEach((w) => {
         const isBorder = w.type === 'junction';
         const marker = L.circleMarker(w.ll, {

@@ -6,12 +6,48 @@ import { Badge } from "@/components/ui/badge";
 import { getIconForLegendItem } from './utils';
 import { cleanLabelText } from '@/hooks/map/legend/labelUtils';
 import { LegendItem as LegendItemType } from './types';
+import {
+  useChurchYearFrom,
+  setChurchYearFrom,
+  CHURCH_YEAR_MIN,
+  CHURCH_YEAR_MAX,
+} from '@/hooks/useChurchYearFilter';
 
 interface LegendItemProps {
   item: LegendItemType;
   onToggleItem: (id: string) => void;
   level?: number;
 }
+
+// Byggårsreglage under Kyrkor-lagret: visa kyrkor byggda från valt år (0 = alla).
+const ChurchYearSlider: React.FC = () => {
+  const year = useChurchYearFrom();
+  return (
+    <div className="mt-1 mb-1 px-3 py-2 rounded-md bg-slate-900/80 border border-slate-700/50">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[11px] text-slate-300">Byggår från</span>
+        <span className="text-[11px] font-semibold text-white">{year === 0 ? 'Alla' : year}</span>
+      </div>
+      <input
+        type="range"
+        min={CHURCH_YEAR_MIN}
+        max={CHURCH_YEAR_MAX}
+        step={25}
+        value={year === 0 ? CHURCH_YEAR_MIN : year}
+        onChange={(e) => {
+          const v = Number(e.target.value);
+          setChurchYearFrom(v <= CHURCH_YEAR_MIN ? 0 : v);
+        }}
+        className="w-full accent-amber-500 cursor-pointer"
+        aria-label="Visa kyrkor byggda från år"
+      />
+      <div className="flex justify-between text-[9px] text-slate-500 mt-0.5">
+        <span>{CHURCH_YEAR_MIN} (alla)</span>
+        <span>{CHURCH_YEAR_MAX}</span>
+      </div>
+    </div>
+  );
+};
 
 export const LegendItemComponent: React.FC<LegendItemProps> = ({ 
   item, 
@@ -21,9 +57,11 @@ export const LegendItemComponent: React.FC<LegendItemProps> = ({
   const IconComponent = getIconForLegendItem(item.id);
   const indent = level * 16;
   const cleanedLabel = cleanLabelText(item.label);
+  const showChurchYear = item.id === 'ecclesiastical_churches' && item.enabled;
 
   return (
-    <div 
+    <>
+    <div
       className={`flex items-center justify-between py-2 px-2 rounded-md transition-all duration-200 ${
         item.enabled
           ? 'bg-slate-800/90 border border-slate-600/50 shadow-sm'
@@ -81,5 +119,7 @@ export const LegendItemComponent: React.FC<LegendItemProps> = ({
         </span>
       </div>
     </div>
+    {showChurchYear && <ChurchYearSlider />}
+    </>
   );
 };

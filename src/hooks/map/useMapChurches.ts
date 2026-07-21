@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
+import { useChurchYearFrom } from '@/hooks/useChurchYearFilter';
 
 // Rikt kyrkolager ur ecclesiastical_sites: byggår, stift, socken/härad, ruinstatus + bild
 // (Wikimedia Commons via Wikidata P18). Viewport-laddat via ecclesiastical_in_bbox, zoom-gate ≥8.
@@ -58,6 +59,7 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
   const layerRef = useRef<L.LayerGroup | null>(null);
   const tokenRef = useRef(0);
   const enabled = enabledLegendItems.ecclesiastical_churches === true;
+  const yearFrom = useChurchYearFrom(); // 0 = alla; >0 = built_from >= yearFrom
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;
@@ -78,6 +80,8 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
       layer.clearLayers();
       (data as any[] || []).forEach((r) => {
         if (r.lat == null || r.lng == null) return;
+        // Byggårsfilter: >0 → visa bara kyrkor byggda från det året (daterade).
+        if (yearFrom > 0 && (r.built_from == null || r.built_from < yearFrom)) return;
         L.marker([r.lat, r.lng], { icon: iconFor(r.kind, r.status) })
           .bindPopup(popupHtml(r), { maxWidth: 320, className: 'church-popup' })
           .addTo(layer);
@@ -87,7 +91,7 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
     map.on('moveend zoomend', debounced);
     refresh();
     return () => { map.off('moveend zoomend', debounced); if (timer) clearTimeout(timer); layer.clearLayers(); };
-  }, [map, enabled, isMapReady]);
+  }, [map, enabled, isMapReady, yearFrom]);
 
   useEffect(() => () => {
     try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }
