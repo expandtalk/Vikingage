@@ -58,14 +58,16 @@ export const LegendCategory: React.FC<LegendCategoryProps> = ({
             {item.label}
           </Label>
           
-          <Badge 
-            variant="outline" 
-            className={`text-xs px-1.5 py-0 h-5 flex-shrink-0 font-semibold ${
-              item.enabled ? 'text-white border-amber-600 bg-amber-700/50' : 'text-gray-500 border-gray-600/50 bg-gray-800/50'
-            }`}
-          >
-            {item.count}
-          </Badge>
+          {!!item.count && (
+            <Badge
+              variant="outline"
+              className={`text-xs px-1.5 py-0 h-5 flex-shrink-0 font-semibold ${
+                item.enabled ? 'text-white border-amber-600 bg-amber-700/50' : 'text-gray-500 border-gray-600/50 bg-gray-800/50'
+              }`}
+            >
+              {item.count}
+            </Badge>
+          )}
         </div>
         
         <Switch

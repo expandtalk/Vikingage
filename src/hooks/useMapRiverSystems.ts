@@ -84,31 +84,32 @@ export const useMapRiverSystems = ({
           return;
         }
 
-        // Fetch coordinates for each system
-        const systemsWithCoordinates: DatabaseRiverSystem[] = await Promise.all(
-          systems.map(async (system) => {
-            const { data: coordinates, error: coordsError } = await supabase
-              .from('river_coordinates')
-              .select('*')
-              .eq('river_system_id', system.id)
-              .order('sequence_order');
+        // Hämta ALLA koordinater i ETT anrop (tidigare N+1: en query per flodsystem →
+        // 43 parallella fetch som spräckte webbläsarens anslutningsgräns,
+        // ERR_INSUFFICIENT_RESOURCES). Gruppera på river_system_id i minnet.
+        const systemIds = systems.map((s) => s.id);
+        const { data: allCoords, error: coordsError } = await supabase
+          .from('river_coordinates')
+          .select('*')
+          .in('river_system_id', systemIds)
+          .order('sequence_order');
 
-            if (coordsError) {
-              console.error('Error fetching coordinates:', coordsError);
-              return {
-                ...system,
-                importance: (system.importance === 'primary' ? 'primary' : 'secondary') as 'primary' | 'secondary',
-                coordinates: []
-              };
-            }
+        if (coordsError) {
+          console.error('Error fetching coordinates:', coordsError);
+        }
 
-            return {
-              ...system,
-              importance: (system.importance === 'primary' ? 'primary' : 'secondary') as 'primary' | 'secondary',
-              coordinates: coordinates || []
-            };
-          })
-        );
+        const coordsBySystem = new Map<string, typeof allCoords>();
+        (allCoords || []).forEach((c) => {
+          const arr = coordsBySystem.get(c.river_system_id) || [];
+          arr.push(c);
+          coordsBySystem.set(c.river_system_id, arr);
+        });
+
+        const systemsWithCoordinates: DatabaseRiverSystem[] = systems.map((system) => ({
+          ...system,
+          importance: (system.importance === 'primary' ? 'primary' : 'secondary') as 'primary' | 'secondary',
+          coordinates: coordsBySystem.get(system.id) || [],
+        }));
 
         // Add Nordic river systems from database
         systemsWithCoordinates.forEach(route => {

@@ -271,8 +271,42 @@ export const generateBasicInscriptionItems = (
     )
   ).length;
   console.log(`🏝️ Öland inscriptions found: ${olandCount}`);
-  
-  return items;
+
+  // === FULL KATEGORI-GRUPPERING ===
+  // Efterbearbetar den platta listan till toppnivå-kategorier (visuell organisation).
+  // Rör inte lager-id:n → alla toggles/lager fortsätter fungera. Befintliga kategorier
+  // (heritage_sites/religious_places/water_routes/viking_roads) behålls som de är
+  // (LegendCategory stödjer inte djup-nästling → de ligger kvar på toppnivå).
+  const byId = new Map(items.map((i) => [i.id, i] as const));
+  const used = new Set<string>();
+  const sumCount = (children: LegendItem[]) => children.reduce((s, c) => s + (c.count || 0), 0);
+  const group = (id: string, label: string, color: string, childIds: string[]): LegendItem | null => {
+    const children = childIds.map((cid) => byId.get(cid)).filter(Boolean) as LegendItem[];
+    if (children.length === 0) return null;
+    children.forEach((c) => used.add(c.id));
+    return { id, label, color, count: sumCount(children), enabled: enabledLegendItems[id] !== false, type: 'category', children };
+  };
+  const keep = (id: string): LegendItem | null => {
+    const it = byId.get(id);
+    if (it) used.add(id);
+    return it ?? null;
+  };
+  const ordered: (LegendItem | null)[] = [
+    group('cat_runic', 'ᛘ ' + t('swedishRunestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions']),
+    group('cat_ecclesiastical', '⛪ Kyrkor & stift', '#e11d48', ['ecclesiastical_churches']),
+    keep('heritage_sites'),
+    keep('religious_places'),
+    keep('water_routes'),
+    keep('viking_roads'),
+    group('cat_defense', '🏰 ' + t('fortresses'), '#dc2626', ['viking_fortresses', 'viking_cities', 'stake_barriers']),
+    group('cat_folk', '🛡️ ' + t('germanicPeoples'), '#8b5cf6', ['germanic_timeline', 'folk_groups', 'viking_regions']),
+    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['place_names', 'historical_events', 'paleo_shoreline']),
+  ];
+  const grouped = ordered.filter(Boolean) as LegendItem[];
+  // Allt ogrupperat (t.ex. kristna centra) läggs sist, oförändrat.
+  items.forEach((i) => { if (!used.has(i.id)) grouped.push(i); });
+
+  return grouped;
 };
 
 export const generateStatusBasedItems = (
