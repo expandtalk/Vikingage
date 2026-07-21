@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Tag, AlertTriangle, Search, X } from 'lucide-react';
+import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
+import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceNameAttestations';
 import {
   PLACE_NAME_ELEMENTS,
   ELEMENT_CATEGORY_META,
@@ -36,6 +37,7 @@ const PlaceNames = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
   const { data: places = [], isLoading } = usePlaceNamesData();
+  const { data: attestations = [] } = usePlaceNameAttestations();
   const [category, setCategory] = useState<string>('all');
   const [elementKey, setElementKey] = useState<string>('all');
   const [query, setQuery] = useState<string>('');
@@ -68,6 +70,26 @@ const PlaceNames = () => {
   });
   const catLabel = (c: string) => (FEATURE_CATEGORY_LABELS[c] ? (sv ? FEATURE_CATEGORY_LABELS[c].sv : FEATURE_CATEGORY_LABELS[c].en) : c);
   const scrollToList = () => document.getElementById('place-name-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Beläggkedjor grupperade per ort, kronologiskt.
+  const chains = useMemo(() => {
+    const byPlace = new Map<string, typeof attestations>();
+    attestations.forEach((a) => {
+      const arr = byPlace.get(a.place_label) ?? [];
+      arr.push(a);
+      byPlace.set(a.place_label, arr);
+    });
+    return Array.from(byPlace.entries())
+      .map(([label, items]) => ({ label, items: [...items].sort((x, y) => x.year - y.year) }))
+      .sort((a, b) => a.items[0].year - b.items[0].year);
+  }, [attestations]);
+
+  const FORM_STYLE: Record<string, string> = {
+    val: 'border-emerald-500 text-emerald-300',
+    vad: 'border-amber-500 text-amber-300',
+    aa: 'border-sky-500 text-sky-300',
+    other: 'border-slate-500 text-slate-300',
+  };
 
   return (
     <div className="min-h-screen viking-bg">
@@ -205,6 +227,55 @@ const PlaceNames = () => {
             </p>
           </CardContent>
         </Card>
+
+        {/* Beläggkedjor över tid (pilot) */}
+        {chains.length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'Belägg över tid' : 'Attestations over time'}</h2>
+            <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
+            <p className="text-sm text-muted-foreground max-w-3xl mb-2">
+              {sv
+                ? 'Dokumenterade historiska stavningar per ort (pilot, transkriberat ur Isof Ortnamnsregistret / Riksarkivet via Nyholm 2025). Färgen visar formtyp — så man kan se ev. skiften val→vad→vål över tid utan att ta ställning till vad namnet betydde.'
+                : 'Documented historical spellings per place (pilot, transcribed from Isof / the National Archives via Nyholm 2025). Colour shows form type, so a possible val→vad→vål shift is visible without claiming what the name meant.'}
+            </p>
+            <div className="flex flex-wrap gap-3 mb-4 text-xs">
+              <span className={`px-2 py-0.5 rounded border ${FORM_STYLE.val}`}>val/vala</span>
+              <span className={`px-2 py-0.5 rounded border ${FORM_STYLE.vad}`}>vad (säkrad?)</span>
+              <span className={`px-2 py-0.5 rounded border ${FORM_STYLE.aa}`}>å-form</span>
+              <span className={`px-2 py-0.5 rounded border ${FORM_STYLE.other}`}>{sv ? 'övrig' : 'other'}</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {chains.map((chain) => (
+                <Card key={chain.label} className="viking-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-foreground text-base flex items-center gap-2">
+                      <CalendarClock className="h-4 w-4 text-gold" />
+                      {chain.label}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {chain.items.map((a, i) => (
+                        <React.Fragment key={a.id}>
+                          {i > 0 && <span className="text-slate-500">→</span>}
+                          <span
+                            className={`px-2 py-1 rounded border text-xs ${FORM_STYLE[attestationFormType(a.attested_form)]}`}
+                            title={a.note ? `${a.source} — ${a.note}` : a.source}
+                          >
+                            <span className="font-mono opacity-70 mr-1">{a.year}</span>{a.attested_form}
+                          </span>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-2 opacity-75">
+                      {sv ? 'Källa' : 'Source'}: {chain.items[0].source}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Ortnamnslistan från DB */}
         <h2 id="place-name-list" className="text-2xl font-bold text-foreground mb-1 scroll-mt-24">{sv ? 'Ortnamnen' : 'The place names'}</h2>
