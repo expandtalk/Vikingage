@@ -46,6 +46,57 @@ export const getStakeBarriers = (): StakeBarrier[] => {
   return STAKE_BARRIERS;
 };
 
+// Spärrarna är fysiskt små hamn-/älvhinder. På översiktszoom blir de stora
+// etikett-pillren "blaffiga" och överlappar; vi visar dem då som en liten prick
+// och fäller ut den fulla etiketten först när kartan är ordentligt inzoomad.
+const FULL_LABEL_ZOOM = 11;
+
+const fullLabelIcon = (barrier: StakeBarrier): L.DivIcon =>
+  L.divIcon({
+    html: `<div style="
+      background: rgba(71, 85, 105, 0.95);
+      height: 32px;
+      border-radius: 16px;
+      border: 2px solid #475569;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      color: #ffffff;
+      text-align: center;
+      padding: 0 10px;
+      white-space: nowrap;
+      gap: 4px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    ">
+      <span style="font-size: 12px;">🛡️</span>
+      <span>${barrier.name.replace('pålspärr', 'spärr').replace('undervattenshinder', 'hinder')}</span>
+    </div>`,
+    className: 'stake-barrier-marker',
+    iconSize: [0, 32] as any,
+    iconAnchor: [0, 16],
+  });
+
+const dotIcon = (): L.DivIcon =>
+  L.divIcon({
+    html: `<div style="
+      background: rgba(71, 85, 105, 0.95);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    "></div>`,
+    className: 'stake-barrier-marker-dot',
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+
+const iconForZoom = (barrier: StakeBarrier, zoom: number): L.DivIcon =>
+  zoom >= FULL_LABEL_ZOOM ? fullLabelIcon(barrier) : dotIcon();
+
 export const addStakeBarrierMarkers = (
   map: L.Map | null,
   enabled: boolean = true
@@ -53,6 +104,7 @@ export const addStakeBarrierMarkers = (
   if (!map || !enabled) return [];
 
   const markers: L.Marker[] = [];
+  const barrierByMarker: Array<{ marker: L.Marker; barrier: StakeBarrier }> = [];
   const markerType = 'stake_barriers';
   const priority = getMarkerPriority(markerType);
 
@@ -71,35 +123,9 @@ export const addStakeBarrierMarkers = (
       return;
     }
 
-    const customIcon = L.divIcon({
-      html: `<div style="
-        background: rgba(71, 85, 105, 0.95);
-        width: 120px;
-        height: 32px;
-        border-radius: 16px;
-        border: 2px solid #475569;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-        font-weight: bold;
-        color: #ffffff;
-        text-align: center;
-        padding: 0 8px;
-        white-space: nowrap;
-        gap: 4px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-      ">
-        <span style="font-size: 12px;">🛡️</span>
-        <span>${barrier.name.replace('pålspärr', 'spärr').replace('undervattenshinder', 'hinder')}</span>
-      </div>`,
-      className: 'stake-barrier-marker',
-      iconSize: [120, 32],
-      iconAnchor: [60, 16]
-    });
-
-    const marker = L.marker([barrier.coordinates.lat, barrier.coordinates.lng], { icon: customIcon })
+    const marker = L.marker([barrier.coordinates.lat, barrier.coordinates.lng], {
+      icon: iconForZoom(barrier, map.getZoom()),
+    })
       .bindPopup(`
         <div style="background: rgba(30, 41, 59, 0.98) !important; color: white !important; padding: 14px; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.4); border: 3px solid #475569; backdrop-filter: blur(6px); min-width: 280px;">
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -136,7 +162,19 @@ export const addStakeBarrierMarkers = (
 
     map.addLayer(marker);
     markers.push(marker);
+    barrierByMarker.push({ marker, barrier });
   });
+
+  // Zoom-reaktiv etikett: byt mellan prick och full etikett vid zoomend.
+  // Handlern sparas på kartan så useMapLayers kan koppla bort den vid rensning.
+  const existing = (map as any).__stakeBarrierZoom as (() => void) | undefined;
+  if (existing) map.off('zoomend', existing);
+  const onZoom = () => {
+    const z = map.getZoom();
+    barrierByMarker.forEach(({ marker, barrier }) => marker.setIcon(iconForZoom(barrier, z)));
+  };
+  map.on('zoomend', onZoom);
+  (map as any).__stakeBarrierZoom = onZoom;
 
   console.log(`Added ${markers.length} stake barrier markers (after deduplication)`);
   return markers;
