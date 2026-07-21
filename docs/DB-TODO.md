@@ -4,6 +4,32 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **
 
 ---
 
+## 🧹 AVHÅRDKODNING — flytta hårdkodad data till DB (Daniel 2026-07-21)
+
+**Princip (Daniel):** undvik hårdkodad data i TS-filer. Data ska bo i DB (RLS: publik läs, admin-skriv) och läsas via hook, så den är redigerbar i admin, sökbar och inte spretar mellan kod och databas.
+
+**Metod per dataset:** skapa tabell (om saknas) → migrera TS-datat in via seed-SQL → ny/ändrad hook läser `supabase.from(...)` → ta bort TS-arrayen → `npm run build` + live-QA. Mönster = `paleo_shorelines`/`heritage_sites` (RLS, GENERATED geom, viewport där relevant).
+
+**Inventering (verifierad mot `supabase.from(...)`-anrop + import-grep 2026-07-21):**
+
+| Dataset | Hårdkodad fil | DB-mål | Status / åtgärd |
+|---|---|---|---|
+| Ledungsområden | `utils/ledungSystem/ledungAreas.ts` (14 rektanglar, fejk-shipQuota) | ny tabell + `hundreds` | **Ingen tabell.** Bygg om på härad/hundare (punkt 2). BLOCKERAD av Geotorget-sockenpolygoner. |
+| Heliga källor | `utils/religiousLocations/offeringSprings.ts` | ny `sacred_sites` el. `heritage_sites` (raa_type=offerkälla/helgonkälla) | **Ingen riktig tabell** (`christian_sites` har 2 holy_place). Migrera (punkt 4 — godkänd). |
+| Hedniska kultplatser | `utils/religiousLocations/religiousPlacesData.ts` (`getDeityPlaces`/`getChristianCenters`) | ny `cult_sites` kopplad till `gods` (16 finns) | **Ingen tabell** för platserna; `gods` har bara gudarna. Migrera + koppla plats→gud. |
+| Valdemars segelled | `utils/valdemarsRoute.ts` + `utils/routes/*` | `viking_roads`/`road_waypoints` (linjelager) | **Helt hårdkodad.** Route-koordinaterna in i DB-vägmodellen. |
+| Vikingaregioner | `utils/vikingRegions/vikingRegionData.ts`, `utils/vikingEraRegions.ts` | ny `viking_regions` | **Ingen tabell.** |
+| Arkeologiska fynd | `utils/archaeologicalFinds.ts` (~15, rikast) | `finds` (3) / `archaeological_sites` (4) | **Dubbellagring** — DB-tabellerna nästan tomma, TS är källan. Migrera TS→`finds`, repointa `useArchaeologicalFindMarkers`. |
+| Utflykter | `data/excursions.ts` | `excursions` (76 rader FINNS) | **Dubbellagring / migration ofullständig.** `Excursions.tsx` läser TS, inte tabellen. VERIFIERA vilken som är sanning → repointa till DB. |
+| Germansk tidslinje | `utils/germanicTimeline/*` (grupper/perioder) | `folk_groups` (81), `historical_periods` (5) | **Dubbellagring.** `useFolkGroupMarkers` läser DB, men tidslinjegrupperna är hårdkodade. Konsolidera. |
+| Floder (ev.) | `utils/riverSystems/nordicRivers.ts`, `easternRoutes.ts` | `river_systems` (43), `river_coordinates` (207) | **VERIFIERA:** `useMapRiverSystems` läser DB — är TS-filerna legacy/orphan el. används de för europeiska floder? Ta bort el. migrera. |
+| Kända inskrifter (seed) | `data/famousInscriptions.ts`, `data/jarlabankeStonesInscriptions.ts`, `data/romanIronAgeInscriptions.ts` | `runic_inscriptions` (6 434) | Kontrollera att de finns i DB via signum; annars importera + ta bort TS. |
+| Legend-räknare/lager | `hooks/legend/legendItemGenerators.ts` (hårdkodade tal 49/95/12/65…) | `dbStats` / count-frågor | Härled counts från DB istället för magiska tal. |
+
+**Ordning:** de som saknar tabell + ingår i godkänd 7-punktsplan tas där (källor=punkt 4, ledung=punkt 2). Rena dubbellagringar (utflykter, fynd, floder, tidslinje) är egna små avhårdkodnings-tasks — låg risk, additiv seed + repoint + ta bort TS-array. Se [[nyholm-rolandsson-datamodell]] och `docs/superpowers/plans/2026-07-21-kyrkor-stift-ledarskap.md`.
+
+---
+
 ## 🎯 PRIORITERAT NU (2026-07-18, uppdaterad efter dagens diskussion)
 
 ### 🟢 SLUTSTATUS 2026-07-18 (efter stor rundata-session)
@@ -271,3 +297,18 @@ Import kraftigt ofullständig (rundata.sql → DB). Prioritet efter synligt vär
 ## Två Geotorget-nedladdningar att beställa (Lantmäteriet, en session)
 1. **Ortnamn Nedladdning, vektor** (→ place_names)
 2. **Socken och stad Nedladdning, vektor** (→ sockenpolygoner + komplett lista)
+
+---
+
+## 🔴 RLS: spatial_ref_sys — RISK ACCEPTERAD (Daniel 2026-07-21, väg B)
+
+Security Advisor flaggar `public.spatial_ref_sys`: RLS av **och** `anon`/`authenticated` har `INSERT/UPDATE/DELETE/TRUNCATE`. **Går inte att åtgärda själv** — tabellen ägs av `supabase_admin`; både MCP, direkt `postgres`-anslutning OCH Dashboardens SQL-editor ger `42501: must be owner` (bekräftat 2026-07-21). `postgres` är ej medlem i `supabase_admin` → kan ej `SET ROLE`.
+
+**Beslut: acceptera risken (väg B).** Motiv: `spatial_ref_sys` är PostGIS EPSG-referensdata (ingen känslig info). Värsta fall: någon med den publika anon-nyckeln tömmer tabellen → koordinattransformer slutar tills den återfylls (återställbart). Känd Supabase-advisor som användare inte kan lösa.
+
+**Om det ändå ska stängas:** endast via Supabase supportärende (de kör som `supabase_admin`):
+```sql
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON public.spatial_ref_sys FROM anon, authenticated;
+ALTER TABLE public.spatial_ref_sys ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public read spatial_ref_sys" ON public.spatial_ref_sys FOR SELECT USING (true);
+```
