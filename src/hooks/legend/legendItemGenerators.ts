@@ -252,6 +252,16 @@ export const generateBasicInscriptionItems = (
     enabled: enabledLegendItems.paleo_shoreline === true
   });
 
+  // Rikt kyrkolager (byggår, stift, socken/härad, ruinstatus + Commons-bild). Viewport-laddat,
+  // zoom-gate ≥8. AV som standard (=== true matchar useMapChurches-gaten).
+  items.push({
+    id: 'ecclesiastical_churches',
+    label: '⛪ Kyrkor (stift & bild)',
+    color: '#e11d48',
+    count: 0,
+    enabled: enabledLegendItems.ecclesiastical_churches === true
+  });
+
   // Add Christian sites if provided
   if (christianSites && christianSites.length > 0) {
     const christianItems = generateChristianSitesLegendItems(christianSites, t);

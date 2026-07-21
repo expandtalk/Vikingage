@@ -8,6 +8,7 @@ import { useMapValdemarsRoute } from './useMapValdemarsRoute';
 import { useMapEriksgata } from './useMapEriksgata';
 import { useMapBeaconSites } from './useMapBeaconSites';
 import { useMapHeritageSites } from './useMapHeritageSites';
+import { useMapChurches } from './map/useMapChurches';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -165,7 +166,14 @@ export const useMapInitialization = ({
     isMapReady: isMapReadyRef,
   });
 
-  return { 
+  // Rikt kyrkolager (ecclesiastical_sites: byggår/stift/socken/härad/ruin + Commons-bild).
+  useMapChurches({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+  });
+
+  return {
     mapContainer, 
     map: map.current,
     isMapReady

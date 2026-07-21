@@ -95,6 +95,7 @@ export const KNOWN_LAYER_KEYS = [
   "viking_roads",
   "beacon_sites",
   "paleo_shoreline",
+  "ecclesiastical_churches",
 ] as const;
 
 export type KnownLayerKey = (typeof KNOWN_LAYER_KEYS)[number];
