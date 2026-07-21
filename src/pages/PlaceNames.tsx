@@ -10,7 +10,14 @@ import { Input } from '@/components/ui/input';
 import { MapPin, Tag, AlertTriangle, Search, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
-import { PLACE_NAME_ELEMENTS, ELEMENT_CATEGORY_META, getElement } from '@/utils/placeNameElements';
+import {
+  PLACE_NAME_ELEMENTS,
+  ELEMENT_CATEGORY_META,
+  EVIDENCE_LAYER_META,
+  SACRAL_CONFIDENCE_META,
+  getElement,
+  type EvidenceLayer,
+} from '@/utils/placeNameElements';
 
 // Läsbara etiketter för place_names.element_category (feature-kategori i DB).
 const FEATURE_CATEGORY_LABELS: Record<string, { sv: string; en: string }> = {
@@ -115,49 +122,89 @@ const PlaceNames = () => {
           </CardContent>
         </Card>
 
-        {/* Namnleds-katalog — "vilka ord" */}
+        {/* Namnleds-katalog — "vilka ord", grupperat i evidensskikt */}
         <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'Namnleden vi söker' : 'The elements we search for'}</h2>
-        <div className="h-0.5 w-16 bg-accent/60 rounded mb-5" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-          {PLACE_NAME_ELEMENTS.map((el) => {
-            const meta = ELEMENT_CATEGORY_META[el.category];
-            const inData = elementOptions.find(([k]) => k === el.key);
-            return (
-              <Card
-                key={el.key}
-                className={`viking-card ${inData ? 'cursor-pointer hover:bg-card/80 transition-colors' : 'opacity-70'} ${elementKey === el.key ? 'ring-2 ring-gold' : ''}`}
-                onClick={inData ? () => { setElementKey(el.key); scrollToList(); } : undefined}
-                title={inData ? (sv ? `Visa de ${inData[1]} ortnamnen` : `Show the ${inData[1]} place names`) : undefined}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-foreground text-lg flex items-center gap-2">
-                    <span style={{ color: meta.color }}>{meta.symbol}</span>
-                    {el.label}
-                    {el.contested && (
-                      <span title={sv ? 'Etymologiskt omtvistad' : 'Etymologically contested'}>
-                        <AlertTriangle className="h-4 w-4 text-amber-400" />
-                      </span>
-                    )}
-                  </CardTitle>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary" className="text-xs" style={{ backgroundColor: meta.color + '22', color: meta.color }}>
-                      {meta.label}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p className="text-sm text-muted-foreground">{el.etymology}</p>
-                  <p className="text-xs text-muted-foreground">
-                    <strong>{sv ? 'Matchar' : 'Matches'}:</strong> {el.patterns.join(', ')}
-                    {el.excludes.length > 0 && (
-                      <> · <strong>{sv ? 'utesluter' : 'excludes'}:</strong> {el.excludes.join(', ')}</>
-                    )}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
+        <p className="text-sm text-muted-foreground max-w-3xl mb-6">
+          {sv
+            ? 'Leden är indelade i evidensskikt: den erkända kärnan (teofora/kultiska led), den utvidgade hypotesen (topografi-först/omtvistade), och kontroller (bebyggelsesuffix — baslinjen man mäter signal mot). Varje led har en sakral-konfidens och en boundary-regel som gör matchningen förutsägbar.'
+            : 'Elements are grouped into evidence layers: the recognised core (theophoric/cultic), the extended hypothesis (topography-first/contested), and controls (settlement suffixes — the baseline signal is measured against). Each element has a sacral confidence and a boundary rule that makes matching predictable.'}
+        </p>
+
+        {(['core', 'extended', 'control'] as EvidenceLayer[]).map((layer) => {
+          const layerMeta = EVIDENCE_LAYER_META[layer];
+          const els = PLACE_NAME_ELEMENTS.filter((e) => e.evidenceLayer === layer);
+          return (
+            <div key={layer} className="mb-8">
+              <h3 className="text-lg font-semibold text-foreground">{sv ? layerMeta.label : layerMeta.labelEn}</h3>
+              <p className="text-xs text-muted-foreground mb-3 max-w-2xl">{sv ? layerMeta.note : layerMeta.noteEn}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {els.map((el) => {
+                  const meta = ELEMENT_CATEGORY_META[el.category];
+                  const conf = SACRAL_CONFIDENCE_META[el.sacralConfidence];
+                  const inData = elementOptions.find(([k]) => k === el.key);
+                  return (
+                    <Card
+                      key={el.key}
+                      className={`viking-card ${inData ? 'cursor-pointer hover:bg-card/80 transition-colors' : ''} ${elementKey === el.key ? 'ring-2 ring-gold' : ''}`}
+                      onClick={inData ? () => { setElementKey(el.key); scrollToList(); } : undefined}
+                      title={inData ? (sv ? `Visa de ${inData[1]} ortnamnen` : `Show the ${inData[1]} place names`) : undefined}
+                    >
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-foreground text-lg flex items-center gap-2">
+                          <span style={{ color: meta.color }}>{meta.symbol}</span>
+                          {el.label}
+                          {el.contested && (
+                            <span title={sv ? 'Etymologiskt omtvistad' : 'Etymologically contested'}>
+                              <AlertTriangle className="h-4 w-4 text-amber-400" />
+                            </span>
+                          )}
+                        </CardTitle>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="secondary" className="text-xs" style={{ backgroundColor: meta.color + '22', color: meta.color }}>
+                            {meta.label}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs" style={{ borderColor: conf.color, color: conf.color }}>
+                            {sv ? 'Sakral' : 'Sacral'}: {sv ? conf.label : conf.labelEn}
+                          </Badge>
+                          {el.isControl && (
+                            <Badge variant="outline" className="text-xs border-slate-400 text-slate-300">
+                              {sv ? 'Kontroll' : 'Control'}
+                            </Badge>
+                          )}
+                          {inData && (
+                            <Badge variant="secondary" className="text-xs">{inData[1]}</Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <p className="text-sm text-muted-foreground">{el.etymology}</p>
+                        <p className="text-xs text-muted-foreground">
+                          <strong>{sv ? 'Matchar' : 'Matches'}</strong> ({el.boundaryRule}): {el.patterns.join(', ')}
+                          {el.excludes.length > 0 && (
+                            <> · <strong>{sv ? 'utesluter' : 'excludes'}:</strong> {el.excludes.join(', ')}</>
+                          )}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Data-kvalitets-varning: nuvarande DB-taggning är preliminär */}
+        <Card className="viking-card mb-10 border-amber-600/40">
+          <CardContent className="py-4 flex gap-3 text-sm text-muted-foreground">
+            <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+            <p>
+              {sv
+                ? 'Obs: taggningen på ortnamnen nedan är preliminär och görs om enligt den reviderade metoden. Den tidigare importen var för generös — t.ex. taggades alla -lund (även sena herrgårdsnamn som Erikslund, Marielund) som "sakralt". Efter omtaggning räknas -lund som sakralt bara med teofor bestämning (Fröslunda), och -inge/-hem/-by behandlas som kontrollgrupp.'
+                : 'Note: the tagging on the place names below is preliminary and being redone with the revised method. The earlier import was too generous — e.g. all -lund names (including late estate names like Erikslund, Marielund) were tagged "sacral". After re-tagging, -lund counts as sacral only with a theophoric qualifier (Fröslunda), and -inge/-hem/-by are treated as a control group.'}
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Ortnamnslistan från DB */}
         <h2 id="place-name-list" className="text-2xl font-bold text-foreground mb-1 scroll-mt-24">{sv ? 'Ortnamnen' : 'The place names'}</h2>
