@@ -11,6 +11,7 @@ import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock } from 'lucide-rea
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
 import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceNameAttestations';
+import { useRunicTheophoricSummary } from '@/hooks/useRunicTheophoricSummary';
 import {
   PLACE_NAME_ELEMENTS,
   ELEMENT_CATEGORY_META,
@@ -38,6 +39,7 @@ const PlaceNames = () => {
   const sv = language === 'sv';
   const { data: places = [], isLoading } = usePlaceNamesData();
   const { data: attestations = [] } = usePlaceNameAttestations();
+  const { data: runic } = useRunicTheophoricSummary();
   const [category, setCategory] = useState<string>('all');
   const [elementKey, setElementKey] = useState<string>('all');
   const [query, setQuery] = useState<string>('');
@@ -227,6 +229,56 @@ const PlaceNames = () => {
             </p>
           </CardContent>
         </Card>
+
+        {/* Namnleden i runinskrifterna — korsanalys mot runkorpusen */}
+        {runic && (
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'Namnleden i runinskrifterna' : 'The elements in the runic inscriptions'}</h2>
+            <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
+            <p className="text-sm text-muted-foreground max-w-3xl mb-4">
+              {sv
+                ? `Samma teofora led vi letar efter i ortnamnen dyker upp i runornas personnamn. En oberoende konsistenskoll mot ${runic.total_with_translit.toLocaleString()} translittererade inskrifter — Tor dominerar, och är dessutom det enda ledet med faktisk kultformel.`
+                : `The same theophoric elements we look for in place names appear in the runic personal names. An independent consistency check against ${runic.total_with_translit.toLocaleString()} transliterated inscriptions — Thor dominates, and is the only element with an actual cult formula.`}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <Card className="viking-card"><CardContent className="py-4 text-center">
+                <div className="text-2xl font-bold text-gold">{runic.thor_names}</div>
+                <div className="text-xs text-muted-foreground">{sv ? 'Tor-namn (þur-/þor-)' : 'Thor names'}</div>
+              </CardContent></Card>
+              <Card className="viking-card"><CardContent className="py-4 text-center">
+                <div className="text-2xl font-bold text-gold">{runic.thor_vigi.length}</div>
+                <div className="text-xs text-muted-foreground">{sv ? '"Þórr vígi"-formler' : '"Þórr vígi" formulas'}</div>
+              </CardContent></Card>
+              <Card className="viking-card"><CardContent className="py-4 text-center">
+                <div className="text-2xl font-bold text-gold">{runic.odin_names}</div>
+                <div className="text-xs text-muted-foreground">{sv ? 'Oden (endast namn)' : 'Odin (names only)'}</div>
+              </CardContent></Card>
+              <Card className="viking-card"><CardContent className="py-4 text-center">
+                <div className="text-2xl font-bold text-gold">{runic.frey}</div>
+                <div className="text-xs text-muted-foreground">{sv ? 'Frö/Frey' : 'Frey'}</div>
+              </CardContent></Card>
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{sv ? 'Tor helgar — de äkta kultformlerna' : 'Thor hallows — the genuine cult formulas'}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              {runic.thor_vigi.map((s) => (
+                <Card key={s.signum} className="viking-card">
+                  <CardContent className="py-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant="outline" className="text-xs border-gold text-gold">{s.signum}</Badge>
+                      <span className="text-xs text-emerald-300 font-medium">þur · uiki</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground font-mono break-words">{s.text}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground opacity-80 max-w-3xl">
+              {sv
+                ? 'Ärligt: Tor/Oden/Frö förekommer främst i personnamn (Þorsteinn, Óðinkárr), inte som gudaåkallan. Undantaget är de fyra "Þórr vígi"-stenarna ovan (Glavendrup DR 209, Velanda Vg 150, Virring DR 110, Canterbury-besvärjelsen) där Tor faktiskt åkallas. Oden nämns bara i namn — aldrig direkt — helt i linje med forskningen.'
+                : 'Honestly: Thor/Odin/Frey occur mainly in personal names, not as invocations. The exception is the four "Þórr vígi" stones above, where Thor is actually invoked. Odin appears only in names — never directly — consistent with scholarship.'}
+            </p>
+          </div>
+        )}
 
         {/* Beläggkedjor över tid (pilot) */}
         {chains.length > 0 && (
