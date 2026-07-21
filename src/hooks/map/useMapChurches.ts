@@ -14,7 +14,7 @@ interface Props {
 }
 
 const sb = supabase as unknown as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: any; error: any }> };
-const ZOOM_MIN = 8;
+const ZOOM_MIN = 6; // kyrkorna laddas från regional zoom (var 8 → syntes inte i överblick)
 
 const colorFor = (kind: string, status: string | null) => {
   if (status === 'ruin') return '#6b7280';                 // ruin = grå
@@ -58,6 +58,7 @@ const popupHtml = (r: any) => {
 export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
   const tokenRef = useRef(0);
+  const zoomedRef = useRef(false);
   const enabled = enabledLegendItems.ecclesiastical_churches === true;
   const yearFrom = useChurchYearFrom(); // 0 = alla; >0 = built_from >= yearFrom
 
@@ -68,13 +69,22 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
 
     if (!enabled) { layer.clearLayers(); return; }
 
+    // Fokus=churches: zooma in på Sverige EN gång så kyrkorna syns direkt (utan att
+    // kapa vyn i vanliga utforska-läget, som saknar focus-parametern).
+    if (!zoomedRef.current && typeof window !== 'undefined'
+        && new URLSearchParams(window.location.search).get('focus') === 'churches'
+        && map.getZoom() < ZOOM_MIN) {
+      zoomedRef.current = true;
+      map.setView([58.6, 15.2], ZOOM_MIN);
+    }
+
     let timer: ReturnType<typeof setTimeout> | null = null;
     const refresh = async () => {
       const myToken = ++tokenRef.current;
       if (map.getZoom() < ZOOM_MIN) { layer.clearLayers(); return; }  // överblick: använd Kulturlager
       const b = map.getBounds();
       const { data, error } = await sb.rpc('ecclesiastical_in_bbox', {
-        min_lng: b.getWest(), min_lat: b.getSouth(), max_lng: b.getEast(), max_lat: b.getNorth(), p_limit: 2000,
+        min_lng: b.getWest(), min_lat: b.getSouth(), max_lng: b.getEast(), max_lat: b.getNorth(), p_limit: 4000,
       });
       if (error || myToken !== tokenRef.current || !map) return;
       layer.clearLayers();

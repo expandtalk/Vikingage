@@ -33,6 +33,8 @@ interface LayoutContentProps {
   onMarkerClick: (inscription: any) => void;
   onMapNavigate: (navFunction: (lat: number, lng: number, zoom: number) => void) => void;
   onLegendToggle: (id: string) => void;
+  onShowAll?: () => void;
+  onHideAll?: () => void;
   onToggleExpanded: (id: string) => void;
   onResultClick: (inscription: any) => void;
   onPageChange: (page: number) => void;
@@ -77,6 +79,8 @@ export const LayoutContent: React.FC<LayoutContentProps> = ({
   onMarkerClick,
   onMapNavigate,
   onLegendToggle,
+  onShowAll,
+  onHideAll,
   onToggleExpanded,
   onResultClick,
   onPageChange,
@@ -141,6 +145,8 @@ export const LayoutContent: React.FC<LayoutContentProps> = ({
         isVikingMode={false}
         legendItems={legendItems}
         onLegendToggle={onLegendToggle}
+        onShowAll={onShowAll}
+        onHideAll={onHideAll}
         // Draggable legend state
         legendMinimized={legendMinimized}
         legendPosition={legendPosition}

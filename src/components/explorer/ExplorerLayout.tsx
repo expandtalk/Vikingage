@@ -53,6 +53,8 @@ interface ExplorerLayoutProps {
   onMarkerClick: (inscription: any) => void;
   onMapNavigate: (navFunction: (lat: number, lng: number, zoom: number) => void) => void;
   onLegendToggle: (id: string) => void;
+  onShowAll?: () => void;
+  onHideAll?: () => void;
   onToggleExpanded: (id: string) => void;
   onResultClick: (inscription: any) => void;
   onPageChange: (page: number) => void;
@@ -111,6 +113,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   onMarkerClick,
   onMapNavigate,
   onLegendToggle,
+  onShowAll,
+  onHideAll,
   onToggleExpanded,
   onResultClick,
   onPageChange,
@@ -411,6 +415,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         onMarkerClick={onMarkerClick}
         onMapNavigate={onMapNavigate}
         onLegendToggle={onLegendToggle}
+        onShowAll={onShowAll}
+        onHideAll={onHideAll}
         onToggleExpanded={onToggleExpanded}
         onResultClick={onResultClick}
         onPageChange={onPageChange}

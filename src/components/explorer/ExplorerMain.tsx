@@ -60,6 +60,8 @@ export const ExplorerMain: React.FC = () => {
     legendItems,
     mapInscriptions,
     handleLegendToggle,
+    handleShowAll,
+    handleHideAll,
     focusDeity,
     selectedTimePeriod,
     setSelectedTimePeriod,
@@ -287,6 +289,8 @@ export const ExplorerMain: React.FC = () => {
         onMarkerClick={handleMarkerClick}
         onMapNavigate={setMapNavigate}
         onLegendToggle={handleLegendToggle}
+        onShowAll={handleShowAll}
+        onHideAll={handleHideAll}
         onToggleExpanded={toggleExpanded}
         onResultClick={handleResultClick}
         onPageChange={setCurrentPage}
