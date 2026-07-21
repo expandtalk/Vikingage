@@ -13,8 +13,6 @@ import { useVikingFortresses } from '../hooks/useVikingFortresses';
 import { useVikingCities, getCategoryColor, getCategoryLabel } from '../hooks/useVikingCities';
 import { useSwedishHillforts } from '../hooks/useSwedishHillforts';
 import { FortressesCitiesMap } from '../components/fortresses/FortressesCitiesMap';
-import { bulkImportSwedishHillforts } from '../utils/swedishHillfortsBulkImport';
-import { bulkImportExtendedSwedishHillforts } from '../utils/swedishHillfortsBulkImportExtended';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Fortresses = () => {
@@ -68,7 +66,6 @@ const Fortresses = () => {
   const [selectedFortressRegion, setSelectedFortressRegion] = useState<string>('all');
   const [selectedCityRegion, setSelectedCityRegion] = useState<string>('all');
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
-  const [isImporting, setIsImporting] = useState(false);
   const [showHillforts, setShowHillforts] = useState(true);
   
   // Map state
@@ -273,45 +270,6 @@ const Fortresses = () => {
                     </div>
                     <div className="text-sm text-muted-foreground">{L.municipalities}</div>
                   </div>
-                </div>
-                
-                <div className="mt-4 flex gap-2">
-                  <Button 
-                    onClick={async () => {
-                      setIsImporting(true);
-                      try {
-                        const result = await bulkImportSwedishHillforts();
-                        console.log('Import result:', result);
-                      } catch (error) {
-                        console.error('Import error:', error);
-                      } finally {
-                        setIsImporting(false);
-                      }
-                    }}
-                    disabled={isImporting}
-                    variant="outline"
-                    size="sm"
-                  >
-                    {isImporting ? L.importing : L.importOlandSmaland}
-                  </Button>
-                  <Button 
-                    onClick={async () => {
-                      setIsImporting(true);
-                      try {
-                        const result = await bulkImportExtendedSwedishHillforts();
-                        console.log('Extended import result:', result);
-                      } catch (error) {
-                        console.error('Extended import error:', error);
-                      } finally {
-                        setIsImporting(false);
-                      }
-                    }}
-                    disabled={isImporting}
-                    variant="default"
-                    size="sm"
-                  >
-                    {isImporting ? L.importing : L.importNarkeUppland}
-                  </Button>
                 </div>
               </CardContent>
             </Card>
