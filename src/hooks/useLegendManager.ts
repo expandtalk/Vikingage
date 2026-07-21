@@ -5,6 +5,7 @@ import { processLegendItems } from './legend/legendItemProcessor';
 import { filterInscriptionsByLegend } from './useLegendManager/inscriptionFilters';
 import { useFocusManager } from './useFocusManager';
 import { useChristianSites } from './useChristianSites';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { LegendPreset } from '@/types/legend';
 
 export const useLegendManager = (
@@ -17,6 +18,7 @@ export const useLegendManager = (
   searchResultInscriptions?: any[]
 ) => {
   const { currentFocus } = useFocusManager();
+  const { t, language } = useLanguage();
   const [enabledLegendItems, setEnabledLegendItems] = useState<{ [key: string]: boolean }>({});
 
   // Fetch Christian sites data
@@ -65,9 +67,9 @@ export const useLegendManager = (
     
     const rawItems = generateBasicInscriptionItems(
       inscriptions, 
-      isVikingMode, 
-      enabledLegendItems, 
-      (key: string) => key,
+      isVikingMode,
+      enabledLegendItems,
+      t,
       selectedTimePeriod,
       dbStats,
       christianSites
@@ -87,7 +89,7 @@ export const useLegendManager = (
     }
     
     return processedItems;
-  }, [inscriptions, isVikingMode, selectedTimePeriod, enabledLegendItems]);
+  }, [inscriptions, isVikingMode, selectedTimePeriod, enabledLegendItems, language]);
 
   // Handle legend toggle
   const handleLegendToggle = useCallback((itemId: string) => {
