@@ -7,8 +7,24 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useExploreProfiles } from "@/hooks/useExploreProfiles";
 import { useActiveExploreRole, setActiveExploreRole } from "@/hooks/useActiveExploreRole";
 import { PROFILE_ICONS } from "@/config/exploreCapabilities";
+import { CompactSearchBox } from "../search/CompactSearchBox";
 
-export const PanelLayoutSelector: React.FC = () => {
+interface PanelLayoutSelectorProps {
+  // Sök inbäddad i profilkortet (ersätter den stora fristående sökrutan).
+  searchQuery?: string;
+  setSearchQuery?: (query: string) => void;
+  handleSearch?: () => void;
+  totalInscriptions?: number;
+  showSearch?: boolean;
+}
+
+export const PanelLayoutSelector: React.FC<PanelLayoutSelectorProps> = ({
+  searchQuery = "",
+  setSearchQuery,
+  handleSearch,
+  totalInscriptions = 0,
+  showSearch = false,
+}) => {
   const profiles = useExploreProfiles();
   const activeId = useActiveExploreRole();
   const { language } = useLanguage();
@@ -18,6 +34,12 @@ export const PanelLayoutSelector: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
   const ActiveIcon = activeProfile ? PROFILE_ICONS[activeProfile.icon] : null;
 
+  const canSearch = showSearch && !!setSearchQuery && !!handleSearch;
+  const runSearch = (query: string) => {
+    setSearchQuery?.(query);
+    handleSearch?.();
+  };
+
   return (
     <Card className="bg-slate-800/60 backdrop-blur-md border-slate-600/30">
       <CardContent className="p-4">
@@ -25,7 +47,7 @@ export const PanelLayoutSelector: React.FC = () => {
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className={`flex w-full items-center justify-between text-left ${expanded ? "mb-3" : ""}`}
+          className={`flex w-full items-center justify-between text-left ${expanded || canSearch ? "mb-3" : ""}`}
         >
           <div className="flex items-center gap-2 min-w-0">
             <h3 className="text-sm font-medium text-slate-200 shrink-0">
@@ -43,8 +65,21 @@ export const PanelLayoutSelector: React.FC = () => {
           </div>
         </button>
 
+        {canSearch && (
+          <CompactSearchBox
+            onSearch={runSearch}
+            onResultSelect={(result: any) => runSearch(result.signum)}
+            placeholder={
+              lang === "en"
+                ? `Search ${totalInscriptions.toLocaleString()} runestones...`
+                : `Sök bland ${totalInscriptions.toLocaleString()} runstenar...`
+            }
+            currentQuery={searchQuery}
+          />
+        )}
+
         {expanded && (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
           {profiles.map((profile) => {
             const IconComponent = PROFILE_ICONS[profile.icon];
             const isActive = activeId === profile.id;
