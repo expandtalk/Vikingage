@@ -17,6 +17,7 @@ interface DraggablePanelProps {
   onSizeChange?: (size: { width: number; height: number }) => void;
   className?: string;
   resizable?: boolean;
+  headerActions?: React.ReactNode;
 }
 
 export const DraggablePanel: React.FC<DraggablePanelProps> = ({
@@ -33,7 +34,8 @@ export const DraggablePanel: React.FC<DraggablePanelProps> = ({
   onPositionChange,
   onSizeChange,
   className = '',
-  resizable = true
+  resizable = true,
+  headerActions
 }) => {
   const [position, setPosition] = useState(initialPosition);
   const [size, setSize] = useState(initialSize);
@@ -140,7 +142,8 @@ export const DraggablePanel: React.FC<DraggablePanelProps> = ({
           <Move className="h-3 w-3 text-slate-400" />
         </div>
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" onMouseDown={(e) => e.stopPropagation()}>
+          {headerActions}
           {onMinimize && (
             <Button
               onClick={onMinimize}

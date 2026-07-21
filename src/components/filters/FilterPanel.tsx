@@ -152,8 +152,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         </div>
       )}
 
-      {renderSelect('filter-landscape', t.landscape, selectedLandscape, onLandscapeChange, LANDSCAPES)}
       {renderSelect('filter-country', t.country, selectedCountry, onCountryChange, COUNTRIES)}
+      {renderSelect('filter-landscape', t.landscape, selectedLandscape, onLandscapeChange, LANDSCAPES)}
       {renderSelect('filter-period', t.period, selectedPeriod, onPeriodChange, PERIODS)}
       {renderSelect('filter-status', t.status, selectedStatus, onStatusChange, STATUSES)}
       {renderSelect('filter-object-type', t.objectType, selectedObjectType, onObjectTypeChange, OBJECT_TYPES)}

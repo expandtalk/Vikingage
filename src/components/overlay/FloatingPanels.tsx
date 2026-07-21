@@ -2,9 +2,8 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Filter, X, ChevronDown, ChevronUp, Map } from 'lucide-react';
+import { X, ChevronDown, Map } from 'lucide-react';
 import { FilterPanel } from '../filters/FilterPanel';
-import { MapLegend } from '../MapLegend';
 import { DraggableLegend } from '../legend/DraggableLegend';
 import { LegendItem } from '@/types/common';
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -78,10 +77,9 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
   const sv = language === 'sv';
   return (
     <>
-      {/* Control Buttons */}
-      <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">
-        {/* Legend Toggle Button - NU FÖRST */}
-        {onToggleLegend && (
+      {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
+      {onToggleLegend && !showLegend && (
+        <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">
           <Button
             onClick={onToggleLegend}
             className="bg-slate-900/95 backdrop-blur-md border-slate-500 text-white hover:bg-slate-800/95 flex items-center gap-2 shadow-lg border-2"
@@ -89,26 +87,15 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
           >
             <Map className="h-4 w-4" />
             <span className="text-xs font-medium">{sv ? 'Teckenförklaring' : 'Legend'}</span>
-            {showLegend ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {activeFiltersCount > 0 && (
+              <Badge variant="secondary" className="text-xs bg-orange-600 text-white border-orange-500 font-bold">
+                {activeFiltersCount}
+              </Badge>
+            )}
+            <ChevronDown className="h-3 w-3" />
           </Button>
-        )}
-
-        {/* Filter Toggle Button - nu sekundär med bättre kontrast */}
-        <Button
-          onClick={onToggleFilters}
-          className="bg-slate-900/95 backdrop-blur-md border-slate-500 text-white hover:bg-slate-800/95 flex items-center gap-2 shadow-lg border-2"
-          size="sm"
-        >
-          <Filter className="h-4 w-4" />
-          <span className="text-xs font-medium">Filter</span>
-          {activeFiltersCount > 0 && (
-            <Badge variant="secondary" className="text-xs bg-orange-600 text-white border-orange-500 font-bold">
-              {activeFiltersCount}
-            </Badge>
-          )}
-          {showFilters ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-        </Button>
-      </div>
+        </div>
+      )}
 
       {/* Filter Panel */}
       {showFilters && (
@@ -144,41 +131,10 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
         </div>
       )}
 
-      {/* Legacy Legend Panel (for backward compatibility) - FIXAD z-index för att inte täcka sökresultat */}
-      {showLegend && onLegendToggle && !legendVisible && (
-        <div className="absolute top-4 right-4 z-30 w-[320px] max-h-[70vh] overflow-hidden">
-          <div className="bg-slate-800/98 backdrop-blur-md border-slate-600/50 rounded-lg shadow-2xl">
-            <div className="flex items-center justify-between p-3 border-b border-slate-600/50">
-              <h3 className="text-white font-medium flex items-center gap-2">
-                <Map className="h-4 w-4" />
-                {sv ? 'Teckenförklaring' : 'Legend'}
-              </h3>
-              <Button
-                onClick={onToggleLegend}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-white hover:bg-slate-700/50"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="p-0">
-              <MapLegend
-                isVikingMode={isVikingMode}
-                legendItems={legendItems}
-                onToggleItem={onLegendToggle}
-                className="bg-transparent border-0"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Draggable Legend Panel */}
-      {legendVisible && onLegendToggle && onLegendMinimize && onLegendPositionChange && onLegendSizeChange && (
+      {/* Enda legenden: dragbar panel med filter som ikon i headern. */}
+      {showLegend && onLegendToggle && onToggleLegend && (
         <DraggableLegend
-          visible={legendVisible}
+          visible={showLegend}
           minimized={legendMinimized}
           position={legendPosition}
           size={legendSize}
@@ -186,11 +142,14 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
           legendItems={legendItems}
           onToggleItem={onLegendToggle}
           onClose={() => onToggleLegend()}
-          onMinimize={onLegendMinimize}
-          onPositionChange={onLegendPositionChange}
-          onSizeChange={onLegendSizeChange}
+          onMinimize={onLegendMinimize ?? (() => {})}
+          onPositionChange={onLegendPositionChange ?? (() => {})}
+          onSizeChange={onLegendSizeChange ?? (() => {})}
           onShowAll={onShowAll}
           onHideAll={onHideAll}
+          onOpenFilter={onToggleFilters}
+          filterActive={showFilters}
+          activeFiltersCount={activeFiltersCount}
         />
       )}
     </>
