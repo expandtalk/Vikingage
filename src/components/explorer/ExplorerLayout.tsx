@@ -319,8 +319,9 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         </div>
       )}
 
-      {/* Stats and Filters Status - Desktop */}
-      {!isMobile && (
+      {/* Stats and Filters Status - Desktop. Visas bara vid aktiv sökning/filtrering —
+          annars tar "Resultat"-rutan onödig yta i kondenserat läge (Daniel). */}
+      {!isMobile && (hasActiveSearch || activeFiltersCount > 0) && (
         <div className="bg-white/10 backdrop-blur-md border-white/20 rounded-lg p-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <StatsSection

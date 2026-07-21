@@ -121,7 +121,7 @@ export const DraggablePanel: React.FC<DraggablePanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className={`absolute bg-slate-800/98 backdrop-blur-md border border-slate-600/50 rounded-lg shadow-2xl ${className}`}
+      className={`absolute bg-slate-900 border border-slate-600/70 rounded-lg shadow-2xl ${className}`}
       style={{
         left: position.x,
         top: position.y,
@@ -139,7 +139,7 @@ export const DraggablePanel: React.FC<DraggablePanelProps> = ({
         <div className="flex items-center gap-2 text-white font-medium">
           {icon}
           <span className="text-sm">{title}</span>
-          <Move className="h-3 w-3 text-slate-400" />
+          <Move className="h-3 w-3 text-slate-300" />
         </div>
         
         <div className="flex items-center gap-1" onMouseDown={(e) => e.stopPropagation()}>
@@ -149,7 +149,7 @@ export const DraggablePanel: React.FC<DraggablePanelProps> = ({
               onClick={onMinimize}
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50"
+              className="h-6 w-6 p-0 text-slate-200 hover:text-white hover:bg-slate-700/50"
             >
               {minimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
             </Button>
@@ -160,7 +160,7 @@ export const DraggablePanel: React.FC<DraggablePanelProps> = ({
               onClick={onClose}
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50"
+              className="h-6 w-6 p-0 text-slate-200 hover:text-white hover:bg-slate-700/50"
             >
               <X className="h-3 w-3" />
             </Button>

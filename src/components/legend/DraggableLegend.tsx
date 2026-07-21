@@ -69,7 +69,7 @@ export const DraggableLegend: React.FC<DraggableLegendProps> = ({
           size="sm"
           title={sv ? 'Filtrera' : 'Filter'}
           aria-label={sv ? 'Filtrera' : 'Filter'}
-          className={`relative h-6 w-6 p-0 hover:bg-slate-700/50 ${filterActive ? 'text-orange-400' : 'text-slate-300 hover:text-white'}`}
+          className={`relative h-6 w-6 p-0 hover:bg-slate-700/50 ${filterActive ? 'text-orange-400' : 'text-slate-200 hover:text-white'}`}
         >
           <Filter className="h-3.5 w-3.5" />
           {activeFiltersCount > 0 && (

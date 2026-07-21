@@ -34,6 +34,15 @@ export const addMapMarkers = async (
     }
     markers.push(...inscriptionMarkers);
     console.log(`✅ Added ${inscriptionMarkers.length} runic inscription markers`);
+  } else {
+    // Lagret avstängt (eller inga träffar): städa bort ev. kvarvarande runstenskluster.
+    // Klustret ligger på map.__runeClusterGroup, inte i markers[], så anroparens
+    // per-markör-städning missar det → runstenar låg kvar trots avstängd toggle (fix).
+    const mapAny = map as unknown as { __runeClusterGroup?: L.LayerGroup };
+    if (mapAny.__runeClusterGroup && map.hasLayer(mapAny.__runeClusterGroup)) {
+      map.removeLayer(mapAny.__runeClusterGroup);
+      mapAny.__runeClusterGroup = undefined;
+    }
   }
 
   // Add folk group markers if enabled (await the async function)
