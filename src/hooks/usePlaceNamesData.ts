@@ -28,6 +28,9 @@ export const usePlaceNamesData = () =>
         .select(
           'id,name,lat,lng,element_keys,element_category,feature_type,province,earliest_attestation_year,attested_form,attestation_source,source,source_license,attribution',
         )
+        // Sidan visar det kurerade urvalet (metod-showcase). OSM-gazetteern (~42k)
+        // är analysunderlag och skulle spränga klient-listan; den nås via RPC:er.
+        .neq('source', 'osm')
         .order('name', { ascending: true });
       if (error) throw error;
       return (data ?? []) as PlaceNameRow[];

@@ -105,7 +105,11 @@ export const usePlaceNameMarkers = (
         .from('place_names')
         .select(
           'id, name, lat, lng, element_keys, element_category, feature_type, province, earliest_attestation_year, attested_form, source, source_license, imported_at'
-        );
+        )
+        // OSM-gazetteern (~42k) är analysunderlag, inte kartlager — annars 43k
+        // markörer i ett all-load-lager. Kartan visar det kurerade urvalet;
+        // distans-RPC:erna använder hela place_names (inkl. OSM).
+        .neq('source', 'osm');
 
       if (error) {
         console.error('❌ Error fetching place names:', error);
