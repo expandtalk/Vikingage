@@ -51,7 +51,7 @@ export const LegendCategory: React.FC<LegendCategoryProps> = ({
           <Label 
             htmlFor={`legend-${item.id}`} 
             className={`text-xs cursor-pointer flex-1 truncate leading-4 font-semibold hover:text-white transition-colors ${
-              item.enabled ? 'text-white' : 'text-gray-400'
+              item.enabled ? 'text-white' : 'text-gray-300'
             }`}
             title={item.label}
           >
@@ -62,7 +62,7 @@ export const LegendCategory: React.FC<LegendCategoryProps> = ({
             <Badge
               variant="outline"
               className={`text-xs px-1.5 py-0 h-5 flex-shrink-0 font-semibold ${
-                item.enabled ? 'text-white border-amber-600 bg-amber-700/50' : 'text-gray-500 border-gray-600/50 bg-gray-800/50'
+                item.enabled ? 'text-white border-amber-600 bg-amber-700/50' : 'text-gray-300 border-gray-500/60 bg-gray-800/70'
               }`}
             >
               {item.count}

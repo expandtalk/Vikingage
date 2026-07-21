@@ -724,19 +724,7 @@ export const RELIGIOUS_PLACES: ReligiousPlace[] = [
   },
 
   // ✅ VIKINGATIDEN - systematisering
-  {
-    id: 'torshalla',
-    name: 'Torshälla',
-    coordinates: { lat: 59.4000, lng: 16.5167 },
-    deity: 'thor',
-    type: 'royal_center',
-    evidence: ['place_name', 'archaeological'],
-    description: 'Þors harg - systematiserad kultplats och handelcentrum',
-    historicalPeriods: ['viking_age'],
-    establishedPeriod: 'viking_age',
-    region: 'Södermanland',
-    sources: ['Torshälla - Wikipedia']
-  },
+  // (Torshälla-dubbletten borttagen — normaliserad till den enda posten 'torshalla_detailed' nedan.)
   {
     id: 'froson_jamtland',
     name: 'Frösön (Jämtland)',
@@ -867,8 +855,8 @@ export const RELIGIOUS_PLACES: ReligiousPlace[] = [
     sources: ['Traditionella källor', 'Tingsplatsarkeologi']
   },
   {
-    id: 'torshalla_detailed',
-    name: 'Torshälla (detaljerad)',
+    id: 'torshalla',
+    name: 'Torshälla',
     coordinates: { lat: 59.4197, lng: 16.4747 },
     deity: 'thor',
     type: 'cult_site',
