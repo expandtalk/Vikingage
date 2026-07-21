@@ -75,7 +75,11 @@ insert into public.name_datings (name, socken, landscape, name_type, dating_text
 ('Valsta','Norrsunda','Uppland','stad','senast omkr. 800','boplats','normal',210,'namnetablering under romersk järnålder fullt möjlig')
 on conflict do nothing;
 
--- Konservativ koordinatmatchning: bara entydiga namn (en OSM-träff). Övriga null.
-update public.name_datings nd set place_name_id = m.id
-from (select lower(name) lname, (array_agg(id))[1] id, count(*) c from public.place_names where source='osm' and lat is not null group by lower(name)) m
-where lower(nd.name)=m.lname and m.c=1;
+-- Koordinatsättning görs INTE i SQL. En naiv "en OSM-träff = entydig" match är
+-- osäker: den enda OSM-noden med ett namn kan ligga i fel landskap (t.ex. enda
+-- "Odenslunda" i OSM låg i Västergötland, inte i Fresta/Uppland som Vikstrand avser).
+-- Istället körs scripts/data/disambiguate-name-datings.mjs som för VARJE namn kräver
+-- ett socken-anker (medelläge av fornlämningar per socken + riktad Wikidata på
+-- "X socken") och bara sätter place_name_id om närmaste OSM-bebyggelsepunkt med rätt
+-- namn ligger <20 km från ankaret. Övriga lämnas null (hitta inte på). 2026-07-22:
+-- 18/53 koordinatsatta; resterande saknar OSM-punkt eller socken-anker.
