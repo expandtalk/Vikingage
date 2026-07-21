@@ -38,6 +38,15 @@ const STAKE_BARRIERS: StakeBarrier[] = [
     description: 'Undervattenshinder och pålspärrar som skyddade Hedebys viktiga handelshamn.',
     timePeriod: 'viking_age',
     type: 'harbor_barrier'
+  },
+  {
+    // Verifierad fornlämning (RAÄ Stockholm 660 / Fornsök L2013:4298), till skillnad
+    // från övriga poster ovan. Koordinat ur Fornsök (SWEREF 99 TM → WGS84), lägesosäkerhet 45 m.
+    name: 'Årstaviken spärranordning',
+    coordinates: { lat: 59.306738, lng: 18.048976 },
+    description: 'Möjlig fornlämning: tät pålrad/stockspärr vid Årstaholmarna som kontrollerade passagen mellan holmarna i Årstaviken. Trolig datering 900–1200-tal (ej dendrokronologiskt bestämd). Källa: Riksantikvarieämbetet, Fornsök L2013:4298 (RAÄ Stockholm 660).',
+    timePeriod: 'viking_age',
+    type: 'harbor_barrier'
   }
 ];
 
