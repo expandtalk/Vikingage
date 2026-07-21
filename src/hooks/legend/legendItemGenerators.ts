@@ -72,43 +72,41 @@ export const generateBasicInscriptionItems = (
   }
 
   // 3+4. VATTENVÄGAR (kategori) — Valdemars segelled ligger nu UNDER vattenvägar.
+  // 5. VÄGAR som UNDERGRUPP till Vikingaleder (Daniel: flytta in vägar under
+  //    vikingaleder, döp om till "Vägar"). Byggs före water_routes så den kan bäddas in.
+  const roadNode = (selectedTimePeriod === 'viking_age' || selectedTimePeriod === 'all')
+    ? (() => {
+        const roadChildren = [
+          { id: 'road_rullstensas', label: t('eskerRoads'), color: '#CD853F', count: 5 },
+          { id: 'road_halvagar', label: t('hollowWays'), color: '#A0522D', count: 2 },
+          { id: 'road_vinteragar', label: t('winterRoads'), color: '#4682B4', count: 2 },
+          { id: 'road_landmarks', label: t('bridgesAndFords'), color: '#2F4F4F', count: 5 },
+        ].map((child) => ({ ...child, enabled: enabledLegendItems[child.id] !== false }));
+        return {
+          id: 'viking_roads',
+          label: t('vikingAgeRoads'), // "Vägar"
+          color: '#8B4513',
+          count: roadChildren.reduce((s, c) => s + c.count, 0),
+          enabled: enabledLegendItems.viking_roads !== false,
+          type: 'category' as const,
+          children: roadChildren,
+        };
+      })()
+    : null;
+
   items.push({
     id: 'water_routes',
-    label: '🌊 ' + t('vikingWaterways'),
+    label: '🌊 ' + t('vikingWaterways'), // "Vikingaleder"
     color: '#1e40af',
-    count: 95 + 12,
+    count: 95 + 12 + (roadNode?.count ?? 0),
     enabled: enabledLegendItems.water_routes !== false,
     type: 'category',
     children: [
       { id: 'valdemar_route', label: '⚔️ ' + t('valdemarsRoute'), color: '#1e3a8a', count: 95, enabled: enabledLegendItems.valdemar_route !== false },
       { id: 'river_routes', label: t('importantWaterways'), color: '#1e40af', count: 12, enabled: enabledLegendItems.river_routes !== false },
+      ...(roadNode ? [roadNode] : []),
     ],
   });
-
-  // 5. VIKINGATIDA VÄGAR - femte prioritet
-  if (selectedTimePeriod === 'viking_age' || selectedTimePeriod === 'all') {
-    const roadChildren = [
-      { id: 'road_rullstensas', label: t('eskerRoads'), color: '#CD853F', count: 5 },
-      { id: 'road_halvagar', label: t('hollowWays'), color: '#A0522D', count: 2 },
-      { id: 'road_vinteragar', label: t('winterRoads'), color: '#4682B4', count: 2 },
-      { id: 'road_landmarks', label: t('bridgesAndFords'), color: '#2F4F4F', count: 5 }
-    ].map(child => ({
-      ...child,
-      enabled: enabledLegendItems[child.id] !== false
-    }));
-
-    const totalRoadCount = roadChildren.reduce((sum, child) => sum + child.count, 0);
-    
-    items.push({
-      id: 'viking_roads',
-      label: t('vikingAgeRoads'),
-      color: '#8B4513',
-      count: totalRoadCount,
-      enabled: enabledLegendItems.viking_roads !== false,
-      type: 'category',
-      children: roadChildren
-    });
-  }
 
   // 6. FORNBORGAR - sjätte prioritet
   items.push({
@@ -300,8 +298,7 @@ export const generateBasicInscriptionItems = (
     keep('ecclesiastical_churches'),
     keep('heritage_sites'),
     keep('religious_places'),
-    keep('water_routes'),
-    keep('viking_roads'),
+    keep('water_routes'), // Vägar ligger nu som undergrupp inuti water_routes
     group('cat_defense', '🏰 ' + t('fortresses'), '#dc2626', ['viking_fortresses', 'viking_cities', 'stake_barriers']),
     group('cat_folk', '🛡️ ' + t('germanicPeoples'), '#8b5cf6', ['germanic_timeline', 'folk_groups', 'viking_regions']),
     group('cat_geo', '📍 Platser & geodata', '#65a30d', ['place_names', 'historical_events', 'paleo_shoreline']),

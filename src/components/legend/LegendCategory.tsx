@@ -70,17 +70,28 @@ export const LegendCategory: React.FC<LegendCategoryProps> = ({
         />
       </div>
 
-      {/* Children - only show if expanded and enabled */}
+      {/* Children - only show if expanded and enabled. Barn som själva är kategorier
+          renderas rekursivt (t.ex. Vägar under Vikingaleder). */}
       {isExpanded && item.enabled && item.children && (
         <div className="ml-2 mt-1 space-y-1 bg-slate-900/60 rounded-md p-2">
-          {item.children.map((child) => (
-            <LegendItemComponent
-              key={child.id}
-              item={child}
-              onToggleItem={onToggleItem}
-              level={0}
-            />
-          ))}
+          {item.children.map((child) =>
+            child.type === 'category' ? (
+              <LegendCategory
+                key={child.id}
+                item={child}
+                onToggleItem={onToggleItem}
+                expandedCategories={expandedCategories}
+                onCategoryToggle={onCategoryToggle}
+              />
+            ) : (
+              <LegendItemComponent
+                key={child.id}
+                item={child}
+                onToggleItem={onToggleItem}
+                level={0}
+              />
+            )
+          )}
         </div>
       )}
     </div>
