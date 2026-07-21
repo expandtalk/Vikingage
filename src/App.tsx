@@ -32,6 +32,8 @@ const SourceLibrary = lazy(() => import("./pages/SourceLibrary"));
 const ThemePage = lazy(() => import("./pages/ThemePage"));
 const InscriptionPage = lazy(() => import("./pages/InscriptionPage"));
 const Statistics = lazy(() => import("./pages/Statistics"));
+const PlaceNames = lazy(() => import("./pages/PlaceNames"));
+const HistoricalEvents = lazy(() => import("./pages/HistoricalEvents"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -92,6 +94,10 @@ const App = () => (
                   <Route path="/sv/genetiska-handelser" element={<Navigate to="/explore?focus=geneticEvents" replace />} />
 
                   {/* Other routes */}
+                  <Route path="/place-names" element={<PlaceNames />} />
+                  <Route path="/sv/ortnamn" element={<PlaceNames />} />
+                  <Route path="/historical-events" element={<HistoricalEvents />} />
+                  <Route path="/sv/historiska-handelser" element={<HistoricalEvents />} />
                   <Route path="/prices" element={<Prices />} />
                   <Route path="/excursions" element={<Excursions />} />
                   <Route path="/sv/utflykter" element={<Excursions />} />

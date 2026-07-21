@@ -47,7 +47,7 @@ export const PanelLayoutSelector: React.FC<PanelLayoutSelectorProps> = ({
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className={`flex w-full items-center justify-between text-left ${expanded || canSearch ? "mb-3" : ""}`}
+          className={`flex w-full items-center justify-between text-left ${expanded ? "mb-3" : ""}`}
         >
           <div className="flex items-center gap-2 min-w-0">
             <h3 className="text-sm font-medium text-slate-200 shrink-0">
@@ -65,21 +65,24 @@ export const PanelLayoutSelector: React.FC<PanelLayoutSelectorProps> = ({
           </div>
         </button>
 
-        {canSearch && (
-          <CompactSearchBox
-            onSearch={runSearch}
-            onResultSelect={(result: any) => runSearch(result.signum)}
-            placeholder={
-              lang === "en"
-                ? `Search ${totalInscriptions.toLocaleString()} runestones...`
-                : `Sök bland ${totalInscriptions.toLocaleString()} runstenar...`
-            }
-            currentQuery={searchQuery}
-          />
+        {/* Sök + profilval visas BARA utfällt — kondenserat läge ska ta minimal yta. */}
+        {expanded && canSearch && (
+          <div className="mb-3">
+            <CompactSearchBox
+              onSearch={runSearch}
+              onResultSelect={(result: any) => runSearch(result.signum)}
+              placeholder={
+                lang === "en"
+                  ? `Search ${totalInscriptions.toLocaleString()} runestones...`
+                  : `Sök bland ${totalInscriptions.toLocaleString()} runstenar...`
+              }
+              currentQuery={searchQuery}
+            />
+          </div>
         )}
 
         {expanded && (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
           {profiles.map((profile) => {
             const IconComponent = PROFILE_ICONS[profile.icon];
             const isActive = activeId === profile.id;

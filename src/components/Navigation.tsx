@@ -23,6 +23,8 @@ import {
   Swords,
   BarChart3,
   Library,
+  Tag,
+  CalendarClock,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -144,11 +146,25 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Church, category: 'places',
   },
   {
+    pathEn: '/place-names', pathSv: '/sv/ortnamn',
+    labelSv: 'Ortnamn', labelEn: 'Place names',
+    descSv: 'Ortnamnsleden vi söker (sakrala, makt, natur) — reproducerbar metod, källor och osäkerheter.',
+    descEn: 'The place-name elements we search (sacral, power, nature) — reproducible method, sources, caveats.',
+    icon: Tag, category: 'places',
+  },
+  {
     pathEn: '/texts', pathSv: '/texter',
     labelSv: 'Texter & källor', labelEn: 'Texts & sources',
     descSv: 'Läs källorna i fulltext — Poetiska Eddan, lagar, krönikor och sagor, efter typ.',
     descEn: 'Read the sources in full — the Poetic Edda, laws, chronicles and sagas, by type.',
     icon: Library, category: 'history',
+  },
+  {
+    pathEn: '/historical-events', pathSv: '/sv/historiska-handelser',
+    labelSv: 'Historiska händelser', labelEn: 'Historical events',
+    descSv: 'Tidslinje över slag, kungaval, kristnande och andra vändpunkter — med årtal och källor.',
+    descEn: 'A timeline of battles, royal elections, Christianisation and other turning points — with dates and sources.',
+    icon: CalendarClock, category: 'history',
   },
   {
     pathEn: '/explore?focus=eriksgatan', pathSv: '/explore?focus=eriksgatan',
