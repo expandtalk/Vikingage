@@ -247,10 +247,13 @@ export const generateBasicInscriptionItems = (
   // zoom-gate ≥8. AV som standard (=== true matchar useMapChurches-gaten).
   items.push({
     id: 'ecclesiastical_churches',
-    label: '⛪ Kyrkor (stift & bild)',
+    label: '⛪ Kyrkor & stift',
     color: '#e11d48',
     count: 0,
-    enabled: enabledLegendItems.ecclesiastical_churches === true
+    // PÅ som standard (Daniel). Gate:et sitter direkt på detta id — därför är
+    // detta en topp-nivå-post (ingen wrapper-kategori) så av-knappen faktiskt
+    // släcker kartlagret (annars går kyrkan inte att stänga av).
+    enabled: enabledLegendItems.ecclesiastical_churches !== false
   });
 
   // Add Christian sites if provided
@@ -292,8 +295,8 @@ export const generateBasicInscriptionItems = (
     return it ?? null;
   };
   const ordered: (LegendItem | null)[] = [
-    group('cat_runic', 'ᛘ ' + t('swedishRunestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions']),
-    group('cat_ecclesiastical', '⛪ Kyrkor & stift', '#e11d48', ['ecclesiastical_churches']),
+    group('cat_runic', 'ᛘ ' + t('runestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions']),
+    keep('ecclesiastical_churches'),
     keep('heritage_sites'),
     keep('religious_places'),
     keep('water_routes'),

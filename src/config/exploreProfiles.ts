@@ -131,6 +131,7 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
     layers: on(
       "runic_inscriptions", "religious_places", "viking_fortresses",
       "river_routes", "water_routes", "valdemar_route",
+      "ecclesiastical_churches",
     ),
     theme: "neutral",
     primaryLayers: ["runic_inscriptions"],
