@@ -19,9 +19,20 @@ const parsePoint = (c: unknown): [number, number] | null => {
   return m ? [parseFloat(m[2]), parseFloat(m[1])] : null; // [lat, lng] från point(lng,lat)
 };
 
+// Utpekade fyndpunkter som alltid visas i Eriksgata-vyn (Daniel).
+const FEATURED: { ll: [number, number]; name: string }[] = [
+  { ll: [59.6817, 17.3406], name: 'Mora stenar (kungavalsplats)' },
+  { ll: [58.2956, 14.7756], name: 'Rökstenen (Ög 136)' },
+];
+
+interface NearbyFeatures {
+  runestones: { signum: string; lat: number; lng: number }[];
+  churches: { name: string; type: string; lat: number; lng: number }[];
+}
+
 export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAddLayer }: Props) => {
   const layersRef = useRef<L.Layer[]>([]);
-  const dataRef = useRef<{ pts: [number, number][]; wps: { ll: [number, number]; name: string; type: string }[] } | null>(null);
+  const dataRef = useRef<{ pts: [number, number][]; wps: { ll: [number, number]; name: string; type: string }[]; nearby: NearbyFeatures } | null>(null);
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;
@@ -49,6 +60,28 @@ export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAdd
         }).bindPopup(`<strong>${w.name}</strong>`);
         if (safelyAddLayer(marker)) layersRef.current.push(marker);
       });
+
+      // Runstenar inom 1 km av leden (små röda prickar).
+      data.nearby.runestones.forEach((r) => {
+        const m = L.circleMarker([r.lat, r.lng], {
+          radius: 3, color: '#b91c1c', weight: 1, fillColor: '#ef4444', fillOpacity: 0.85,
+        }).bindPopup(`<strong>${r.signum}</strong><br/>Runsten nära Eriksgatan`);
+        if (safelyAddLayer(m)) layersRef.current.push(m);
+      });
+      // Medeltida kyrkor/kapell/kloster inom 1 km (små lila prickar).
+      data.nearby.churches.forEach((c) => {
+        const m = L.circleMarker([c.lat, c.lng], {
+          radius: 3, color: '#7e22ce', weight: 1, fillColor: '#a855f7', fillOpacity: 0.85,
+        }).bindPopup(`<strong>${c.name}</strong><br/>${c.type} nära Eriksgatan`);
+        if (safelyAddLayer(m)) layersRef.current.push(m);
+      });
+      // Utpekade fyndpunkter (Mora stenar, Rökstenen) — guldmarkör med etikett.
+      FEATURED.forEach((f) => {
+        const m = L.circleMarker(f.ll, {
+          radius: 7, color: '#78350f', weight: 2, fillColor: '#fbbf24', fillOpacity: 1,
+        }).bindPopup(`<strong>${f.name}</strong>`);
+        if (safelyAddLayer(m)) layersRef.current.push(m);
+      });
     };
 
     if (dataRef.current) { draw(dataRef.current); return () => { cancelled = true; }; }
@@ -60,7 +93,9 @@ export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAdd
         .eq('road_id', road.id).order('waypoint_order', { ascending: true });
       const parsed = (wps ?? []).map((w: any) => ({ ll: parsePoint(w.coordinates), name: w.name as string, type: w.waypoint_type as string }))
         .filter((w: any) => w.ll) as { ll: [number, number]; name: string; type: string }[];
-      dataRef.current = { pts: parsed.map((w) => w.ll), wps: parsed };
+      const { data: near } = await sb.rpc('eriksgata_nearby', { radius_m: 1000 });
+      const nearby: NearbyFeatures = { runestones: near?.runestones ?? [], churches: near?.churches ?? [] };
+      dataRef.current = { pts: parsed.map((w) => w.ll), wps: parsed, nearby };
       draw(dataRef.current);
     })();
 
