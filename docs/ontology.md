@@ -302,3 +302,31 @@ Kräver en embedding-genereringspass (edge function, API-kostnad) innan det kan 
 Egen fas efter kanterna.
 
 Se [[search-knowledge-graph]].
+
+---
+
+## 9. Kyrklig organisation (stift, kyrkor, ledarskap) — tillagd 2026-07-21
+
+Mappas mot CIDOC-CRM som övrig kulturarvsdata (§1, §7).
+
+| Entitet | Tabell | Definition | CIDOC-CRM |
+|---|---|---|---|
+| **Kyrka/kloster/kapell/ruin** | `ecclesiastical_sites` | Kyrklig plats (`kind` = parish_church/chapel/cathedral/monastery/nunnery/hospital/holy_place; `status='ruin'`). Koord alltid verifierad (RAÄ/Wikidata). | E22 Human-Made Object + E53 Place |
+| **Stift** | `dioceses` | Kyrklig regional administration (13 nuvarande + 8 historiska), grundår/ärkestift/upphörande, `stift_code` 01–13. | E74 Group + E7 Activity (jurisdiktion) |
+| **Stiftstillhörighet över tid** | `church_diocese_history` | Vilket stift en kyrka låg under `[from_year,to_year]` — t.ex. Öland: Linköping→Kalmar 1603→Växjö 1915. | E7 Activity + E52 Time-Span |
+| **Ledarskap** | `ecclesiastical_leadership` | Ärkebiskop/biskop/kyrkoherde/abbot på **stift ELLER kyrka** `[from,to]`. | E21 Person + E7 Activity + E52 Time-Span |
+| **Socken/härad** | `ecclesiastical_sites.parish_id`/`hundred_id` | kyrka→socken→härad (namn-länkat; spatialt när sockenpolygoner finns). | E53 Place (part-of) |
+| **Bild** | `ecclesiastical_sites.image_url` | Wikimedia Commons (Wikidata P18), licensierad. | E36 Visual Item |
+
+### 9a. Upper ontology & målgrupper
+CIDOC-CRM är redan plattformens upper-ontologi och är **händelse-centrerad** (E5 Event, E7 Activity,
+E53 Place, E21 Person, E52 Time-Span) — vilket är just det som låter olika målgrupper fråga *samma*
+data på sitt sätt, utan separata system:
+- **Kulturgeograf** → E53 Place / **CRMgeo** (socken/härad, strandlinje, klustring).
+- **Arkeolog** → E22 Object / **CRMarchaeo** (lämningar, ruiner, RAÄ Fornsök).
+- **Historiker / kyrkohistoriker** → E7 Activity + E52 Time-Span (stiftshistorik, ledarskap över tid, reformationen).
+- **Krigshistoriker / logistiker** → E5 Event / **E9 Move** + E53 Place (ledung, vägar, farleder, vårdkasar) — ingen CIDOC-standardförlängning, men mappas mot händelse/förflyttning.
+
+**Rekommendation:** fortsätt aligna nya lager mot CIDOC-CRM + relevanta CRM-familjer (CRMgeo/CRMarchaeo)
+och spegla i `entity_registry`/`relationship`-grafen. Ger interoperabilitet + flera ingångar utan att
+bygga skilda system per målgrupp.

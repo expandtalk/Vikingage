@@ -371,6 +371,27 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
       // Bara socknen — kulturlagren (sockenkyrkor, kloster, vårdkasar…) tänds via legenden.
       Object.assign(o, { parishes: true, runic_inscriptions: false });
       break;
+    case "churches":
+      // Rikt kyrkolager (stift & bild) i fokus. Viewport-laddat, zooma in för att se kyrkor.
+      Object.assign(o, {
+        ecclesiastical_churches: true,
+        runic_inscriptions: false,
+        foreign_inscriptions: false,
+        viking_fortresses: false,
+        religious_places: false,
+        valdemar_route: false,
+        water_routes: false,
+        river_routes: false,
+        trade_routes: false,
+        viking_roads: false,
+        viking_cities: false,
+        eriksgatan: false,
+        hundreds: false,
+        parishes: false,
+        folk_groups: false,
+        germanic_timeline: false,
+      });
+      break;
     case "folkGroups":
       // Folkgrupper + DNA/provplatser (arkeologiska platser med genetik) — INTE runstenar.
       Object.assign(o, {

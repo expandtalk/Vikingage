@@ -137,6 +137,14 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
         parishes: true,
         runic_inscriptions: false // tom utom socknen; kulturlagren tänds via legenden
       };
+
+    case 'churches':
+      console.log('⛪ Churches focus: rikt kyrkolager (stift & bild) — zooma in för att se kyrkor');
+      return {
+        ...basePresets,
+        runic_inscriptions: false,
+        ecclesiastical_churches: true // rika kyrkolagret tänt; viewport-laddat vid zoom ≥8
+      };
       
     case 'folkGroups':
       console.log('👥 Folk Groups focus: Only folk groups and runestones');

@@ -137,6 +137,13 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Compass, category: 'places',
   },
   {
+    pathEn: '/explore?focus=churches', pathSv: '/explore?focus=churches',
+    labelSv: 'Kyrkor & stift', labelEn: 'Churches & dioceses',
+    descSv: 'Medeltidskyrkor med byggår, stift över tid och bild — samt ruiner. Zooma in på kartan.',
+    descEn: 'Medieval churches with build year, diocese over time and photo — plus ruins. Zoom in.',
+    icon: Church, category: 'places',
+  },
+  {
     pathEn: '/texts', pathSv: '/texter',
     labelSv: 'Texter & källor', labelEn: 'Texts & sources',
     descSv: 'Läs källorna i fulltext — Poetiska Eddan, lagar, krönikor och sagor, efter typ.',
