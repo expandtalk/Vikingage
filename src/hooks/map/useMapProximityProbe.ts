@@ -1,0 +1,64 @@
+import { useEffect, useRef } from 'react';
+import L from 'leaflet';
+import { supabase } from '@/integrations/supabase/client';
+import { useProximityProbe } from '@/hooks/useProximityProbe';
+
+// Ritar omkrets-cirkel + närliggande lager kring vald punkt (kyrka/fornborg).
+// Data via features_near_point-RPC. Färgkod: ortnamn grön, kulturlager lila,
+// runstenar röd, fornborg orange.
+const sb = supabase as unknown as { rpc: (fn: string, args: unknown) => Promise<{ data: any; error: any }> };
+
+interface Props {
+  map: L.Map | null;
+  isMapReady: React.RefObject<boolean>;
+}
+
+const dot = (color: string) =>
+  L.divIcon({ className: 'prox-dot', html: `<span style="display:block;width:9px;height:9px;border-radius:50%;background:${color};border:1px solid #fff;box-shadow:0 0 2px rgba(0,0,0,.6)"></span>`, iconSize: [9, 9], iconAnchor: [5, 5] });
+
+export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
+  const { probe, radiusKm } = useProximityProbe();
+  const layerRef = useRef<L.LayerGroup | null>(null);
+  const tokenRef = useRef(0);
+
+  useEffect(() => {
+    if (!map || !isMapReady.current) return;
+    if (!layerRef.current) layerRef.current = L.layerGroup().addTo(map);
+    const layer = layerRef.current;
+    layer.clearLayers();
+    if (!probe) return;
+
+    const myToken = ++tokenRef.current;
+    const radiusM = radiusKm * 1000;
+
+    // Cirkel + centrum.
+    L.circle([probe.lat, probe.lng], {
+      radius: radiusM, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.06, dashArray: '6 4',
+    }).addTo(layer);
+    L.circleMarker([probe.lat, probe.lng], { radius: 6, color: '#78350f', weight: 2, fillColor: '#fbbf24', fillOpacity: 1 })
+      .bindTooltip(`${probe.label} — omkrets ${radiusKm} km`, { permanent: false }).addTo(layer);
+
+    map.setView([probe.lat, probe.lng], Math.max(map.getZoom(), 10));
+
+    (async () => {
+      const { data, error } = await sb.rpc('features_near_point', { p_lat: probe.lat, p_lng: probe.lng, radius_m: radiusM });
+      if (error || myToken !== tokenRef.current || !map) return;
+      const add = (arr: any[], color: string, label: (r: any) => string) =>
+        (arr || []).forEach((r) => {
+          if (r.lat == null || r.lng == null) return;
+          L.marker([r.lat, r.lng], { icon: dot(color) }).bindPopup(label(r)).addTo(layer);
+        });
+      add(data?.place_names, '#22c55e', (r) => `<strong>${r.name}</strong><br/>Ortnamn`);
+      add(data?.kulturlager, '#a855f7', (r) => `<strong>${r.name}</strong><br/>${r.type ?? 'Kulturlager'}`);
+      add(data?.runestones, '#ef4444', (r) => `<strong>${r.signum}</strong><br/>Runsten`);
+      add(data?.fortresses, '#f97316', (r) => `<strong>${r.name}</strong><br/>${r.type ?? 'Fornborg'}`);
+    })();
+
+    return () => { layer.clearLayers(); };
+  }, [map, isMapReady, probe, radiusKm]);
+
+  useEffect(() => () => {
+    try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }
+    catch { /* noop */ }
+  }, [map]);
+};

@@ -9,6 +9,7 @@ import { useMapEriksgata } from './useMapEriksgata';
 import { useMapBeaconSites } from './useMapBeaconSites';
 import { useMapHeritageSites } from './useMapHeritageSites';
 import { useMapChurches } from './map/useMapChurches';
+import { useMapProximityProbe } from './map/useMapProximityProbe';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -172,6 +173,9 @@ export const useMapInitialization = ({
     enabledLegendItems,
     isMapReady: isMapReadyRef,
   });
+
+  // Omkrets-sond: cirkel + närliggande lager kring vald kyrka/fornborg.
+  useMapProximityProbe({ map: map.current, isMapReady: isMapReadyRef });
 
   return {
     mapContainer, 

@@ -48,10 +48,16 @@ const popupHtml = (r: any) => {
   if (r.socken) rows.push(`Socken: ${esc(r.socken)}${r.harad ? ` · ${esc(r.harad)} härad` : ''}`);
   const attr = r.image_attribution
     ? `<div style="font-size:10px;color:#94a3b8;margin-top:4px">${esc(r.image_attribution)}</div>` : '';
+  const probeBtn = (r.lat != null && r.lng != null)
+    ? `<button onclick="window.setProximityProbe(${r.lat},${r.lng},'${esc(String(r.name)).replace(/'/g, '')}')"
+         style="margin-top:8px;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #f59e0b;background:#fef3c7;color:#78350f;cursor:pointer">
+         Visa omkrets (fynd i närheten)</button>`
+    : '';
   return `<div style="min-width:200px">
     <strong>${esc(r.name)}</strong>${ruin ? ' <span style="color:#6b7280">· ruin</span>' : ''}
     ${img}
     <div style="font-size:12px;color:#475569;line-height:1.5">${rows.join('<br/>')}</div>${attr}
+    ${probeBtn}
   </div>`;
 };
 

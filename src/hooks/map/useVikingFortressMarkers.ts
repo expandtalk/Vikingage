@@ -177,6 +177,10 @@ export const addVikingFortressMarkers = (
             <span class="inline-block mt-2 px-2 py-1 ${config.bgColor} ${config.textColor} text-xs rounded">
               ${fortress.fortress_type.replace('_', ' ')}
             </span>
+            <br/>
+            <button onclick="window.setProximityProbe(${fortress.coordinates.lat},${fortress.coordinates.lng},'${String(fortress.name).replace(/['<>]/g, '')}')"
+              style="margin-top:8px;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #f59e0b;background:#fef3c7;color:#78350f;cursor:pointer">
+              Visa omkrets (fynd i närheten)</button>
           </div>
         `);
 

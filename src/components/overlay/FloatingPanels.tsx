@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, ChevronDown, Map } from 'lucide-react';
 import { FilterPanel } from '../filters/FilterPanel';
 import { DraggableLegend } from '../legend/DraggableLegend';
+import { ProximityControl } from './ProximityControl';
 import { LegendItem } from '@/types/common';
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -77,6 +78,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
   const sv = language === 'sv';
   return (
     <>
+      <ProximityControl />
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
       {onToggleLegend && !showLegend && (
         <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">
