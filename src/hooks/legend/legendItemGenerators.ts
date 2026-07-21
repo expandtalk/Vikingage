@@ -242,6 +242,16 @@ export const generateBasicInscriptionItems = (
     enabled: enabledLegendItems.place_names !== false
   });
 
+  // Dåtida strandlinje (SGU strandförskjutningsmodell, CC-BY). Bakgrundspolygon för
+  // vald tidsperiod. AV som standard (=== true matchar lagrets gate).
+  items.push({
+    id: 'paleo_shoreline',
+    label: '🌊 Dåtida strandlinje (SGU)',
+    color: '#3b82f6',
+    count: 0,
+    enabled: enabledLegendItems.paleo_shoreline === true
+  });
+
   // Add Christian sites if provided
   if (christianSites && christianSites.length > 0) {
     const christianItems = generateChristianSitesLegendItems(christianSites, t);
