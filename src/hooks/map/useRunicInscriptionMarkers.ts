@@ -1,4 +1,7 @@
 import L from 'leaflet';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 interface RunicInscription {
   id?: string;
@@ -119,6 +122,20 @@ export const addRunicInscriptionMarkers = (
   let validCoordinatesCount = 0;
   let invalidCoordinatesCount = 0;
 
+  // Klustring: ta bort ev. föregående grupp och skapa en ny. Gruppen lagras på map-
+  // objektet så hooken är självhanterande (anroparens per-markör-städning blir no-op).
+  const mapAny = map as unknown as { __runeClusterGroup?: L.LayerGroup };
+  if (mapAny.__runeClusterGroup && map.hasLayer(mapAny.__runeClusterGroup)) {
+    map.removeLayer(mapAny.__runeClusterGroup);
+  }
+  const clusterGroup = (L as unknown as { markerClusterGroup: (o?: unknown) => L.LayerGroup }).markerClusterGroup({
+    chunkedLoading: true,            // prestanda för ~5000 punkter
+    maxClusterRadius: 50,
+    disableClusteringAtZoom: 11,     // enskilda runstenar vid zoom ≥11, kluster under
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+  });
+
   inscriptions.forEach((inscription) => {
     let lat: number | undefined;
     let lng: number | undefined;
@@ -140,7 +157,7 @@ export const addRunicInscriptionMarkers = (
       
       try {
         const marker = L.marker([lat, lng], { icon, riseOnHover: true })
-          .addTo(map);
+          .addTo(clusterGroup);
 
         // Enhanced popup content with better formatting
         const popupContent = `
@@ -199,7 +216,10 @@ export const addRunicInscriptionMarkers = (
 
   // EN summeringsrad i stället för tusentals loggar; invalidateSize borttagen —
   // markörer kräver ingen container-omätning och timeouten bidrog till hoppandet.
-  console.log(`🗺️ Markörer: ${markers.length} tillagda (${validCoordinatesCount} med koordinater, ${invalidCoordinatesCount} utan)`);
+  console.log(`🗺️ Markörer: ${markers.length} klustrade (${validCoordinatesCount} med koordinater, ${invalidCoordinatesCount} utan)`);
+
+  clusterGroup.addTo(map);
+  mapAny.__runeClusterGroup = clusterGroup;
 
   return markers;
 };
