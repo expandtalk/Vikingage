@@ -97,41 +97,9 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
         </div>
       )}
 
-      {/* Filter Panel */}
-      {showFilters && (
-        <div className="absolute top-20 left-4 z-40 w-[380px] max-h-[70vh] overflow-y-auto">
-          <div className="bg-slate-800/98 backdrop-blur-md border-slate-600/50 rounded-lg shadow-2xl p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-medium">Filtrera resultat</h3>
-              <Button
-                onClick={onToggleFilters}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-white hover:bg-slate-700/50"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <FilterPanel
-              selectedLandscape={selectedLandscape}
-              selectedCountry={selectedCountry}
-              selectedPeriod={selectedPeriod}
-              selectedStatus={selectedStatus}
-              selectedObjectType={selectedObjectType}
-              onLandscapeChange={onLandscapeChange}
-              onCountryChange={onCountryChange}
-              onPeriodChange={onPeriodChange}
-              onStatusChange={onStatusChange}
-              onObjectTypeChange={onObjectTypeChange}
-              onClearFilters={onClearFilters}
-              activeFiltersCount={activeFiltersCount}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Enda legenden: dragbar panel med filter som ikon i headern. */}
+      {/* Enda legenden: dragbar panel. Filtret ligger som en sektion INUTI legenden
+          (togglas av filter-ikonen i headern) — så det ligger parallellt med legenden
+          och ärver panelens ogenomskinliga bakgrund. */}
       {showLegend && onLegendToggle && onToggleLegend && (
         <DraggableLegend
           visible={showLegend}
@@ -150,6 +118,35 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
           onOpenFilter={onToggleFilters}
           filterActive={showFilters}
           activeFiltersCount={activeFiltersCount}
+          filterSection={showFilters && (
+            <div className="bg-slate-900 border-b border-slate-600/60 p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-white font-medium text-sm">{sv ? 'Filtrera' : 'Filter'}</h3>
+                <Button
+                  onClick={onToggleFilters}
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-white hover:bg-slate-700/50"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <FilterPanel
+                selectedLandscape={selectedLandscape}
+                selectedCountry={selectedCountry}
+                selectedPeriod={selectedPeriod}
+                selectedStatus={selectedStatus}
+                selectedObjectType={selectedObjectType}
+                onLandscapeChange={onLandscapeChange}
+                onCountryChange={onCountryChange}
+                onPeriodChange={onPeriodChange}
+                onStatusChange={onStatusChange}
+                onObjectTypeChange={onObjectTypeChange}
+                onClearFilters={onClearFilters}
+                activeFiltersCount={activeFiltersCount}
+              />
+            </div>
+          )}
         />
       )}
     </>

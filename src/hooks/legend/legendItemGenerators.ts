@@ -221,7 +221,7 @@ export const generateBasicInscriptionItems = (
     id: 'historical_events',
     label: 'Historiska händelser',
     color: '#FF6B6B',
-    count: 0,
+    count: 37, // historical_events-tabellen (2026-07). Uppdatera vid re-import.
     enabled: enabledLegendItems.historical_events !== false
   });
 
@@ -229,12 +229,13 @@ export const generateBasicInscriptionItems = (
     id: 'place_names',
     label: 'Ortnamn',
     color: '#65a30d',
-    count: 0,
+    count: 495, // place_names-tabellen (2026-07): 495 st, alla med koordinater. Uppdatera vid re-import.
     enabled: enabledLegendItems.place_names !== false
   });
 
-  // Dåtida strandlinje (SGU strandförskjutningsmodell, CC-BY). Bakgrundspolygon för
-  // vald tidsperiod. AV som standard (=== true matchar lagrets gate).
+  // Dåtida strandlinje (SGU strandförskjutningsmodell, CC-BY). En sammanhängande
+  // bakgrundspolygon för VALD tidsperiod — inte räknebara punkter, därför count 0
+  // (ingen sifferbadge). Av som standard (=== true matchar lagrets gate).
   items.push({
     id: 'paleo_shoreline',
     label: '🌊 Dåtida strandlinje (SGU)',

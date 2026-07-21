@@ -24,6 +24,7 @@ interface DraggableLegendProps {
   onOpenFilter?: () => void;
   filterActive?: boolean;
   activeFiltersCount?: number;
+  filterSection?: React.ReactNode;
 }
 
 export const DraggableLegend: React.FC<DraggableLegendProps> = ({
@@ -42,7 +43,8 @@ export const DraggableLegend: React.FC<DraggableLegendProps> = ({
   onHideAll,
   onOpenFilter,
   filterActive = false,
-  activeFiltersCount = 0
+  activeFiltersCount = 0,
+  filterSection
 }) => {
   const { language } = useLanguage();
   const sv = language === 'sv';
@@ -82,6 +84,7 @@ export const DraggableLegend: React.FC<DraggableLegendProps> = ({
       )}
     >
       <div className="p-0">
+        {filterSection}
         <MapLegend
           isVikingMode={isVikingMode}
           legendItems={legendItems}
