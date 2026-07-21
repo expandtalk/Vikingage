@@ -6,7 +6,8 @@ import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Tag, AlertTriangle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { MapPin, Tag, AlertTriangle, Search, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
 import { PLACE_NAME_ELEMENTS, ELEMENT_CATEGORY_META, getElement } from '@/utils/placeNameElements';
@@ -29,6 +30,8 @@ const PlaceNames = () => {
   const sv = language === 'sv';
   const { data: places = [], isLoading } = usePlaceNamesData();
   const [category, setCategory] = useState<string>('all');
+  const [elementKey, setElementKey] = useState<string>('all');
+  const [query, setQuery] = useState<string>('');
 
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
@@ -39,8 +42,25 @@ const PlaceNames = () => {
     return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
   }, [places]);
 
-  const filtered = category === 'all' ? places : places.filter((p) => p.element_category === category);
+  // Namnleds-chips byggda ur FAKTISK data (element_keys), med antal. Rikare än
+  // katalogen — datan är taggad med fler led (inge, lund, tor, tuna, frö, ull…).
+  const elementOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    places.forEach((p) => (p.element_keys ?? []).forEach((k) => counts.set(k, (counts.get(k) ?? 0) + 1)));
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  }, [places]);
+
+  const elementLabel = (k: string) => getElement(k)?.label ?? (k.charAt(0).toUpperCase() + k.slice(1));
+
+  const q = query.trim().toLowerCase();
+  const filtered = places.filter((p) => {
+    if (category !== 'all' && p.element_category !== category) return false;
+    if (elementKey !== 'all' && !(p.element_keys ?? []).includes(elementKey)) return false;
+    if (q && !p.name.toLowerCase().includes(q) && !(p.attested_form ?? '').toLowerCase().includes(q)) return false;
+    return true;
+  });
   const catLabel = (c: string) => (FEATURE_CATEGORY_LABELS[c] ? (sv ? FEATURE_CATEGORY_LABELS[c].sv : FEATURE_CATEGORY_LABELS[c].en) : c);
+  const scrollToList = () => document.getElementById('place-name-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
     <div className="min-h-screen viking-bg">
@@ -101,8 +121,14 @@ const PlaceNames = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
           {PLACE_NAME_ELEMENTS.map((el) => {
             const meta = ELEMENT_CATEGORY_META[el.category];
+            const inData = elementOptions.find(([k]) => k === el.key);
             return (
-              <Card key={el.key} className="viking-card">
+              <Card
+                key={el.key}
+                className={`viking-card ${inData ? 'cursor-pointer hover:bg-card/80 transition-colors' : 'opacity-70'} ${elementKey === el.key ? 'ring-2 ring-gold' : ''}`}
+                onClick={inData ? () => { setElementKey(el.key); scrollToList(); } : undefined}
+                title={inData ? (sv ? `Visa de ${inData[1]} ortnamnen` : `Show the ${inData[1]} place names`) : undefined}
+              >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-foreground text-lg flex items-center gap-2">
                     <span style={{ color: meta.color }}>{meta.symbol}</span>
@@ -134,10 +160,36 @@ const PlaceNames = () => {
         </div>
 
         {/* Ortnamnslistan från DB */}
-        <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'Ortnamnen' : 'The place names'}</h2>
-        <div className="h-0.5 w-16 bg-accent/60 rounded mb-5" />
+        <h2 id="place-name-list" className="text-2xl font-bold text-foreground mb-1 scroll-mt-24">{sv ? 'Ortnamnen' : 'The place names'}</h2>
+        <div className="h-0.5 w-16 bg-accent/60 rounded mb-4" />
 
-        <div className="flex flex-wrap gap-2 mb-5">
+        {/* Fritextsök */}
+        <div className="relative mb-4 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={sv ? 'Sök ortnamn…' : 'Search place names…'}
+            className="pl-9 bg-slate-800/60 border-slate-600 text-white"
+          />
+        </div>
+
+        {/* Namnled-filter (ur faktisk data) */}
+        <div className="mb-2 text-xs font-medium text-muted-foreground">{sv ? 'Filtrera på namnled:' : 'Filter by element:'}</div>
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Button variant={elementKey === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setElementKey('all')}>
+            {sv ? 'Alla led' : 'All elements'}
+          </Button>
+          {elementOptions.map(([k, n]) => (
+            <Button key={k} variant={elementKey === k ? 'default' : 'outline'} size="sm" onClick={() => setElementKey(k)}>
+              {elementLabel(k)} <Badge variant="secondary" className="ml-2">{n}</Badge>
+            </Button>
+          ))}
+        </div>
+
+        {/* Feature-kategori */}
+        <div className="mb-2 text-xs font-medium text-muted-foreground">{sv ? 'Filtrera på kategori:' : 'Filter by category:'}</div>
+        <div className="flex flex-wrap gap-2 mb-4">
           <Button variant={category === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setCategory('all')}>
             {sv ? 'Alla' : 'All'} <Badge variant="secondary" className="ml-2">{places.length}</Badge>
           </Button>
@@ -146,6 +198,20 @@ const PlaceNames = () => {
               {catLabel(c)} <Badge variant="secondary" className="ml-2">{n}</Badge>
             </Button>
           ))}
+        </div>
+
+        <div className="flex items-center gap-3 mb-5 text-sm text-muted-foreground">
+          <span>{sv ? 'Visar' : 'Showing'} <strong className="text-foreground">{filtered.length}</strong> {sv ? 'av' : 'of'} {places.length}</span>
+          {(category !== 'all' || elementKey !== 'all' || query) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setCategory('all'); setElementKey('all'); setQuery(''); }}
+              className="h-7 text-xs text-gold hover:bg-slate-700/40"
+            >
+              <X className="h-3 w-3 mr-1" />{sv ? 'Rensa filter' : 'Clear filters'}
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
