@@ -50,16 +50,18 @@ export const LegendItemComponent: React.FC<LegendItemProps> = ({
         >
           {cleanedLabel}
         </Label>
-        <Badge 
-          variant="outline" 
-          className={`text-xs px-2 py-0.5 h-5 flex-shrink-0 font-medium ${
-            item.enabled 
-              ? 'text-gray-100 border-slate-400 bg-slate-700/70' 
-              : 'text-gray-400 border-slate-600 bg-slate-800/50'
-          }`}
-        >
-          {item.count}
-        </Badge>
+        {!!item.count && (
+          <Badge
+            variant="outline"
+            className={`text-xs px-2 py-0.5 h-5 flex-shrink-0 font-medium ${
+              item.enabled
+                ? 'text-gray-100 border-slate-400 bg-slate-700/70'
+                : 'text-gray-400 border-slate-600 bg-slate-800/50'
+            }`}
+          >
+            {item.count}
+          </Badge>
+        )}
       </div>
       <div className="flex items-center gap-2 ml-2">
         <Switch

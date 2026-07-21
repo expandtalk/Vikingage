@@ -71,23 +71,18 @@ export const generateBasicInscriptionItems = (
     });
   }
 
-  // 3. VALDEMARS SEGELLED - ✅ Viktig vattenväg med alla koordinater
+  // 3+4. VATTENVÄGAR (kategori) — Valdemars segelled ligger nu UNDER vattenvägar.
   items.push({
-    id: 'valdemar_route',
-    label: '⚔️ ' + t('valdemarsRoute1230s'),
-    color: '#1e3a8a', // Mörkblå för vikingatid
-    count: 95, // ✅ Alla vägpunkter visas
-    enabled: enabledLegendItems.valdemar_route !== false,
-    type: 'primary' as const // ✅ Gör prominent
-  });
-
-  // 4. VIKTIGA VATTENVÄGAR - fjärde prioritet
-  items.push({
-    id: 'river_routes',
-    label: t('importantWaterways'),
+    id: 'water_routes',
+    label: '🌊 ' + t('vikingWaterways'),
     color: '#1e40af',
-    count: 12,
-    enabled: enabledLegendItems.river_routes !== false
+    count: 95 + 12,
+    enabled: enabledLegendItems.water_routes !== false,
+    type: 'category',
+    children: [
+      { id: 'valdemar_route', label: '⚔️ ' + t('valdemarsRoute'), color: '#1e3a8a', count: 95, enabled: enabledLegendItems.valdemar_route !== false },
+      { id: 'river_routes', label: t('importantWaterways'), color: '#1e40af', count: 12, enabled: enabledLegendItems.river_routes !== false },
+    ],
   });
 
   // 5. VIKINGATIDA VÄGAR - femte prioritet
@@ -124,17 +119,8 @@ export const generateBasicInscriptionItems = (
     enabled: enabledLegendItems.viking_fortresses !== false
   });
 
-  // 6b. VÅRDKASAR — RAÄ-lämningar (signaleldsnät). Eget lager, AV som standard.
-  // OBS: === true (inte !== false) så legendknappens läge matchar kartlagrets
-  // gate i useMapBeaconSites (som också kräver === true). Annars visar knappen PÅ
-  // medan lagret är släckt.
-  items.push({
-    id: 'beacon_sites',
-    label: '🔥 Vårdkasar',
-    color: '#f59e0b',
-    count: 211,
-    enabled: enabledLegendItems.beacon_sites === true
-  });
+  // (Vårdkasar ligger under "Kulturlager" som heritage_vardkase — den fristående
+  //  beacon_sites-knappen togs bort för att undvika dubblett.)
 
   // Kulturarv (spatialt) — viewport-laddat lager (Steg 1). Skalar till obegränsat
   // antal punkter; laddar bara det som är i vyn via sites_in_bbox. AV som standard.
@@ -171,7 +157,12 @@ export const generateBasicInscriptionItems = (
     { id: 'religious_njord', label: t('njordCultSites'), color: '#0ea5e9', count: getDeityPlaces('njord', selectedTimePeriod).length },
     { id: 'religious_frigg', label: t('friggCultSites'), color: '#ec4899', count: getDeityPlaces('frigg', selectedTimePeriod).length },
     { id: 'religious_other', label: t('otherCultSites'), color: '#9ca3af', count: getDeityPlaces('other', selectedTimePeriod).length }
-  ].map(child => ({
+  ].sort((a, b) => {
+    // Mest överst; "övriga" alltid sist.
+    if (a.id === 'religious_other') return 1;
+    if (b.id === 'religious_other') return -1;
+    return b.count - a.count;
+  }).map(child => ({
     ...child,
     enabled: false // Inaktiverad som standard
   }));
