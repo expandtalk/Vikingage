@@ -1,0 +1,19 @@
+-- cult_sites: kultplatser ur den tidigare hårdkodade RELIGIOUS_PLACES (religiousPlacesData.ts).
+-- Tabell + RLS applicerad via MCP; 115 rader seedade med scripts/data/seed-cult-sites.mjs.
+-- Fil = proveniens. DB är auktoritativ.
+--
+-- create table public.cult_sites (
+--   id text primary key, name text not null, lat double precision, lng double precision,
+--   deity text, type text, evidence text[] default '{}', description text,
+--   historical_periods text[] default '{}', established_period text, paired_with text,
+--   is_multiple boolean default false, region text, sources text[] default '{}',
+--   created_at timestamptz default now(), updated_at timestamptz default now());
+-- alter table public.cult_sites enable row level security;
+-- create policy "cult_sites public read" on public.cult_sites for select using (true);
+-- create policy "cult_sites admin write" on public.cult_sites for all using (is_admin()) with check (is_admin());
+--
+-- Fördelning (115): offering_spring 40, cult_site 33, royal_center 13, bishop_seat 8,
+-- mission_site 5, temple 4, archbishop_seat/dominican/franciscan 3, birgittine/rock_carving/sacred_grove 1.
+-- Konsument omkopplad: CultSitesView (via hook useCultSites, med hårdkodad fallback).
+-- Kvar: imperativa kartlagret addReligiousLocationMarkers + legendens christian-counts
+--       läser fortf. arrayen (identiskt innehåll) — omkoppling som separat steg.
