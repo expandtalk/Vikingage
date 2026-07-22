@@ -15,7 +15,9 @@ const PRESETS: { sv: string; from: number; to: number }[] = [
 
 export const ChurchYearControl: React.FC = () => {
   const { from, to, showUndated } = useChurchYearRange();
-  const [collapsed, setCollapsed] = useState(false);
+  // Startar hopfälld (pill) så byggårs-modalen inte poppar öppen som standard — öppnas
+  // av användaren när hen vill filtrera kyrkornas byggår (Daniel: inte öppen automatiskt).
+  const [collapsed, setCollapsed] = useState(true);
   // Flyttbar via rubriken (document-baserad drag, se useDraggable). Default-hörn via
   // CSS-klass: top-16 (under linjalen som ligger på top-4) höger, så de inte krockar.
   const { rootRef, dragHandleProps, style } = useDraggable();
