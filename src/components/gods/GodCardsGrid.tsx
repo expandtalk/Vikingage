@@ -77,9 +77,12 @@ export const GodCardsGrid: React.FC<GodCardsGridProps> = ({ onFocusDeity }) => {
                   <Card key={god.id}
                     className={`overflow-hidden transition-all duration-200 group ${clickable ? 'cursor-pointer hover:shadow-lg' : 'cursor-default'} ${selectedGod === god.name ? 'ring-2 ring-accent shadow-lg' : ''}`}
                     onClick={() => handleGodClick(god.name, count)}>
-                    <div className="relative h-40 w-full overflow-hidden">
+                    {/* object-top: porträtten har ansiktet högt upp; object-cover centrerat
+                        kapade huvudet (Balder, Frej, Freja, Frigg, Idun, Loke, Oden, Ty, Ull).
+                        Ankra beskärningen uppåt så ansiktet alltid syns. h-48 ger lite mer höjd. */}
+                    <div className="relative h-48 w-full overflow-hidden">
                       <img src={god.image} alt={`${god.name} (${god.name_old_norse ?? ''})`} loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" />
                       <Badge className={`absolute top-2 right-2 text-[10px] ${CAT_COLOR[god.category ?? 'other']}`}>{CAT_NAME[god.category ?? 'other']}</Badge>
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-3 pt-6 pb-1.5">
                         <CardTitle className="text-base text-white leading-tight">{god.name}</CardTitle>
