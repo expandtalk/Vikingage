@@ -90,6 +90,12 @@ export const Breadcrumbs: React.FC = () => {
     }
   };
 
+  // Segment vars BARA rutt är container (/:param) → bar path 404:ar. Peka om till översikt.
+  // (t.ex. /inscription/:signum → segmentet "inscription" länkade till /inscription = 404.)
+  const LINK_OVERRIDE: Record<string, string> = {
+    inscription: language === 'sv' ? '/sv/runinskrifter' : '/inscriptions',
+  };
+
   const pathnames = location.pathname.split('/').filter((x) => x);
   
   // Don't show breadcrumbs on home/welcome page
@@ -115,7 +121,7 @@ export const Breadcrumbs: React.FC = () => {
           {displayPathnames.map((name, index) => {
             // Build route path - include 'sv' prefix if we're on Swedish route
             const prefix = pathnames[0] === 'sv' ? '/sv' : '';
-            const routeTo = `${prefix}/${displayPathnames.slice(0, index + 1).join('/')}`;
+            const routeTo = LINK_OVERRIDE[name] ?? `${prefix}/${displayPathnames.slice(0, index + 1).join('/')}`;
             const isLast = index === displayPathnames.length - 1;
             // Sista segmentet är ofta en id/signum (t.ex. "Ög%20136") — avkoda så
             // det inte visas URL-kodat. Kända rutter översätts, annars avkodad text.
