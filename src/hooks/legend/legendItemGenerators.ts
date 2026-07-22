@@ -302,7 +302,7 @@ export const generateBasicInscriptionItems = (
 
   // Add Christian sites if provided
   if (christianSites && christianSites.length > 0) {
-    const christianItems = generateChristianSitesLegendItems(christianSites, t);
+    const christianItems = generateChristianSitesLegendItems(christianSites, t, enabledLegendItems);
     items.push(...christianItems);
   }
 
