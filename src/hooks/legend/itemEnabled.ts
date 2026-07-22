@@ -42,6 +42,7 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
   picture_stone_reuse: false,
   coins: false,
   adna_sites: false,
+  estates: false, // maktsäten (kungsgårdar/handelsplatser) — ekonomihistorikerns lager
   stake_barriers: false,
   viking_regions: false,
   religious_places: false, // (golden master: kategorin är AV som standard i live-generatorn)

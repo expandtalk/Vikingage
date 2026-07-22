@@ -18,6 +18,7 @@ import { useMapCoins } from './map/useMapCoins';
 import { useMapAncestrySites } from './map/useMapAncestrySites';
 import { useMapCustomPoints } from './map/useMapCustomPoints';
 import { useRuneDensityLayer } from './map/useRuneDensityLayer';
+import { useMapEstates } from './useMapEstates';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -215,6 +216,14 @@ export const useMapInitialization = ({
     isMapReady: isMapReadyRef,
     safelyAddLayer,
     inscriptions,
+  });
+
+  // Maktsäten (estates + innehav över tid) — ekonomihistorikerns lager, gate: legendknappen.
+  useMapEstates({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+    safelyAddLayer,
   });
 
   return {
