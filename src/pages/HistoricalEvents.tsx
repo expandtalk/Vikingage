@@ -20,11 +20,17 @@ const formatYear = (y: number | null | undefined, sv: boolean) => {
 
 // Färg per typ/proxy (både händelser och arter).
 const TAG_COLOR: Record<string, string> = {
+  // händelsetyper
   epidemic: '#ef4444', climate: '#38bdf8', catastrophe: '#fb923c',
+  military: '#f87171', raid: '#fb7185', political: '#818cf8', exploration: '#2dd4bf',
+  settlement: '#a3e635', religious: '#e879f9',
+  // proxy-typer (arter/innovationer)
   adna: '#c084fc', zooarchaeology: '#f59e0b', iconography: '#34d399', onomastics: '#22d3ee', text: '#94a3b8',
 };
 const TAG_LABEL: Record<string, string> = {
   epidemic: 'epidemi', climate: 'klimat', catastrophe: 'katastrof',
+  military: 'militärt', raid: 'plundring', political: 'politiskt', exploration: 'expedition',
+  settlement: 'bosättning', religious: 'religiöst',
   adna: 'aDNA', zooarchaeology: 'zooarkeologi', iconography: 'ikonografi', onomastics: 'onomastik', text: 'text',
 };
 const CONF_STYLE: Record<string, string> = {
