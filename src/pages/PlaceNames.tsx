@@ -13,6 +13,7 @@ import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
 import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceNameAttestations';
 import { useRunicTheophoricSummary } from '@/hooks/useRunicTheophoricSummary';
 import { useNameDatings, eraSortYear } from '@/hooks/useNameDatings';
+import { DistanceStatsCard } from '@/components/placenames/DistanceStatsCard';
 import {
   PLACE_NAME_ELEMENTS,
   ELEMENT_CATEGORY_META,
@@ -213,6 +214,9 @@ const PlaceNames = () => {
             </div>
           </div>
         )}
+
+        {/* Steg 1: hypotestest — avstånd till sockenkyrka (box-plot) */}
+        <DistanceStatsCard sv={sv} />
 
         {/* Namnleds-katalog — "vilka ord", grupperat i evidensskikt */}
         <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'Namnleden vi söker' : 'The elements we search for'}</h2>
