@@ -143,7 +143,7 @@ export const generateBasicInscriptionItems = (
       { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: enabledLegendItems.heritage_ganggrift === true },
       { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: enabledLegendItems.heritage_bildsten === true },
       { id: 'heritage_skeppssattning', label: 'Skeppssättningar', color: '#0d9488', count: 865, enabled: enabledLegendItems.heritage_skeppssattning === true },
-      { id: 'heritage_kalla', label: 'Källor (traditionella)', color: '#0ea5e9', count: 3, enabled: enabledLegendItems.heritage_kalla === true },
+      { id: 'heritage_kalla', label: 'Källor (traditionella)', color: '#0ea5e9', count: 2098, enabled: enabledLegendItems.heritage_kalla === true },
     ],
   });
 
