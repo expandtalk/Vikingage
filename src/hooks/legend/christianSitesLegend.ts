@@ -1,7 +1,14 @@
 import { LegendItem } from './types';
 import { ChristianSite } from '@/hooks/useChristianSites';
 
-export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (key: string) => string): LegendItem[] => {
+export const generateChristianSitesLegendItems = (
+  sites: ChristianSite[],
+  t: (key: string) => string,
+  // Toggle-tillstånd MÅSTE vägas in — annars hårdkodades enabled och kryssen gick inte
+  // att ändra (tidig kristendom/medeltida-/senmedeltida kloster satt fast PÅ). Default
+  // per post bevaras nedan (PÅ för de tre periodlagren, AV för ordnar/heliga platser).
+  enabledLegendItems: { [key: string]: boolean } = {},
+): LegendItem[] => {
   const items: LegendItem[] = [];
 
   // Group by period
@@ -30,7 +37,7 @@ export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (ke
       label: t('earlyChristianity'),
       color: '#8B5CF6', // Purple
       count: earlyChristianSites.length,
-      enabled: true
+      enabled: enabledLegendItems.early_christian_sites !== false
     });
   }
 
@@ -41,7 +48,7 @@ export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (ke
       label: t('medievalMonasteries'),
       color: '#3B82F6', // Blue
       count: medievalSites.length,
-      enabled: true
+      enabled: enabledLegendItems.medieval_monasteries !== false
     });
   }
 
@@ -52,7 +59,7 @@ export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (ke
       label: t('lateMiddleAgeMonasteries'),
       color: '#EF4444', // Red
       count: lateMedievalSites.length,
-      enabled: true
+      enabled: enabledLegendItems.late_medieval_sites !== false
     });
   }
 
@@ -65,7 +72,7 @@ export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (ke
       label: t('cistercianMonasteries'),
       color: '#10B981', // Emerald
       count: cistercianSites.length,
-      enabled: false
+      enabled: enabledLegendItems.cistercian_monasteries === true
     });
   }
 
@@ -75,7 +82,7 @@ export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (ke
       label: t('franciscanOrder'),
       color: '#6B7280', // Gray
       count: franciscanSites.length,
-      enabled: false
+      enabled: enabledLegendItems.franciscan_convents === true
     });
   }
 
@@ -85,7 +92,7 @@ export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (ke
       label: t('dominicanOrder'),
       color: '#1F2937', // Dark gray
       count: dominicanSites.length,
-      enabled: false
+      enabled: enabledLegendItems.dominican_convents === true
     });
   }
 
@@ -95,7 +102,7 @@ export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (ke
       label: t('birgittineOrder'),
       color: '#F59E0B', // Amber
       count: birgittineSites.length,
-      enabled: false
+      enabled: enabledLegendItems.birgittine_monasteries === true
     });
   }
 
@@ -105,7 +112,7 @@ export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (ke
       label: t('monasticOrders'),
       color: '#8B5A2B',
       count: orderChildren.reduce((sum, child) => sum + child.count, 0),
-      enabled: false,
+      enabled: enabledLegendItems.religious_orders === true,
       type: 'category',
       children: orderChildren
     });
@@ -118,7 +125,7 @@ export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (ke
       label: t('holySites'),
       color: '#DC2626', // Red
       count: holyPlaces.length,
-      enabled: false
+      enabled: enabledLegendItems.holy_places === true
     });
   }
 
@@ -130,7 +137,7 @@ export const generateChristianSitesLegendItems = (sites: ChristianSite[], t: (ke
       label: '⛪ ' + t('monasteriesAndChristianSites'),
       color: '#8B5A2B',
       count: totalChristianSites,
-      enabled: false, // Start disabled to avoid clutter
+      enabled: enabledLegendItems.christian_sites === true, // default AV för att undvika stök
       type: 'category',
       children: christianChildren
     });
