@@ -10,8 +10,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { addRunicInscriptionMarkers } from '@/hooks/map/useRunicInscriptionMarkers';
 import { useParishGovernance } from '@/hooks/useParishGovernance';
-
-type RegionMode = 'hundreds' | 'parishes';
+import { buildRegionGroups, type RegionGroup, type RegionMode } from './regionGrouping';
 
 const ROLE_LABEL: Record<string, string> = {
   archbishop: 'ärkebiskop', bishop: 'biskop', parish_priest: 'kyrkoherde',
@@ -25,59 +24,17 @@ interface RegionFindsViewProps {
   onResultClick?: (inscription: any) => void;
 }
 
-interface RegionGroup {
-  name: string;          // härads-/sockennamn (auktoritativt ur fyndens egen kolumn)
-  landscape: string;     // majoritets-landskap (tom om för spretigt, t.ex. "Okänd")
-  country: string;       // normaliserat land (majoritet)
-  inscriptions: any[];
-  count: number;
-}
-
-const hasCoords = (i: any): boolean =>
-  (i?.coordinates && i.coordinates.lat && i.coordinates.lng) || (i?.latitude && i?.longitude);
-
-// Normalisera land — källan har både "Sverige" och "Sweden".
+// Land-etikett (SV). Land härleds ur signum/härad-suffix i regionGrouping.ts.
 const COUNTRY_LABEL_SV: Record<string, string> = {
   sweden: 'Sverige', denmark: 'Danmark', norway: 'Norge', greenland: 'Grönland',
   germany: 'Tyskland', netherlands: 'Nederländerna', poland: 'Polen', ukraine: 'Ukraina',
   'united kingdom': 'Storbritannien', finland: 'Finland', britain: 'Storbritannien',
   estonia: 'Estland', ireland: 'Irland', scotland: 'Skottland', iceland: 'Island', other: 'Övrigt',
 };
-// Land härleds ur SIGNUM-PREFIXET, inte country-kolumnen (som är fel för t.ex.
-// Akershus fylke = felmärkt Denmark). Prefixet är auktoritativt: N=Norge, DR/DK=
-// Danmark, IS=Island, GR=Grönland osv.; övriga svenska landskapsprefix → Sverige.
-const COUNTRY_BY_PREFIX: Record<string, string> = {
-  DR: 'denmark', DK: 'denmark', N: 'norway', IS: 'iceland', GR: 'greenland',
-  E: 'estonia', IR: 'ireland', SC: 'scotland', BR: 'britain', X: 'other',
-};
-const countryKeyFromSignum = (signum?: string): string => {
-  const p = (signum ?? '').trim().split(/\s+/)[0]?.toUpperCase() ?? '';
-  return COUNTRY_BY_PREFIX[p] ?? 'sweden';
-};
-// Härads-suffixet är auktoritativt för land (fylke=Norge, herred=Danmark,
-// härad=Sverige, kihlakunta=Finland, Kreis=Tyskland) — mer pålitligt än signum
-// för specialkataloger (KJ, NIÆR) i t.ex. "Akershus fylke".
-const countryKeyFromRegionName = (name: string): string | null => {
-  const n = name.toLowerCase();
-  if (/fylke$/.test(n)) return 'norway';
-  if (/herred$/.test(n)) return 'denmark';
-  if (/härad$/.test(n)) return 'sweden';
-  if (/kihlakunta/.test(n)) return 'finland';
-  if (/\bkreis\b|landkreis/.test(n)) return 'germany';
-  return null;
-};
-const topVote = (votes: Map<string, number>): { key: string; share: number } => {
-  let key = '';
-  let best = 0;
-  let total = 0;
-  for (const [k, n] of votes) { total += n; if (n > best) { best = n; key = k; } }
-  return { key, share: total ? best / total : 0 };
-};
 
 export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, mode, onResultClick }) => {
   const { language } = useLanguage();
   const sv = language === 'sv';
-  const field = mode === 'hundreds' ? 'harad' : 'socken';
 
   const c = sv
     ? {
@@ -115,46 +72,20 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
     return key.charAt(0).toUpperCase() + key.slice(1);
   };
 
-  // Gruppera fynden per härad/socken (bara de med koordinat — annars syns de inte).
-  const regions = useMemo<RegionGroup[]>(() => {
-    const map = new Map<string, { name: string; inscriptions: any[]; landscapeVotes: Map<string, number>; countryVotes: Map<string, number> }>();
-    for (const i of inscriptions) {
-      const name = (i?.[field] ?? '').toString().trim();
-      if (!name || !hasCoords(i)) continue;
-      let g = map.get(name);
-      if (!g) {
-        g = { name, inscriptions: [], landscapeVotes: new Map(), countryVotes: new Map() };
-        map.set(name, g);
-      }
-      g.inscriptions.push(i);
-      // Landskap + land via MAJORITETSRÖSTNING — kolumnerna är fel för en del
-      // Bautil-stenar (Vallentuna felmärkt Småland). Ett härad hör historiskt till
-      // ETT landskap, så majoriteten ger rätt; catch-allen "Okänd" spänner dock många.
-      const ls = (i?.landscape ?? '').toString().trim();
-      if (ls) g.landscapeVotes.set(ls, (g.landscapeVotes.get(ls) ?? 0) + 1);
-      const ck = countryKeyFromSignum(i?.signum);
-      if (ck) g.countryVotes.set(ck, (g.countryVotes.get(ck) ?? 0) + 1);
-    }
-    const isUnknown = (n: string) => /^(okänd|unknown)$/i.test(n.trim());
-    return [...map.values()]
-      .map((g) => {
-        const ls = topVote(g.landscapeVotes);
-        const co = topVote(g.countryVotes);
-        // Dölj landskap för catch-allen "Okänd" och när gruppen är för spretig (<60%).
-        const landscape = isUnknown(g.name) || ls.share < 0.6 ? '' : ls.key;
-        // Land: härad-suffix först (auktoritativt), annars signum-majoritet.
-        const country = countryKeyFromRegionName(g.name) ?? co.key;
-        return { name: g.name, landscape, country, inscriptions: g.inscriptions, count: g.inscriptions.length };
-      })
-      .sort((a, b) => a.name.localeCompare(b.name, 'sv'));
-  }, [inscriptions, field]);
+  // Gruppera fynden namnkollisions-säkert (härad-annars-landskap) via ren modul.
+  const regions = useMemo<RegionGroup[]>(() => buildRegionGroups(inscriptions, mode), [inscriptions, mode]);
 
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'name' | 'count' | 'country'>('name');
 
+  // `selected` håller gruppens unika NYCKEL (namn+härad/landskap) så att t.ex. de två
+  // Kalmar-socknarna går att välja var för sig. Namnet härleds för visning/governance.
+  const selectedGroup = useMemo(() => regions.find((r) => r.key === selected) ?? null, [regions, selected]);
+  const selectedName = selectedGroup?.name ?? null;
+
   // Socken-styrpanel: kyrkor + stiftshistorik + ledarskap (bara i parishes-läget).
-  const governance = useParishGovernance(mode === 'parishes' ? selected : null);
+  const governance = useParishGovernance(mode === 'parishes' ? selectedName : null);
 
   // Deep-link: /explore?focus=parishes&region=Runsten förväljer socknen/häradet.
   // (Globalsökets socken-träffar länkar hit — textsök på t.ex. "Runsten" är fel
@@ -166,7 +97,7 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
     if (!param) { appliedRegionParam.current = true; return; }
     const match = regions.find((r) => r.name.toLowerCase() === param.toLowerCase())
       ?? regions.find((r) => r.name.toLowerCase().startsWith(param.toLowerCase()));
-    if (match) { setSelected(match.name); setQuery(match.name); }
+    if (match) { setSelected(match.key); setQuery(match.name); }
     else setQuery(param);
     appliedRegionParam.current = true;
   }, [regions]);
@@ -203,9 +134,9 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
   }, [filteredRegions, sortBy]);
 
   const activeInscriptions = useMemo(() => {
-    if (selected) return regions.find((r) => r.name === selected)?.inscriptions ?? [];
+    if (selected) return selectedGroup?.inscriptions ?? [];
     return regions.flatMap((r) => r.inscriptions);
-  }, [regions, selected]);
+  }, [regions, selected, selectedGroup]);
 
   // ---- Leaflet-karta (fristående, samma mönster som CarversMap) ----
   const mapRef = useRef<L.Map | null>(null);
@@ -320,18 +251,20 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
                       {countryLabel(it.country) || (sv ? 'Okänt land' : 'Unknown country')}
                     </li>
                   ) : (
-                    <li key={it.region.name}>
+                    <li key={it.region.key}>
                       <button
-                        onClick={() => setSelected(it.region.name)}
+                        onClick={() => setSelected(it.region.key)}
                         className={`w-full flex items-center justify-between gap-2 text-left p-2 rounded transition-colors ${
-                          selected === it.region.name ? 'bg-amber-500/20 text-amber-200' : 'text-white hover:bg-white/10'
+                          selected === it.region.key ? 'bg-amber-500/20 text-amber-200' : 'text-white hover:bg-white/10'
                         }`}
                       >
                         <span className="truncate">
                           {it.region.name}
-                          {/* Landssortering: landet står i rubriken → visa bara landskap i övriga lägen. */}
-                          {sortBy !== 'country' && it.region.landscape ? (
-                            <span className="text-slate-400 text-xs ml-1">· {it.region.landscape}</span>
+                          {/* Disambiguator: härad om känt (auktoritativt), annars landskap. Skiljer
+                              dubblettnamn åt (Kalmar · Håbo härad vs · Norra Möre härad). Vid
+                              landssortering står landet i rubriken → visa ändå härad/landskap. */}
+                          {(it.region.harad || it.region.landscape) ? (
+                            <span className="text-slate-400 text-xs ml-1">· {it.region.harad || it.region.landscape}</span>
                           ) : null}
                         </span>
                         <Badge variant="secondary" className="shrink-0">{it.region.count}</Badge>
@@ -346,7 +279,7 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
           {/* Höger: karta + antal */}
           <div className="space-y-2">
             <div className="text-slate-300 text-sm">
-              {c.showing}: <span className="text-white font-medium">{selected ?? c.all}</span>{' '}
+              {c.showing}: <span className="text-white font-medium">{selectedName ?? c.all}</span>{' '}
               <span className="text-slate-400">({activeInscriptions.length} {c.finds})</span>
             </div>
             <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-white/10" />
@@ -355,7 +288,7 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
 
         {mode === 'parishes' && selected && (
           <div className="mt-4 border-t border-white/10 pt-4">
-            <h3 className="text-white font-semibold mb-3">⛪ {selected} — {sv ? 'kyrkor & stift' : 'churches & diocese'}</h3>
+            <h3 className="text-white font-semibold mb-3">⛪ {selectedName} — {sv ? 'kyrkor & stift' : 'churches & diocese'}</h3>
             {governance.loading ? (
               <p className="text-slate-400 text-sm">{sv ? 'Laddar…' : 'Loading…'}</p>
             ) : governance.data ? (
