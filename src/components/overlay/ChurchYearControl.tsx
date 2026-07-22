@@ -1,6 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Church, X, GripVertical } from 'lucide-react';
 import { useChurchYearRange, setChurchYearRange, setChurchShowUndated } from '@/hooks/useChurchYearRange';
+import { useDraggable } from '@/hooks/useDraggable';
 
 // Byggårs-intervall för kyrkolagret (från/till). Presets + fria fält.
 // Går att fälla ihop (✕ → pill) och flytta (dra i rubriken).
@@ -15,34 +16,16 @@ const PRESETS: { sv: string; from: number; to: number }[] = [
 export const ChurchYearControl: React.FC = () => {
   const { from, to, showUndated } = useChurchYearRange();
   const [collapsed, setCollapsed] = useState(false);
-  // null = förvald hörnposition (top-4 right-4); annars fri position i px.
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
-  const drag = useRef<{ startX: number; startY: number; baseX: number; baseY: number } | null>(null);
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    const rect = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
-    drag.current = { startX: e.clientX, startY: e.clientY, baseX: pos?.x ?? rect.left, baseY: pos?.y ?? rect.top };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!drag.current) return;
-    setPos({
-      x: drag.current.baseX + (e.clientX - drag.current.startX),
-      y: drag.current.baseY + (e.clientY - drag.current.startY),
-    });
-  };
-  const onPointerUp = () => { drag.current = null; };
-
-  const style: React.CSSProperties = pos
-    ? { position: 'fixed', left: pos.x, top: pos.y }
-    : { position: 'absolute', top: 16, right: 16 };
+  // Flyttbar via rubriken (document-baserad drag, se useDraggable). Default-hörn via
+  // CSS-klass: top-16 (under linjalen som ligger på top-4) höger, så de inte krockar.
+  const { rootRef, dragHandleProps, style } = useDraggable();
 
   if (collapsed) {
     return (
       <button
         onClick={() => setCollapsed(false)}
         style={style}
-        className="z-[1100] flex items-center gap-1.5 bg-slate-900 border border-slate-600 rounded-full shadow-2xl px-3 py-1.5 text-xs text-rose-200 hover:bg-slate-800"
+        className="absolute top-16 right-4 z-[1100] flex items-center gap-1.5 bg-slate-900 border border-slate-600 rounded-full shadow-2xl px-3 py-1.5 text-xs text-rose-200 hover:bg-slate-800"
       >
         <Church className="h-3.5 w-3.5" />Kyrkornas byggår
       </button>
@@ -50,10 +33,10 @@ export const ChurchYearControl: React.FC = () => {
   }
 
   return (
-    <div style={style} className="z-[1100] w-64 bg-slate-900 border border-slate-600 rounded-lg shadow-2xl">
+    <div ref={rootRef} style={style} className="absolute top-16 right-4 z-[1100] w-64 bg-slate-900 border border-slate-600 rounded-lg shadow-2xl">
       <div
-        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
-        className="flex items-center gap-1.5 px-3 pt-2.5 pb-1.5 cursor-move select-none"
+        {...dragHandleProps}
+        className="flex items-center gap-1.5 px-3 pt-2.5 pb-1.5 cursor-grab active:cursor-grabbing select-none"
       >
         <GripVertical className="h-3.5 w-3.5 text-slate-500" />
         <Church className="h-4 w-4 text-rose-300" />
