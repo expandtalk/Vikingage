@@ -418,6 +418,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
       { name: 'Göta landsväg (RAÄ Stockholm 227)', lat: 59.29371, lng: 18.05622, note: 'Belagd rest av medeltidens riksväg söderut. Källa: Vinberg m.fl. 2012.' },
       { name: 'Spärranordningen i Årstaviken (RAÄ 660)', lat: 59.306738, lng: 18.048976, note: 'Möjlig pålspärr vid Årstaholmarna, trolig datering 900–1200. Källa: Fornsök L2013:4298.' },
       { name: 'Ersta gård & det borttagna gravfältet', lat: 59.2921, lng: 18.0362, note: 'Ersta gårdsväg minner om gården (riven 1970-tal). Väster härom låg de 1958–59 utgrävda och borttagna gravfälten. Läge ungefärligt.' },
+      { name: 'Årsta gård', lat: 59.2985, lng: 18.0475, note: 'Herrgård vid Årstaviken med medeltida rötter (nuvarande huvudbyggnad 1600–1700-tal). Enligt traditionen tog Birger Jarl upp skatt från bygden här. Se maktsäten-lagret i Utforska.' },
     ],
     sv: `## Varför är det värt ett besök
 Vid Brunnbyvägen i Årsta ligger en skålgropssten — även kallad offersten eller älvkvarn (RAÄ Brännkyrka 222:1). Men platsen är mer än en sten. Runt Valla torg ligger ett helt fornlandskap som spänner från bronsålder till vikingatid, knutet till den gamla gården Valla och vattenvägen in mot Birka. Årsta är dessutom ovanligt rikt på skålgropar — ett halvdussin lokaler till finns inom gång- och cykelavstånd i Östberga, Älvsjö och Högdalen.
@@ -435,6 +436,9 @@ Namnet Valla kommer av fornsvenskans *valder*: jämn, gräsbevuxen mark avsedd f
 
 ## Kungagraven — vad traditionen säger
 Enligt folktraditionen ska sveakungen Emund den gamle (död omkr. 1060) ha begravts vid Valla. Men den arkeologiska hövdinggraven ovan är daterad till ~900–950 — drygt hundra år tidigare — så den kan inte vara Emunds. Traditionen kan ha vuxit fram kring de synliga storhögarna. Vallagravfältet RAÄ 77:1 vid Valla torg finns kvar och avgränsades vid en förundersökning 2012. Läs mer på [Kungakrönikorna](/royal-chronicles).
+
+## Årsta gård och Birger Jarl
+Namnet Årsta bärs idag av Årsta gård, en herrgård vid Årstaviken med rötter i medeltiden (nuvarande huvudbyggnad 1600–1700-tal). Enligt traditionen tog Birger Jarl (d. 1266) upp skatt från bygden här. Belägget är traditionsburet snarare än urkundligt — men det passar mönstret: Årsta kontrollerade både Göta landsväg och den segelbara vägen in i Mälaren, en knutpunkt värd att beskatta, i den framväxande kungamaktens intressesfär vid inloppet mot Stockholm som Birger Jarl grundade ~1250. Så fungerade den tidiga skatte- och förvaltningsmakten: kungen (eller jarlen) lät en *bryte* eller fogde sköta gården och uppbörden på plats — jämför Håkanstenen vid Hovgården, där "Tolir, bryte i Roden" förvaltade en kungsgård åt kungen. Se hur kungsgårdar, förläningar och skattesystem (ledung → mynt → frälse) fördelade sig i maktsäten-lagret i [Utforska](/explore).
 
 ## Vägen och vattnet
 Förbi platsen gick Göta landsväg (RAÄ 227), medeltidens pulsåder söderut från Stockholm — en sträcka är belagd strax sydost om gravfältet. Och ute i Årstaviken, vid Årstaholmarna, finns en möjlig pålspärr (RAÄ 660, trolig datering 900–1200) som kontrollerade passagen mellan holmarna — vattenvägens motsvarighet till vägen på land.
@@ -462,6 +466,9 @@ In 1958–59 the City Museum excavated and removed three large grave fields on t
 
 ## The king's grave — what tradition says
 Folk tradition holds that the Swedish king Emund the Old (died c. 1060) was buried at Valla. But the archaeological chieftain's grave above is dated to ~900–950 — over a century earlier — so it cannot be Emund's. The tradition may have grown up around the visible large mounds. The Valla grave field RAÄ 77:1 by Valla torg survives and was delimited in a 2012 survey. Read more in the [Royal Chronicles](/royal-chronicles).
+
+## Årsta gård and Birger Jarl
+The name Årsta is carried today by Årsta gård, a manor by Årstaviken with medieval roots (the present main building is 17th–18th century). Tradition holds that Birger Jarl (d. 1266) collected tax from this district. The evidence is traditional rather than documentary — but it fits the pattern: Årsta controlled both Göta landsväg and the navigable route into Lake Mälaren, a hub worth taxing, within the sphere of the rising royal power at the approach to Stockholm, which Birger Jarl founded c. 1250. This is how early fiscal and administrative power worked: the king (or jarl) had a *bryte* or bailiff manage the estate and collect dues on the spot — compare the Håkan stone at Hovgården, where "Tolir, steward (bryte) in Roden" managed a royal estate for the king. See how royal estates, fiefs and fiscal systems (ledung → coinage → frälse) were distributed in the power-seats layer in [Explore](/explore).
 
 ## The road and the water
 Past the site ran Göta landsväg (RAÄ 227), the medieval artery south from Stockholm — a stretch is documented just south-east of the grave field. And out in Årstaviken, by the Årsta islets, lies a possible stake barrier (RAÄ 660, probable date 900–1200) that controlled the passage between the islets — the waterborne counterpart to the road on land.
