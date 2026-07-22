@@ -403,8 +403,11 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
       });
       break;
     case "inscriptions":
-      // Fokus på runinskrifterna själva — BÅDE svenska och utländska ifyllda.
-      Object.assign(o, { runic_inscriptions: true, foreign_inscriptions: true });
+      // Fokus på runinskrifterna själva — BÅDE svenska och utländska ifyllda. Nollar
+      // ortnamn/namnled explicit: annars följer place_names-lagret med från en aktiv
+      // Lingvist-profil (som har det på) in i runstensvyn och "går inte att stänga av"
+      // (Daniel 2026-07). Fokusvyer ska ge en ren vy oberoende av underliggande profil.
+      Object.assign(o, { runic_inscriptions: true, foreign_inscriptions: true, place_names: false });
       break;
   }
   return { ...preset, ...o };
