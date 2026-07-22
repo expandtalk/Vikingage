@@ -315,6 +315,15 @@ export const generateBasicInscriptionItems = (
     enabled: itemEnabled(enabledLegendItems, 'adna_sites')
   });
 
+  // Maktsäten (estates + innehav över tid) — ekonomihistorikerns lager. AV som standard.
+  items.push({
+    id: 'estates',
+    label: '⚔️ Maktsäten (kungsgårdar)',
+    color: '#b91c1c',
+    count: dbStats?.layerCounts?.estates ?? 2,
+    enabled: itemEnabled(enabledLegendItems, 'estates')
+  });
+
   // Add Christian sites if provided
   if (christianSites && christianSites.length > 0) {
     const christianItems = generateChristianSitesLegendItems(christianSites, t, enabledLegendItems);

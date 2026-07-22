@@ -22,6 +22,8 @@ const DEFAULT_ENABLED: Record<string, boolean> = {
   coins: false, adna_sites: false, paleo_shoreline: false,
   // GIS-analyslager tillagt (runstenstäthet per härad) — medvetet AV som standard.
   runestone_density: false,
+  // Maktsäten (ekonomihistorikerns lager) — medvetet AV som standard.
+  estates: false,
 };
 
 const buildMap = () => {
