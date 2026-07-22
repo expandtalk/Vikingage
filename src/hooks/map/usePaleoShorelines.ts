@@ -13,14 +13,17 @@ export interface ShorelineFeature {
   geojson: string;
 }
 
-// Plattformens tidsperiod → ungefärligt år (year_ce). RPC snappar sedan till närmaste skiva.
+// Plattformens tidsperiod → ungefärligt år (year_ce). RPC snappar sedan till närmaste skiva
+// (data: 50,150,250,350,450,550,650,750,950). MÅSTE täcka ALLA id:n som TimePeriodSelector
+// skickar — annars föll t.ex. pre_roman_iron tillbaka på 950 och strandlinjen "fastnade".
 const PERIOD_YEAR: Record<string, number> = {
-  viking_age: 950,
+  paleolithic: 50, mesolithic: 50, neolithic: 50, bronze_age: 50,
+  pre_roman_iron: 50,
+  roman_iron: 250, roman_iron_age: 250, iron_age: 250,
+  migration_period: 450,   // Folkvandringstid ~450 — precis FÖRE Fimbulvintern 536
   vendel_period: 700,
-  migration_period: 500,
-  roman_iron_age: 200,
-  iron_age: 200,
-  medieval: 1000,
+  viking_age: 950,
+  medieval: 950,           // ingen skiva efter 950; snappar till 950
   all: 950,
 };
 
