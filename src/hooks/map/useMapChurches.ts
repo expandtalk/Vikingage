@@ -66,7 +66,7 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
   const tokenRef = useRef(0);
   const zoomedRef = useRef(false);
   const enabled = enabledLegendItems.ecclesiastical_churches === true;
-  const { from: yearFrom, to: yearTo } = useChurchYearRange();
+  const { from: yearFrom, to: yearTo, showUndated } = useChurchYearRange();
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;
@@ -96,10 +96,11 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
       layer.clearLayers();
       (data as any[] || []).forEach((r) => {
         if (r.lat == null || r.lng == null) return;
-        // Byggårs-intervall (från/till, default medeltid). Daterade kyrkor visas bara i
-        // spannet; odaterade (built_from = null) visas alltid. Medeltids-klassade utan
-        // årtal behålls om spannet överlappar medeltiden.
-        if (r.built_from != null && (r.built_from < yearFrom || r.built_from > yearTo)) return;
+        // Byggårs-intervall (från/till). Odaterade kyrkor (built_from = null) = kategori
+        // "okänd" och döljs som standard (annars visas hundratals under varje period);
+        // showUndated tänder dem. Daterade visas bara inom spannet.
+        if (r.built_from == null) { if (!showUndated) return; }
+        else if (r.built_from < yearFrom || r.built_from > yearTo) return;
         L.marker([r.lat, r.lng], { icon: iconFor(r.kind, r.status) })
           .bindPopup(popupHtml(r), { maxWidth: 320, className: 'church-popup' })
           .addTo(layer);
@@ -109,7 +110,7 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
     map.on('moveend zoomend', debounced);
     refresh();
     return () => { map.off('moveend zoomend', debounced); if (timer) clearTimeout(timer); layer.clearLayers(); };
-  }, [map, enabled, isMapReady, yearFrom, yearTo]);
+  }, [map, enabled, isMapReady, yearFrom, yearTo, showUndated]);
 
   useEffect(() => () => {
     try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Church } from 'lucide-react';
-import { useChurchYearRange, setChurchYearRange } from '@/hooks/useChurchYearRange';
+import { useChurchYearRange, setChurchYearRange, setChurchShowUndated } from '@/hooks/useChurchYearRange';
 
 // Byggårs-intervall för kyrkolagret (från/till). Presets + fria fält. Visas när
 // kyrkolagret är på.
@@ -13,7 +13,7 @@ const PRESETS: { sv: string; from: number; to: number }[] = [
 ];
 
 export const ChurchYearControl: React.FC = () => {
-  const { from, to } = useChurchYearRange();
+  const { from, to, showUndated } = useChurchYearRange();
   return (
     <div className="absolute top-4 right-4 z-[1100] w-64 bg-slate-900 border border-slate-600 rounded-lg shadow-2xl p-3">
       <div className="flex items-center gap-1.5 text-white text-xs font-medium mb-2">
@@ -40,7 +40,14 @@ export const ChurchYearControl: React.FC = () => {
             className="w-16 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-white" />
         </label>
       </div>
-      <p className="text-[10px] text-slate-500 mt-1.5">Odaterade kyrkor visas alltid. Zooma in (≥6) för att se kyrkorna.</p>
+      <label className="flex items-center gap-2 mt-2 text-[11px] text-slate-300 cursor-pointer">
+        <input type="checkbox" checked={showUndated} onChange={(e) => setChurchShowUndated(e.target.checked)}
+          className="accent-rose-500" />
+        Visa odaterade (okänd datering)
+      </label>
+      <p className="text-[10px] text-slate-500 mt-1.5">
+        Odaterade kyrkor döljs som standard så de inte fyller varje period. Zooma in (≥6) för att se kyrkorna.
+      </p>
     </div>
   );
 };
