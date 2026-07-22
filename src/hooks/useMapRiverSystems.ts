@@ -48,6 +48,14 @@ export const useMapRiverSystems = ({
   refreshTrigger
 }: UseMapRiverSystemsProps) => {
   const riverLayersRef = useRef<L.Layer[]>([]);
+  // safelyAddLayer får ny identitet varje render → håll den i en ref så effekten inte
+  // beror på den (annars kördes effekten om varje render → oändlig refetch → frusen flik).
+  const addLayerRef = useRef(safelyAddLayer);
+  addLayerRef.current = safelyAddLayer;
+  // Cachea hämtad floddata så återkörningar aldrig gör nätverksanrop igen.
+  const cacheRef = useRef<DatabaseRiverSystem[] | null>(null);
+  // Stabil primitiv i dep-listan i stället för hela enabledLegendItems-objektet.
+  const showRivers = enabledLegendItems.river_routes !== false;
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;
@@ -63,53 +71,55 @@ export const useMapRiverSystems = ({
     riverLayersRef.current = [];
 
     // Legend is the authority: show rivers whenever the layer is enabled,
-    // regardless of the selected period (dropped the viking_age/vendel period
-    // gate that hid rivers in the default 'all' view).
-    const showRivers = enabledLegendItems.river_routes !== false;
-
+    // regardless of the selected period.
     if (!showRivers) return;
 
     console.log('Adding detailed river systems to map...');
 
-    // Fetch river systems from database
+    // Fetch river systems from database (en gång; sedan ur cache)
     const fetchAndDisplayRiverSystems = async () => {
       try {
-        const { data: systems, error: systemsError } = await supabase
-          .from('river_systems')
-          .select('*')
-          .order('name');
+        let systemsWithCoordinates = cacheRef.current;
 
-        if (systemsError) {
-          console.error('Error fetching river systems:', systemsError);
-          return;
+        if (!systemsWithCoordinates) {
+          const { data: systems, error: systemsError } = await supabase
+            .from('river_systems')
+            .select('*')
+            .order('name');
+
+          if (systemsError) {
+            console.error('Error fetching river systems:', systemsError);
+            return;
+          }
+
+          // Hämta ALLA koordinater i ETT anrop (tidigare N+1: en query per flodsystem →
+          // 43 parallella fetch som spräckte webbläsarens anslutningsgräns,
+          // ERR_INSUFFICIENT_RESOURCES). Gruppera på river_system_id i minnet.
+          const systemIds = systems.map((s) => s.id);
+          const { data: allCoords, error: coordsError } = await supabase
+            .from('river_coordinates')
+            .select('*')
+            .in('river_system_id', systemIds)
+            .order('sequence_order');
+
+          if (coordsError) {
+            console.error('Error fetching coordinates:', coordsError);
+          }
+
+          const coordsBySystem = new Map<string, typeof allCoords>();
+          (allCoords || []).forEach((c) => {
+            const arr = coordsBySystem.get(c.river_system_id) || [];
+            arr.push(c);
+            coordsBySystem.set(c.river_system_id, arr);
+          });
+
+          systemsWithCoordinates = systems.map((system) => ({
+            ...system,
+            importance: (system.importance === 'primary' ? 'primary' : 'secondary') as 'primary' | 'secondary',
+            coordinates: coordsBySystem.get(system.id) || [],
+          }));
+          cacheRef.current = systemsWithCoordinates;
         }
-
-        // Hämta ALLA koordinater i ETT anrop (tidigare N+1: en query per flodsystem →
-        // 43 parallella fetch som spräckte webbläsarens anslutningsgräns,
-        // ERR_INSUFFICIENT_RESOURCES). Gruppera på river_system_id i minnet.
-        const systemIds = systems.map((s) => s.id);
-        const { data: allCoords, error: coordsError } = await supabase
-          .from('river_coordinates')
-          .select('*')
-          .in('river_system_id', systemIds)
-          .order('sequence_order');
-
-        if (coordsError) {
-          console.error('Error fetching coordinates:', coordsError);
-        }
-
-        const coordsBySystem = new Map<string, typeof allCoords>();
-        (allCoords || []).forEach((c) => {
-          const arr = coordsBySystem.get(c.river_system_id) || [];
-          arr.push(c);
-          coordsBySystem.set(c.river_system_id, arr);
-        });
-
-        const systemsWithCoordinates: DatabaseRiverSystem[] = systems.map((system) => ({
-          ...system,
-          importance: (system.importance === 'primary' ? 'primary' : 'secondary') as 'primary' | 'secondary',
-          coordinates: coordsBySystem.get(system.id) || [],
-        }));
 
         // Add Nordic river systems from database
         systemsWithCoordinates.forEach(route => {
@@ -140,7 +150,7 @@ export const useMapRiverSystems = ({
             </div>
           `, { maxWidth: 300 });
 
-          if (safelyAddLayer(riverLine)) {
+          if (addLayerRef.current(riverLine)) {
             riverLayersRef.current.push(riverLine);
           }
 
@@ -173,7 +183,7 @@ export const useMapRiverSystems = ({
                 `);
               }
 
-              if (safelyAddLayer(marker)) {
+              if (addLayerRef.current(marker)) {
                 riverLayersRef.current.push(marker);
               }
             }
@@ -202,7 +212,10 @@ export const useMapRiverSystems = ({
       });
       riverLayersRef.current = [];
     };
-  }, [map, isVikingMode, enabledLegendItems, selectedTimePeriod, isMapReady, safelyAddLayer, refreshTrigger]);
+    // Stabila deps: showRivers (primitiv) + refreshTrigger. Objekt/callbacks som byter
+    // identitet varje render (enabledLegendItems, safelyAddLayer) är UTE — de orsakade
+    // den oändliga refetch-loopen som frös fliken.
+  }, [map, showRivers, refreshTrigger, isMapReady]);
 
   return riverLayersRef.current.length;
 };
