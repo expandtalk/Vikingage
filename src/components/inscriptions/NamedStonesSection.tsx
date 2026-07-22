@@ -33,9 +33,10 @@ const COUNTRY_SV: Record<string, string> = {
   Germany: 'Tyskland', Ukraine: 'Ukraina', England: 'England', Scotland: 'Skottland',
 };
 
-// Ikoniska stenar överst (Daniel 2026-07-20). Rökstenen först, sedan två av de
-// mest kända. Visas i egen "Mest kända"-rad före de landskaps-/landsgrupperade.
-const FEATURED_SIGNUMS = ['Ög 136', 'Öl 1', 'Sö 101']; // Rökstenen, Karlevistenen, Sigurdsristningen
+// Ikoniska stenar överst (Daniel). Rökstenen, Sparlösastenen, Jarlabanke först, sedan
+// övriga mest kända. Saknas ett signum i named_stones_v1 hoppas det bara över (safe).
+const FEATURED_SIGNUMS = ['Ög 136', 'Vg 119', 'U 164', 'Öl 1', 'Sö 101'];
+// Rök, Sparlösa, Jarlabanke (Täby), Karlevi, Sigurdsristningen
 // Ordning för utländska grupper (efter alla svenska landskap).
 const FOREIGN_ORDER = ['Norway', 'Denmark', 'England', 'Scotland', 'Ireland', 'Isle of Man',
   'Germany', 'Latvia', 'Ukraine', 'Russia', 'Turkey', 'Greece', 'Iceland', 'Greenland'];
