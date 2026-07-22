@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Compass, Sparkles, Dna, Church, Waves, Crown, Castle, Tag, CalendarClock, Share2, ArrowRight } from 'lucide-react';
+import { Compass, Sparkles, Dna, Church, Waves, Crown, Castle, Tag, CalendarClock, Share2, ArrowRight, Layers } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 
-// "Bygg din vy" — kort som conversation starters. Varje kort öppnar en färdig
-// GIS-vy (focus-preset) eller ett analysverktyg. Casual-besökaren guidas av korten;
-// forskaren bygger fritt i legenden. Additivt på förstasidan — rör inte Explore-layouten.
+// "Bygg din vy" som MODAL: en knapp på förstasidan öppnar en dialog med kort
+// (conversation starters). Varje kort öppnar en färdig GIS-vy (focus-preset) eller
+// ett analysverktyg. Additivt — rör inte Explore-layouten.
 interface ViewCard { to: string; sv: string; en: string; dsv: string; den: string; icon: typeof Compass; color: string }
 const CARDS: ViewCard[] = [
   { to: '/explore?focus=inscriptions', sv: 'Runstenar', en: 'Runestones', dsv: 'Alla runinskrifter på kartan.', den: 'All runic inscriptions on the map.', icon: Compass, color: '#ef4444' },
@@ -24,29 +25,44 @@ export const ExploreViewCards: React.FC = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
   return (
-    <section className="container mx-auto px-4 py-10">
-      <div className="mb-5">
-        <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
-          <Compass className="h-7 w-7 text-gold" />{sv ? 'Bygg din vy' : 'Build your view'}
-        </h2>
-        <p className="text-slate-300 text-sm mt-1 max-w-3xl">
-          {sv
-            ? 'Välj en färdig kartvy för att komma igång — eller öppna Utforska och slå på egna lager i legenden. Allt är källfört och osäkerheter redovisas.'
-            : 'Pick a ready-made map view to get started — or open Explore and toggle your own layers. Everything is sourced, with uncertainties shown.'}
-        </p>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        {CARDS.map((c) => (
-          <Link key={c.to} to={c.to}
-            className="group rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/25 transition-colors p-4 flex flex-col">
-            <c.icon className="h-6 w-6 mb-2" style={{ color: c.color }} />
-            <span className="text-white font-semibold text-sm">{sv ? c.sv : c.en}</span>
-            <span className="text-slate-400 text-xs mt-1 flex-1">{sv ? c.dsv : c.den}</span>
-            <span className="text-gold text-xs mt-2 inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              {sv ? 'Öppna' : 'Open'} <ArrowRight className="h-3 w-3" />
-            </span>
-          </Link>
-        ))}
+    <section className="container mx-auto px-4 py-8 -mt-6 relative z-10">
+      <div className="rounded-2xl border border-white/10 bg-slate-900/70 backdrop-blur p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h2 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
+            <Layers className="h-6 w-6 text-gold" />{sv ? 'Bygg din vy' : 'Build your view'}
+          </h2>
+          <p className="text-slate-300 text-sm mt-1 max-w-2xl">
+            {sv
+              ? 'Öppna panelen och välj en färdig kartvy — eller gå till Utforska och slå på egna lager i legenden. Allt är källfört; osäkerheter redovisas.'
+              : 'Open the panel and pick a ready-made map view — or go to Explore and toggle your own layers.'}
+          </p>
+        </div>
+        <Dialog>
+          <DialogTrigger className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-gold px-5 py-3 text-slate-900 font-semibold hover:bg-amber-400 transition-colors">
+            <Compass className="h-5 w-5" />{sv ? 'Bygg din vy' : 'Build your view'}
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl bg-slate-900 border-slate-700 max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2"><Layers className="h-5 w-5 text-gold" />{sv ? 'Bygg din vy' : 'Build your view'}</DialogTitle>
+              <DialogDescription className="text-slate-400">
+                {sv ? 'Välj en färdig vy för att komma igång. I Utforska kan du sedan slå på/av lager i legenden och spara din vy.' : 'Pick a ready-made view. In Explore you can then toggle layers and save your view.'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+              {CARDS.map((c) => (
+                <Link key={c.to} to={c.to}
+                  className="group rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/25 transition-colors p-4 flex flex-col">
+                  <c.icon className="h-6 w-6 mb-2" style={{ color: c.color }} />
+                  <span className="text-white font-semibold text-sm">{sv ? c.sv : c.en}</span>
+                  <span className="text-slate-400 text-xs mt-1 flex-1">{sv ? c.dsv : c.den}</span>
+                  <span className="text-gold text-xs mt-2 inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {sv ? 'Öppna' : 'Open'} <ArrowRight className="h-3 w-3" />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </section>
   );
