@@ -41,6 +41,18 @@ const routeFor = (type: string, label: string, id: string): string => {
   }
 };
 
+// Renderar temabeskrivningen med rubriker + stycken istället för en enda textvägg.
+// Rader som börjar med "## " blir underrubriker; övriga icke-tomma rader blir stycken.
+const renderThemeText = (text: string): React.ReactNode =>
+  text.split('\n').map((line, i) => {
+    const t = line.trim();
+    if (!t) return null;
+    if (t.startsWith('## ')) {
+      return <h2 key={i} className="text-base font-semibold text-white mt-4 first:mt-0">{t.slice(3)}</h2>;
+    }
+    return <p key={i} className="text-gray-300 leading-relaxed text-sm">{t}</p>;
+  });
+
 const ThemePage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { language } = useLanguage();
@@ -93,7 +105,9 @@ const ThemePage = () => {
               <Sparkles className="h-6 w-6 text-gold" />{sv ? theme.name : (theme.name_en ?? theme.name)}
             </h1>
             {(sv ? theme.description : (theme.description_en ?? theme.description)) && (
-              <p className="text-gray-300 leading-relaxed mb-6 max-w-2xl">{sv ? theme.description : (theme.description_en ?? theme.description)}</p>
+              <div className="mb-6 max-w-2xl space-y-2.5">
+                {renderThemeText((sv ? theme.description : (theme.description_en ?? theme.description)) as string)}
+              </div>
             )}
 
             <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
