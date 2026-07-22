@@ -6,6 +6,7 @@ import { X, ChevronDown, Map } from 'lucide-react';
 import { FilterPanel } from '../filters/FilterPanel';
 import { DraggableLegend } from '../legend/DraggableLegend';
 import { ProximityControl } from './ProximityControl';
+import { CustomPointsControl } from './CustomPointsControl';
 import { EpochControl } from './EpochControl';
 import { ElementSpotlightControl } from './ElementSpotlightControl';
 import { RulerControl } from './RulerControl';
@@ -91,6 +92,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
   return (
     <>
       <ProximityControl />
+      <CustomPointsControl />
       <EpochControl visible={speciesOn} />
       <ElementSpotlightControl />
       <RulerControl />

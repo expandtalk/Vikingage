@@ -65,6 +65,22 @@ export const ProximityControl: React.FC = () => {
       </div>
       {activeMode && <div className="text-[10px] text-slate-500 mb-2">{activeMode.note}</div>}
 
+      {/* Agnetas 9 km — daglig maskvidd (Christallers administrativa princip) */}
+      <button
+        onClick={() => { setProbeShape('hexagon'); setProbeRadiusKm(9); }}
+        title="Agneta Nyholms tes: allt ett samhälle behöver finns inom ~9 km. Matchar sockennätets maskvidd (kyrka→kyrka p90 = 9,4 km) och Christallers administrativa princip (k=7)."
+        className={`w-full mb-2 px-2 py-1.5 rounded text-[11px] border transition-colors ${
+          shape === 'hexagon' && radiusKm === 9 ? 'bg-amber-500/25 border-amber-500 text-amber-100' : 'border-amber-700/60 text-amber-200 hover:bg-slate-800'
+        }`}
+      >
+        ⬡ Daglig maskvidd 9 km (Agnetas tes)
+      </button>
+      <div className="text-[10px] text-slate-500 mb-2 leading-snug">
+        <strong className="text-slate-400">Christallers centralortsteori:</strong> hexagonen är den administrativa
+        principen (k=7) — en centralort + 6 beroende bygder. ~9 km = sockennätets maskvidd och en daglig tur-retur
+        till fots. Jfr härad/fylke som ledungs-/skattedistrikt (troligen romerskinspirerat).
+      </div>
+
       {/* Fri radie */}
       <div className="flex items-center justify-between text-[11px] text-slate-300 mb-1">
         <span>Radie</span>

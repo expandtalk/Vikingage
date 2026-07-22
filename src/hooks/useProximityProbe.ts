@@ -63,4 +63,8 @@ export const useProximityProbe = () => useSyncExternalStore(subscribe, () => sta
 // Exponera för Leaflet-popup-knappar (HTML-strängar utanför React-trädet).
 if (typeof window !== 'undefined') {
   (window as any).setProximityProbe = (lat: number, lng: number, label: string) => setProbe(lat, lng, label);
+  // Agnetas 9 km: sätt sond + hexagon + 9 km i ett svep (daglig maskvidd).
+  (window as any).analyzeAgneta9km = (lat: number, lng: number, label: string) => {
+    setProbe(lat, lng, label); setProbeShape('hexagon'); setProbeRadiusKm(9);
+  };
 }

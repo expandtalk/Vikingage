@@ -16,6 +16,7 @@ import { useMapRuler } from './map/useMapRuler';
 import { useMapPictureStones } from './map/useMapPictureStones';
 import { useMapCoins } from './map/useMapCoins';
 import { useMapAncestrySites } from './map/useMapAncestrySites';
+import { useMapCustomPoints } from './map/useMapCustomPoints';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -200,6 +201,9 @@ export const useMapInitialization = ({
 
   // aDNA-platser (archaeological_sites + genetic_individuals) — gate: legendknappen.
   useMapAncestrySites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+
+  // Mina punkter (localStorage) — användarens egna ortnamn, alltid synliga.
+  useMapCustomPoints({ map: map.current, isMapReady: isMapReadyRef });
 
   return {
     mapContainer, 

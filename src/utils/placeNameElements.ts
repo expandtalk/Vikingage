@@ -138,6 +138,16 @@ export const PLACE_NAME_ELEMENTS: PlaceNameElement[] = [
     patterns: ['stav', 'stava', 'staf'], excludes: [],
   },
   {
+    // Agneta Nyholms observation: gull- återkommer ofta i ortnamnsregistret inom en
+    // ~9 km-radie kring centralorter. HYPOTES, ej slutsats — etymologin är blandad
+    // (guld/prestige, gul 'färg', gull 'kär', personnamn Gulle, topografi). Testa om det
+    // klustrar nära maktnoder/fornborgar; förfina mönstret med ordförädlings-verktyget.
+    key: 'gull', label: 'Gull- (guld?)', category: 'power', evidenceLayer: 'extended',
+    sacralConfidence: 'low', isControl: false, contested: true, boundaryRule: 'prefix',
+    etymology: 'gull-/gyll- — kan vara guld (prestige/rikedom), färgen gul, dialektalt "gull" (kär), personnamn eller topografi. Blandat ursprung → omtvistat. Agneta Nyholms hypotes om återkommande gull-namn inom central­ortens ~9 km.',
+    patterns: ['gull', 'gyll'], excludes: ['gullig', 'gullviva', 'gullregn', 'gyllene'],
+  },
+  {
     key: 'horn', label: 'Horn', category: 'nature', evidenceLayer: 'extended',
     sacralConfidence: 'low', isControl: false, contested: true, boundaryRule: 'independent',
     etymology: 'Nästan alltid topografiskt horn/udde; teofor tolkning i undantag.',

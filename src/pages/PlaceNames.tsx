@@ -16,6 +16,7 @@ import { useNameDatings, eraSortYear } from '@/hooks/useNameDatings';
 import { DistanceStatsCard } from '@/components/placenames/DistanceStatsCard';
 import { FreeDistanceStatsCard } from '@/components/placenames/FreeDistanceStatsCard';
 import { ChurchDistanceCard } from '@/components/placenames/ChurchDistanceCard';
+import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import {
   PLACE_NAME_ELEMENTS,
@@ -224,6 +225,9 @@ const PlaceNames = () => {
 
           {/* Avstånd mellan kyrkorna */}
           <ChurchDistanceCard sv={sv} />
+
+          {/* Förfina ett sökord (ordförädling) — t.ex. gull */}
+          <WordRefineCard sv={sv} />
 
           {/* Så förbättrar vi urvalet */}
           <Card className="viking-card border-sky-700/40">
