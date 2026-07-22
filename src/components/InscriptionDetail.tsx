@@ -230,11 +230,11 @@ export const InscriptionDetail: React.FC<InscriptionDetailProps> = ({
                       <CarouselItem key={index} className="md:basis-1/2">
                         <div className="p-1">
                           <Card className="bg-black/20">
-                            <CardContent className="flex aspect-square items-center justify-center p-0 overflow-hidden rounded-lg">
-                              <img 
-                                src={img} 
-                                alt={`Bild på ${inscription.signum} ${index + 1}`} 
-                                className="w-full h-full object-cover transition-transform hover:scale-105" 
+                            <CardContent className="flex aspect-[3/4] items-center justify-center p-0 overflow-hidden rounded-lg bg-black/30">
+                              <img
+                                src={img}
+                                alt={`Bild på ${inscription.signum} ${index + 1}`}
+                                className="max-h-full max-w-full w-auto h-auto object-contain transition-transform hover:scale-105"
                                 onError={(e) => {
                                   const target = e.currentTarget;
                                   target.onerror = null; 
