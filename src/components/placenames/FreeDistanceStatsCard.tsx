@@ -10,6 +10,7 @@ const ELEMENTS = ['tuna', 'sala', 'husby', 'karleby', 'sätuna', 'vi', 'frö', '
 const TARGETS: { key: string; sv: string }[] = [
   { key: 'church', sv: 'sockenkyrka' }, { key: 'fortress', sv: 'fornborg' },
   { key: 'heritage', sv: 'kulturlager' }, { key: 'runestone', sv: 'runsten' },
+  { key: 'spolia', sv: 'spolia-kyrka (Gotland)' },
 ];
 const km = (m: number) => (m / 1000).toFixed(1);
 
@@ -78,6 +79,13 @@ export const FreeDistanceStatsCard: React.FC<{ sv: boolean }> = ({ sv }) => {
               <Button key={tg.key} variant={target === tg.key ? 'default' : 'outline'} size="sm" onClick={() => setTarget(tg.key)}>{tg.sv}</Button>
             ))}
           </div>
+          {target === 'spolia' && (
+            <p className="text-xs text-amber-300/90 mb-3">
+              {sv
+                ? 'Kultplatskontinuitet: mål = de 17 gotländska kyrkor med återanvänd hednisk bildsten (spolia). OBS: alla ligger på Gotland — meningsfullt främst för gotländska ortnamnsled, annars mäts avståndet till Gotland.'
+                : 'Cult-site continuity: target = the 17 Gotland churches with re-used pagan picture stones (spolia). Note: all are on Gotland, so this is meaningful mainly for Gotlandic name elements.'}
+            </p>
+          )}
           {chipRow(sv ? 'Testmängd (led):' : 'Test set:', test, setTest, baseline)}
           {chipRow(sv ? 'Baslinje (led):' : 'Baseline:', baseline, setBaseline, test)}
           <div className="mt-4 pt-3 border-t border-slate-700/50">

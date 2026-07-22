@@ -13,6 +13,7 @@ import { useMapProximityProbe } from './map/useMapProximityProbe';
 import { useMapSpeciesMarkers } from './map/useMapSpeciesMarkers';
 import { useMapElementMarkers } from './map/useMapElementMarkers';
 import { useMapRuler } from './map/useMapRuler';
+import { useMapPictureStones } from './map/useMapPictureStones';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -188,6 +189,9 @@ export const useMapInitialization = ({
 
   // Punkt-till-punkt-linjal (2d).
   useMapRuler({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Bildsten-spolia (picture_stone_reuse) — färg per Lindqvist-period, gate: legendknappen.
+  useMapPictureStones({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
 
   return {
     mapContainer, 

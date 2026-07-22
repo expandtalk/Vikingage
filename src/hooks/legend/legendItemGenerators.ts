@@ -265,6 +265,16 @@ export const generateBasicInscriptionItems = (
     enabled: enabledLegendItems.species_introductions === true
   });
 
+  // Bildsten-spolia (picture_stone_reuse): hedniska bildstenar återanvända i gotländska
+  // kyrkor. Punkt = kyrkans läge. AV som standard. Gate === true (matchar hooken).
+  items.push({
+    id: 'picture_stone_reuse',
+    label: '🪨 Bildsten-spolia (kyrkor)',
+    color: '#0891b2',
+    count: 20,
+    enabled: enabledLegendItems.picture_stone_reuse === true
+  });
+
   // Add Christian sites if provided
   if (christianSites && christianSites.length > 0) {
     const christianItems = generateChristianSitesLegendItems(christianSites, t);
@@ -311,7 +321,7 @@ export const generateBasicInscriptionItems = (
     keep('water_routes'), // Vägar ligger nu som undergrupp inuti water_routes
     group('cat_defense', '🏰 ' + t('fortresses'), '#dc2626', ['viking_fortresses', 'viking_cities', 'stake_barriers']),
     group('cat_folk', '🛡️ ' + t('germanicPeoples'), '#8b5cf6', ['germanic_timeline', 'folk_groups', 'viking_regions']),
-    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['place_names', 'historical_events', 'species_introductions', 'paleo_shoreline']),
+    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['place_names', 'historical_events', 'species_introductions', 'picture_stone_reuse', 'paleo_shoreline']),
   ];
   const grouped = ordered.filter(Boolean) as LegendItem[];
   // Allt ogrupperat (t.ex. kristna centra) läggs sist, oförändrat.

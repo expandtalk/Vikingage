@@ -1,0 +1,9 @@
+-- Hypotesdimension "kultplatskontinuitet": nytt mål 'spolia' i distance_stats-RPC.
+-- Mäter avstånd från ortnamnsled (test/baslinje, OSM-punkter) till närmaste gotländska
+-- kyrka med återanvänd hednisk bildsten (picture_stone_reuse.geom). Gotland-skoppat.
+-- Applicerad via MCP execute_sql; fil = proveniens. Se 20260722320000/330000.
+--
+-- Endast case-grenen tillagd:
+--   when 'spolia' then 'select psr.geom g from picture_stone_reuse psr
+--                       where psr.geom is not null order by p.geom <-> psr.geom limit 1'
+-- Övrig funktionskropp oförändrad (church/heritage/fortress/runestone).
