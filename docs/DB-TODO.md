@@ -1,6 +1,34 @@
 # Databas-TODO — Viking Age
 
-Arbetslista för databas-/dataarbetet. Skapad 2026-07-18. Metod genomgående: **crosswalk ur `rundata.sql`** (Evighetsrunor, i repo-roten, gitignorerad) matchat på `signum`, kört som SQL i editorn + `migration repair`. Bakgrund: `docs/superpowers/specs/2026-07-18-db-review.md`.
+Arbetslista för databas-/dataarbetet. Skapad 2026-07-18.
+
+---
+
+## 🆕 SESSION 2026-07-22 — status & kvarvarande (aktuellast)
+
+**Deployat live (mergat till main via PR #11 + #12):**
+- Bildsten-spolia (Oehrl 2019): `picture_stone_reuse` + 17 gotländska kyrkor geokodade + kartlager + tema spolia/kultkontinuitet.
+- Hypotestestaren på /ortnamn i fokus: lägen avstånd/antal-inom-dagsresa (cirkel/fyrkant/hexagon), fornborg-mål, makt/kontroll/sakralt-förklaring, kyrkoavstånd, ordförädling (gull); referenssektioner kondenserade.
+- Mina punkter (localStorage) + Agnetas 9 km-preset + Christaller-framing (administrativ princip k=7 → härad/fylke/ledung).
+- Mynt-kartlager + Hunehals borg + Erik Menved-/Vedby-denar (Didius Julianus).
+- Fornborgsdatering (Olausson-kriterier + 14C, 14 borgar: Eketorp/Sandby/Torsburgen/Träleborg/Stenby-komplex/Darsgärde) + sortering (ålder/runstenar) + närliggande runstenar + socken i /borgar-kort.
+- aDNA-kartlager + `genetic_individuals`-koppling återställd; **DNA förstaklass i ontologin** (adna_site/genetic_individual, sampled_at/kin_of/has_ancestry), Margaryan-2020-lokaliteter (site-nivå, upphovsrättssäkert), moders/faderslinje (mt/Y).
+- **Vetenskaplig metod i ontologin:** `dating_methods` (14C/dendro/numismatik…) + `scientific_references` (DOI); entitetstyper dating_method/reference/hillfort; predikat dated_by/dates_context/cites.
+- **Ontologisida /ontologi** (browsbar katalog) + nav-länk under Vetenskap.
+- Hemsida "Bygg din vy"-kort (focus-vyer, conversation starters) + kom-ihåg-min-vy (localStorage).
+- Dedup /borgar-städer (Aarhus/Århus, Kaupang, Lund, Oslo, Roskilde, Sigtuna; Birka Bj 581).
+
+**KVAR — prioriterat:**
+- **🌊 Strandförskjutning/landhöjning (utveckla bortom Mälardalen).** `strandkontroll`-transekt byggd (8 kontrollpunkter Öland→Slätbaken, migration `20260722440000`). Nästa:
+  1. Python-skript: (a) snappa arkeologipunkterna mot exakt geometri via Fornsök/RAÄ-API, (b) sampla `z_min_rh2000` + digitalisera vallkrön/silltrösklar ur Lantmäteriets LiDAR, (c) fyll `landhojn_mmyr` ur NKG2016LU. Ersätt TBD/uppskattningar med riktiga siffror.
+  2. Kör `rsl_obs` mot SGU-strandförskjutningsmodellen per punkt → **gradienttest** (avviker Öland ~1 mm/år och Slätbaken ~2,8 systematiskt = modellens isobaslutning fel).
+  3. Utöka `paleo_shoreline`-lagret bortom Mälardalen (Öland/Kalmar/Östergötland) — kräver SGU-raster för regionerna.
+  4. Kartlager för strandkontroll-punkterna (färg per kontrolltyp) + ge tabellen uuid-nyckel om den ska in i grafen.
+- **GIS-legend som modal** (designöversyn, `/design-review`) — cards-in-modal på hemsidan.
+- **Human aDNA på individnivå** ur Margaryan 2020 suppl. (ENA PRJEB37976): Y/mt-haplogrupper per individ → riktiga moders/faderslinjer; Salme-släktträd via `kin_of`. Kräver bioinformatiskt ingest.
+- **Fornborgar:** härad via socken→härad-crosswalk (`hundreds` saknar polygoner); ev. bulkimport av fornborgar.se-listan (hundratals Sörmland/Uppland); nearby gravfält/fynd per borg.
+
+(Äldre kvarvarande — se sektionerna nedan: Geotorget-nedladdningar (ortnamn + sockenpolygoner), rundata-satellittabeller, avhårdkodning av TS-data, spatial_ref_sys-RLS.) Metod genomgående: **crosswalk ur `rundata.sql`** (Evighetsrunor, i repo-roten, gitignorerad) matchat på `signum`, kört som SQL i editorn + `migration repair`. Bakgrund: `docs/superpowers/specs/2026-07-18-db-review.md`.
 
 ---
 
