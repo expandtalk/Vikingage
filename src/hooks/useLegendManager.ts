@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { generateBasicInscriptionItems } from './legend/legendItemGenerators';
+import { LEGEND_DEFAULTS } from './legend/itemEnabled';
 import { processLegendItems } from './legend/legendItemProcessor';
 import { filterInscriptionsByLegend } from './useLegendManager/inscriptionFilters';
 import { useFocusManager } from './useFocusManager';
@@ -106,23 +107,37 @@ export const useLegendManager = (
     return processedItems;
   }, [inscriptions, isVikingMode, selectedTimePeriod, enabledLegendItems, language]);
 
-  // Handle legend toggle
+  // Handle legend toggle. En KATEGORI (post med barn) styr sina barn: kartlagren gate:ar
+  // på barnens nycklar, så en kategori-toggle måste kaskadera — annars gömdes bara barnen
+  // medan lagret låg kvar (kunde ej stängas av; Daniel: focus=churches). Stäng av → alla
+  // barn av. Slå på → barnen till sin default (LEGEND_DEFAULTS) så tunga opt-in-lager inte
+  // tänds oväntat och ett vettigt utgångsläge återställs.
   const handleLegendToggle = useCallback((itemId: string) => {
-    console.log(`🔄 Toggling legend item: ${itemId}`);
     setEnabledLegendItems(prevState => {
-      const newState = {
-        ...prevState,
-        [itemId]: !prevState[itemId],
+      const newValue = !prevState[itemId];
+      const newState = { ...prevState, [itemId]: newValue };
+
+      const findItem = (items: any[], id: string): any => {
+        for (const it of items) {
+          if (it.id === id) return it;
+          if (it.children) { const f = findItem(it.children, id); if (f) return f; }
+        }
+        return null;
       };
-      console.log(`📊 Legend state after toggle:`, {
-        itemId,
-        oldValue: prevState[itemId],
-        newValue: newState[itemId],
-        runicInscriptionsEnabled: newState.runic_inscriptions
-      });
+      const collectChildIds = (item: any, acc: string[] = []): string[] => {
+        (item.children || []).forEach((c: any) => { acc.push(c.id); collectChildIds(c, acc); });
+        return acc;
+      };
+
+      const target = findItem(legendItems, itemId);
+      if (target?.children?.length) {
+        collectChildIds(target).forEach((cid) => {
+          newState[cid] = newValue ? (LEGEND_DEFAULTS[cid] ?? false) : false;
+        });
+      }
       return newState;
     });
-  }, []);
+  }, [legendItems]);
 
   // Fokusera EN gud: visa bara den gudens kultplatser (religious_<deity>), dölj övriga.
   // deity = null → visa alla gudars kultplatser igen. Styr kartans religiösa lager
