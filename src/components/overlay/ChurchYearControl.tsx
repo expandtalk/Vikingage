@@ -25,7 +25,7 @@ export const ChurchYearControl: React.FC = () => {
       <button
         onClick={() => setCollapsed(false)}
         style={style}
-        className="absolute top-16 right-4 z-[1100] flex items-center gap-1.5 bg-slate-900 border border-slate-600 rounded-full shadow-2xl px-3 py-1.5 text-xs text-rose-200 hover:bg-slate-800"
+        className="absolute top-20 left-4 z-[1100] flex items-center gap-1.5 bg-slate-900 border border-slate-600 rounded-full shadow-2xl px-3 py-1.5 text-xs text-rose-200 hover:bg-slate-800"
       >
         <Church className="h-3.5 w-3.5" />Kyrkornas byggår
       </button>
@@ -33,7 +33,7 @@ export const ChurchYearControl: React.FC = () => {
   }
 
   return (
-    <div ref={rootRef} style={style} className="absolute top-16 right-4 z-[1100] w-64 bg-slate-900 border border-slate-600 rounded-lg shadow-2xl">
+    <div ref={rootRef} style={style} className="absolute top-20 left-4 z-[1100] w-64 bg-slate-900 border border-slate-600 rounded-lg shadow-2xl">
       <div
         {...dragHandleProps}
         className="flex items-center gap-1.5 px-3 pt-2.5 pb-1.5 cursor-grab active:cursor-grabbing select-none"

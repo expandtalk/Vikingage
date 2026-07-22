@@ -2,7 +2,6 @@
 import React from 'react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { getIconForLegendItem } from './utils';
 import { cleanLabelText } from '@/hooks/map/legend/labelUtils';
 import { LegendItem as LegendItemType } from './types';
@@ -49,17 +48,15 @@ export const LegendItemComponent: React.FC<LegendItemProps> = ({
         >
           {cleanedLabel}
         </Label>
-        {!!item.count && (
-          <Badge
-            variant="outline"
-            className={`text-xs px-2 py-0.5 h-5 flex-shrink-0 font-medium ${
-              item.enabled
-                ? 'text-gray-100 border-slate-400 bg-slate-700/70'
-                : 'text-gray-200 border-slate-500 bg-slate-800/70'
-            }`}
+        {/* Antalet visas BARA när lagret är på, dämpat grått. Av-läge = ren etikett
+            utan sifferbrus (Daniel: "dölj hur många men visa dämpat när det sätts on"). */}
+        {item.enabled && !!item.count && (
+          <span
+            className="text-[11px] tabular-nums text-slate-400 flex-shrink-0"
+            title={`${item.count} objekt`}
           >
-            {item.count}
-          </Badge>
+            {item.count.toLocaleString('sv-SE')}
+          </span>
         )}
       </div>
       <div className="flex items-center gap-2 ml-2">
