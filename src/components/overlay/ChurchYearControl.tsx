@@ -1,9 +1,9 @@
-import React from 'react';
-import { Church } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Church, X, GripVertical } from 'lucide-react';
 import { useChurchYearRange, setChurchYearRange, setChurchShowUndated } from '@/hooks/useChurchYearRange';
 
-// Byggårs-intervall för kyrkolagret (från/till). Presets + fria fält. Visas när
-// kyrkolagret är på.
+// Byggårs-intervall för kyrkolagret (från/till). Presets + fria fält.
+// Går att fälla ihop (✕ → pill) och flytta (dra i rubriken).
 const PRESETS: { sv: string; from: number; to: number }[] = [
   { sv: 'Vikingatid', from: 800, to: 1100 },
   { sv: 'Medeltid', from: 1000, to: 1550 },
@@ -14,40 +14,85 @@ const PRESETS: { sv: string; from: number; to: number }[] = [
 
 export const ChurchYearControl: React.FC = () => {
   const { from, to, showUndated } = useChurchYearRange();
+  const [collapsed, setCollapsed] = useState(false);
+  // null = förvald hörnposition (top-4 right-4); annars fri position i px.
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const drag = useRef<{ startX: number; startY: number; baseX: number; baseY: number } | null>(null);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    const rect = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+    drag.current = { startX: e.clientX, startY: e.clientY, baseX: pos?.x ?? rect.left, baseY: pos?.y ?? rect.top };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!drag.current) return;
+    setPos({
+      x: drag.current.baseX + (e.clientX - drag.current.startX),
+      y: drag.current.baseY + (e.clientY - drag.current.startY),
+    });
+  };
+  const onPointerUp = () => { drag.current = null; };
+
+  const style: React.CSSProperties = pos
+    ? { position: 'fixed', left: pos.x, top: pos.y }
+    : { position: 'absolute', top: 16, right: 16 };
+
+  if (collapsed) {
+    return (
+      <button
+        onClick={() => setCollapsed(false)}
+        style={style}
+        className="z-[1100] flex items-center gap-1.5 bg-slate-900 border border-slate-600 rounded-full shadow-2xl px-3 py-1.5 text-xs text-rose-200 hover:bg-slate-800"
+      >
+        <Church className="h-3.5 w-3.5" />Kyrkornas byggår
+      </button>
+    );
+  }
+
   return (
-    <div className="absolute top-4 right-4 z-[1100] w-64 bg-slate-900 border border-slate-600 rounded-lg shadow-2xl p-3">
-      <div className="flex items-center gap-1.5 text-white text-xs font-medium mb-2">
-        <Church className="h-4 w-4 text-rose-300" />Kyrkornas byggår
+    <div style={style} className="z-[1100] w-64 bg-slate-900 border border-slate-600 rounded-lg shadow-2xl">
+      <div
+        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
+        className="flex items-center gap-1.5 px-3 pt-2.5 pb-1.5 cursor-move select-none"
+      >
+        <GripVertical className="h-3.5 w-3.5 text-slate-500" />
+        <Church className="h-4 w-4 text-rose-300" />
+        <span className="text-white text-xs font-medium flex-1">Kyrkornas byggår</span>
+        <button onClick={() => setCollapsed(true)} className="text-slate-400 hover:text-white" title="Fäll ihop">
+          <X className="h-4 w-4" />
+        </button>
       </div>
-      <div className="flex flex-wrap gap-1 mb-2">
-        {PRESETS.map((p) => {
-          const active = from === p.from && to === p.to;
-          return (
-            <button key={p.sv} onClick={() => setChurchYearRange(p.from, p.to)}
-              className={`px-2 py-1 rounded text-[10px] border transition-colors ${active ? 'bg-rose-500/25 border-rose-500 text-rose-100' : 'border-slate-700 text-slate-300 hover:bg-slate-800'}`}>
-              {p.sv}
-            </button>
-          );
-        })}
-      </div>
-      <div className="flex items-center gap-2 text-[11px] text-slate-300">
-        <label className="flex items-center gap-1">Från
-          <input type="number" value={from} onChange={(e) => setChurchYearRange(Number(e.target.value), to)}
-            className="w-16 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-white" />
+      <div className="px-3 pb-3">
+        <div className="flex flex-wrap gap-1 mb-2">
+          {PRESETS.map((p) => {
+            const active = from === p.from && to === p.to;
+            return (
+              <button key={p.sv} onClick={() => setChurchYearRange(p.from, p.to)}
+                className={`px-2 py-1 rounded text-[10px] border transition-colors ${active ? 'bg-rose-500/25 border-rose-500 text-rose-100' : 'border-slate-700 text-slate-300 hover:bg-slate-800'}`}>
+                {p.sv}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2 text-[11px] text-slate-300">
+          <label className="flex items-center gap-1">Från
+            <input type="number" value={from} onChange={(e) => setChurchYearRange(Number(e.target.value), to)}
+              className="w-16 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-white" />
+          </label>
+          <label className="flex items-center gap-1">Till
+            <input type="number" value={to} onChange={(e) => setChurchYearRange(from, Number(e.target.value))}
+              className="w-16 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-white" />
+          </label>
+        </div>
+        <label className="flex items-center gap-2 mt-2 text-[11px] text-slate-300 cursor-pointer">
+          <input type="checkbox" checked={showUndated} onChange={(e) => setChurchShowUndated(e.target.checked)}
+            className="accent-rose-500" />
+          Visa odaterade (okänd datering)
         </label>
-        <label className="flex items-center gap-1">Till
-          <input type="number" value={to} onChange={(e) => setChurchYearRange(from, Number(e.target.value))}
-            className="w-16 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-white" />
-        </label>
+        <p className="text-[10px] text-slate-500 mt-1.5">
+          Odaterade kyrkor döljs som standard. Zooma in (≥6) för att se kyrkorna.
+        </p>
       </div>
-      <label className="flex items-center gap-2 mt-2 text-[11px] text-slate-300 cursor-pointer">
-        <input type="checkbox" checked={showUndated} onChange={(e) => setChurchShowUndated(e.target.checked)}
-          className="accent-rose-500" />
-        Visa odaterade (okänd datering)
-      </label>
-      <p className="text-[10px] text-slate-500 mt-1.5">
-        Odaterade kyrkor döljs som standard så de inte fyller varje period. Zooma in (≥6) för att se kyrkorna.
-      </p>
     </div>
   );
 };
