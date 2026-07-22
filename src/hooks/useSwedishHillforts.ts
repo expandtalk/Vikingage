@@ -21,6 +21,7 @@ export interface SwedishHillfort {
   dating_basis?: string;
   dating_confidence?: string;
   dating_source?: string;
+  nearby_runestones?: number;
   cultural_significance?: string;
   source_reference?: string;
 }

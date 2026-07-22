@@ -67,7 +67,28 @@ const Fortresses = () => {
   const [selectedCityRegion, setSelectedCityRegion] = useState<string>('all');
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [showHillforts, setShowHillforts] = useState(true);
-  
+  const [hillfortSort, setHillfortSort] = useState<'landscape' | 'age' | 'runestones'>('landscape');
+
+  // Grov åldersrank ur period-texten (odaterade sist). Neolitikum → medeltid.
+  const eraRank = (p?: string): number => {
+    const s = (p || '').toLowerCase();
+    if (!s) return 999999;
+    if (s.includes('neolit') || s.includes('bondesten') || s.includes('stenålder') || s.includes('f.kr')) return -2800;
+    if (s.includes('brons')) return -1000;
+    if (s.includes('folkvandring')) return 400;
+    if (s.includes('vendel')) return 550;
+    if (s.includes('vikinga')) return 800;
+    if (s.includes('medeltid')) return 1100;
+    if (s.includes('romersk') || s.includes('äldre järn') || /(före|omkring).*\b100\b/.test(s)) return 50;
+    if (s.includes('järn')) return 300;
+    return 999998;
+  };
+  const sortHillforts = (arr: typeof hillforts) => {
+    if (hillfortSort === 'age') return [...arr].sort((a, b) => eraRank(a.period) - eraRank(b.period) || a.name.localeCompare(b.name));
+    if (hillfortSort === 'runestones') return [...arr].sort((a, b) => (b.nearby_runestones ?? -1) - (a.nearby_runestones ?? -1) || a.name.localeCompare(b.name));
+    return arr; // 'landscape' = hookens ordning (landskap, namn)
+  };
+
   // Map state
   const [showFortresses, setShowFortresses] = useState(true);
   const [showCities, setShowCities] = useState(true);
@@ -293,8 +314,15 @@ const Fortresses = () => {
               ))}
             </div>
 
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className="text-xs text-muted-foreground">{sv ? 'Sortera:' : 'Sort:'}</span>
+              {([['landscape', sv ? 'Landskap' : 'Landscape'], ['age', sv ? 'Ålder' : 'Age'], ['runestones', sv ? 'Runstenar i närheten' : 'Nearby runestones']] as const).map(([key, label]) => (
+                <Button key={key} variant={hillfortSort === key ? 'default' : 'outline'} size="sm" onClick={() => setHillfortSort(key)}>{label}</Button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(selectedLandscape === 'all' ? hillforts : hillforts.filter(h => h.landscape === selectedLandscape)).map((hillfort) => (
+              {sortHillforts(selectedLandscape === 'all' ? hillforts : hillforts.filter(h => h.landscape === selectedLandscape)).map((hillfort) => (
                 <Card
                   key={hillfort.id}
                   className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
@@ -383,6 +411,16 @@ const Fortresses = () => {
                           <p className="text-xs text-muted-foreground">
                             <strong>{sv ? 'Dateringsgrund' : 'Dating basis'}:</strong> {hillfort.dating_basis}
                             {hillfort.dating_source ? ` — ${hillfort.dating_source}` : ''}
+                          </p>
+                        )}
+                        {(hillfort.parish || hillfort.municipality) && (
+                          <p className="text-xs text-muted-foreground">
+                            <strong>{sv ? 'Socken' : 'Parish'}:</strong> {[hillfort.parish, hillfort.municipality, hillfort.landscape].filter(Boolean).join(' · ')}
+                          </p>
+                        )}
+                        {hillfort.nearby_runestones != null && (
+                          <p className="text-xs text-muted-foreground">
+                            <strong>{sv ? 'Runstenar inom 3 km' : 'Runestones within 3 km'}:</strong> {hillfort.nearby_runestones}
                           </p>
                         )}
                         {hillfort.raa_number && (
