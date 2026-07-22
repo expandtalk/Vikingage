@@ -42,7 +42,14 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
   picture_stone_reuse: false,
   coins: false,
   adna_sites: false,
-  estates: false, // maktsäten (kungsgårdar/handelsplatser) — ekonomihistorikerns lager
+  estates: false, // maktsäten (förälder, opt-in) — ekonomihistorikerns lager
+  // Maktsäten-typer (barn). Default PÅ så att när man slår på "Maktsäten" (kaskad) syns
+  // alla typer; stäng av en typ för att smalna av. useMapEstates gate:ar per typ.
+  estates_kungsgard: true,
+  estates_husaby: true,
+  estates_borg: true,
+  estates_handelsplats: true,
+  estates_ovrigt: true,
   stake_barriers: false,
   viking_regions: false,
   religious_places: false, // (golden master: kategorin är AV som standard i live-generatorn)

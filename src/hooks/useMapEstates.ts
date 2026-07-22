@@ -49,9 +49,20 @@ const esc = (s: unknown) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&a
 // Escape för JS-sträng i en onclick-attribut (enkla citat + backslash).
 const jsStr = (s: unknown) => String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
+// estate_type → legend-barn-nyckel (per-typ-toggle). Okända typer → övrigt.
+const TYPE_CHILD: Record<string, string> = {
+  'kungsgård': 'estates_kungsgard', husaby: 'estates_husaby', borg: 'estates_borg',
+  handelsplats: 'estates_handelsplats', 'mötesplats': 'estates_handelsplats',
+};
+const childKeyFor = (t: string) => TYPE_CHILD[t] ?? 'estates_ovrigt';
+const TYPE_KEYS = ['estates_kungsgard', 'estates_husaby', 'estates_borg', 'estates_handelsplats', 'estates_ovrigt'];
+
 export const useMapEstates = ({ map, enabledLegendItems, isMapReady, safelyAddLayer }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
   const dataRef = useRef<EstateRow[] | null>(null);
+
+  // Stabil primitiv av per-typ-tillståndet → loop-säker dep (jfr refetch-frysningarna).
+  const typeMask = TYPE_KEYS.map((k) => (enabledLegendItems[k] === false ? '0' : '1')).join('');
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;
@@ -67,6 +78,8 @@ export const useMapEstates = ({ map, enabledLegendItems, isMapReady, safelyAddLa
       if (cancelled || !map || !rows.length) return;
       const group = L.layerGroup();
       rows.forEach((r) => {
+        // Per-typ-gate: hoppa över rader vars typ-barn är avstängt.
+        if (enabledLegendItems[childKeyFor(r.estate_type)] === false) return;
         const holdings = (r.estate_holdings ?? [])
           .slice()
           .sort((a, b) => (a.period_start ?? 0) - (b.period_start ?? 0));
@@ -104,5 +117,5 @@ export const useMapEstates = ({ map, enabledLegendItems, isMapReady, safelyAddLa
     })();
 
     return () => { cancelled = true; };
-  }, [map, enabledLegendItems.estates, isMapReady, safelyAddLayer]);
+  }, [map, enabledLegendItems.estates, typeMask, isMapReady, safelyAddLayer]);
 };

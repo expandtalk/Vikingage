@@ -315,13 +315,25 @@ export const generateBasicInscriptionItems = (
     enabled: itemEnabled(enabledLegendItems, 'adna_sites')
   });
 
-  // Maktsäten (estates + innehav över tid) — ekonomihistorikerns lager. AV som standard.
+  // Maktsäten (estates) — ekonomihistorikerns lager, kategori med per-typ-barn (Daniel:
+  // skilj kungsgård/husaby/borg/handelsplats). Förälder opt-in (AV); slå på → barnen (kaskad)
+  // tänds till sina defaults (alla PÅ) → alla typer syns, smalna av per typ. useMapEstates
+  // gate:ar per typ. Counts = verkliga per-typ-antal (estates-tabellen 2026-07).
+  const estateChildren = [
+    { id: 'estates_kungsgard', label: 'Kungsgårdar', color: '#b91c1c', count: 36 },
+    { id: 'estates_husaby', label: 'Husabyar', color: '#c2410c', count: 34 },
+    { id: 'estates_borg', label: 'Borgar & fästen', color: '#7c2d12', count: 7 },
+    { id: 'estates_handelsplats', label: 'Handels-/mötesplatser', color: '#a16207', count: 3 },
+    { id: 'estates_ovrigt', label: 'Övriga (Uppsala öd m.m.)', color: '#78350f', count: 1 },
+  ].map((c) => ({ ...c, enabled: itemEnabled(enabledLegendItems, c.id, true) }));
   items.push({
     id: 'estates',
-    label: '⚔️ Maktsäten (kungsgårdar)',
+    label: '⚔️ Maktsäten',
     color: '#b91c1c',
     count: dbStats?.layerCounts?.estates ?? 81,
-    enabled: itemEnabled(enabledLegendItems, 'estates')
+    enabled: itemEnabled(enabledLegendItems, 'estates'),
+    type: 'category',
+    children: estateChildren,
   });
 
   // Add Christian sites if provided
