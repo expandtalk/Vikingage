@@ -27,27 +27,36 @@ export const TRANSPORT_MODES: TransportMode[] = [
   { key: 'boat_sail', labelSv: 'Båt (segel)',  labelEn: 'Boat (sail)',  radiusKm: 100, note: '~100+ km/dag med segel (Skandinavien ~700-tal)' },
 ];
 
-interface ProbeState { probe: Probe | null; radiusKm: number; shape: ProbeShape; modeKey: string | null }
+export interface ProbeCounts {
+  place_names_curated: number;
+  place_names_osm: number;
+  kulturlager: number;
+  runestones: number;
+  fortresses: number;
+  area_km2: number;
+}
+interface ProbeState { probe: Probe | null; radiusKm: number; shape: ProbeShape; modeKey: string | null; counts: ProbeCounts | null }
 
-let state: ProbeState = { probe: null, radiusKm: 30, shape: 'circle', modeKey: null };
+let state: ProbeState = { probe: null, radiusKm: 30, shape: 'circle', modeKey: null, counts: null };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
 
 export const setProbe = (lat: number, lng: number, label: string) => {
-  state = { ...state, probe: { lat, lng, label } };
+  state = { ...state, probe: { lat, lng, label }, counts: null };
   emit();
 };
-export const clearProbe = () => { state = { ...state, probe: null }; emit(); };
+export const clearProbe = () => { state = { ...state, probe: null, counts: null }; emit(); };
 export const setProbeRadiusKm = (km: number) => {
-  state = { ...state, radiusKm: Math.max(1, Math.min(200, km)), modeKey: null };
+  state = { ...state, radiusKm: Math.max(1, Math.min(200, km)), modeKey: null, counts: null };
   emit();
 };
-export const setProbeShape = (shape: ProbeShape) => { state = { ...state, shape }; emit(); };
+export const setProbeShape = (shape: ProbeShape) => { state = { ...state, shape, counts: null }; emit(); };
 export const setProbeMode = (key: string) => {
   const m = TRANSPORT_MODES.find((t) => t.key === key);
-  if (m) { state = { ...state, radiusKm: m.radiusKm, modeKey: key }; emit(); }
+  if (m) { state = { ...state, radiusKm: m.radiusKm, modeKey: key, counts: null }; emit(); }
 };
+export const setProbeCounts = (counts: ProbeCounts | null) => { state = { ...state, counts }; emit(); };
 
 export const useProximityProbe = () => useSyncExternalStore(subscribe, () => state);
 

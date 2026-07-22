@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
-import { useProximityProbe } from '@/hooks/useProximityProbe';
+import { useProximityProbe, setProbeCounts } from '@/hooks/useProximityProbe';
 
 // Ritar omkrets-cirkel + närliggande lager kring vald punkt (kyrka/fornborg).
 // Data via features_near_point-RPC. Färgkod: ortnamn grön, kulturlager lila,
@@ -60,8 +60,9 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
     map.setView([probe.lat, probe.lng], Math.max(map.getZoom(), 10));
 
     (async () => {
-      const { data, error } = await sb.rpc('features_near_point', { p_lat: probe.lat, p_lng: probe.lng, radius_m: radiusM });
+      const { data, error } = await sb.rpc('features_in_shape', { p_lat: probe.lat, p_lng: probe.lng, radius_km: radiusKm, shape });
       if (error || myToken !== tokenRef.current || !map) return;
+      setProbeCounts(data?.counts ?? null);
       const add = (arr: any[], color: string, label: (r: any) => string) =>
         (arr || []).forEach((r) => {
           if (r.lat == null || r.lng == null) return;

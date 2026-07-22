@@ -19,9 +19,10 @@ const SHAPES: { key: ProbeShape; label: string; Icon: typeof Circle }[] = [
 ];
 
 export const ProximityControl: React.FC = () => {
-  const { probe, radiusKm, shape, modeKey } = useProximityProbe();
+  const { probe, radiusKm, shape, modeKey, counts } = useProximityProbe();
   if (!probe) return null;
   const activeMode = TRANSPORT_MODES.find((m) => m.key === modeKey);
+  const shapeSv = shape === 'circle' ? 'cirkeln' : shape === 'square' ? 'fyrkanten' : 'hexagonen';
   return (
     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1100] w-80 bg-slate-900 border border-slate-600 rounded-lg shadow-2xl p-3">
       <div className="flex items-center justify-between mb-2">
@@ -75,7 +76,21 @@ export const ProximityControl: React.FC = () => {
         className="w-full accent-amber-500 cursor-pointer"
         aria-label="Radie i kilometer"
       />
-      <div className="mt-1 text-[10px] text-slate-500">Ortnamn (grön) · kulturlager (lila) · runstenar (röd) · fornborg (orange)</div>
+
+      {/* Antal INUTI formen (punkt-i-polygon) — det analytiska värdet */}
+      {counts && (
+        <div className="mt-2 pt-2 border-t border-slate-700/60">
+          <div className="text-[10px] text-slate-400 mb-1">Inuti {shapeSv} ({counts.area_km2.toLocaleString()} km²):</div>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px]">
+            <span className="text-slate-300">Runstenar</span><span className="text-right font-semibold text-red-300">{counts.runestones.toLocaleString()}</span>
+            <span className="text-slate-300">Kulturlager</span><span className="text-right font-semibold text-purple-300">{counts.kulturlager.toLocaleString()}</span>
+            <span className="text-slate-300">Ortnamn (kurerade)</span><span className="text-right font-semibold text-emerald-300">{counts.place_names_curated.toLocaleString()}</span>
+            <span className="text-slate-300">Ortnamn (registret)</span><span className="text-right font-semibold text-emerald-200">{counts.place_names_osm.toLocaleString()}</span>
+            <span className="text-slate-300">Fornborgar</span><span className="text-right font-semibold text-orange-300">{counts.fortresses.toLocaleString()}</span>
+          </div>
+        </div>
+      )}
+      <div className="mt-2 text-[10px] text-slate-500">Prickar: ortnamn (grön) · kulturlager (lila) · runstenar (röd) · fornborg (orange). Registrets ortnamn (OSM) räknas men ritas ej.</div>
     </div>
   );
 };
