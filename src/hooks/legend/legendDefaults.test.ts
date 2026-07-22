@@ -11,7 +11,7 @@ const DEFAULT_ENABLED: Record<string, boolean> = {
   cat_runic: true, runic_inscriptions: true, cat_church: true, ecclesiastical_churches: true,
   heritage_kyrka: false, heritage_kapell: false, heritage_kloster: false, heritage_sites: true,
   heritage_kalla: false, heritage_skeppssattning: false, heritage_ganggrift: false,
-  heritage_vardkase: false, heritage_dos: false, heritage_bildsten: false,
+  heritage_vardkase: false, heritage_dos: false, heritage_bildsten: false, heritage_labyrint: false,
   religious_places: false, religious_odin: false, religious_frey: false, religious_thor: false,
   religious_ull: false, religious_njord: false, religious_frigg: false, religious_other: false,
   water_routes: true, valdemar_route: true, river_routes: true, viking_roads: true,

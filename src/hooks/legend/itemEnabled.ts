@@ -52,6 +52,8 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
   heritage_vardkase: false,
   heritage_dos: false,
   heritage_bildsten: false,
+  heritage_labyrint: false, // stenlabyrinter/trojaborgar (RAÄ), mestadels odaterade/sena
+
   heritage_kyrka: false,
   heritage_kapell: false,
   heritage_kloster: false,

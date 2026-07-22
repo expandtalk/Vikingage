@@ -147,6 +147,7 @@ export const generateBasicInscriptionItems = (
     { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: itemEnabled(enabledLegendItems, 'heritage_vardkase') },
     { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_dos') },
     { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_bildsten') },
+    { id: 'heritage_labyrint', label: '🌀 Labyrinter', color: '#0d9488', count: 493, enabled: itemEnabled(enabledLegendItems, 'heritage_labyrint') },
   ];
   items.push({
     id: 'heritage_sites',
