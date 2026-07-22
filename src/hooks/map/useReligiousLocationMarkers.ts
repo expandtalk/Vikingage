@@ -141,9 +141,11 @@ const createReligiousPlaceMarker = (
   const evidenceTags = place.evidence.map(ev => {
     const evidenceLabels = {
       'runestone': '📜 Runsten',
-      'archaeological': '🏺 Arkeologi', 
+      'archaeological': '🏺 Arkeologi',
       'place_name': '📝 Ortnamn',
-      'church_foundation': '⛪ Kyrkogrund'
+      'church_foundation': '⛪ Kyrkogrund',
+      'historical_record': '📖 Historisk källa',
+      'cathedral': '⛪ Katedral',
     };
     return `<span style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: ${colors.background}60; color: #ffffff !important; border: 1px solid ${colors.border}; margin: 2px;">
       ${evidenceLabels[ev] || ev}
@@ -178,9 +180,6 @@ const createReligiousPlaceMarker = (
           <p style="font-size: 12px; color: rgba(255,255,255,0.8) !important; margin: 4px 0 0 0;"><strong>Aktiv under:</strong> ${activeInPeriods}</p>
         </div>
         
-        <div style="padding-top: 12px; border-top: 1px solid rgba(75, 85, 99, 0.5);">
-          <p style="font-size: 11px; color: rgba(255,255,255,0.6) !important; margin: 0;">4000 års kontinuitet: ${place.establishedPeriod.replace('_', ' ')} → nu</p>
-        </div>
       </div>
     `, {
       maxWidth: 380,
