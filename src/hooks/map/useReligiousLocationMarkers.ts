@@ -224,7 +224,9 @@ export const addReligiousLocationMarkers = (
 
   console.log('✅ Religious places IS ENABLED - proceeding to add markers for time period:', selectedTimePeriod);
 
-  const placesForPeriod = getPlacesForTimePeriod(selectedTimePeriod);
+  // Offerkällor är flyttade till kulturlagret (heritage_sites, 'Källa med tradition') och
+  // ritas där med diskret ikon — visas ej längre bland gudarnas kultplatser (blaffigt).
+  const placesForPeriod = getPlacesForTimePeriod(selectedTimePeriod).filter((p) => p.type !== 'offering_spring');
   console.log(`Found ${placesForPeriod.length} religious places for period ${selectedTimePeriod}`);
 
   const pairedPlaces = getPairedPlaces();

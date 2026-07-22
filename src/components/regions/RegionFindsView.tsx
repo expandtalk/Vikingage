@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Search } from 'lucide-react';
+import { MapPin, Search, Church, Landmark } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { addRunicInscriptionMarkers } from '@/hooks/map/useRunicInscriptionMarkers';
 import { useParishGovernance } from '@/hooks/useParishGovernance';
@@ -261,6 +262,16 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
           <Badge variant="secondary" className="ml-2">{regions.length}</Badge>
         </CardTitle>
         <p className="text-slate-300 text-sm">{c.intro}</p>
+        {/* Snabblänkar till kyrko-/klosterlager på huvudkartan */}
+        <div className="flex flex-wrap gap-2 mt-2">
+          <span className="text-xs text-slate-400 self-center">{sv ? 'Visa på kartan:' : 'Show on map:'}</span>
+          <Link to="/explore?focus=churches" className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-rose-500/60 text-rose-200 hover:bg-rose-500/15">
+            <Church className="h-3.5 w-3.5" />{sv ? 'Kyrkor & stift (medeltid)' : 'Churches & dioceses'}
+          </Link>
+          <Link to="/explore?focus=monasteries" className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-fuchsia-500/60 text-fuchsia-200 hover:bg-fuchsia-500/15">
+            <Landmark className="h-3.5 w-3.5" />{sv ? 'Kloster & kapell' : 'Monasteries & chapels'}
+          </Link>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4">

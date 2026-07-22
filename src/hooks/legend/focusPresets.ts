@@ -145,6 +145,16 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
         runic_inscriptions: false,
         ecclesiastical_churches: true // rika kyrkolagret tänt; viewport-laddat vid zoom ≥8
       };
+
+    case 'monasteries':
+      console.log('✝️ Monasteries focus: kloster + kapell ur kulturlagret');
+      return {
+        ...basePresets,
+        runic_inscriptions: false,
+        heritage_sites: true,      // förälder på så per-typ-kryssen är aktiva
+        heritage_kloster: true,
+        heritage_kapell: true,
+      };
       
     case 'folkGroups':
       console.log('👥 Folk Groups focus: Only folk groups and runestones');
