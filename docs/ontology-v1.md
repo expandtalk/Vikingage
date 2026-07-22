@@ -30,12 +30,20 @@ ett domänbrett kontrakt.
 - `relationship` — kanterna (subject_id, predicate, object_id, qualifiers, **source_ref,
   confidence**).
 
-## Entitetstyper (v1: 20 aktiva, 4 planerade)
+## Entitetstyper (v1: 22 aktiva, 4 planerade)
 
 Aktiva: inscription, carver, artefact, king, source, coin, dynasty, theme, god, road,
 landscape, fortress, **place_name, name_dating, church, heritage_site, parish, hundred,
-diocese, species_introduction**.
+diocese, species_introduction**, samt genetik-lagret **adna_site, genetic_individual**.
 Planerade (deklarerade, data saknas): **hydronym, script_system, motif, taxation_unit**.
+
+### Genetik / aDNA (v1.1)
+DNA är en förstaklass-del av ontologin. `adna_site` (→ archaeological_sites) och
+`genetic_individual` (→ genetic_individuals; koordinat via site_id). Individens attribut —
+genetiskt kön, Y-/mt-haplogrupp, härkomst (ancestry), 14C — ligger kvar i den typade
+tabellen (princip 1), inte som lösa noder. Mänsklig aDNA (Margaryan 2020, Krzewińska 2018,
+Rodríguez-Varela 2023) + djur-aDNA (species_introductions, proxy=adna) samlas under temat
+**genetik-adna**. Se [[picture-stone-spolia]]-mönstret för graf-materialisering.
 
 ## Relationstyper (urval av de nya i v1)
 
@@ -43,6 +51,8 @@ Rumsliga: `near` (qualifier distance_m), `within_shape`.
 Temporala: `dated_to`, `introduced_at`, `precedes` (innovationsordning).
 Styre/skatt: `belongs_to_parish`, `part_of_hundred`, `taxed_under`.
 Bygge/grav: `built_by`, `buried_at`.
+Genetik: `sampled_at` (genetic_individual→adna_site), `kin_of` (individ↔individ, t.ex.
+Salme-bröderna), `has_ancestry` (härkomstkomponent; primärdata i genetic_individuals.ancestry).
 Belägg/representation: `attested_by`, `depicts`, `written_in`.
 (v0-predikaten kvar: carved_by, commissioned_by, mentions_person, same_hand_as, has_theme,
 located_in, cites_source, has_artefact, mentions_inscription, belongs_to_group.)

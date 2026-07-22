@@ -1,0 +1,17 @@
+-- DNA som förstaklass i ontologin + mänsklig aDNA-utbyggnad. Applicerad via MCP execute_sql.
+--
+-- 1. ontology_entity_types: nya typer adna_site (→archaeological_sites) och genetic_individual
+--    (→genetic_individuals, koordinat via site_id). Individens attribut (kön, Y/mt-haplogrupp,
+--    ancestry, 14C) ligger kvar i typade tabellen (princip 1), ej som lösa noder.
+-- 2. rel_predicates: sampled_at (individual→adna_site), kin_of (individ↔individ),
+--    has_ancestry (härkomstkomponent). Registrerade 7 genetic_individuals + 7 sampled_at-kanter.
+-- 3. archaeological_sites: +6 Margaryan-2020-lokaliteter som SITE-nivå-fakta med citat
+--    (INGEN artikeltext kopierad — endast plats/period/koordinat/källa; upphovsrättssäkert):
+--    Varnhem, Bodzia, Gnjozdovo, Staraja Ladoga, Sigtuna (Krzewińska 2018), Trelleborg/Slagelse.
+--    Koordinater ur Wikidata (CC0) resp. väletablerade. Länkade till tema genetik-adna.
+--
+-- Källor: Margaryan et al. 2020, Nature 585:390 (ENA PRJEB37976); Krzewińska et al. 2018,
+-- Curr Biol 28:2730; Rodríguez-Varela et al. 2023 (Cell). Per-individ-genotyper fabriceras EJ —
+-- endast lokaliteter som faktiskt ingår i publicerade dataset läggs in.
+--
+-- (Fullständig SQL kördes via execute_sql; värdena i DB är auktoritativa.)
