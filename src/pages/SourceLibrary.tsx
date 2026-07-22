@@ -27,13 +27,14 @@ interface CatalogRow {
 
 const sb = supabase as unknown as { rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: any; error: any }> };
 
-// Ordning + etikett per texttyp. Nyckel = work_type.
-const SECTIONS: { key: string; sv: string; en: string }[] = [
+// Ordning + etikett per texttyp. Nyckel = work_type. `match` låter en sektion fånga
+// flera work_type-varianter (lagarna taggas som lag/landskapslag/landslag).
+const SECTIONS: { key: string; sv: string; en: string; match?: string[] }[] = [
   { key: 'edda_poem', sv: 'Poetiska Eddan', en: 'The Poetic Edda' },
   { key: 'saga', sv: 'Sagor', en: 'Sagas' },
   { key: 'krönika', sv: 'Krönikor', en: 'Chronicles' },
   { key: 'annaler', sv: 'Annaler', en: 'Annals' },
-  { key: 'lag', sv: 'Landskaps- & rikslagar', en: 'Provincial & realm laws' },
+  { key: 'lag', sv: 'Landskaps- & rikslagar', en: 'Provincial & realm laws', match: ['lag', 'landskapslag', 'landslag'] },
   { key: 'stadga', sv: 'Stadgar', en: 'Statutes' },
   { key: 'epos', sv: 'Epos', en: 'Epic' },
   { key: 'biografi', sv: 'Biografier', en: 'Biographies' },
@@ -58,10 +59,14 @@ const SourceLibrary = () => {
     },
   });
 
-  const bySection = (key: string) => {
+  const wtOf = (s: { key: string; match?: string[] }) => s.match ?? [s.key];
+  const bySection = (s: { key: string; match?: string[] }) => {
     const all = rows ?? [];
-    if (key === OTHER.key) return all.filter((r) => !r.work_type || !SECTIONS.some((s) => s.key === r.work_type));
-    return all.filter((r) => r.work_type === key);
+    if (s.key === OTHER.key) {
+      const claimed = new Set(SECTIONS.flatMap(wtOf));
+      return all.filter((r) => !r.work_type || !claimed.has(r.work_type));
+    }
+    return all.filter((r) => r.work_type != null && wtOf(s).includes(r.work_type));
   };
 
   const Item = ({ r }: { r: CatalogRow }) => {
@@ -89,8 +94,8 @@ const SourceLibrary = () => {
     );
   };
 
-  const Section = ({ s }: { s: { key: string; sv: string; en: string } }) => {
-    const items = bySection(s.key);
+  const Section = ({ s }: { s: { key: string; sv: string; en: string; match?: string[] } }) => {
+    const items = bySection(s);
     if (!items.length) return null;
     // Eddan: dela på collection (Codex Regius vs utanför)
     if (s.key === 'edda_poem') {

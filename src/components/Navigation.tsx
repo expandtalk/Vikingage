@@ -175,6 +175,13 @@ const EXTRA_LINKS: NavLink[] = [
     icon: CalendarClock, category: 'history',
   },
   {
+    pathEn: '/economic-history', pathSv: '/sv/ekonomisk-historia',
+    labelSv: 'Ekonomisk historia', labelEn: 'Economic history',
+    descSv: 'Det första skattesystemet: ledungen (roþ/Roden), bryteorganisationen och kyrkans tionde — från roddarfolket ~839 till Kalmarunionen.',
+    descEn: 'The first tax system: the levy (roþ/Roden), the steward organisation and the Church tithe — from the rowing people c. 839 to the Kalmar Union.',
+    icon: Coins, category: 'history',
+  },
+  {
     pathEn: '/explore?focus=eriksgatan', pathSv: '/explore?focus=eriksgatan',
     labelSv: 'Eriksgatan', labelEn: 'Eriksgatan',
     descSv: 'Kungavalets riksrunda genom landskapen — den medeltida Eriksgatan på kartan.',

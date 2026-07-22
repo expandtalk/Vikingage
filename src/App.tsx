@@ -35,6 +35,7 @@ const Statistics = lazy(() => import("./pages/Statistics"));
 const PlaceNames = lazy(() => import("./pages/PlaceNames"));
 const Ontology = lazy(() => import("./pages/Ontology"));
 const HistoricalEvents = lazy(() => import("./pages/HistoricalEvents"));
+const EconomicHistory = lazy(() => import("./pages/EconomicHistory"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -101,6 +102,8 @@ const App = () => (
                   <Route path="/ontologi" element={<Ontology />} />
                   <Route path="/historical-events" element={<HistoricalEvents />} />
                   <Route path="/sv/historiska-handelser" element={<HistoricalEvents />} />
+                  <Route path="/economic-history" element={<EconomicHistory />} />
+                  <Route path="/sv/ekonomisk-historia" element={<EconomicHistory />} />
                   <Route path="/prices" element={<Prices />} />
                   <Route path="/excursions" element={<Excursions />} />
                   <Route path="/sv/utflykter" element={<Excursions />} />
