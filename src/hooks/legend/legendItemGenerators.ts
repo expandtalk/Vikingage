@@ -255,6 +255,16 @@ export const generateBasicInscriptionItems = (
     enabled: enabledLegendItems.ecclesiastical_churches !== false
   });
 
+  // Art-/innovationsintroduktioner (species_introductions med koordinat). AV som standard.
+  // Filtreras på vald tidsepok via TimeEpoch-kontrollen. Gate === true (matchar hooken).
+  items.push({
+    id: 'species_introductions',
+    label: '🐾 Arter & introduktioner',
+    color: '#c084fc',
+    count: 0,
+    enabled: enabledLegendItems.species_introductions === true
+  });
+
   // Add Christian sites if provided
   if (christianSites && christianSites.length > 0) {
     const christianItems = generateChristianSitesLegendItems(christianSites, t);
@@ -301,7 +311,7 @@ export const generateBasicInscriptionItems = (
     keep('water_routes'), // Vägar ligger nu som undergrupp inuti water_routes
     group('cat_defense', '🏰 ' + t('fortresses'), '#dc2626', ['viking_fortresses', 'viking_cities', 'stake_barriers']),
     group('cat_folk', '🛡️ ' + t('germanicPeoples'), '#8b5cf6', ['germanic_timeline', 'folk_groups', 'viking_regions']),
-    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['place_names', 'historical_events', 'paleo_shoreline']),
+    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['place_names', 'historical_events', 'species_introductions', 'paleo_shoreline']),
   ];
   const grouped = ordered.filter(Boolean) as LegendItem[];
   // Allt ogrupperat (t.ex. kristna centra) läggs sist, oförändrat.

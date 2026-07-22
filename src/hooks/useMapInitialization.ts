@@ -10,6 +10,7 @@ import { useMapBeaconSites } from './useMapBeaconSites';
 import { useMapHeritageSites } from './useMapHeritageSites';
 import { useMapChurches } from './map/useMapChurches';
 import { useMapProximityProbe } from './map/useMapProximityProbe';
+import { useMapSpeciesMarkers } from './map/useMapSpeciesMarkers';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -176,6 +177,9 @@ export const useMapInitialization = ({
 
   // Omkrets-sond: cirkel + närliggande lager kring vald kyrka/fornborg.
   useMapProximityProbe({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Art-/innovationsintroduktioner (koordinatsatta), filtrerat på vald tidsepok.
+  useMapSpeciesMarkers({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
 
   return {
     mapContainer, 
