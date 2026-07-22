@@ -1,0 +1,21 @@
+-- Strandförskjutnings-/landhöjnings-KONTROLLTRANSEKT (Daniel 2026-07-22). Applicerad via
+-- MCP execute_sql; fil = proveniens. Utvecklar landhöjningen bortom Mälardalen genom en
+-- nord-sydlig kalibreringstransekt tvärs isobasfältet (Öland/Kalmar ~1 mm/år → Slätbaken ~2,8).
+--
+-- Ny tabell strandkontroll (RLS: publik läs / admin skriv), geom EPSG:3006. 8 kontrollpunkter
+-- i tre kontrolltyper:
+--   arkeologisk: Sandby borg (~450–500), Köpingsvik (~950), Hossmo kyrka (~1100, Eskilstunakistor),
+--     Stegeborg-spärr (~800-tal, hög isobas), Söderköping hamn (1200–1400, dokumenterad uppgrundning).
+--   geologisk_strandlinje: Littorinavallen Äleklinta (fossilt medelvatten, ankrar kurvans gamla ände).
+--   isolationsbacken: Horn/Hornsjön (Öland N), Västra sjön/Stensö (Kalmaråsen, fastlandsisobas).
+--
+-- OSÄKERHET: z_min_rh2000 är TBD (fylls ur Lantmäteriets LiDAR — vallkrön/silltrösklar/kaj/pålnivå);
+-- landhojn_mmyr är SKENBARA uppskattningar (ersätts med NKG2016LU-punktvärden); lon/lat är
+-- provisorisk WGS84-provenans (snappas mot Fornsök/RAÄ). Inga z-värden fabricerade.
+-- Distinktion (viktig): landhöjningsmarkör ≠ farledsargument. "Ljungbyån nästan till Växjö" och
+-- "obruten båtled Söderköping→Vättern" HÅLLER INTE (höjdprofil Roxen 33 → Vättern 88 m).
+--
+-- Ontologi: ny entitetstyp shoreline_control (→ strandkontroll). strandkontroll.id är serial →
+-- kan ej registreras i den uuid-nycklade grafen än; står som typad tabell i katalogen.
+--
+-- (Fullständig DDL/seed kördes via execute_sql; DB är auktoritativ.)
