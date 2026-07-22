@@ -66,7 +66,7 @@ export const generateBasicInscriptionItems = (
       id: 'viking_cities',
       label: t('vikingCenters'),
       color: '#8b5cf6',
-      count: 49,
+      count: dbStats?.totalCities || 58,
       enabled: enabledLegendItems.viking_cities !== false
     });
   }
@@ -129,7 +129,7 @@ export const generateBasicInscriptionItems = (
     id: 'heritage_sites',
     label: '🗺️ Kulturlager',
     color: '#7c3aed',
-    count: 6385,
+    count: dbStats?.layerCounts?.heritageTotal ?? 8620,
     // Föräldern PÅ som standard så per-typ-kryssen är åtkomliga (LegendCategory
     // döljer barn om parent är av). Kartan drivs av barnen — alla av → tom karta.
     enabled: enabledLegendItems.heritage_sites !== false,
@@ -137,7 +137,7 @@ export const generateBasicInscriptionItems = (
     children: [
       { id: 'heritage_kyrka', label: 'Sockenkyrkor', color: '#e11d48', count: 4223, enabled: enabledLegendItems.heritage_kyrka === true },
       { id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: enabledLegendItems.heritage_kapell === true },
-      { id: 'heritage_kloster', label: 'Kloster', color: '#c026d3', count: 93, enabled: enabledLegendItems.heritage_kloster === true },
+      { id: 'heritage_kloster', label: 'Kloster', color: '#c026d3', count: 94, enabled: enabledLegendItems.heritage_kloster === true },
       { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: enabledLegendItems.heritage_vardkase === true },
       { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: enabledLegendItems.heritage_dos === true },
       { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: enabledLegendItems.heritage_ganggrift === true },
@@ -249,7 +249,7 @@ export const generateBasicInscriptionItems = (
     id: 'ecclesiastical_churches',
     label: '⛪ Kyrkor & stift',
     color: '#e11d48',
-    count: 0,
+    count: dbStats?.layerCounts?.churches ?? 4146,
     // PÅ som standard (Daniel). Gate:et sitter direkt på detta id — därför är
     // detta en topp-nivå-post (ingen wrapper-kategori) så av-knappen faktiskt
     // släcker kartlagret (annars går kyrkan inte att stänga av).
@@ -262,7 +262,7 @@ export const generateBasicInscriptionItems = (
     id: 'species_introductions',
     label: '🐾 Arter & händelser (tidsepok)',
     color: '#c084fc',
-    count: 0,
+    count: dbStats?.layerCounts?.species ?? 21,
     enabled: enabledLegendItems.species_introductions === true
   });
 
@@ -272,7 +272,7 @@ export const generateBasicInscriptionItems = (
     id: 'picture_stone_reuse',
     label: '🪨 Bildsten-spolia (kyrkor)',
     color: '#0891b2',
-    count: 20,
+    count: dbStats?.layerCounts?.spolia ?? 21,
     enabled: enabledLegendItems.picture_stone_reuse === true
   });
 
@@ -281,7 +281,7 @@ export const generateBasicInscriptionItems = (
     id: 'coins',
     label: '🪙 Mynt & fynd (fyndplats)',
     color: '#d4af37',
-    count: 26,
+    count: dbStats?.layerCounts?.coins ?? 32,
     enabled: enabledLegendItems.coins === true
   });
 
@@ -290,7 +290,7 @@ export const generateBasicInscriptionItems = (
     id: 'adna_sites',
     label: '🧬 aDNA-platser',
     color: '#a855f7',
-    count: 4,
+    count: dbStats?.layerCounts?.adnaSites ?? 4,
     enabled: enabledLegendItems.adna_sites === true
   });
 

@@ -13,6 +13,15 @@ export interface DbStats {
   totalGeneticEvents: number;
   totalRoyalChronicles: number;
   totalRivers: number;
+  // Verkliga antal per kartlager (för legendens siffror – ersätter hårdkodade tal).
+  layerCounts?: {
+    churches?: number;         // ecclesiastical_sites
+    coins?: number;            // coins
+    spolia?: number;           // picture_stone_reuse
+    species?: number;          // species_introductions
+    adnaSites?: number;        // distinkta platser med genetiska individer
+    heritageTotal?: number;    // heritage_sites (alla typer)
+  };
 }
 
 export interface UseRunicDataProps {

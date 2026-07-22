@@ -144,7 +144,30 @@ export const loadDatabaseStats = async (): Promise<DbStats> => {
       console.error('Error loading river systems count:', riversError);
     }
 
+    // Verkliga antal per kartlager (legenden visade tidigare hårdkodade/inaktuella tal;
+    // kyrkorna saknades helt = 0). Head-count, billigt, körs parallellt.
+    const head = (table: string) => supabase.from(table).select('*', { count: 'exact', head: true });
+    const [churchesRes, coinsRes, spoliaRes, speciesRes, heritageRes, adnaSitesRes] = await Promise.all([
+      head('ecclesiastical_sites'),
+      head('coins'),
+      head('picture_stone_reuse'),
+      head('species_introductions'),
+      head('heritage_sites'),
+      supabase.from('genetic_individuals').select('site_id'),
+    ]);
+    const adnaSites = new Set(
+      (adnaSitesRes.data || []).map((r: { site_id: string | null }) => r.site_id).filter(Boolean)
+    ).size;
+
     const stats: DbStats = {
+      layerCounts: {
+        churches: churchesRes.count || 0,
+        coins: coinsRes.count || 0,
+        spolia: spoliaRes.count || 0,
+        species: speciesRes.count || 0,
+        adnaSites,
+        heritageTotal: heritageRes.count || 0,
+      },
       totalInscriptions: inscriptionsCount || 0,
       totalCoordinates: coordinatesCount || 0,
       totalCarvers: carversCount || 0,

@@ -1,0 +1,9 @@
+-- Birka-händelsen bröts upp. Applicerad via MCP execute_sql; fil = proveniens.
+-- Tidigare fanns EN händelse "Birka anläggs på Björkö i Mälaren" med spannet 790–900
+-- (110 år) → för bred stapel i tidslinjen/kungavyn. Ersatt med fyra diskreta, daterade
+-- och källhänvisade händelser:
+--   1. Birka grundas ~750–790            (settlement)   — Ambrosiani 2008, RAÄ
+--   2. Ansgars första mission 829–831    (religious)    — Rimbert, Vita Ansgarii
+--   3. Ansgars andra mission 851–852     (religious)    — Rimbert, Vita Ansgarii
+--   4. Birka överges 960–980, → Sigtuna  (settlement)   — Ambrosiani 2008
+-- (Fullständig SQL kördes via execute_sql; DB är auktoritativ.)
