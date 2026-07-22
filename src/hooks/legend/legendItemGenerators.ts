@@ -259,7 +259,7 @@ export const generateBasicInscriptionItems = (
   // Filtreras på vald tidsepok via TimeEpoch-kontrollen. Gate === true (matchar hooken).
   items.push({
     id: 'species_introductions',
-    label: '🐾 Arter & introduktioner',
+    label: '🐾 Arter & händelser (tidsepok)',
     color: '#c084fc',
     count: 0,
     enabled: enabledLegendItems.species_introductions === true

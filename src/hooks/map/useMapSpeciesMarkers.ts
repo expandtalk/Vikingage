@@ -16,6 +16,10 @@ interface Props {
 const PROXY_COLOR: Record<string, string> = {
   adna: '#c084fc', zooarchaeology: '#f59e0b', iconography: '#34d399', onomastics: '#22d3ee', text: '#94a3b8',
 };
+const EVENT_COLOR: Record<string, string> = {
+  epidemic: '#ef4444', climate: '#38bdf8', catastrophe: '#fb923c', settlement: '#a3e635',
+  military: '#f87171', raid: '#fb7185', political: '#818cf8',
+};
 const esc = (s: unknown) => String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c] as string));
 
 export const useMapSpeciesMarkers = ({ map, enabledLegendItems, isMapReady }: Props) => {
@@ -60,6 +64,29 @@ export const useMapSpeciesMarkers = ({ map, enabledLegendItems, isMapReady }: Pr
             { maxWidth: 260 },
           )
           .addTo(layer);
+      });
+
+      // Händelser (historical_events med koordinat), samma epok-filter. Fyrkantig markör.
+      const { data: ev } = await (supabase as any)
+        .from('historical_events')
+        .select('event_name,event_type,year_start,year_end,lat,lng,description,sources')
+        .not('lat', 'is', null);
+      if (cancelled || !map) return;
+      (ev as any[] || []).forEach((e) => {
+        if (e.lat == null || e.lng == null) return;
+        const ys = e.year_start ?? null; if (ys == null) return;
+        const ye = e.year_end ?? ys;
+        if (ye < from || ys > to) return;
+        const color = EVENT_COLOR[e.event_type] ?? '#fbbf24';
+        L.marker([e.lat, e.lng], {
+          icon: L.divIcon({ className: 'evt-sq', html: `<div style="width:11px;height:11px;background:${color};border:1.5px solid #0f172a;transform:rotate(45deg)"></div>`, iconSize: [11, 11], iconAnchor: [6, 6] }),
+        }).bindPopup(
+          `<div style="min-width:190px"><strong>${esc(e.event_name)}</strong>
+             <div style="font-size:11px;color:${color};font-weight:600;margin-top:2px">${esc(e.event_type)}</div>
+             <div style="font-size:12px;color:#475569;margin-top:3px">${esc(e.description)}</div>
+             ${(e.sources || []).length ? `<div style="font-size:10px;color:#94a3b8;margin-top:4px;border-top:1px solid #e2e8f0;padding-top:4px">${esc((e.sources || []).join('; '))}</div>` : ''}
+           </div>`, { maxWidth: 280 },
+        ).addTo(layer);
       });
     })();
     return () => { cancelled = true; layer.clearLayers(); };
