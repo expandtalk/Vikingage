@@ -10,6 +10,7 @@ import { CustomPointsControl } from './CustomPointsControl';
 import { EpochControl } from './EpochControl';
 import { ElementSpotlightControl } from './ElementSpotlightControl';
 import { RulerControl } from './RulerControl';
+import { ChurchYearControl } from './ChurchYearControl';
 import { LegendItem } from '@/types/common';
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -89,11 +90,13 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
     return false;
   };
   const speciesOn = findEnabled(legendItems, 'species_introductions');
+  const churchesOn = findEnabled(legendItems, 'ecclesiastical_churches');
   return (
     <>
       <ProximityControl />
       <CustomPointsControl />
       <EpochControl visible={speciesOn} />
+      {churchesOn && <ChurchYearControl />}
       <ElementSpotlightControl />
       <RulerControl />
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}

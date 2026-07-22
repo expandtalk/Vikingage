@@ -1,0 +1,9 @@
+-- Källor → kulturlager + fler gudar. Applicerad via MCP execute_sql; fil = proveniens.
+-- 1. De 3 hårdkodade offerkällorna (offeringSprings.ts) migrerade till heritage_sites med
+--    raa_type 'Källa med tradition' → visas nu i kulturlagret (legend heritage_kalla, diskret
+--    blå droppikon) i stället för blaffigt bland gudarnas kultplatser. Edestad, Källa gamla
+--    kyrka (Öland), Sankt Måns (Torhamn).
+-- 2. gods utökad från 16 → 26 (fuller pantheon): Hel, Skade, Sif, Nanna, Forsete, Gefion,
+--    Ägir, Ran, Jord, Mimer. Kategori aesir/vanir/other (matchar befintlig vokabulär).
+--    gods-vyn (DB-driven sedan PR #15) visar nu alla; bildlösa som kompakta kort sist.
+-- (Fullständig SQL kördes via execute_sql; DB är auktoritativ.)
