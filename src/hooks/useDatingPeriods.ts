@@ -13,18 +13,23 @@ interface DatingRecord {
   parsing_notes: string | null;
 }
 
-export const useDatingPeriods = () => {
+export const useDatingPeriods = (options?: { enabled?: boolean }) => {
   const queryClient = useQueryClient();
 
-  // Fetch all dating records
+  // Hämtar HELA dating-tabellen (tungt) — därför lat: bara när anroparen begär det
+  // (enabled). Default true (bakåtkompatibelt). DatingIntegration gatar på showDetails
+  // så tidslinje-klick inte drar in hela datasetet + sync-beräkning = frös sajten.
+  const enabled = options?.enabled ?? true;
+
   const { data: datingRecords = [], isLoading } = useQuery({
     queryKey: ['dating-periods'],
+    enabled,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('dating')
         .select('*')
         .order('dating');
-      
+
       if (error) throw error;
       return data as DatingRecord[];
     }
