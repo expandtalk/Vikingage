@@ -1,7 +1,6 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Building, ChevronDown, ChevronRight } from 'lucide-react';
 import { LegendItemComponent } from './LegendItem';
 import { LegendItem } from './types';
@@ -50,15 +49,15 @@ export const LegendCategory: React.FC<LegendCategoryProps> = ({
             {item.label}
           </span>
 
-          {!!item.count && (
-            <Badge
-              variant="outline"
-              className={`text-xs px-1.5 py-0 h-5 flex-shrink-0 font-semibold ${
-                item.enabled ? 'text-white border-amber-600 bg-amber-700/60' : 'text-slate-100 border-slate-500 bg-slate-700/80'
-              }`}
+          {/* Summan visas bara när kategorin är på, dämpat grått (undviker vilseledande
+              siffra när föräldern är av). */}
+          {item.enabled && !!item.count && (
+            <span
+              className="text-[11px] tabular-nums text-slate-400 flex-shrink-0"
+              title={`${item.count} objekt`}
             >
-              {item.count}
-            </Badge>
+              {item.count.toLocaleString('sv-SE')}
+            </span>
           )}
         </button>
 
