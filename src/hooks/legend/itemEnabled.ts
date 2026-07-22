@@ -35,6 +35,7 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
   cat_geo: true,
 
   // --- Opt-in-lager AV som standard ---
+  runestone_density: false, // GIS-analyslager: runstenstäthet per härad (centroid-cirklar)
   place_names: false, // ~495 ortnamn klottrar kartan; tänds medvetet (PR: place-names-opt-in)
   paleo_shoreline: false,
   species_introductions: false,

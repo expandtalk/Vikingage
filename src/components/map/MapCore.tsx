@@ -63,11 +63,12 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
     vikingCities
   });
 
-  const { mapContainer, map, isMapReady } = useMapInitialization({ 
-    isVikingMode, 
+  const { mapContainer, map, isMapReady } = useMapInitialization({
+    isVikingMode,
     enabledLegendItems,
     selectedPeriod,
-    selectedTimePeriod
+    selectedTimePeriod,
+    inscriptions: inscriptionsWithCoords
   });
 
   const shouldShowTradeRoutes = enabledLegendItems.trade_routes !== false;
