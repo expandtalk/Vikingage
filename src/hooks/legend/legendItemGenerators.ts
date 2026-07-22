@@ -408,7 +408,10 @@ export const generateBasicInscriptionItems = (
     keep('water_routes'), // Vägar ligger nu som undergrupp inuti water_routes
     group('cat_defense', '🏰 ' + t('fortresses'), '#dc2626', ['viking_fortresses', 'viking_cities', 'stake_barriers']),
     group('cat_folk', '🛡️ ' + t('peoplesAndRegions'), '#8b5cf6', ['germanic_timeline', 'folk_groups', 'viking_regions']),
-    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['place_names', 'historical_events', 'species_introductions', 'picture_stone_reuse', 'coins', 'adna_sites', 'paleo_shoreline']),
+    // OBS: place_names (Ortnamn) ligger MEDVETET utanför cat_geo — den lyfts till egen
+    // topp-nivå-post så den alltid går att stänga av med ETT klick (Daniel: namnelementen
+    // svämmar över och "gick inte att stänga av" när de låg nästlade i en kategori).
+    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['historical_events', 'species_introductions', 'picture_stone_reuse', 'coins', 'adna_sites', 'paleo_shoreline']),
   ];
   const grouped = ordered.filter(Boolean) as LegendItem[];
   // Allt ogrupperat (t.ex. kristna centra) läggs sist, oförändrat.
