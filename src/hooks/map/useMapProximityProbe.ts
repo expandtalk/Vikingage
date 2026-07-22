@@ -16,8 +16,21 @@ interface Props {
 const dot = (color: string) =>
   L.divIcon({ className: 'prox-dot', html: `<span style="display:block;width:9px;height:9px;border-radius:50%;background:${color};border:1px solid #fff;box-shadow:0 0 2px rgba(0,0,0,.6)"></span>`, iconSize: [9, 9], iconAnchor: [5, 5] });
 
+// Regelbunden polygon (fyrkant=4, hexagon=6) kring en punkt, radie i km. Lokal
+// ekvirektangulär approximation — exakt nog på dessa avstånd (tiotal km).
+const polygonVerts = (lat: number, lng: number, rKm: number, n: number, rotDeg: number): [number, number][] => {
+  const latR = rKm / 111.32;
+  const lngR = rKm / (111.32 * Math.cos((lat * Math.PI) / 180));
+  const out: [number, number][] = [];
+  for (let i = 0; i < n; i++) {
+    const a = ((rotDeg + (i * 360) / n) * Math.PI) / 180;
+    out.push([lat + latR * Math.cos(a), lng + lngR * Math.sin(a)]);
+  }
+  return out;
+};
+
 export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
-  const { probe, radiusKm } = useProximityProbe();
+  const { probe, radiusKm, shape } = useProximityProbe();
   const layerRef = useRef<L.LayerGroup | null>(null);
   const tokenRef = useRef(0);
 
@@ -31,12 +44,18 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
     const myToken = ++tokenRef.current;
     const radiusM = radiusKm * 1000;
 
-    // Cirkel + centrum.
-    L.circle([probe.lat, probe.lng], {
-      radius: radiusM, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.06, dashArray: '6 4',
-    }).addTo(layer);
+    // Form: cirkel (isotrop), fyrkant (rutnät/väg) eller hexagon (central-place).
+    const shapeStyle = { color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.06, dashArray: '6 4' };
+    if (shape === 'circle') {
+      L.circle([probe.lat, probe.lng], { radius: radiusM, ...shapeStyle }).addTo(layer);
+    } else {
+      // Fyrkant: 4 hörn roterade 45° (platt topp). Hexagon: 6 hörn (spetsig topp).
+      const verts = polygonVerts(probe.lat, probe.lng, radiusKm, shape === 'square' ? 4 : 6, shape === 'square' ? 45 : 0);
+      L.polygon(verts, shapeStyle).addTo(layer);
+    }
+    const shapeSv = shape === 'circle' ? 'cirkel' : shape === 'square' ? 'fyrkant' : 'hexagon';
     L.circleMarker([probe.lat, probe.lng], { radius: 6, color: '#78350f', weight: 2, fillColor: '#fbbf24', fillOpacity: 1 })
-      .bindTooltip(`${probe.label} — omkrets ${radiusKm} km`, { permanent: false }).addTo(layer);
+      .bindTooltip(`${probe.label} — ${shapeSv}, radie ${radiusKm} km (⌀ ${radiusKm * 2} km)`, { permanent: false }).addTo(layer);
 
     map.setView([probe.lat, probe.lng], Math.max(map.getZoom(), 10));
 
@@ -55,7 +74,7 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
     })();
 
     return () => { layer.clearLayers(); };
-  }, [map, isMapReady, probe, radiusKm]);
+  }, [map, isMapReady, probe, radiusKm, shape]);
 
   useEffect(() => () => {
     try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }
