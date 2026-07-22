@@ -125,27 +125,33 @@ export const generateBasicInscriptionItems = (
   // Kulturlager (spatialt, viewport-laddat). Kategori med per-typ-kryss — tänd
   // en typ i taget (sockenkyrkor, kloster, vårdkasar…). Allt AV som standard.
   // Föräldern 'heritage_sites' = "visa alla typer".
+  // Kyrko-typerna (sockenkyrkor/kapell/kloster) flyttade UT ur Kulturlager till kategorin
+  // "Kyrka & kristendom" (grupperas nedan). Kvar i Kulturlager: fornlämningar + traditionella
+  // källor. Toggle-id:na är oförändrade → kartlagren fungerar som förr.
+  const heritageChildren = [
+    { id: 'heritage_kalla', label: 'Källor (traditionella)', color: '#0ea5e9', count: 2098, enabled: enabledLegendItems.heritage_kalla === true },
+    { id: 'heritage_skeppssattning', label: 'Skeppssättningar', color: '#0d9488', count: 865, enabled: enabledLegendItems.heritage_skeppssattning === true },
+    { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: enabledLegendItems.heritage_ganggrift === true },
+    { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: enabledLegendItems.heritage_vardkase === true },
+    { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: enabledLegendItems.heritage_dos === true },
+    { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: enabledLegendItems.heritage_bildsten === true },
+  ];
   items.push({
     id: 'heritage_sites',
     label: '🗺️ Kulturlager',
     color: '#7c3aed',
-    count: dbStats?.layerCounts?.heritageTotal ?? 8620,
+    count: heritageChildren.reduce((s, c) => s + c.count, 0),
     // Föräldern PÅ som standard så per-typ-kryssen är åtkomliga (LegendCategory
     // döljer barn om parent är av). Kartan drivs av barnen — alla av → tom karta.
     enabled: enabledLegendItems.heritage_sites !== false,
     type: 'category',
-    children: [
-      { id: 'heritage_kyrka', label: 'Sockenkyrkor', color: '#e11d48', count: 4223, enabled: enabledLegendItems.heritage_kyrka === true },
-      { id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: enabledLegendItems.heritage_kapell === true },
-      { id: 'heritage_kloster', label: 'Kloster', color: '#c026d3', count: 94, enabled: enabledLegendItems.heritage_kloster === true },
-      { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: enabledLegendItems.heritage_vardkase === true },
-      { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: enabledLegendItems.heritage_dos === true },
-      { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: enabledLegendItems.heritage_ganggrift === true },
-      { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: enabledLegendItems.heritage_bildsten === true },
-      { id: 'heritage_skeppssattning', label: 'Skeppssättningar', color: '#0d9488', count: 865, enabled: enabledLegendItems.heritage_skeppssattning === true },
-      { id: 'heritage_kalla', label: 'Källor (traditionella)', color: '#0ea5e9', count: 2098, enabled: enabledLegendItems.heritage_kalla === true },
-    ],
+    children: heritageChildren,
   });
+
+  // Kyrko-typerna som fristående poster (grupperas in i Kyrka & kristendom nedan).
+  items.push({ id: 'heritage_kyrka', label: 'Sockenkyrkor (RAÄ)', color: '#e11d48', count: 4223, enabled: enabledLegendItems.heritage_kyrka === true });
+  items.push({ id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: enabledLegendItems.heritage_kapell === true });
+  items.push({ id: 'heritage_kloster', label: 'Kloster (RAÄ)', color: '#c026d3', count: 94, enabled: enabledLegendItems.heritage_kloster === true });
 
   // 7. RESTEN - kultplatser och andra objekt - dynamisk räkning
   const religiousChildren = [
@@ -332,14 +338,52 @@ export const generateBasicInscriptionItems = (
     if (it) used.add(id);
     return it ?? null;
   };
+
+  // === KYRKA & KRISTENDOM ===
+  // Samlar de unika, enrichbara kyrkorna (ecclesiastical_churches) + RAÄ-kyrkotyperna +
+  // de kurerade kristna platserna (christian_sites-grenen) under EN kategori. christian_sites
+  // var en wrapper-kategori → plocka ut dess barn så vi slipper för djup nästling.
+  const christianWrapper = byId.get('christian_sites');
+  const christianKids = christianWrapper?.children ?? [];
+  let holyPlaces: LegendItem | null = null;
+  const christianChurchKids: LegendItem[] = [];
+  for (const c of christianKids) {
+    if (c.id === 'holy_places') holyPlaces = c;          // → flyttas till kultplatser (punkt 4)
+    else christianChurchKids.push(c);
+  }
+  if (christianWrapper) used.add('christian_sites');       // wrappern renderas inte separat
+
+  // Heliga platser → under kultplatser (religious_places) i stället för under kyrkorna.
+  const cult = byId.get('religious_places');
+  if (holyPlaces && cult && Array.isArray(cult.children)) {
+    cult.children.push({ ...holyPlaces, enabled: false });
+    cult.count = (cult.count || 0) + (holyPlaces.count || 0);
+  }
+
+  const churchChildren = [
+    byId.get('ecclesiastical_churches'),
+    byId.get('heritage_kyrka'), byId.get('heritage_kapell'), byId.get('heritage_kloster'),
+    ...christianChurchKids,
+  ].filter(Boolean) as LegendItem[];
+  churchChildren.forEach((c) => used.add(c.id));
+  const catChurch: LegendItem | null = churchChildren.length
+    ? { id: 'cat_church', label: '⛪ ' + t('churchAndChristianity'), color: '#e11d48',
+        count: sumCount(churchChildren), enabled: enabledLegendItems.cat_church !== false,
+        type: 'category', children: churchChildren }
+    : null;
+
+  // Folkgrupper: distinkta etiketter (tidigare hade wrappern OCH barnet samma namn).
+  const gtl = byId.get('germanic_timeline'); if (gtl) gtl.label = '🛡️ ' + t('germanicPeoples') + ' (tidslinje)';
+  const fg = byId.get('folk_groups'); if (fg) { fg.label = 'Folkgrupper (karta)'; fg.count = dbStats?.totalFolkGroups ?? fg.count; }
+
   const ordered: (LegendItem | null)[] = [
     group('cat_runic', 'ᛘ ' + t('runestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions']),
-    keep('ecclesiastical_churches'),
+    catChurch,
     keep('heritage_sites'),
     keep('religious_places'),
     keep('water_routes'), // Vägar ligger nu som undergrupp inuti water_routes
     group('cat_defense', '🏰 ' + t('fortresses'), '#dc2626', ['viking_fortresses', 'viking_cities', 'stake_barriers']),
-    group('cat_folk', '🛡️ ' + t('germanicPeoples'), '#8b5cf6', ['germanic_timeline', 'folk_groups', 'viking_regions']),
+    group('cat_folk', '🛡️ ' + t('peoplesAndRegions'), '#8b5cf6', ['germanic_timeline', 'folk_groups', 'viking_regions']),
     group('cat_geo', '📍 Platser & geodata', '#65a30d', ['place_names', 'historical_events', 'species_introductions', 'picture_stone_reuse', 'coins', 'adna_sites', 'paleo_shoreline']),
   ];
   const grouped = ordered.filter(Boolean) as LegendItem[];
