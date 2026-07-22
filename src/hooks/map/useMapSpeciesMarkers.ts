@@ -18,7 +18,7 @@ const PROXY_COLOR: Record<string, string> = {
 };
 const EVENT_COLOR: Record<string, string> = {
   epidemic: '#ef4444', climate: '#38bdf8', catastrophe: '#fb923c', settlement: '#a3e635',
-  military: '#f87171', raid: '#fb7185', political: '#818cf8',
+  military: '#f87171', raid: '#fb7185', political: '#818cf8', migration: '#c026d3',
 };
 const esc = (s: unknown) => String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c] as string));
 
