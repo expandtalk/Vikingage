@@ -1,0 +1,18 @@
+-- Vetenskaplig metod & referens som förstaklass i ontologin. Applicerad via MCP execute_sql.
+--
+-- 1. dating_methods (kontrollerad vokabulär, 9 st): radiocarbon (14C, brett intervall),
+--    dendrochronology (enskilt år), typology, numismatic (mynt = terminus post quem),
+--    stratigraphy, shoreline (landhöjning), osl, historical_text, adna_c14.
+-- 2. scientific_references (15 st): peer-review/vetenskap (författare/år/tidskrift/DOI/licens),
+--    skild från historical_sources (medeltida/litterära). DOI bara där säker (Margaryan 2020,
+--    Krzewińska 2018, Ottoni 2017, Haak 2015, Allentoft 2015); övriga med tidskrift/år.
+-- 3. ontology_entity_types: dating_method, reference, HILLFORT (swedish_hillforts saknades helt
+--    som entitetstyp trots 1235 fornborgar). rel_predicates: dated_by (entitet→reference,
+--    method i qualifier), dates_context (coin→hillfort, numismatisk TPQ), cites (entitet→reference).
+-- 4. Exempelkanter: Darsgärde/Sandby/Eskilstuna dated_by (radiocarbon/adna_c14); Vedby-denar &
+--    Erik Menved-mynt dates_context (numismatisk TPQ); 5 aDNA-platser cites Margaryan/Krzewińska.
+--    relationship.confidence='certain' (grafens vokab ≠ typade tabellernas belagd/trolig).
+-- 5. Moders-/faderslinje: mt_haplogroup=moderslinje, y_haplogroup=faderslinje (aDNA-genealogi);
+--    dokumenterat i ontology-v1.md; aDNA-popupen märker ♂ faderslinje (Y) / ♀ moderslinje (mt).
+--
+-- (Fullständig SQL kördes via execute_sql; DDL/seed i DB är auktoritativa.)

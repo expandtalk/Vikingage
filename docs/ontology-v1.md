@@ -34,8 +34,28 @@ ett domänbrett kontrakt.
 
 Aktiva: inscription, carver, artefact, king, source, coin, dynasty, theme, god, road,
 landscape, fortress, **place_name, name_dating, church, heritage_site, parish, hundred,
-diocese, species_introduction**, samt genetik-lagret **adna_site, genetic_individual**.
+diocese, species_introduction**, genetik-lagret **adna_site, genetic_individual**, samt
+vetenskapslagret **hillfort, dating_method, reference**.
 Planerade (deklarerade, data saknas): **hydronym, script_system, motif, taxation_unit**.
+
+### Vetenskaplig metod & referens (v1.2)
+Datering är inte en fri textnotis utan en metod + en referens.
+- `dating_method` (→ dating_methods): kontrollerad vokabulär — radiocarbon (14C, brett
+  intervall), dendrochronology (enskilt år), typology, **numismatic (mynt = terminus post
+  quem)**, stratigraphy, shoreline (landhöjning), osl, historical_text, adna_c14.
+- `reference` (→ scientific_references): peer-review/vetenskaplig referens (författare, år,
+  tidskrift, DOI, licens). Skild från historical_sources (medeltida/litterära källor).
+- Predikat: `dated_by` (entitet → reference; qualifier `method` = dating_method, `interval`,
+  `lab_no`, `confidence`), `dates_context` (coin → hillfort/site; numismatisk TPQ),
+  `cites` (entitet → reference). Ex: Darsgärde dated_by radiocarbon (Ambrosiani 1958);
+  Vedby-denaren dates_context Vedby borg (numismatic TPQ 193 e.Kr.).
+
+### Moders- & faderslinje (aDNA-genealogi)
+`genetic_individual.mt_haplogroup` = **moderslinjen** (ärvs mor→barn, alla individer).
+`genetic_individual.y_haplogroup` = **faderslinjen** (ärvs far→son, endast män). `kin_of`
+uttrycker släktskap (Salme-bröderna). Detta är släktforskningens logik i djuptid — men datat
+är ännu glest per individ (haplogrupper mest null); djupare ingest ur Margaryan 2020 suppl.
+krävs för fulla linjer.
 
 ### Genetik / aDNA (v1.1)
 DNA är en förstaklass-del av ontologin. `adna_site` (→ archaeological_sites) och

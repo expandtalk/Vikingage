@@ -44,9 +44,10 @@ export const useMapAncestrySites = ({ map, enabledLegendItems, isMapReady }: Pro
         if (!isFinite(lat) || !isFinite(lng)) return;
         const inds = bySite.get(s.id) ?? [];
         const indHtml = inds.map((i) =>
-          `<li style="margin-bottom:3px">
+          `<li style="margin-bottom:4px">
              <strong>${esc(i.sample_id)}</strong> ${i.genetic_sex ? `(${esc(i.genetic_sex)})` : ''}
-             ${i.y_haplogroup ? ` · Y:${esc(i.y_haplogroup)}` : ''}${i.mt_haplogroup ? ` · mt:${esc(i.mt_haplogroup)}` : ''}
+             ${i.y_haplogroup ? `<div style="font-size:10px"><span style="color:#3b82f6">♂ faderslinje (Y)</span>: ${esc(i.y_haplogroup)}</div>` : ''}
+             ${i.mt_haplogroup ? `<div style="font-size:10px"><span style="color:#db2777">♀ moderslinje (mt)</span>: ${esc(i.mt_haplogroup)}</div>` : ''}
              ${i.radiocarbon ? `<div style="font-size:10px;color:#64748b">14C ${esc(i.radiocarbon)}</div>` : ''}
              ${i.ancestry ? `<div style="font-size:10px;color:#64748b">${esc(i.ancestry)}</div>` : ''}
            </li>`).join('');
