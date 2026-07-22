@@ -24,10 +24,25 @@ export const useLegendManager = (
   // Fetch Christian sites data
   const { data: christianSites = [] } = useChristianSites();
 
-  // Initialize and update legend based on resolved profile preset (focus already merged upstream)
+  // "Kom ihåg min vy": spara/återställ legend-läget lokalt. När användaren INTE kommit
+  // via en focus-vy (kort/deep-link) och har en sparad vy → återställ den ovanpå profilen.
+  // Focus (kort) vinner alltid, så kuraterade vyer inte skrivs över.
+  const SAVED_VIEW_KEY = 'vikingage_saved_legend_view_v1';
   useEffect(() => {
-    setEnabledLegendItems({ ...roleLayerPreset });
-  }, [roleLayerPreset]);
+    let saved: Record<string, boolean> | null = null;
+    try { const raw = localStorage.getItem(SAVED_VIEW_KEY); if (raw) saved = JSON.parse(raw); } catch { /* privat läge */ }
+    if (!currentFocus && saved && typeof saved === 'object') {
+      setEnabledLegendItems({ ...roleLayerPreset, ...saved });
+    } else {
+      setEnabledLegendItems({ ...roleLayerPreset });
+    }
+  }, [roleLayerPreset, currentFocus]);
+
+  // Auto-spara vyn (så den kommer tillbaka nästa besök). Hoppar över tomt init-läge.
+  useEffect(() => {
+    if (Object.keys(enabledLegendItems).length === 0) return;
+    try { localStorage.setItem(SAVED_VIEW_KEY, JSON.stringify(enabledLegendItems)); } catch { /* quota/privat */ }
+  }, [enabledLegendItems]);
   
   console.log(`🎭 Legend Manager Debug (UPDATED):`);
   console.log(`  - Total inscriptions received: ${inscriptions.length}`);
