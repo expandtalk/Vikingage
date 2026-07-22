@@ -18,6 +18,9 @@ export interface SwedishHillfort {
   description?: string;
   status: string;
   period?: string;
+  dating_basis?: string;
+  dating_confidence?: string;
+  dating_source?: string;
   cultural_significance?: string;
   source_reference?: string;
 }

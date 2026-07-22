@@ -355,6 +355,18 @@ const Fortresses = () => {
                         {hillfort.period && (
                           <p className="text-xs text-muted-foreground mb-1">
                             <strong>{L.period}:</strong> {hillfort.period}
+                            {hillfort.dating_confidence && (
+                              <span
+                                className={`ml-2 px-1.5 py-0.5 rounded border text-[10px] align-middle ${
+                                  hillfort.dating_confidence === 'belagd' ? 'border-emerald-500 text-emerald-300'
+                                    : hillfort.dating_confidence === 'omtvistad' ? 'border-rose-500 text-rose-300'
+                                    : 'border-amber-500 text-amber-300'
+                                }`}
+                                title={hillfort.dating_basis || undefined}
+                              >
+                                {hillfort.dating_confidence}
+                              </span>
+                            )}
                           </p>
                         )}
                         {hillfort.cultural_significance && (
@@ -367,6 +379,12 @@ const Fortresses = () => {
 
                     {expandedCard === `hillfort-${hillfort.id}` && (
                       <div className="pt-2 border-t border-border space-y-2">
+                        {hillfort.dating_basis && (
+                          <p className="text-xs text-muted-foreground">
+                            <strong>{sv ? 'Dateringsgrund' : 'Dating basis'}:</strong> {hillfort.dating_basis}
+                            {hillfort.dating_source ? ` — ${hillfort.dating_source}` : ''}
+                          </p>
+                        )}
                         {hillfort.raa_number && (
                           <p className="text-xs text-muted-foreground"><strong>RAÄ:</strong> {hillfort.raa_number}</p>
                         )}

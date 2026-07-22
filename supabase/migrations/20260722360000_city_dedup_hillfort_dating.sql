@@ -1,0 +1,31 @@
+-- Städdedup + fornborgsdatering. Applicerad via MCP execute_sql; fil = proveniens.
+--
+-- 1. viking_cities: slog samman dubbletter (behöll rikaste/vikingatida rad, inga FK-refs):
+--    Århus→Aarhus (normaliserat, vikingatida namn Aros), Kaupang×2, Lund×2, Oslo×2,
+--    Roskilde×2, Sigtuna×2. Birka Bj 581 (kvinnlig vapengrav, Hedenstierna-Jonson 2017)
+--    var felkategoriserad som stad → innehållet foldat in i Birkas beskrivning, grav-raden
+--    borttagen. Grafstädning (relationship/entity_registry) för borttagna id:n.
+--
+-- 2. swedish_hillforts: nya kolumner dating_basis, dating_confidence (belagd/trolig/omtvistad),
+--    dating_source. period = brett intervall (ej enskilt årtal).
+--
+--    Dateringskriterier (Mikael Olausson 1995:143ff, 2009:44) för att skilja mellersta
+--    järnålderns (folkvandringstida) fornborgar från äldre hägnade berg/vallanläggningar:
+--      - kallmurning vanligare i mellersta järnålderns borgar
+--      - äldre anläggningar kan sakna mur på berg i dagen (symbolisk stenrad)
+--      - vallanläggningar ofta större yta; mellersta järnålder ofta högre murar + "utskott"
+--        (extra murdel omlott, ofta vid ingång)
+--      - läge/utsikt: mellersta järnålder överblickar egen bygd eller farled
+--    Stenby-komplexet efter Jensen-Urstad 2023 (masteruppsats, Stockholms univ).
+--
+--    Daterade (14 st): 14C/fynd (belagd) — Eketorp (Gräsgård 45:1, flera faser),
+--    Sandby borg (Sandby 45:1, massaker ~480), Eskilstuna 117:1 (14C 445±75), Adelsö 86:1
+--    (300–400), Darsgärde (Skederid 16:1, 14C 300-tal), Broborg (Husby-Långhundra 156:1).
+--    Morfologi+läge (trolig folkvandringstid) — Torsburgen (Kräklingbo 53:1, ~/före 100 e.Kr.),
+--    Aspö 140:1, Fogdö 56:1, Munktorp 24:1, Rytterne 63:1, Kärrbo 56:1, Torpa 68:1,
+--    Toresund 136:1. Avviker — Riala 172:1 (äldre vallanläggning, Olausson typ-2).
+--    OMTVISTAD — Träleborg (Vilske-Kleva 113:1): 14C på svedd jord 4880±350 BP ≈ 2800 f.Kr.
+--    (bondestenålder), trots förväntad folkvandringstid — illustrerar det enorma spannet.
+--
+-- (Fullständig SQL kördes via execute_sql; värdena i DB är auktoritativa. Sorunda 67:1 och
+--  Adelsö 86:1 saknas i swedish_hillforts under de RAÄ-numren — kan läggas till senare.)
