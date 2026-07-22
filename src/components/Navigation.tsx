@@ -25,6 +25,7 @@ import {
   Library,
   Tag,
   CalendarClock,
+  Share2,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -151,6 +152,13 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Ortnamnsleden vi söker (sakrala, makt, natur) — reproducerbar metod, källor och osäkerheter.',
     descEn: 'The place-name elements we search (sacral, power, nature) — reproducible method, sources, caveats.',
     icon: Tag, category: 'places',
+  },
+  {
+    pathEn: '/ontology', pathSv: '/ontologi',
+    labelSv: 'Ontologi', labelEn: 'Ontology',
+    descSv: 'Det agent-läsbara kontraktet: entitetstyper, relationer, mätmetoder, dateringsmetoder (kol-14, dendro, numismatik) och vetenskapliga referenser.',
+    descEn: 'The agent-readable contract: entity types, relations, measures, dating methods (14C, dendro, numismatic) and scientific references.',
+    icon: Share2, category: 'science',
   },
   {
     pathEn: '/texts', pathSv: '/texter',

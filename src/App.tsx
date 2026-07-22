@@ -33,6 +33,7 @@ const ThemePage = lazy(() => import("./pages/ThemePage"));
 const InscriptionPage = lazy(() => import("./pages/InscriptionPage"));
 const Statistics = lazy(() => import("./pages/Statistics"));
 const PlaceNames = lazy(() => import("./pages/PlaceNames"));
+const Ontology = lazy(() => import("./pages/Ontology"));
 const HistoricalEvents = lazy(() => import("./pages/HistoricalEvents"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -96,6 +97,8 @@ const App = () => (
                   {/* Other routes */}
                   <Route path="/place-names" element={<PlaceNames />} />
                   <Route path="/sv/ortnamn" element={<PlaceNames />} />
+                  <Route path="/ontology" element={<Ontology />} />
+                  <Route path="/ontologi" element={<Ontology />} />
                   <Route path="/historical-events" element={<HistoricalEvents />} />
                   <Route path="/sv/historiska-handelser" element={<HistoricalEvents />} />
                   <Route path="/prices" element={<Prices />} />
