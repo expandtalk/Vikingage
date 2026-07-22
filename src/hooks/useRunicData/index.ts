@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { loadEnhancedRunicDataWithBetterCoordinates } from './enhancedDataLoader';
 import { loadDatabaseStats } from './statsLoader';
+import { buildRunicInscriptionsQueryKey } from './queryKey';
 import type { UseRunicDataProps } from './types';
 
 export const useRunicData = (filters: UseRunicDataProps) => {
@@ -14,7 +15,7 @@ export const useRunicData = (filters: UseRunicDataProps) => {
     error: inscriptionsError,
     refetch: refetchInscriptions
   } = useQuery({
-    queryKey: ['runic-inscriptions-enhanced-v2', filters],
+    queryKey: buildRunicInscriptionsQueryKey(filters),
     queryFn: () => loadEnhancedRunicDataWithBetterCoordinates(filters),
     // 5 min cache per filterkombination — staleTime: 0 laddade om ~3000 rader
     // vid varje filterändring (P0-fix, se docs/kunskapsgraf-arkitektur.md).
