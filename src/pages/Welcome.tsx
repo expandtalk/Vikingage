@@ -2,6 +2,7 @@
 import React, { useState, Suspense, lazy } from 'react';
 import { Header } from '../components/Header';
 import { HeroSection } from '../components/welcome/HeroSection';
+import { ExploreViewCards } from '../components/welcome/ExploreViewCards';
 import { PageMeta } from '../components/PageMeta';
 import { useQuery } from '@tanstack/react-query';
 import { loadDatabaseStats } from '@/hooks/useRunicData/statsLoader';
@@ -76,6 +77,7 @@ const Welcome = () => {
         onSkipIntro={handleSkipIntro}
       />
 
+      <ExploreViewCards />
 
       <Suspense fallback={<div className="h-16 animate-pulse bg-white/10 rounded-lg mx-4" />}>
         <WelcomeFooter />
