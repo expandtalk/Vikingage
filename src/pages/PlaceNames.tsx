@@ -14,6 +14,7 @@ import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceN
 import { useRunicTheophoricSummary } from '@/hooks/useRunicTheophoricSummary';
 import { useNameDatings, eraSortYear } from '@/hooks/useNameDatings';
 import { DistanceStatsCard } from '@/components/placenames/DistanceStatsCard';
+import { FreeDistanceStatsCard } from '@/components/placenames/FreeDistanceStatsCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import {
   PLACE_NAME_ELEMENTS,
@@ -232,6 +233,9 @@ const PlaceNames = () => {
         {/* Steg 1: hypotestest — avstånd till sockenkyrka (box-plot) */}
         <DistanceStatsCard sv={sv} />
 
+        {/* Steg 2b: fri hypotesprövning — valfri testmängd/baslinje/mål */}
+        <FreeDistanceStatsCard sv={sv} />
+
         {/* Namnleds-katalog — "vilka ord", grupperat i evidensskikt */}
         <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'Namnleden vi söker' : 'The elements we search for'}</h2>
         <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
@@ -400,13 +404,18 @@ const PlaceNames = () => {
                             <td className="py-2 pr-4 text-right text-foreground">{r.n_osm.toLocaleString()}</td>
                             <td className="py-2 pr-4 text-right text-muted-foreground">{r.n_curated}</td>
                             <td className="py-2 pr-4 text-right text-muted-foreground">{runicN != null ? runicN : '—'}</td>
-                            <td className="py-2 text-right">
+                            <td className="py-2 text-right whitespace-nowrap">
                               {r.n_curated > 0 && (
                                 <Button variant="ghost" size="sm" className="h-7 text-xs text-gold hover:bg-slate-700/40"
                                   onClick={() => { setElementKey(r.key); scrollToList(); }}>
-                                  <MapPin className="h-3 w-3 mr-1" />{sv ? 'visa' : 'show'}
+                                  {sv ? 'lista' : 'list'}
                                 </Button>
                               )}
+                              <a href={`/explore?element=${r.key}`}
+                                className="inline-flex items-center gap-1 text-xs text-gold hover:underline ml-2"
+                                title={sv ? `Visa alla ${r.n_osm} orter på kartan` : `Show all ${r.n_osm} on the map`}>
+                                <MapPin className="h-3 w-3" />{sv ? 'karta' : 'map'}
+                              </a>
                             </td>
                           </tr>
                         );

@@ -7,6 +7,8 @@ import { FilterPanel } from '../filters/FilterPanel';
 import { DraggableLegend } from '../legend/DraggableLegend';
 import { ProximityControl } from './ProximityControl';
 import { EpochControl } from './EpochControl';
+import { ElementSpotlightControl } from './ElementSpotlightControl';
+import { RulerControl } from './RulerControl';
 import { LegendItem } from '@/types/common';
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -90,6 +92,8 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
     <>
       <ProximityControl />
       <EpochControl visible={speciesOn} />
+      <ElementSpotlightControl />
+      <RulerControl />
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
       {onToggleLegend && !showLegend && (
         <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">

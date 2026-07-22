@@ -11,6 +11,8 @@ import { useMapHeritageSites } from './useMapHeritageSites';
 import { useMapChurches } from './map/useMapChurches';
 import { useMapProximityProbe } from './map/useMapProximityProbe';
 import { useMapSpeciesMarkers } from './map/useMapSpeciesMarkers';
+import { useMapElementMarkers } from './map/useMapElementMarkers';
+import { useMapRuler } from './map/useMapRuler';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -180,6 +182,12 @@ export const useMapInitialization = ({
 
   // Art-/innovationsintroduktioner (koordinatsatta), filtrerat på vald tidsepok.
   useMapSpeciesMarkers({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+
+  // Ortnamnsled-spotlight (2c): visar OSM-orter med valt led (URL ?element=tor).
+  useMapElementMarkers({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Punkt-till-punkt-linjal (2d).
+  useMapRuler({ map: map.current, isMapReady: isMapReadyRef });
 
   return {
     mapContainer, 
