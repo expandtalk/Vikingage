@@ -1,0 +1,17 @@
+-- Av-hårdkodning av fyra dataset + tidsperiod-skalan → DB. Tabeller+RLS via MCP,
+-- data seedad med scripts/data/seed-hardcoded-datasets.mjs (esbuild-eval av TS-modulerna)
+-- samt inline-SQL för time_periods. Fil = proveniens. DB auktoritativ.
+--
+-- Nya tabeller (RLS: publik läsning, admin skriv via is_admin()):
+--   archaeological_finds   (28)  ur src/utils/archaeologicalFinds (data.ts + newSwedishFinds)
+--   viking_regions         (52)  ur src/utils/vikingRegions/vikingRegionData.ts
+--   valdemar_route_points  (49)  ur src/utils/routes/* (ordnad via seq)
+--   germanic_periods       (9)   ur src/utils/germanicTimeline/periods/* (helt objekt i detail jsonb)
+--   time_periods           (9)   ur TimePeriodSelector ALL_HISTORICAL_PERIODS
+--
+-- Hooks (DB + hårdkodad fallback): useArchaeologicalFindsDb, useVikingRegionsDb,
+--   useValdemarRouteDb, useGermanicPeriodsDb, useTimePeriods.
+-- Konsument omkopplad: TimePeriodSelector → useTimePeriods.
+-- Kvar (identiskt innehåll): imperativa kartlager (arkeologiska fynd, vikingaregioner,
+--   Valdemars segelled) + germansk tidslinje-UI läser fortf. arrayerna — omkoppling
+--   som separat steg (rör live-kartan/tidslinjen, kräver visuell QA).
