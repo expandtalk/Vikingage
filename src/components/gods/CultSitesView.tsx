@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Sparkles, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { RELIGIOUS_PLACES, type ReligiousPlace } from '@/utils/religiousLocations/religiousPlacesData';
+import { type ReligiousPlace } from '@/utils/religiousLocations/religiousPlacesData';
+import { useCultSites } from '@/hooks/useCultSites';
 import { PLACE_TYPE_LABEL } from '@/components/excursions/nearbyLabels';
 
 // Heliga källor & kultplatser (focus=cultSites): PLATSERNA i fokus — lista grupperad
@@ -39,19 +40,20 @@ export const CultSitesView: React.FC<Props> = ({ onNavigate }) => {
   const { language } = useLanguage();
   const sv = language === 'sv';
   const [deityFilter, setDeityFilter] = useState<string | null>(null);
+  const { data: places = [] } = useCultSites();
 
   const groups = useMemo(() => {
     const byDeity = new Map<string, ReligiousPlace[]>();
-    for (const p of RELIGIOUS_PLACES) {
+    for (const p of places) {
       if (!byDeity.has(p.deity)) byDeity.set(p.deity, []);
       byDeity.get(p.deity)!.push(p);
     }
     return DEITY_ORDER
       .filter((d) => byDeity.has(d))
       .map((d) => ({ deity: d, places: byDeity.get(d)!.sort((a, b) => a.name.localeCompare(b.name, 'sv')) }));
-  }, []);
+  }, [places]);
 
-  const total = RELIGIOUS_PLACES.length;
+  const total = places.length;
   const shown = deityFilter ? groups.filter((g) => g.deity === deityFilter) : groups;
 
   return (
