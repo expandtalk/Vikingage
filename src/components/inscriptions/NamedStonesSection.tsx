@@ -98,10 +98,10 @@ export const NamedStonesSection: React.FC = () => {
         to={`/inscription/${encodeURIComponent(s.signum)}`}
         className="viking-card rounded-lg border border-border overflow-hidden hover:bg-card/80 transition-colors group flex flex-col"
       >
+        {/* Porträtt-format (aspect 3/4) + object-contain så höga stenar (Rök, Sparlösa,
+            Tjängvide…) syns i sin helhet utan beskärning. Mörk bakgrund bakom eventuell
+            letterbox. Landskaps-bilder får då lite marginal upp/ner — acceptabelt. */}
         {s.image_url && (
-          {/* Porträtt-format (aspect 3/4) + object-contain så höga stenar (Rök, Sparlösa,
-              Tjängvide…) syns i sin helhet utan beskärning. Mörk bakgrund bakom eventuell
-              letterbox. Landskaps-bilder får då lite marginal upp/ner — acceptabelt. */}
           <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-900/40">
             <img
               src={s.image_url}
