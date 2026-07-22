@@ -14,6 +14,7 @@ import { useMapSpeciesMarkers } from './map/useMapSpeciesMarkers';
 import { useMapElementMarkers } from './map/useMapElementMarkers';
 import { useMapRuler } from './map/useMapRuler';
 import { useMapPictureStones } from './map/useMapPictureStones';
+import { useMapCoins } from './map/useMapCoins';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -192,6 +193,9 @@ export const useMapInitialization = ({
 
   // Bildsten-spolia (picture_stone_reuse) — färg per Lindqvist-period, gate: legendknappen.
   useMapPictureStones({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+
+  // Mynt/fynd (coins) på fyndplats-koordinat — färg per metall, gate: legendknappen.
+  useMapCoins({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
 
   return {
     mapContainer, 

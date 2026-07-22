@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock } from 'lucide-react';
+import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock, ChevronDown, FlaskConical } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
 import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceNameAttestations';
@@ -15,6 +15,7 @@ import { useRunicTheophoricSummary } from '@/hooks/useRunicTheophoricSummary';
 import { useNameDatings, eraSortYear } from '@/hooks/useNameDatings';
 import { DistanceStatsCard } from '@/components/placenames/DistanceStatsCard';
 import { FreeDistanceStatsCard } from '@/components/placenames/FreeDistanceStatsCard';
+import { ChurchDistanceCard } from '@/components/placenames/ChurchDistanceCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import {
   PLACE_NAME_ELEMENTS,
@@ -37,6 +38,43 @@ const FEATURE_CATEGORY_LABELS: Record<string, { sv: string; en: string }> = {
   kust_hamn: { sv: 'Kust & hamn', en: 'Coast & harbour' },
   natur: { sv: 'Natur', en: 'Nature' },
 };
+
+// Utfällbar sektion — kondenserar referensmaterialet så hypotestestaren får fokus.
+const Section: React.FC<{ title: string; count?: number; defaultOpen?: boolean; children: React.ReactNode }> = ({ title, count, defaultOpen, children }) => {
+  const [open, setOpen] = useState(!!defaultOpen);
+  return (
+    <div className="mb-4 border border-slate-700/50 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/40 hover:bg-slate-800/60 text-left transition-colors"
+        aria-expanded={open}
+      >
+        <span className="text-lg font-semibold text-foreground flex items-center gap-2">
+          {title}
+          {count != null && <Badge variant="secondary">{count}</Badge>}
+        </span>
+        <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && <div className="p-4 pt-2">{children}</div>}
+    </div>
+  );
+};
+
+// Vad grupperna i hypotestestaren betyder — med de faktiska leden som ingår.
+const GROUP_DEFS: { key: string; sv: string; en: string; color: string; desc: string; descEn: string; els: string[] }[] = [
+  { key: 'makt', sv: 'Makt', en: 'Power', color: '#3b82f6',
+    desc: 'Centralortsled som pekar på kunglig/administrativ makt (kungsgårdar, uppbörd, organisation).',
+    descEn: 'Central-place elements pointing to royal/administrative power.',
+    els: ['tuna', 'husby', 'sala', 'karleby', 'sätuna'] },
+  { key: 'kontroll', sv: 'Kontroll (baslinje)', en: 'Control (baseline)', color: '#94a3b8',
+    desc: 'Vanliga bebyggelsesuffix utan särskild kult- eller maktkoppling. Detta är NOLLMÄTNINGEN man jämför de andra grupperna mot.',
+    descEn: 'Ordinary settlement suffixes — the baseline the other groups are compared against.',
+    els: ['by', 'sta', 'torp'] },
+  { key: 'sakralt', sv: 'Sakralt', en: 'Sacral', color: '#c084fc',
+    desc: 'Teofora/kultled som pekar på förkristen kult (gudanamn + kultplatsord).',
+    descEn: 'Theophoric/cult elements pointing to pre-Christian cult.',
+    els: ['tor', 'frö', 'oden', 'ull', 'vi', 'lund', 'harg', 'hov'] },
+];
 
 const PlaceNames = () => {
   const { language } = useLanguage();
@@ -144,21 +182,84 @@ const PlaceNames = () => {
           </p>
         </div>
 
-        {/* Metod */}
-        <Card className="viking-card mb-8">
-          <CardHeader>
-            <CardTitle className="text-foreground">{sv ? 'Så här gör vi' : 'How we work'}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted-foreground">
+        {/* ===== HYPOTESTESTAREN (i fokus) ===== */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
+            <FlaskConical className="h-7 w-7 text-gold" />
+            {sv ? 'Hypotestestaren' : 'The hypothesis tester'}
+          </h2>
+          <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
+          <p className="text-sm text-muted-foreground max-w-3xl mb-4">
+            {sv
+              ? 'Verktyget mäter var olika sorters ortnamn ligger i förhållande till kyrkor, fornborgar och andra objekt. Idén: om en namntyp systematiskt ligger nära (eller långt från) något, är det ett spår värt att undersöka. Du kan mäta avstånd till närmaste objekt, eller räkna hur många objekt som ligger inom en dagsresa. Allt redovisar antal (n), median och osäkerhet — inga tvärsäkra slutsatser.'
+              : 'The tool measures where different kinds of place names sit relative to churches, hillforts and other features. If a name type systematically lies near (or far from) something, that is a lead worth probing. Measure distance to the nearest feature, or count features within a day’s travel.'}
+          </p>
+
+          {/* Vad grupperna betyder */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+            {GROUP_DEFS.map((g) => (
+              <Card key={g.key} className="viking-card">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2" style={{ color: g.color }}>
+                    ● {sv ? g.sv : g.en}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs text-muted-foreground space-y-2">
+                  <p>{sv ? g.desc : g.descEn}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {g.els.map((k) => (
+                      <span key={k} className="px-1.5 py-0.5 rounded border border-slate-600 text-slate-300">{elementLabel(k)}</span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Steg 1: fast baslinjetest */}
+          <DistanceStatsCard sv={sv} />
+
+          {/* Bygg ett eget test (avstånd / antal inom dagsresa, valfri form) */}
+          <FreeDistanceStatsCard sv={sv} />
+
+          {/* Avstånd mellan kyrkorna */}
+          <ChurchDistanceCard sv={sv} />
+
+          {/* Så förbättrar vi urvalet */}
+          <Card className="viking-card border-sky-700/40">
+            <CardContent className="py-4 text-sm text-muted-foreground space-y-2">
+              <p className="text-foreground font-medium">{sv ? 'Så gör vi urvalet bättre' : 'How we improve the sample'}</p>
+              <p>
+                {sv
+                  ? 'Dagens punkter kommer mest från OSM-gazetteern, som är ojämn i precision och saknar ålder. Starkare statistik kräver fler verifierade punkter från auktoritativa källor:'
+                  : 'Today’s points come mostly from the OSM gazetteer, uneven in precision and without age. Stronger statistics need more verified points from authoritative sources:'}
+              </p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>{sv ? 'Lantmäteriets ortnamn och Isof Ortnamnsregistret (kanonisk namnform + koordinat)' : 'Lantmäteriet place names & Isof name register'}</li>
+                <li>{sv ? 'Jordbruksverkets blockdatabas (bytomter/åkermark → bebyggelsepunkt)' : 'Jordbruksverket block database (village tofts / arable → settlement point)'}</li>
+                <li>{sv ? 'Fornsök/RAÄ (Kulturmiljöregistret) för daterade lämningar intill bytomten' : 'Fornsök/RAÄ heritage register for dated remains by the toft'}</li>
+              </ul>
+              <p>
+                {sv
+                  ? 'Fler verifierade punkter → möjlighet att skilja tidiga från sena namn och att mäta per landskap i stället för hela landet på en gång.'
+                  : 'More verified points → separate early from late names and measure per province.'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Metod (kondenserad) */}
+        <Section title={sv ? 'Så här gör vi (metod)' : 'How we work (method)'}>
+          <div className="space-y-3 text-sm text-muted-foreground">
             <p>
               {sv
                 ? 'Varje namnled har en dokumenterad inklusionsregel (matchningsmönster och kända falska träffar) som bestäms i förväg — inte ad hoc. Urvalet ska gå att upprepa och stavningsvarianterna redovisas.'
-                : 'Each element has a documented inclusion rule (match patterns and known false hits) decided in advance, not ad hoc. The selection is reproducible and spelling variants are listed.'}
+                : 'Each element has a documented inclusion rule decided in advance, not ad hoc. The selection is reproducible and spelling variants are listed.'}
             </p>
             <p>
               {sv
                 ? 'Kategorierna (sakralt, makt, natur) är bästa gissning, inte påståenden. Flera led är etymologiskt omtvistade och märks med ⚠︎.'
-                : 'The categories (sacral, power, nature) are best guesses, not claims. Several elements are etymologically contested and marked ⚠︎.'}
+                : 'The categories are best guesses, not claims. Several elements are contested and marked ⚠︎.'}
             </p>
             <p>
               {sv
@@ -170,18 +271,16 @@ const PlaceNames = () => {
               <span><strong className="text-foreground">{PLACE_NAME_ELEMENTS.length}</strong> {sv ? 'namnled i katalogen' : 'catalogued elements'}</span>
               <span><strong className="text-foreground">{PLACE_NAME_ELEMENTS.filter((e) => e.contested).length}</strong> {sv ? 'omtvistade' : 'contested'}</span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </Section>
 
-        {/* De äldsta daterade bebyggelsenamnen (Vikstrand 2013) */}
+        {/* De äldsta daterade bebyggelsenamnen (kondenserad) */}
         {oldestNames.length > 0 && (
-          <div className="mb-10">
-            <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'De äldsta bebyggelsenamnen' : 'The oldest settlement names'}</h2>
-            <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
+          <Section title={sv ? 'De äldsta bebyggelsenamnen' : 'The oldest settlement names'} count={datings.length}>
             <p className="text-sm text-muted-foreground max-w-3xl mb-3">
               {sv
                 ? 'Namn som går att datera arkeologiskt, äldst först. Dateringen är fyndplatsens (boplats eller gravfält intill bytomten) och en hypotes om namnets ålder — inte en objektiv mätpunkt. ⚠︎ markerar de fall där Vikstrand själv satte frågetecken.'
-                : 'Names that can be dated archaeologically, oldest first. The dating is that of the find spot (settlement or grave field by the village toft) and a hypothesis about the name’s age — not an objective measurement. ⚠︎ marks the cases where Vikstrand himself was uncertain.'}
+                : 'Names datable archaeologically, oldest first. The dating is that of the find spot and a hypothesis about the name’s age. ⚠︎ marks Vikstrand’s own uncertainty.'}
             </p>
             <div className="flex flex-wrap gap-4 mb-4 text-sm text-muted-foreground">
               <span><strong className="text-foreground">{datings.length}</strong> {sv ? 'daterade namn' : 'dated names'}</span>
@@ -227,22 +326,15 @@ const PlaceNames = () => {
                 </Card>
               ))}
             </div>
-          </div>
+          </Section>
         )}
 
-        {/* Steg 1: hypotestest — avstånd till sockenkyrka (box-plot) */}
-        <DistanceStatsCard sv={sv} />
-
-        {/* Steg 2b: fri hypotesprövning — valfri testmängd/baslinje/mål */}
-        <FreeDistanceStatsCard sv={sv} />
-
-        {/* Namnleds-katalog — "vilka ord", grupperat i evidensskikt */}
-        <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'Namnleden vi söker' : 'The elements we search for'}</h2>
-        <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
+        {/* Namnleds-katalog (kondenserad) */}
+        <Section title={sv ? 'Namnleden vi söker' : 'The elements we search for'} count={PLACE_NAME_ELEMENTS.length}>
         <p className="text-sm text-muted-foreground max-w-3xl mb-6">
           {sv
             ? 'Leden är indelade i evidensskikt: den erkända kärnan (teofora/kultiska led), den utvidgade hypotesen (topografi-först/omtvistade), och kontroller (bebyggelsesuffix — baslinjen man mäter signal mot). Varje led har en sakral-konfidens och en boundary-regel som gör matchningen förutsägbar.'
-            : 'Elements are grouped into evidence layers: the recognised core (theophoric/cultic), the extended hypothesis (topography-first/contested), and controls (settlement suffixes — the baseline signal is measured against). Each element has a sacral confidence and a boundary rule that makes matching predictable.'}
+            : 'Elements are grouped into evidence layers: the recognised core, the extended hypothesis, and controls. Each element has a sacral confidence and a boundary rule.'}
         </p>
 
         {(['core', 'extended', 'control'] as EvidenceLayer[]).map((layer) => {
@@ -319,12 +411,11 @@ const PlaceNames = () => {
             </p>
           </CardContent>
         </Card>
+        </Section>
 
-        {/* Namnleden i runinskrifterna — korsanalys mot runkorpusen */}
+        {/* Namnleden i runinskrifterna (kondenserad) */}
         {runic && (
-          <div className="mb-10">
-            <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'Namnleden i runinskrifterna' : 'The elements in the runic inscriptions'}</h2>
-            <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
+          <Section title={sv ? 'Namnleden i runinskrifterna' : 'The elements in the runic inscriptions'}>
             <p className="text-sm text-muted-foreground max-w-3xl mb-4">
               {sv
                 ? `Samma teofora led vi letar efter i ortnamnen dyker upp i runornas personnamn. En oberoende konsistenskoll mot ${runic.total_with_translit.toLocaleString()} translittererade inskrifter — Tor dominerar, och är dessutom det enda ledet med faktisk kultformel.`
@@ -430,14 +521,12 @@ const PlaceNames = () => {
                 </p>
               </div>
             )}
-          </div>
+          </Section>
         )}
 
-        {/* Beläggkedjor över tid (pilot) */}
+        {/* Beläggkedjor över tid (kondenserad) */}
         {chains.length > 0 && (
-          <div className="mb-10">
-            <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'Belägg över tid' : 'Attestations over time'}</h2>
-            <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
+          <Section title={sv ? 'Belägg över tid' : 'Attestations over time'} count={chains.length}>
             <p className="text-sm text-muted-foreground max-w-3xl mb-2">
               {sv
                 ? 'Dokumenterade historiska stavningar per ort (pilot, transkriberat ur Isof Ortnamnsregistret / Riksarkivet via Nyholm 2025). Färgen visar formtyp — så man kan se ev. skiften val→vad→vål över tid utan att ta ställning till vad namnet betydde.'
@@ -479,12 +568,12 @@ const PlaceNames = () => {
                 </Card>
               ))}
             </div>
-          </div>
+          </Section>
         )}
 
-        {/* Ortnamnslistan från DB */}
-        <h2 id="place-name-list" className="text-2xl font-bold text-foreground mb-1 scroll-mt-24">{sv ? 'Ortnamnen' : 'The place names'}</h2>
-        <div className="h-0.5 w-16 bg-accent/60 rounded mb-4" />
+        {/* Ortnamnslistan från DB (kondenserad, öppen som standard) */}
+        <div id="place-name-list" className="scroll-mt-24" />
+        <Section title={sv ? 'Ortnamnen' : 'The place names'} count={places.length} defaultOpen>
 
         {/* Fritextsök */}
         <div className="relative mb-4 max-w-md">
@@ -590,6 +679,7 @@ const PlaceNames = () => {
             ))}
           </div>
         )}
+        </Section>
       </main>
       <Footer />
     </div>

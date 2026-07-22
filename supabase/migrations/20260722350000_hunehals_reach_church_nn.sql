@@ -1,0 +1,18 @@
+-- Hunehals borg + hypotestestar-RPC:er. Applicerad via MCP execute_sql; fil = proveniens.
+-- Källa Hunehals: Ericsson 2015, Kulturmiljörapport 2015:35 (forskningsundersökning 2014);
+-- Håkansson 2014; SVT 2026-07-17 (5000-årig pilspets). Koordinat ur Wikidata (57.44853,12.06865).
+--
+-- 1. swedish_hillforts: Hunehals borg (Hanhals sn, Halland, RAÄ Hanhals 71:1), näsborg 1200–1300-tal,
+--    greve Jakob Nielsen; systerborg till Hjelm.
+-- 2. coins: Erik Menved-penning (1310–19) funnen i schakt 7 vid Hunehals (HM 28795:28,
+--    myntbest. Gitte Tarnow Ingvardson, LUHM).
+-- 3. reach_poly(lat,lng,radius_km,shape): geodetisk form-polygon (cirkel = ST_Buffer;
+--    fyrkant = hörn i 45/135/225/315°; hexagon = 0/60/120/180/240/300°) — samma logik som
+--    features_in_shape.
+-- 4. shape_reach_stats(p_test[],p_baseline[],p_target,p_shape,p_radius_km): median/medel/p90 av
+--    antal målobjekt (church/heritage/fortress/runestone/spolia) inom formen kring varje
+--    OSM-ortnamn, per grupp. Driver "antal inom en dagsresa"-läget i hypotestestaren.
+-- 5. church_nn_stats(): fördelning av varje kyrkas avstånd till närmaste andra kyrka
+--    (ecclesiastical_sites, geodetisk KNN). Median ~3,0 km (n≈4146).
+--
+-- (Fullständig SQL kördes via execute_sql; funktionsdefinitionerna är auktoritativa i DB.)
