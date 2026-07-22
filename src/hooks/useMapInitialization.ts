@@ -15,6 +15,7 @@ import { useMapElementMarkers } from './map/useMapElementMarkers';
 import { useMapRuler } from './map/useMapRuler';
 import { useMapPictureStones } from './map/useMapPictureStones';
 import { useMapCoins } from './map/useMapCoins';
+import { useMapAncestrySites } from './map/useMapAncestrySites';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -196,6 +197,9 @@ export const useMapInitialization = ({
 
   // Mynt/fynd (coins) på fyndplats-koordinat — färg per metall, gate: legendknappen.
   useMapCoins({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+
+  // aDNA-platser (archaeological_sites + genetic_individuals) — gate: legendknappen.
+  useMapAncestrySites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
 
   return {
     mapContainer, 

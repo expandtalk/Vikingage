@@ -160,8 +160,8 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
     case 'geneticEvents':
       // Genetik/djuptid: tänd arts- & händelselagret (aDNA-introduktioner + befolknings-/
       // migrationshändelser) så deep-time-datat syns. Epok-väljaren står på "Alla" som default.
-      console.log('🧬 Genetic Events focus: arter & händelser (djuptid)');
-      return { ...basePresets, species_introductions: true };
+      console.log('🧬 Genetic Events focus: arter & händelser (djuptid) + aDNA-platser');
+      return { ...basePresets, species_introductions: true, adna_sites: true };
       
     case 'inscriptions':
     default:
