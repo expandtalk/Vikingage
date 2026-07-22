@@ -59,7 +59,7 @@ const HERITAGE_TYPE_KEYS: Record<string, string> = {
   heritage_kyrka: 'kyrka', heritage_kapell: 'kapell', heritage_kloster: 'kloster',
   heritage_vardkase: 'vårdkase', heritage_dos: 'dös', heritage_ganggrift: 'gånggrift',
   heritage_bildsten: 'bildsten', heritage_skeppssattning: 'skeppssättning',
-  heritage_kalla: 'Källa med tradition',
+  heritage_kalla: 'Källa med tradition', heritage_labyrint: 'labyrint',
 };
 
 export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady }: Props) => {
