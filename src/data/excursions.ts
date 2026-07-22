@@ -403,25 +403,26 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   {
     id: 'arsta-skalgropar',
     photoDir: 'arsta-skalgropar',
-    name: 'Årsta – skålgropar & Vallagravfältet',
+    name: 'Årsta – skålgropar & Valla',
     region: 'Årsta, Stockholm',
     group: 'Södermanland',
     period: 'Bronsålder & romersk järnålder–vikingatid',
     coords: { lat: 59.29224, lng: 18.03064 },
     relatedKings: ['Emund den gamle'],
-    // Endast verifierade lägen får markör (Fornsök/rapport-koordinater eller OSM).
-    // Det 1958–59 borttagna gravfältskomplexet har bara ungefärligt läge → flaggat.
-    // Övriga skålgropar i trakten nämns i texten men plottas INTE (inga exakta lägen).
+    // OBS: koordinaterna här är ungefärliga och RAÄ-nummer/källcitat har tagits bort
+    // (2026-07: de var AI-genererade och kunde inte verifieras — får ej hittas på). Slå upp
+    // exakta fornlämningsnummer i RAÄ Fornsök innan de återinförs. Det 1958–59 borttagna
+    // gravfältskomplexet har bara ungefärligt läge. Övriga skålgropar plottas INTE.
     points: [
-      { name: 'Skålgropsstenen (RAÄ Brännkyrka 222:1)', lat: 59.29217, lng: 18.03093, note: 'Hällristning/älvkvarn vid Årsta partihallar, Östberga (Brunnbyvägen 20). Källa: Fornsök RAÄ Brännkyrka 222:1.' },
-      { name: 'Vallagravfältet (RAÄ Brännkyrka 77:1)', lat: 59.29473, lng: 18.05105, note: 'Vikingatida gravfält vid Valla torg, ca 35 gravar; bytomten Valla/Nedre Valla intill. Källa: Vinberg m.fl. 2012.' },
-      { name: 'Göta landsväg (RAÄ Stockholm 227)', lat: 59.29371, lng: 18.05622, note: 'Belagd rest av medeltidens riksväg söderut. Källa: Vinberg m.fl. 2012.' },
-      { name: 'Spärranordningen i Årstaviken (RAÄ 660)', lat: 59.306738, lng: 18.048976, note: 'Möjlig pålspärr vid Årstaholmarna, trolig datering 900–1200. Källa: Fornsök L2013:4298.' },
+      { name: 'Skålgropssten vid Brunnbyvägen', lat: 59.29217, lng: 18.03093, note: 'Hällristning/älvkvarn vid Årsta partihallar, Östberga (Brunnbyvägen). Läge ungefärligt — slå upp exakt fornlämningsnummer i RAÄ Fornsök.' },
+      { name: 'Fornlandskapet vid Valla torg', lat: 59.29473, lng: 18.05105, note: 'Fornlämningsmiljö vid Valla torg, intill den gamla gården Valla. Läge ungefärligt — verifiera i RAÄ Fornsök.' },
+      { name: 'Göta landsväg (rest)', lat: 59.29371, lng: 18.05622, note: 'Belagd rest av medeltidens riksväg söderut. Läge ungefärligt — verifiera i RAÄ Fornsök.' },
+      { name: 'Möjlig pålspärr i Årstaviken', lat: 59.306738, lng: 18.048976, note: 'Möjlig pålspärr vid Årstaholmarna, trolig datering 900–1200. Läge ungefärligt — verifiera i RAÄ Fornsök.' },
       { name: 'Ersta gård & det borttagna gravfältet', lat: 59.2921, lng: 18.0362, note: 'Ersta gårdsväg minner om gården (riven 1970-tal). Väster härom låg de 1958–59 utgrävda och borttagna gravfälten. Läge ungefärligt.' },
       { name: 'Årsta gård', lat: 59.2985, lng: 18.0475, note: 'Herrgård vid Årstaviken med medeltida rötter (nuvarande huvudbyggnad 1600–1700-tal). Enligt traditionen tog Birger Jarl upp skatt från bygden här. Se maktsäten-lagret i Utforska.' },
     ],
     sv: `## Varför är det värt ett besök
-Vid Brunnbyvägen i Årsta ligger en skålgropssten — även kallad offersten eller älvkvarn (RAÄ Brännkyrka 222:1). Men platsen är mer än en sten. Runt Valla torg ligger ett helt fornlandskap som spänner från bronsålder till vikingatid, knutet till den gamla gården Valla och vattenvägen in mot Birka. Årsta är dessutom ovanligt rikt på skålgropar — ett halvdussin lokaler till finns inom gång- och cykelavstånd i Östberga, Älvsjö och Högdalen.
+Vid Brunnbyvägen i Årsta ligger en skålgropssten — även kallad offersten eller älvkvarn. Men platsen är mer än en sten. Runt Valla torg ligger ett helt fornlandskap som spänner från bronsålder till vikingatid, knutet till den gamla gården Valla och vattenvägen in mot Birka. Årsta är dessutom ovanligt rikt på skålgropar — ett halvdussin lokaler till finns inom gång- och cykelavstånd i Östberga, Älvsjö och Högdalen.
 
 ## Vad är en skålgrop?
 En skålgrop är en i berget knackad rund grop, från någon centimeter upp till decimeterstora, huggna med knacksten under framför allt bronsåldern. De sitter på släta rundhällar och flyttblock, ofta vid forntida åkrar och stränder. Den vanligaste tolkningen kopplar dem till fruktbarhetskulten — man tänker sig ritualer för god äring (skörd).
@@ -432,16 +433,16 @@ I folktron kallades de älvkvarnar och stenarna offer- eller blotstenar. I Mäla
 Namnet Valla kommer av fornsvenskans *valder*: jämn, gräsbevuxen mark avsedd för ett allmänt ändamål — ting, marknad eller kult, alltså en medelpunkt i bygden. Valla gård gav namn åt Valla å, som rann ut i Årstaviken. Under järnålder och vikingatid var ån segelbar: från Årstafältet nådde man Birka på några timmars segling. Åns utlopp, det medeltida *Aros/Arus* (åmynning), gav namnet Årsta — 1305 skrivet "Arusboawik", "de som bor i byn Aros". Strax intill låg den gamla gården Ersta, en av de äldsta i Brännkyrka (belagd på 1500-talet; Ersta gårdsväg minner om den idag).
 
 ## Gravfälten — "Stockholm före Stockholm"
-1958–59 undersökte och tog Stadsmuseet bort tre stora gravfält på södra Årstafältet för att ge plats åt partihallarna — sammanlagt omkring 400 fornlämningar. Det märkligaste var ett romerskt järnåldersgravfält (~100–200 e.Kr.) med över 200 gravar, resta bautastenar och vapengravar — ett av de nordligaste i sitt slag och ett bevis på att trakten var bebodd redan kring Kristi födelse. Här fanns också byn Åbys och byn Brunnbys vikingatida gravfält. I en storhög med sju begravningar låg överst en hövdinggrav från tidigt 900-tal: ett svärd nedstucket rakt i marken, skäggyxa, ridutrustning, spelbrickor och trådar av rent guld invävda i textil — med nära motsvarigheter i Birkas gravar. (Källa: Undersökningarna på Årstafältet 1958–59, Bih. nr 43 år 1960.)
+1958–59 undersökte och tog Stadsmuseet bort tre stora gravfält på södra Årstafältet för att ge plats åt partihallarna — sammanlagt omkring 400 fornlämningar. Det märkligaste var ett romerskt järnåldersgravfält (~100–200 e.Kr.) med över 200 gravar, resta bautastenar och vapengravar — ett av de nordligaste i sitt slag och ett bevis på att trakten var bebodd redan kring Kristi födelse. Här fanns också byn Åbys och byn Brunnbys vikingatida gravfält. I en storhög med sju begravningar låg överst en hövdinggrav från tidigt 900-tal: ett svärd nedstucket rakt i marken, skäggyxa, ridutrustning, spelbrickor och trådar av rent guld invävda i textil — med nära motsvarigheter i Birkas gravar. (Källa: Stadsmuseets undersökningar på Årstafältet 1958–59.)
 
 ## Kungagraven — vad traditionen säger
-Enligt folktraditionen ska sveakungen Emund den gamle (död omkr. 1060) ha begravts vid Valla. Men den arkeologiska hövdinggraven ovan är daterad till ~900–950 — drygt hundra år tidigare — så den kan inte vara Emunds. Traditionen kan ha vuxit fram kring de synliga storhögarna. Vallagravfältet RAÄ 77:1 vid Valla torg finns kvar och avgränsades vid en förundersökning 2012. Läs mer på [Kungakrönikorna](/royal-chronicles).
+Enligt folktraditionen ska sveakungen Emund den gamle (död omkr. 1060) ha begravts vid Valla. Men den arkeologiska hövdinggraven ovan är daterad till ~900–950 — drygt hundra år tidigare — så den kan inte vara Emunds. Traditionen kan ha vuxit fram kring de synliga storhögarna. Ett fornlandskap kring Valla torg finns kvar; exakta fornlämningsnummer bör slås upp i RAÄ Fornsök. Läs mer på [Kungakrönikorna](/royal-chronicles).
 
 ## Årsta gård och Birger Jarl
 Namnet Årsta bärs idag av Årsta gård, en herrgård vid Årstaviken med rötter i medeltiden (nuvarande huvudbyggnad 1600–1700-tal). Enligt traditionen tog Birger Jarl (d. 1266) upp skatt från bygden här. Belägget är traditionsburet snarare än urkundligt — men det passar mönstret: Årsta kontrollerade både Göta landsväg och den segelbara vägen in i Mälaren, en knutpunkt värd att beskatta, i den framväxande kungamaktens intressesfär vid inloppet mot Stockholm som Birger Jarl grundade ~1250. Så fungerade den tidiga skatte- och förvaltningsmakten: kungen (eller jarlen) lät en *bryte* eller fogde sköta gården och uppbörden på plats — jämför Håkanstenen vid Hovgården, där "Tolir, bryte i Roden" förvaltade en kungsgård åt kungen. Se hur kungsgårdar, förläningar och skattesystem (ledung → mynt → frälse) fördelade sig i maktsäten-lagret i [Utforska](/explore).
 
 ## Vägen och vattnet
-Förbi platsen gick Göta landsväg (RAÄ 227), medeltidens pulsåder söderut från Stockholm — en sträcka är belagd strax sydost om gravfältet. Och ute i Årstaviken, vid Årstaholmarna, finns en möjlig pålspärr (RAÄ 660, trolig datering 900–1200) som kontrollerade passagen mellan holmarna — vattenvägens motsvarighet till vägen på land.
+Förbi platsen gick Göta landsväg, medeltidens pulsåder söderut från Stockholm — en sträcka är belagd strax sydost om gravfältet. Och ute i Årstaviken, vid Årstaholmarna, finns en möjlig pålspärr (trolig datering 900–1200) som kontrollerade passagen mellan holmarna — vattenvägens motsvarighet till vägen på land.
 
 ## Hitta hit
 Skålgropsstenen ligger vid Brunnbyvägen 20, 120 44 Årsta — nås lätt med tunnelbana (Gullmarsplan) eller pendeltåg (Årstaberg/Älvsjö) och kort promenad. Vallagravfältet och Göta landsväg ligger nära Valla torg; spärren syns från Årstavikens södra strand.
@@ -451,7 +452,7 @@ Flera andra skålgropar finns i trakten — i Östberga (Åbyvägen och Östberg
 ## Barnvänligt
 Ja — korta, lättgångna stopp i stadsnära natur. Skålgroparna är tacksamma att låta barn hitta och räkna.`,
     en: `## Why it is worth a visit
-By Brunnbyvägen in Årsta lies a cup-mark stone — also called an offering stone or "elf mill" (älvkvarn) (RAÄ Brännkyrka 222:1). But the place is more than a stone. Around Valla torg lies a whole ancient landscape spanning the Bronze Age to the Viking Age, tied to the old farm of Valla and the waterway towards Birka. Årsta is also unusually rich in cup marks — half a dozen more sites lie within walking and cycling distance in Östberga, Älvsjö and Högdalen.
+By Brunnbyvägen in Årsta lies a cup-mark stone — also called an offering stone or "elf mill" (älvkvarn). But the place is more than a stone. Around Valla torg lies a whole ancient landscape spanning the Bronze Age to the Viking Age, tied to the old farm of Valla and the waterway towards Birka. Årsta is also unusually rich in cup marks — half a dozen more sites lie within walking and cycling distance in Östberga, Älvsjö and Högdalen.
 
 ## What is a cup mark?
 A cup mark is a round hollow knocked into the rock, from a centimetre to a decimetre across, made with a hammerstone chiefly in the Bronze Age. They sit on smooth rounded outcrops and glacial boulders, often near prehistoric fields and shores. The most common interpretation ties them to the fertility cult — rituals for a good harvest.
@@ -462,16 +463,16 @@ In folk belief they were called "elf mills" and the stones offering or sacrifici
 The name Valla derives from Old Swedish *valder*: level, grass-grown land set aside for a common purpose — assembly (thing), market or cult, that is, a focal point of the district. The Valla farm gave its name to Valla å (Valla brook), which flowed out into Årstaviken. In the Iron and Viking Ages the brook was navigable: from Årstafältet you could reach Birka in a few hours' sail. The brook's outlet, medieval *Aros/Arus* (river-mouth), gave the name Årsta — written "Arusboawik" in 1305, "those who live in the village of Aros". Close by stood the old farm of Ersta, one of the oldest in Brännkyrka (attested in the 1500s; Ersta gårdsväg still recalls it today).
 
 ## The grave fields — "Stockholm before Stockholm"
-In 1958–59 the City Museum excavated and removed three large grave fields on the southern Årstafältet to make way for the wholesale market halls — some 400 features in all. The most remarkable was a Roman Iron Age grave field (~100–200 AD) with over 200 graves, raised bautastones and weapon graves — one of the northernmost of its kind and proof that the area was settled already around the birth of Christ. The Viking-Age grave fields of the villages Åby and Brunnby were here too. In one large mound with seven burials the topmost was a chieftain's grave from the early 900s: a sword thrust upright into the ground, a bearded axe, riding gear, gaming pieces and threads of pure gold woven into textiles — with close parallels in the graves of Birka. (Source: The Årstafältet investigations 1958–59, Bih. no. 43, 1960.)
+In 1958–59 the City Museum excavated and removed three large grave fields on the southern Årstafältet to make way for the wholesale market halls — some 400 features in all. The most remarkable was a Roman Iron Age grave field (~100–200 AD) with over 200 graves, raised bautastones and weapon graves — one of the northernmost of its kind and proof that the area was settled already around the birth of Christ. The Viking-Age grave fields of the villages Åby and Brunnby were here too. In one large mound with seven burials the topmost was a chieftain's grave from the early 900s: a sword thrust upright into the ground, a bearded axe, riding gear, gaming pieces and threads of pure gold woven into textiles — with close parallels in the graves of Birka. (Source: the City Museum's investigations on Årstafältet, 1958–59.)
 
 ## The king's grave — what tradition says
-Folk tradition holds that the Swedish king Emund the Old (died c. 1060) was buried at Valla. But the archaeological chieftain's grave above is dated to ~900–950 — over a century earlier — so it cannot be Emund's. The tradition may have grown up around the visible large mounds. The Valla grave field RAÄ 77:1 by Valla torg survives and was delimited in a 2012 survey. Read more in the [Royal Chronicles](/royal-chronicles).
+Folk tradition holds that the Swedish king Emund the Old (died c. 1060) was buried at Valla. But the archaeological chieftain's grave above is dated to ~900–950 — over a century earlier — so it cannot be Emund's. The tradition may have grown up around the visible large mounds. An ancient landscape around Valla torg survives; exact heritage-site numbers should be looked up in the National Heritage Board's Fornsök. Read more in the [Royal Chronicles](/royal-chronicles).
 
 ## Årsta gård and Birger Jarl
 The name Årsta is carried today by Årsta gård, a manor by Årstaviken with medieval roots (the present main building is 17th–18th century). Tradition holds that Birger Jarl (d. 1266) collected tax from this district. The evidence is traditional rather than documentary — but it fits the pattern: Årsta controlled both Göta landsväg and the navigable route into Lake Mälaren, a hub worth taxing, within the sphere of the rising royal power at the approach to Stockholm, which Birger Jarl founded c. 1250. This is how early fiscal and administrative power worked: the king (or jarl) had a *bryte* or bailiff manage the estate and collect dues on the spot — compare the Håkan stone at Hovgården, where "Tolir, steward (bryte) in Roden" managed a royal estate for the king. See how royal estates, fiefs and fiscal systems (ledung → coinage → frälse) were distributed in the power-seats layer in [Explore](/explore).
 
 ## The road and the water
-Past the site ran Göta landsväg (RAÄ 227), the medieval artery south from Stockholm — a stretch is documented just south-east of the grave field. And out in Årstaviken, by the Årsta islets, lies a possible stake barrier (RAÄ 660, probable date 900–1200) that controlled the passage between the islets — the waterborne counterpart to the road on land.
+Past the site ran Göta landsväg, the medieval artery south from Stockholm — a stretch is documented just south-east of the grave field. And out in Årstaviken, by the Årsta islets, lies a possible stake barrier (probable date 900–1200) that controlled the passage between the islets — the waterborne counterpart to the road on land.
 
 ## Getting there
 The offering stone lies at Brunnbyvägen 20, 120 44 Årsta — easily reached by metro (Gullmarsplan) or commuter train (Årstaberg/Älvsjö) and a short walk. The Valla grave field and Göta landsväg lie near Valla torg; the barrier is visible from the southern shore of Årstaviken.

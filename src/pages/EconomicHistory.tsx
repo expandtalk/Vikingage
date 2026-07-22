@@ -30,6 +30,15 @@ const TIMELINE: Era[] = [
   { year: '1397', icon: Church, sv: 'Kalmarunionen — en praktisk mötesplats, inte ett maktcentrum. Den ekonomiska tyngdpunkten låg kvar i Mälardalen, stödd österut av Finland och Åland.', en: 'The Kalmar Union — a practical meeting place, not a centre of power. The economic centre of gravity remained in the Mälaren region, supported eastward by Finland and Åland.' },
 ];
 
+// De fem förvaltar-stenarna, länkade till sina runstens-sidor.
+const STONES: { signum: string; sv: string; en: string }[] = [
+  { signum: 'U 11', sv: 'Hovgården — kungens bryti i Roden', en: 'Hovgården — the king\'s steward in Roden' },
+  { signum: 'Sö 42', sv: 'Västerljung — stormans bryte', en: 'Västerljung — a magnate\'s steward' },
+  { signum: 'DR 40', sv: 'Randbøl — bryti (Jylland)', en: 'Randbøl — bryti (Jutland)' },
+  { signum: 'DR 107', sv: 'Egå — landdrótt (Jylland)', en: 'Egå — landdrótt (Jutland)' },
+  { signum: 'DR 134', sv: 'Ravnkilde — landhirðir (Jylland)', en: 'Ravnkilde — landhirðir (Jutland)' },
+];
+
 const EconomicHistory = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
@@ -90,9 +99,22 @@ const EconomicHistory = () => {
         <Section icon={MapPin} title={sv ? 'Förvaltarna: bryte, landdrótt, landhirðir' : 'The stewards: bryti, landdrótt, landhirðir'}>
           <p>
             {sv
-              ? 'Systemet sköttes av förvaltare som styrde gods åt en frånvarande ägare — kung, jarl, storman eller biskop. Fem runstenar vittnar om institutionen på 1000-talet (U 11, Sö 42, DR 40, DR 107, DR 134). Titeln varierar regionalt — bryti, landdrótt, landhirðir — men funktionen är identisk. En gemensam förvaltningsordning med lokala namn, precis som ledung/leding/leiðangr.'
-              : 'The system was run by stewards managing estates for an absent owner — king, jarl, magnate or bishop. Five runestones attest the institution in the 11th century (U 11, Sö 42, DR 40, DR 107, DR 134). The title varies regionally — bryti, landdrótt, landhirðir — but the function is identical. A common administration with local names, just like ledung/leding/leiðangr.'}
+              ? 'Systemet sköttes av förvaltare som styrde gods åt en frånvarande ägare — kung, jarl, storman eller biskop. Fem runstenar vittnar om institutionen på 1000-talet. Titeln varierar regionalt — bryti, landdrótt, landhirðir — men funktionen är identisk. En gemensam förvaltningsordning med lokala namn, precis som ledung/leding/leiðangr.'
+              : 'The system was run by stewards managing estates for an absent owner — king, jarl, magnate or bishop. Five runestones attest the institution in the 11th century. The title varies regionally — bryti, landdrótt, landhirðir — but the function is identical. A common administration with local names, just like ledung/leding/leiðangr.'}
           </p>
+          <div className="flex flex-wrap gap-2">
+            {STONES.map((s) => (
+              <Link
+                key={s.signum}
+                to={`/inscription/${encodeURIComponent(s.signum)}`}
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-2.5 py-1.5 text-xs text-slate-200 hover:border-gold/50 hover:bg-slate-800"
+                title={sv ? s.sv : s.en}
+              >
+                <span className="font-semibold text-gold">{s.signum}</span>
+                <span className="text-slate-400">{sv ? s.sv : s.en}</span>
+              </Link>
+            ))}
+          </div>
           <p>
             <Link to="/tema/bryte-forvaltningsorganisation" className="text-gold hover:underline">
               {sv ? '→ Utforska temat "Bryte och förvaltningsorganisation"' : '→ Explore the theme "The bryti and estate administration"'}
@@ -105,6 +127,11 @@ const EconomicHistory = () => {
             {sv
               ? 'Östgötalagen (~1290) beskriver en tredelad ordning som fångar hela konkurrensen: konungs bryti i Uppsala bo (kronans oförytterliga gods), jarls bryti i Rodz bo (Roden — ledungsledet) och biskops bryti i staf ok stols bo (biskopsbordet — tiondet). Tre skattebaser, tre förvaltare, samma titel. Krona, ledung och kyrka sida vid sida.'
               : 'The Law of Östergötland (c. 1290) describes a threefold order that captures the whole competition: the king\'s steward in Uppsala bo (the crown\'s inalienable estate), the jarl\'s in Rodz bo (Roden — the levy arm) and the bishop\'s in staff-and-see estate (the episcopal mensa — the tithe). Three tax bases, three stewards, the same title. Crown, levy and Church side by side.'}
+          </p>
+          <p>
+            {sv
+              ? 'En kungsgård var en gård som kungen hade till sitt förfogande för att på gårdens avkastning på plats kunna försörja sig och sin hird — sitt beridna följe. Kungen ägde ingen stående huvudstad; han reste mellan gårdarna och åt upp deras överskott (gengärd). Uppsala öd var kärnan av sådana gårdar, oförytterligt knutna till kronan. En bryte eller fogde skötte gården och uppbörden på plats när kungen var någon annanstans.'
+              : 'A royal manor (kungsgård) was an estate the king had at his disposal so that he could live off its yield on the spot, together with his hird — his mounted retinue. The king had no fixed capital; he travelled between the manors and consumed their surplus (gengärd). The Uppsala öd was the core of such manors, inalienably tied to the crown. A steward or bailiff ran the estate and collected dues on the spot when the king was elsewhere.'}
           </p>
         </Section>
 
