@@ -35,18 +35,20 @@ export interface ProbeCounts {
   fortresses: number;
   area_km2: number;
 }
-interface ProbeState { probe: Probe | null; radiusKm: number; shape: ProbeShape; modeKey: string | null; counts: ProbeCounts | null }
+interface ProbeState { probe: Probe | null; radiusKm: number; shape: ProbeShape; modeKey: string | null; counts: ProbeCounts | null; note: string }
 
-let state: ProbeState = { probe: null, radiusKm: 30, shape: 'circle', modeKey: null, counts: null };
+let state: ProbeState = { probe: null, radiusKm: 30, shape: 'circle', modeKey: null, counts: null, note: '' };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
 
 export const setProbe = (lat: number, lng: number, label: string) => {
-  state = { ...state, probe: { lat, lng, label }, counts: null };
+  state = { ...state, probe: { lat, lng, label }, counts: null, note: '' };
   emit();
 };
-export const clearProbe = () => { state = { ...state, probe: null, counts: null }; emit(); };
+export const clearProbe = () => { state = { ...state, probe: null, counts: null, note: '' }; emit(); };
+// Fri hypotes-/anteckningstext knuten till området (name = probe.label, hypotes = note).
+export const setProbeNote = (note: string) => { state = { ...state, note }; emit(); };
 export const setProbeRadiusKm = (km: number) => {
   state = { ...state, radiusKm: Math.max(1, Math.min(200, km)), modeKey: null, counts: null };
   emit();

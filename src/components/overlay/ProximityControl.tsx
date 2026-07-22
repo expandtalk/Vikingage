@@ -5,6 +5,7 @@ import {
   setProbeRadiusKm,
   setProbeShape,
   setProbeMode,
+  setProbeNote,
   clearProbe,
   TRANSPORT_MODES,
   type ProbeShape,
@@ -19,7 +20,7 @@ const SHAPES: { key: ProbeShape; label: string; Icon: typeof Circle }[] = [
 ];
 
 export const ProximityControl: React.FC = () => {
-  const { probe, radiusKm, shape, modeKey, counts } = useProximityProbe();
+  const { probe, radiusKm, shape, modeKey, counts, note } = useProximityProbe();
   if (!probe) return null;
   const activeMode = TRANSPORT_MODES.find((m) => m.key === modeKey);
   const shapeSv = shape === 'circle' ? 'cirkeln' : shape === 'square' ? 'fyrkanten' : 'hexagonen';
@@ -91,6 +92,15 @@ export const ProximityControl: React.FC = () => {
         onChange={(e) => setProbeRadiusKm(Number(e.target.value))}
         className="w-full accent-amber-500 cursor-pointer"
         aria-label="Radie i kilometer"
+      />
+
+      {/* Hypotes / anteckning knuten till området (namn = platsen, hypotes = fri text) */}
+      <textarea
+        value={note}
+        onChange={(e) => setProbeNote(e.target.value)}
+        placeholder="Hypotes / vad testar du här? (t.ex. 'kungsgård kontrollerar allt inom en dagsresa till fots')"
+        rows={2}
+        className="w-full mt-2 px-2 py-1 rounded bg-slate-800 border border-slate-700 text-white text-[11px] placeholder:text-slate-500 resize-y"
       />
 
       {/* Antal INUTI formen (punkt-i-polygon) — det analytiska värdet */}
