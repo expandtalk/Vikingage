@@ -6,7 +6,6 @@ import { loadDatabaseStats } from './statsLoader';
 import type { UseRunicDataProps } from './types';
 
 export const useRunicData = (filters: UseRunicDataProps) => {
-  console.log('🔄 useRunicData called with enhanced coordinate mapping');
 
   // Query for inscriptions with enhanced coordinate mapping
   const {
@@ -15,9 +14,11 @@ export const useRunicData = (filters: UseRunicDataProps) => {
     error: inscriptionsError,
     refetch: refetchInscriptions
   } = useQuery({
-    queryKey: ['runic-inscriptions-enhanced-v2', filters], // Changed key to force refresh
+    queryKey: ['runic-inscriptions-enhanced-v2', filters],
     queryFn: () => loadEnhancedRunicDataWithBetterCoordinates(filters),
-    staleTime: 0, // Force fresh data
+    // 5 min cache per filterkombination — staleTime: 0 laddade om ~3000 rader
+    // vid varje filterändring (P0-fix, se docs/kunskapsgraf-arkitektur.md).
+    staleTime: 5 * 60 * 1000,
     retry: 2,
   });
 
@@ -55,15 +56,6 @@ export const useRunicData = (filters: UseRunicDataProps) => {
       console.error('Error loading data:', error);
     }
   };
-
-  // Enhanced logging
-  console.log(`📊 Enhanced useRunicData state:`, {
-    inscriptionsCount: inscriptions.length,
-    withCoordinates: inscriptions.filter(i => i.coordinates).length,
-    isLoading,
-    hasError: !!connectionError,
-    dbStats
-  });
 
   return {
     inscriptions,

@@ -1,5 +1,7 @@
 import React from 'react';
-import { Map } from 'lucide-react';
+import { Map, Filter } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DraggablePanel } from '@/components/draggable/DraggablePanel';
 import { MapLegend } from '@/components/MapLegend';
 import { LegendItem } from '@/types/common';
@@ -19,6 +21,10 @@ interface DraggableLegendProps {
   onSizeChange: (size: { width: number; height: number }) => void;
   onShowAll?: () => void;
   onHideAll?: () => void;
+  onOpenFilter?: () => void;
+  filterActive?: boolean;
+  activeFiltersCount?: number;
+  filterSection?: React.ReactNode;
 }
 
 export const DraggableLegend: React.FC<DraggableLegendProps> = ({
@@ -34,7 +40,11 @@ export const DraggableLegend: React.FC<DraggableLegendProps> = ({
   onPositionChange,
   onSizeChange,
   onShowAll,
-  onHideAll
+  onHideAll,
+  onOpenFilter,
+  filterActive = false,
+  activeFiltersCount = 0,
+  filterSection
 }) => {
   const { language } = useLanguage();
   const sv = language === 'sv';
@@ -52,8 +62,29 @@ export const DraggableLegend: React.FC<DraggableLegendProps> = ({
       onPositionChange={onPositionChange}
       onSizeChange={onSizeChange}
       resizable={true}
+      headerActions={onOpenFilter && (
+        <Button
+          onClick={onOpenFilter}
+          variant="ghost"
+          size="sm"
+          title={sv ? 'Filtrera' : 'Filter'}
+          aria-label={sv ? 'Filtrera' : 'Filter'}
+          className={`relative h-6 w-6 p-0 hover:bg-slate-700/50 ${filterActive ? 'text-orange-400' : 'text-slate-200 hover:text-white'}`}
+        >
+          <Filter className="h-3.5 w-3.5" />
+          {activeFiltersCount > 0 && (
+            <Badge
+              variant="secondary"
+              className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[10px] leading-none bg-orange-600 text-white border-orange-500 font-bold flex items-center justify-center"
+            >
+              {activeFiltersCount}
+            </Badge>
+          )}
+        </Button>
+      )}
     >
       <div className="p-0">
+        {filterSection}
         <MapLegend
           isVikingMode={isVikingMode}
           legendItems={legendItems}

@@ -29,15 +29,25 @@ export interface Excursion {
   relatedKings?: string[];
   /** Slug-mapp under /excursion-photos/ med komprimerade platsfoton (se manifest.json). */
   photoDir?: string;
+  /** Alternativ thumbnail-fil i photoDir (default thumb.jpg) — när flera utflykter delar fotomapp. */
+  thumbFile?: string;
+  /** Fotokreditering när thumbnail kommer från extern källa (Wikimedia Commons: upphovsman + licens). */
+  thumbCredit?: string;
+  /** Hämta ALLA fornborgar i denna region ur viking_fortresses (live DB) och plotta på kartan. */
+  fortressRegion?: string;
+  /** Extra intressepunkter att markera på detaljkartan (t.ex. flera lämningar inom samma utflykt). */
+  points?: { name: string; lat: number; lng: number; note?: string }[];
 }
 
 // Ordning som grupperna visas i på sidan.
 export const EXCURSION_GROUPS = [
   'Uppland & Mälardalen',
   'Ting & eriksgata',
+  'Österleden & skärgårdshavet',
   'Södermanland',
   'Östergötland',
   'Västergötland',
+  'Småland & Kalmarsund',
   'Öland',
   'Gotland – Visby',
   'Gotland – Norra',
@@ -50,7 +60,57 @@ export const EXCURSION_GROUPS = [
 
 export const EXCURSIONS: Excursion[] = [
   {
+    id: 'kalmar-jarnalder',
+    name: 'Kalmar – järnåldersgravfälten & Hossmo',
+    region: 'Kalmar, Småland',
+    group: 'Småland & Kalmarsund',
+    period: 'Brons-/järnålder–vikingatid',
+    coords: { lat: 56.6860, lng: 16.3250 },
+    points: [
+      { name: 'Brukshagen', lat: 56.6850, lng: 16.3250, note: 'Stort järnåldersgravfält med domarring; informationstavla.' },
+      { name: 'Djurängshagen', lat: 56.6877, lng: 16.3323, note: 'Gravfält — här begravdes en vikingatida kvinna för ~1200 år sedan (skylt).' },
+      { name: 'Tjuvbackarna', lat: 56.6791, lng: 16.3104, note: 'Gravfält med informationstavla; betesdjur delar av året.' },
+      { name: 'Mobackarna', lat: 56.6825, lng: 16.3180, note: 'Gravfält och spår av forntida åkrar (ungefärligt läge).' },
+      { name: 'Skälby gård', lat: 56.6880, lng: 16.3200, note: 'Förhistorisk gård, senare kungsgård under Gustav Vasa; idag 4H-gård (ungefärligt läge).' },
+      { name: 'Hossmo kyrka', lat: 56.6372, lng: 16.2252, note: 'Romansk 1100-talskyrka söder om Kalmar vid Ljungbyåns mynning — järnålderns och medeltidens Möre-bygd.' },
+    ],
+    sv: `## Varför är det värt ett besök
+Kalmar var en viktig plats långt före medeltidsstaden. På järnåldern sköt en havsvik in i landet (havet stod ~1,5 m högre) och den skyddade naturhamnen lockade till bosättning och handel. Runt dagens Hansa City, mellan industriområden och bostäder, ligger ett grönt stråk — Brukshagen, Tjuvbackarna, Mobackarna och Djurängshagen — med stora gravfält från järnåldern och spår av dåtidens åkrar. Mängden stora gravfält och rika fynd visar att trakten var betydelsefull redan för 1000–1500 år sedan.
+
+## Vad man kan se
+Rösen, stensättningar och stenkretsar från brons- och järnålder. En **domarring** (rund stenkrets, som man förr trodde var en tingsplats) står i Brukshagen. I Djurängen begravdes en vikingatida kvinna för omkring 1200 år sedan — det berättas på informationstavlan. Mellan gravfälten syns låga stenhägnader kring forntida åkrar. Vid stråket ligger även anrika Skälby gård.
+
+Söder om staden, vid Ljungbyåns mynning, står **Hossmo kyrka** — en av Sveriges äldsta romanska kyrkor (1100-tal) i den gamla Möre-bygden.
+
+## Hitta hit
+Gravfälten når du lätt till fots, med cykel eller på joggingrundan i stråket kring Djurängen/Brukshagen i norra Kalmar. Informationstavlor finns vid Tjuvbackarna, Brukshagen och östra Djurängshagen. Hossmo ligger några kilometer söderut.
+
+## Barnvänligt
+Ja — lättgångna stigar och tydliga skyltar. OBS: betesdjur finns vid Mobackarna, Tjuvbackarna och östra Brukshagen delar av året; gå inte in med hund i hagarna då, och mata inte djuren.
+
+## Andra saker att upptäcka i närheten
+[Öland](/explore?searchQuery=Öland) och Kalmarsund; den medeltida [Kung Valdemars segelled](/explore?focus=rivers) passerade rakt utanför. Möreleden, den gamla färdvägen från Bottorp till Stuvenäs, löper genom bygden söderut.`,
+    en: `## Why it is worth a visit
+Kalmar was an important place long before the medieval town. In the Iron Age a bay of the sea reached inland (the sea stood ~1.5 m higher) and the sheltered natural harbour drew settlement and trade. Around today's Hansa City, between industrial estates and housing, runs a green corridor — Brukshagen, Tjuvbackarna, Mobackarna and Djurängshagen — with large Iron-Age grave fields and traces of ancient fields. The many great grave fields and rich finds show the district mattered already 1000–1500 years ago.
+
+## What you can see
+Cairns, stone settings and stone circles from the Bronze and Iron Ages. A **judge's ring** (round stone circle, once thought to be a thing-site) stands in Brukshagen. At Djurängen a Viking-Age woman was buried about 1200 years ago — told on the information sign. Between the grave fields you can see low stone banks around ancient fields. By the corridor lies the historic Skälby manor.
+
+South of town, at the mouth of the Ljungbyån, stands **Hossmo church** — one of Sweden's oldest Romanesque churches (12th century) in the old Möre district.
+
+## Getting there
+The grave fields are easily reached on foot, by bike or on a jog in the corridor around Djurängen/Brukshagen in northern Kalmar. Information boards stand at Tjuvbackarna, Brukshagen and eastern Djurängshagen. Hossmo lies a few kilometres to the south.
+
+## Family-friendly
+Yes — easy paths and clear signs. Note: grazing animals are present at Mobackarna, Tjuvbackarna and eastern Brukshagen part of the year; don't enter the enclosures with a dog then, and don't feed the animals.
+
+## More to discover nearby
+[Öland](/explore?searchQuery=Öland) and the Kalmar Strait; the medieval [King Valdemar's sailing route](/explore?focus=rivers) passed just offshore. The Möre road, the old route from Bottorp to Stuvenäs, runs through the district to the south.`,
+  },
+  {
     id: 'birka',
+    photoDir: 'birka',
+    thumbCredit: 'Lars Kennerstedt / Kulturmiljöbild, RAÄ (PD)',
     name: 'Birka',
     region: 'Björkö, Mälaren (Ekerö)',
     group: 'Uppland & Mälardalen',
@@ -63,13 +123,22 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'langhundraleden',
+    photoDir: 'langhundraleden-broborg',
+    thumbFile: 'thumb-2.jpg',
+    // U 357 (Skepptuna) hör till leden — detaljsidan visar inskrift+ristare via RPC.
+    signum: 'U 357',
     name: 'Långhundraleden',
     region: 'Uppland (Trälhavet–Uppsala)',
     group: 'Uppland & Mälardalen',
     period: 'Järnålder–vikingatid',
     coords: { lat: 59.55, lng: 18.05 },
-    sv: 'En forntida vattenled från Trälhavet vid Östersjön genom sjöar och åar upp mot Uppsala. En pulsåder för transport och handel under järnålder och vikingatid, kantad av gravfält och runstenar. Landhöjningen har sedan dess torrlagt delar av leden.',
-    en: 'An ancient waterway from Trälhavet on the Baltic through lakes and streams up towards Uppsala. A transport and trade artery during the Iron Age and Viking Age, lined with grave fields and runestones. Land uplift has since dried out parts of the route.',
+    sv: 'En forntida vattenled från Trälhavet vid Östersjön genom sjöar och åar upp mot Uppsala — kartan visar hela sträckningen. En pulsåder för transport och handel under järnålder och vikingatid, kantad av gravfält och runstenar; kring 500 e.Kr. låg vattnet 6–7 m högre än idag. Vid ledens övre lopp står runstenen U 357 vid Skepptuna kyrka — ett av flera vittnesbörd om bygdens välstånd när leden ännu band samman Uppsala med Östersjön. Vid ledens trängsta passage vakar fornborgen Broborg med sin förglasade mur — resande syntes på långt håll, och med vårdkasar (signaleldar på höjderna) kunde en varning nå Gamla Uppsala, 3–4 mil bort, på några minuter. På andra sidan borgberget ligger Hönsgärde med ett järnåldersgravfält om över 100 gravar; bebyggelsen låg troligen i anslutning till den nuvarande byn. Landhöjningen har sedan dess torrlagt delar av leden.',
+    en: 'An ancient waterway from Trälhavet on the Baltic through lakes and streams up towards Uppsala — the map shows the full route. A transport and trade artery during the Iron Age and Viking Age, lined with grave fields and runestones; around AD 500 the water stood 6–7 m higher than today. On the upper reaches stands runestone U 357 by Skepptuna church — one of several witnesses to the district\'s prosperity when the route still linked Uppsala with the Baltic. At the narrowest passage the hillfort Broborg keeps watch with its vitrified wall — travellers were visible from afar, and with beacon fires (vårdkasar) on the heights a warning could reach Gamla Uppsala, 30–40 km away, within minutes. On the far side of the fort hill lies Hönsgärde with an Iron Age grave field of over 100 graves; the settlement probably lay by the present-day village. Land uplift has since dried out parts of the route.',
+    monumentTypes: [
+      { sv: 'Fornborg', en: 'Hillfort', color: '#ef4444' },
+      { sv: 'Gravfält', en: 'Grave field', color: '#a855f7' },
+      { sv: 'Farled', en: 'Waterway', color: '#eab308' },
+    ],
   },
   {
     id: 'broborg',
@@ -79,11 +148,19 @@ export const EXCURSIONS: Excursion[] = [
     group: 'Uppland & Mälardalen',
     period: 'Vendeltid–vikingatid',
     coords: { lat: 59.72, lng: 17.87 },
-    sv: 'En fornborg i Uppland med dubbla stenmurar och ett medvetet förglasat (vitrifierat) murkrön — stenar som utsatts för så hög värme (över 1000 °C) att de smält samman. Byggarna valde ut särskilda bergarter: gnejs, granit och amfibolit. Förglasade fornborgar finns även på kontinenten (Storbritannien, Frankrike, Tyskland), och fenomenet diskuteras fortfarande: rituell bränning eller ett sätt att härda muren?',
-    en: 'A hillfort in Uppland with double stone walls and a deliberately vitrified rampart crown — stones exposed to heat so intense (over 1000 °C) that they fused together. The builders selected particular rock types: gneiss, granite and amphibolite. Vitrified forts also occur on the continent (Britain, France, Germany), and the phenomenon is still debated: ritual burning or a way to harden the wall?',
+    sv: 'En av Upplands mest anmärkningsvärda fornborgar (95×85 m), på ett borgberg ~40 m över den forna Långhundraleden vid Stenby gård. Dubbla vallar: inre ringmur 300 m lång och 8–15 m bred, yttre vall 140 m, två ingångar. Det unika är den medvetet förglasade ringmuren — stenen har hettats till över 1 100 °C i boxliknande "ugnar" längs murens insida och smält samman till ett hårt, glänsande material (gnejs, granit, amfibolit); analyserna (Upplandsmuseet 1992, Arkeologerna 2018:127) visar byggnadsteknik, inte brand. Två byggfaser: grundad under folkvandringstid (kol 1982: ca 375–550), förglasad under vendeltid (kol 2017–18: ca 550–750). Härifrån kontrollerades farleden mot Gamla Uppsala — utkik, trolig tullplats och första länken i vårdkase-kedjan; muren måste ha glänst långt ut över vattnet. Grimsasägnen om hövdingadottern som brände borgen "så att det syntes till Gamla Uppsala" bevarar kanske ett eko av förglasningen. Bo Gräslund har föreslagit en koppling till Beowulfkvädets svear–götar-konflikter — en omdiskuterad hypotes, inte etablerad forskning. Intill ligger Grimsahögen och på andra sidan berget Hönsgärde gravfält (100+ gravar).',
+    en: 'One of Uppland\'s most remarkable hillforts (95×85 m), on a crag ~40 m above the former Långhundraleden waterway at Stenby farm. Double ramparts: an inner ring wall 300 m long and 8–15 m wide, an outer bank of 140 m, two entrances. Its unique feature is the deliberately vitrified ring wall — stone heated above 1,100 °C in box-like "furnaces" along the wall\'s inner face until it fused into a hard, glassy mass (gneiss, granite, amphibolite); analyses (Upplandsmuseet 1992; Arkeologerna report 2018:127) show construction technique, not accidental fire. Two building phases: founded in the Migration Period (charcoal 1982: c. 375–550), vitrified in the Vendel Period (charcoal 2017–18: c. 550–750). From here the approach to Gamla Uppsala was controlled — lookout, likely toll point and first link in the beacon-fire chain; the wall must have gleamed far across the water. The Grimsa legend, of the chieftain\'s daughter who burned the fort "so it was seen all the way to Gamla Uppsala", may preserve an echo of the vitrification. Bo Gräslund has proposed a link to the Swede–Geat conflicts of Beowulf — a debated hypothesis, not established scholarship. Beside the fort lies the Grimsa mound, and beyond the hill the Hönsgärde grave field (100+ graves).',
+    monumentTypes: [
+      { sv: 'Fornborg', en: 'Hillfort', color: '#ef4444' },
+      { sv: 'Gravfält', en: 'Grave field', color: '#a855f7' },
+      { sv: 'Gravhög', en: 'Burial mound', color: '#f97316' },
+      { sv: 'Farled', en: 'Waterway', color: '#eab308' },
+    ],
   },
   {
     id: 'valsgarde',
+    photoDir: 'valsgarde',
+    thumbCredit: 'Joe Mabel, CC BY-SA 4.0, Wikimedia Commons',
     name: 'Valsgärde',
     region: 'Gamla Uppsala, Uppland',
     group: 'Uppland & Mälardalen',
@@ -94,13 +171,25 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'sigtuna',
+    photoDir: 'sigtuna',
+    thumbCredit: 'Brorsson, CC BY-SA 3.0, Wikimedia Commons',
     name: 'Sigtuna',
     region: 'Sigtuna, Uppland',
     group: 'Uppland & Mälardalen',
     period: 'Vikingatid–medeltid (ca 980–)',
     coords: { lat: 59.6169, lng: 17.7239 },
-    sv: 'Sveriges äldsta ännu levande stad, grundad omkring 980 av kungamakten som efterföljare till Birka. Tidiga kyrkor, myntning under Olof Skötkonung, och ett rikt runmaterial — bland annat koppardosan (Sigtunadosan) med en dróttkvätt-strof.',
-    en: "Sweden's oldest still-living town, founded around 980 by the royal power as a successor to Birka. Early churches, coinage under Olof Skötkonung, and a rich runic corpus — including the copper box (the Sigtuna box) with a dróttkvætt stanza.",
+    sv: 'Sveriges äldsta ännu levande stad, grundad omkring 980 av kungamakten som efterföljare till Birka. Myntning under Olof Skötkonung och ett ovanligt rikt runmaterial. Att gå längs Stora gatan är att följa en gatusträckning från 900-talet. Längs vägen och i ruinparkerna står tre stora kyrkoruiner i sten från 1100-talet: S:t Per (troligen stiftskyrka), S:t Olof och S:t Lars, samt lämningar efter dominikanernas Mariakyrka. Runt och i staden finns ett tjugotal registrerade fornlämningar — gravfält, stensättningar och inte mindre än ett dussin runristningar (bl.a. U 394 vid S:t Pers ruin och ristningar vid S:t Olof och Maria kyrka). Fornborgen Trollberget vakar norr om staden. Bland lösfynden: Sigtunadosan (koppardosa med dróttkvätt-strof) och ett runben från tiden kring 1150, funnet vid Drakegården invid Stora gatan — inristat "skiftum skiþut … lyst kata a bein", kanske en juridisk gränsmarkering enligt Upplandslagens "stake och sten och ben". Sigtuna museum förvaltar den största arkeologiska samlingen från stadens äldsta tid.',
+    en: "Sweden's oldest still-living town, founded around 980 by the royal power as a successor to Birka. Coinage under Olof Skötkonung and an unusually rich runic corpus. Walking along Stora gatan means following a street laid out in the 900s. Along it and in the ruin parks stand three great 12th-century stone church ruins: St Per (probably the cathedral), St Olof and St Lars, plus remains of the Dominicans' St Mary's church. In and around the town are some twenty registered ancient monuments — grave fields, stone settings and no fewer than a dozen runic carvings (among them U 394 by the St Per ruin, and carvings at St Olof and St Mary's). The Trollberget hillfort watches over the town from the north. Loose finds include the Sigtuna box (a copper box with a dróttkvætt stanza) and a rune-bone from around 1150, found at Drakegården by Stora gatan — carved \"skiftum skiþut … lyst kata a bein\", perhaps a legal boundary marker per the Uppland Law's \"stake and stone and bone\". Sigtuna Museum holds the largest archaeological collection from the town's earliest period.",
+  },
+  {
+    id: 'fornsigtuna',
+    name: 'Fornsigtuna (Signhildsberg)',
+    region: 'Signhildsberg, Håtuna, Uppland',
+    group: 'Uppland & Mälardalen',
+    period: 'Vikingatid (ca 790–1050)',
+    coords: { lat: 59.6172, lng: 17.6460 },
+    sv: 'Fyra kilometer väster om Sigtuna, vid ett sund mellan Håtunaviken och Sigtunafjärden, låg stadens föregångare — en vikingatida kungsgård. På kartan heter platsen Signhildsberg, men den kallas Fornsigtuna. Platsen är känd från Ynglingatal (nedtecknat kring år 900), där den framställs som Odens hem och en kultplats. På husgrundsplatåer stod stora hallar där härskarna samlade mäktiga män och kvinnor till fester, rådslag och religiösa gästabud; runt om finns gravfält och norr om gården en forntida lagunhamn. Kronan på verket är storhögen Signhilds kulle — troligen en tingshög snarare än en gravhög, som motsvarigheterna i Gamla Uppsala. När Sigtuna grundades vid Mälarens strand i slutet av 900-talet övertog den nya staden kungsgårdens namn. Namnet Signhildsberg är sentida och kommer av att en ägare på 1600-talet knöt den fornnordiska kärlekssägnen om Hagbard och Signe till platsen.',
+    en: 'Four kilometres west of Sigtuna, by a sound between Håtunaviken and Sigtunafjärden, lay the town\'s predecessor — a Viking-Age royal manor. On the map the place is called Signhildsberg, but it is known as Fornsigtuna ("Old Sigtuna"). It appears in Ynglingatal (written down around AD 900) as Odin\'s home and a cult site. On terraced house foundations stood great halls where rulers gathered powerful men and women for feasts, councils and religious banquets; grave fields surround it, and to the north lay an ancient lagoon harbour. Its crown is the great mound Signhild\'s Cairn — probably a thing-mound rather than a burial, like those at Gamla Uppsala. When Sigtuna was founded on the shore of Lake Mälaren in the late 900s, the new town took over the old manor\'s name. The name Signhildsberg is late, coined when a 17th-century owner tied the Old Norse love legend of Hagbard and Signe to the site.',
   },
   {
     id: 'uppakra',
@@ -170,13 +259,14 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'gaseborg',
+    photoDir: 'gaseborg',
     name: 'Gåseborg',
     region: 'Görväln, Järfälla, Uppland',
     group: 'Uppland & Mälardalen',
-    period: 'Folkvandringstid (ca 400–500 e.Kr.)',
+    period: 'Järnålder/folkvandringstid (ca 300–500 e.Kr.)',
     coords: { lat: 59.418, lng: 17.836 },
-    sv: 'En folkvandringstida fornborg på ett brant, ~45 m högt berg vid Mälaren i Järfälla. Kraftiga stenmurar kröner höjden med milsvid utsikt över Görvälnfjärden — en tillflykts- och maktplats under orostiderna efter Västroms fall.',
-    en: 'A Migration-Period hillfort on a steep hill some 45 m above Lake Mälaren in Järfälla. Massive stone ramparts crown the height with a wide view over the Görväln bay — a refuge and power site in the troubled times after the fall of the Western Roman Empire.',
+    sv: 'En av Mälardalens största fornborgar (RAÄ Järfälla 62:1), på ett brant berg högt över Mälaren med fantastisk utsikt över Görvälnfjärden. Vid en undersökning 2002 hittade arkeologen Johan Carlström bland annat deglar — eldfasta behållare för metallgjutning — som daterar platsen till ca 300–500 e.Kr. Här har alltså funnits en bronsgjutarverkstad uppe på borgen, där högstatusföremål kan ha gjutits åt någon storman. En bit ned mot vattnet ligger Gåseborgs grotta, vars tak är ett jättelikt klippblock som kilats fast i en klyfta.',
+    en: 'One of the largest hillforts in the Mälaren valley (RAÄ Järfälla 62:1), on a steep hill high above the lake with a spectacular view over Görväln bay. In a 2002 investigation the archaeologist Johan Carlström found, among other things, crucibles — refractory vessels for metal casting — dating the site to c. AD 300–500. A bronze-casting workshop thus operated up in the fort, perhaps producing high-status objects for a local magnate. Down towards the water lies the Gåseborg cave, whose roof is a giant boulder wedged into a cleft.',
   },
   {
     id: 'morastenar',
@@ -192,13 +282,21 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'oland_hillforts',
+    photoDir: 'ismantorp-borg-oland',
+    thumbFile: 'thumb-2.jpg',
+    fortressRegion: 'Öland',
     name: 'Ölands fornborgar',
     region: 'Öland',
     group: 'Öland',
     period: 'Järnålder–folkvandringstid',
-    coords: { lat: 56.62, lng: 16.54 },
-    sv: 'Öland har en unik täthet av fornborgar. Ismantorp med sina nio portar och gåtfulla husgrunder, det väldiga Gråborg, och Eketorp som grävts ut och rekonstruerats. Tillflykt, kult och maktcentra under orostider.',
-    en: "Öland has a unique density of hillforts. Ismantorp with its nine gates and enigmatic house foundations, the vast Gråborg, and Eketorp which has been excavated and reconstructed. Refuge, cult and centres of power in troubled times.",
+    coords: { lat: 56.65, lng: 16.60 },
+    sv: 'Öland har en unik täthet av fornborgar — kartan visar samtliga 16 i databasen, från Vedby borg i norr till Eketorp i söder. De fyra viktigaste: det väldiga Gråborg (Ölands största ringborg, romerska guldsolidi funna), Eketorp (tre bosättningsfaser, helt rekonstruerad som friluftsmuseum), Ismantorp med sina nio portar och 88 husgrunder, och Sandby borg — platsen för massakern ca 480 e.Kr., där de dräpta lämnades kvar i husen och allt frystes i tiden. Även Bårby borg (bysantinskt guldmynt från Justinus I) och det nyligen återupptäckta Sörby borg — möjligen Ölands största — hör till bilden. Tillflykt, kult och maktcentra under folkvandringstidens orostider. Fotona nedan är från Ismantorp.',
+    en: "Öland has a unique density of ring forts — the map shows all 16 in the database, from Vedby borg in the north to Eketorp in the south. The four most important: the vast Gråborg (Öland's largest, Roman gold solidi found), Eketorp (three occupation phases, fully reconstructed as an open-air museum), Ismantorp with its nine gates and 88 house foundations, and Sandby borg — scene of the massacre c. AD 480, where the slain were left in the houses and time stood still. Add Bårby borg (a Byzantine gold coin of Justin I) and the recently rediscovered Sörby borg — possibly Öland's largest. Refuge, cult and power centres in the troubled Migration Period. The photos below are from Ismantorp.",
+    monumentTypes: [
+      { sv: 'Rekonstruerad', en: 'Reconstructed', color: '#22c55e' },
+      { sv: 'Utgrävd', en: 'Excavated', color: '#eab308' },
+      { sv: 'Ej utgrävd', en: 'Not excavated', color: '#ef4444' },
+    ],
   },
   {
     id: 'rosaring',
@@ -208,11 +306,12 @@ export const EXCURSIONS: Excursion[] = [
     group: 'Uppland & Mälardalen',
     period: 'Vendeltid–vikingatid',
     coords: { lat: 59.51, lng: 17.63 },
-    sv: 'På en rullstensås reser sig ett gravfält, en labyrint och en ca 540 m lång, rak processionsväg kantad av stolphål. Vägen leder till en gravhög och tolkas som en ceremoniell "väg till dödsriket" — en av Nordens mest gåtfulla kultplatser.',
-    en: 'On an esker rise a grave field, a labyrinth and an approx. 540 m long, straight processional road lined with post-holes. The road leads to a burial mound and is interpreted as a ceremonial "road to the realm of the dead" — one of the Nordic region\'s most enigmatic cult sites.',
+    sv: 'På en rullstensås reser sig ett gravfält, en labyrint och en 540 m lång och 30 m bred, rak processionsväg kantad av stolphål. Vägen leder till en gravhög och tolkas som en ceremoniell "väg till dödsriket" — en av Nordens mest gåtfulla kultplatser.',
+    en: 'On an esker rise a grave field, a labyrinth and a straight processional road, 540 m long and 30 m wide, lined with post-holes. The road leads to a burial mound and is interpreted as a ceremonial "road to the realm of the dead" — one of the Nordic region\'s most enigmatic cult sites.',
   },
   {
     id: 'ingvarstaget',
+    photoDir: 'ingemarstaget',
     name: 'Ingvarståget (Gripsholmsstenen)',
     region: 'Mariefred, Södermanland',
     group: 'Södermanland',
@@ -234,6 +333,8 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'sigurdsristningen',
+    photoDir: 'sigurdristningen',
+    thumbCredit: 'Berig, CC BY 2.5, Wikimedia Commons',
     name: 'Sigurdsristningen (Ramsundsberget)',
     region: 'Sundbyholm, Södermanland',
     group: 'Södermanland',
@@ -272,11 +373,167 @@ export const EXCURSIONS: Excursion[] = [
     group: 'Uppland & Mälardalen',
     period: 'Bronsålder (ca 1000 f.Kr.)',
     coords: { lat: 59.8497, lng: 17.5878 },
-    sv: 'Skandinaviens betydelsefullaste bronsåldersplats, ca 3 km väster om Uppsala. Den mäktiga gravhögen (även "Kung Björns hög") reser sig över gravfält, kulthägnader och boplatser. Vid utgrävningen 1902–03 (Oscar Almgren) hittades mer än en tredjedel av allt guld från Sveriges bronsålder — bland annat det berömda dubbelspännet i guld. Graven bär spår av djur- och människooffer och till och med rituell kannibalism, och tolkas som en föregångare till Gamla Uppsala. Låg då strategiskt vid den stora farleden genom Mälaren norrut, bevakad av fornborgen Predikstolen strax söderut.',
-    en: 'Scandinavia\'s most significant Bronze Age site, about 3 km west of Uppsala. The mighty burial mound (also "King Björn\'s mound") rises above grave fields, cult enclosures and settlements. The 1902–03 excavation (Oscar Almgren) yielded more than a third of all the gold from Sweden\'s Bronze Age — including the famous gold double-button. The grave bears traces of animal and human sacrifice and even ritual cannibalism, and is interpreted as a forerunner of Gamla Uppsala. It once lay strategically on the great sailing route north through Lake Mälaren, guarded by the Predikstolen hillfort just to the south.',
+    sv: 'Skandinaviens guldrikaste bronsåldersgrav, i Hågadalen i Bondkyrko socken strax väster om Uppsala. Hågahögen — även Björns hög eller Kung Björns hög — är ca 7 m hög och 45 m i diameter, anlagd omkring 1000 f.Kr. på vad som då var en udde i en Mälarvik: underst ett fyra meter högt stenröse, därpå fyra meter grästorv (mer än sex fotbollsplaner), totalt ~7 500 mansdagars arbete. Högen är ensam i sitt slag i Mellansverige — de närmaste motsvarigheterna är Lusehøj på Fyn och Seddin i norra Tyskland, och guldmängden motsvaras närmast av gravar i Oders dalgång. Vid utgrävningen 1902–03 (Oscar Almgren) hittades mer än en tredjedel av allt guld från Sveriges bronsålder — bland annat det berömda guldspännet, som stals från Historiska museet i februari 1986. Högen fortsatte att brukas: eldar har tänts på den, och i ytskiktet ligger ben av ekorrar, hundar, nöt, svin och flera människor — människobenen drygt 500 år äldre än gravens huvudperson, ett lårben brutet så att märgen kommit fram. Kring högen: tre gravhögar till, 24 runda stensättningar och två resta stenar; nere vid den forna stranden fornborgen Predikstolen. Tolkas som en föregångare till Gamla Uppsala.',
+    en: 'Scandinavia\'s gold-richest Bronze Age grave, in the Håga valley just west of Uppsala. The Håga mound — also Björn\'s mound or King Björn\'s mound — is c. 7 m high and 45 m across, raised around 1000 BC on what was then a promontory in a bay of Lake Mälaren: a four-metre stone cairn at its core, covered by four metres of turf (more than six football pitches), some 7,500 man-days of labour in all. It is unique in central Sweden — the nearest counterparts are Lusehøj on Funen and Seddin in northern Germany, and the quantity of gold is matched only by graves of the Oder valley. The 1902–03 excavation (Oscar Almgren) yielded more than a third of all gold from Sweden\'s Bronze Age — including the famous gold brooch, stolen from the Museum of National Antiquities in February 1986. The mound remained in use: fires were lit upon it, and its surface layer holds bones of squirrels, dogs, cattle, pigs and several humans — the human bones some 500 years older than the grave\'s occupant, one femur broken to expose the marrow. Around it: three more mounds, 24 round stone settings and two raised stones; by the former shore, the Predikstolen hillfort. Interpreted as a forerunner of Gamla Uppsala.',
+  },
+
+  {
+    id: 'boglosa',
+    photoDir: 'boglosa',
+    name: 'Boglösa hällristningar',
+    region: 'Boglösa, Enköping, Uppland',
+    group: 'Uppland & Mälardalen',
+    period: 'Bronsålder (ca 1800–500 f.Kr.)',
+    coords: { lat: 59.582, lng: 17.155 },
+    sv: 'Upplands stora hällristningsbygd: kring Boglösa finns omkring 1 000 hällristningar fördelade på ca 400 platser, gjorda när trakten var skärgård och hällarna låg vid vattnet. Bland höjdpunkterna: Rickeby (RAÄ 94:1, se även Stora Rickebyhällen), solhjulet (RAÄ 58), fotsulorna (RAÄ 138:1) och skeppsbilderna med det berömda Brandskogsskeppet (RAÄ 109:1) — Sveriges kanske finaste ristade bronsåldersskepp, med bemanning och ett fint hästspann på samma häll.',
+    en: 'Uppland\'s great rock-carving district: around Boglösa there are about 1,000 rock carvings across some 400 sites, made when the area was an archipelago and the panels lay by the water. Highlights include Rickeby (RAÄ 94:1, see also the Great Rickeby panel), the sun wheel (RAÄ 58), the footprints (RAÄ 138:1) and the ship carvings crowned by the famous Brandskog ship (RAÄ 109:1) — perhaps Sweden\'s finest carved Bronze Age ship, with crew and a fine horse team on the same panel.',
+  },
+  {
+    id: 'skepptuna-u357',
+    photoDir: 'runor-u357',
+    name: 'Runstenen U 357 vid Skepptuna kyrka',
+    region: 'Skepptuna, Sigtuna kommun, Uppland',
+    group: 'Uppland & Mälardalen',
+    period: 'Vikingatid (1000-tal)',
+    coords: { lat: 59.660, lng: 18.063 },
+    sv: 'Vid Skepptuna kyrka står runstenen U 357 — en av flera runstenar i denna gamla kyrkbygd norr om Märsta. Skepptuna ligger vid Långhundraledens övre lopp, och runstenarna vittnar om bygdens välstånd under sen vikingatid, när leden ännu band samman Uppsala med Östersjön.',
+    en: 'By Skepptuna church stands runestone U 357 — one of several runestones in this old parish north of Märsta. Skepptuna lies on the upper reaches of the Långhundraleden waterway, and its runestones testify to the district\'s prosperity in the late Viking Age, when the route still linked Uppsala with the Baltic.',
+    signum: 'U 357',
+  },
+  {
+    id: 'arsta-skalgropar',
+    photoDir: 'arsta-skalgropar',
+    name: 'Årsta – skålgropar & Vallagravfältet',
+    region: 'Årsta, Stockholm',
+    group: 'Södermanland',
+    period: 'Bronsålder & romersk järnålder–vikingatid',
+    coords: { lat: 59.29224, lng: 18.03064 },
+    relatedKings: ['Emund den gamle'],
+    // Endast verifierade lägen får markör (Fornsök/rapport-koordinater eller OSM).
+    // Det 1958–59 borttagna gravfältskomplexet har bara ungefärligt läge → flaggat.
+    // Övriga skålgropar i trakten nämns i texten men plottas INTE (inga exakta lägen).
+    points: [
+      { name: 'Skålgropsstenen (RAÄ Brännkyrka 222:1)', lat: 59.29217, lng: 18.03093, note: 'Hällristning/älvkvarn vid Årsta partihallar, Östberga (Brunnbyvägen 20). Källa: Fornsök RAÄ Brännkyrka 222:1.' },
+      { name: 'Vallagravfältet (RAÄ Brännkyrka 77:1)', lat: 59.29473, lng: 18.05105, note: 'Vikingatida gravfält vid Valla torg, ca 35 gravar; bytomten Valla/Nedre Valla intill. Källa: Vinberg m.fl. 2012.' },
+      { name: 'Göta landsväg (RAÄ Stockholm 227)', lat: 59.29371, lng: 18.05622, note: 'Belagd rest av medeltidens riksväg söderut. Källa: Vinberg m.fl. 2012.' },
+      { name: 'Spärranordningen i Årstaviken (RAÄ 660)', lat: 59.306738, lng: 18.048976, note: 'Möjlig pålspärr vid Årstaholmarna, trolig datering 900–1200. Källa: Fornsök L2013:4298.' },
+      { name: 'Ersta gård & det borttagna gravfältet', lat: 59.2921, lng: 18.0362, note: 'Ersta gårdsväg minner om gården (riven 1970-tal). Väster härom låg de 1958–59 utgrävda och borttagna gravfälten. Läge ungefärligt.' },
+    ],
+    sv: `## Varför är det värt ett besök
+Vid Brunnbyvägen i Årsta ligger en skålgropssten — även kallad offersten eller älvkvarn (RAÄ Brännkyrka 222:1). Men platsen är mer än en sten. Runt Valla torg ligger ett helt fornlandskap som spänner från bronsålder till vikingatid, knutet till den gamla gården Valla och vattenvägen in mot Birka. Årsta är dessutom ovanligt rikt på skålgropar — ett halvdussin lokaler till finns inom gång- och cykelavstånd i Östberga, Älvsjö och Högdalen.
+
+## Vad är en skålgrop?
+En skålgrop är en i berget knackad rund grop, från någon centimeter upp till decimeterstora, huggna med knacksten under framför allt bronsåldern. De sitter på släta rundhällar och flyttblock, ofta vid forntida åkrar och stränder. Den vanligaste tolkningen kopplar dem till fruktbarhetskulten — man tänker sig ritualer för god äring (skörd).
+
+I folktron kallades de älvkvarnar och stenarna offer- eller blotstenar. I Mälarlandskapen offrade man i groparna för att bota "älvblåst" (nässelutslag som troddes orsakat av älvor): små dockor av hår, naglar och tygbitar från den sjuke offrades under tre torsdagskvällar i rad, och groparna smordes med ister, talg eller smör. Man la också ner knappnålar och mynt. Seden levde kvar långt in i modern tid — smörjning belagd i södra Uppland så sent som 1923.
+
+## Valla — en centralplats vid vattnet
+Namnet Valla kommer av fornsvenskans *valder*: jämn, gräsbevuxen mark avsedd för ett allmänt ändamål — ting, marknad eller kult, alltså en medelpunkt i bygden. Valla gård gav namn åt Valla å, som rann ut i Årstaviken. Under järnålder och vikingatid var ån segelbar: från Årstafältet nådde man Birka på några timmars segling. Åns utlopp, det medeltida *Aros/Arus* (åmynning), gav namnet Årsta — 1305 skrivet "Arusboawik", "de som bor i byn Aros". Strax intill låg den gamla gården Ersta, en av de äldsta i Brännkyrka (belagd på 1500-talet; Ersta gårdsväg minner om den idag).
+
+## Gravfälten — "Stockholm före Stockholm"
+1958–59 undersökte och tog Stadsmuseet bort tre stora gravfält på södra Årstafältet för att ge plats åt partihallarna — sammanlagt omkring 400 fornlämningar. Det märkligaste var ett romerskt järnåldersgravfält (~100–200 e.Kr.) med över 200 gravar, resta bautastenar och vapengravar — ett av de nordligaste i sitt slag och ett bevis på att trakten var bebodd redan kring Kristi födelse. Här fanns också byn Åbys och byn Brunnbys vikingatida gravfält. I en storhög med sju begravningar låg överst en hövdinggrav från tidigt 900-tal: ett svärd nedstucket rakt i marken, skäggyxa, ridutrustning, spelbrickor och trådar av rent guld invävda i textil — med nära motsvarigheter i Birkas gravar. (Källa: Undersökningarna på Årstafältet 1958–59, Bih. nr 43 år 1960.)
+
+## Kungagraven — vad traditionen säger
+Enligt folktraditionen ska sveakungen Emund den gamle (död omkr. 1060) ha begravts vid Valla. Men den arkeologiska hövdinggraven ovan är daterad till ~900–950 — drygt hundra år tidigare — så den kan inte vara Emunds. Traditionen kan ha vuxit fram kring de synliga storhögarna. Vallagravfältet RAÄ 77:1 vid Valla torg finns kvar och avgränsades vid en förundersökning 2012. Läs mer på [Kungakrönikorna](/royal-chronicles).
+
+## Vägen och vattnet
+Förbi platsen gick Göta landsväg (RAÄ 227), medeltidens pulsåder söderut från Stockholm — en sträcka är belagd strax sydost om gravfältet. Och ute i Årstaviken, vid Årstaholmarna, finns en möjlig pålspärr (RAÄ 660, trolig datering 900–1200) som kontrollerade passagen mellan holmarna — vattenvägens motsvarighet till vägen på land.
+
+## Hitta hit
+Skålgropsstenen ligger vid Brunnbyvägen 20, 120 44 Årsta — nås lätt med tunnelbana (Gullmarsplan) eller pendeltåg (Årstaberg/Älvsjö) och kort promenad. Vallagravfältet och Göta landsväg ligger nära Valla torg; spärren syns från Årstavikens södra strand.
+
+Flera andra skålgropar finns i trakten — i Östberga (Åbyvägen och Östbergavägen), Älvsjö (Lerkrogen, Klockhuset, sydvästra Älvsjöskogen) och Högdalen. Vi plottar bara de lägen vi kunnat verifiera; de övriga går att hitta via RAÄ Fornsök.
+
+## Barnvänligt
+Ja — korta, lättgångna stopp i stadsnära natur. Skålgroparna är tacksamma att låta barn hitta och räkna.`,
+    en: `## Why it is worth a visit
+By Brunnbyvägen in Årsta lies a cup-mark stone — also called an offering stone or "elf mill" (älvkvarn) (RAÄ Brännkyrka 222:1). But the place is more than a stone. Around Valla torg lies a whole ancient landscape spanning the Bronze Age to the Viking Age, tied to the old farm of Valla and the waterway towards Birka. Årsta is also unusually rich in cup marks — half a dozen more sites lie within walking and cycling distance in Östberga, Älvsjö and Högdalen.
+
+## What is a cup mark?
+A cup mark is a round hollow knocked into the rock, from a centimetre to a decimetre across, made with a hammerstone chiefly in the Bronze Age. They sit on smooth rounded outcrops and glacial boulders, often near prehistoric fields and shores. The most common interpretation ties them to the fertility cult — rituals for a good harvest.
+
+In folk belief they were called "elf mills" and the stones offering or sacrificial stones. In the Mälaren provinces people made offerings in the cups to cure "elf-blast" (nettle rash thought to be caused by elves): small dolls of hair, nails and cloth from the sick person were offered on three consecutive Thursday evenings, and the cups were smeared with lard, tallow or butter. Pins and coins were also placed in them. The custom survived into modern times — smearing is attested in southern Uppland as late as 1923.
+
+## Valla — a central place by the water
+The name Valla derives from Old Swedish *valder*: level, grass-grown land set aside for a common purpose — assembly (thing), market or cult, that is, a focal point of the district. The Valla farm gave its name to Valla å (Valla brook), which flowed out into Årstaviken. In the Iron and Viking Ages the brook was navigable: from Årstafältet you could reach Birka in a few hours' sail. The brook's outlet, medieval *Aros/Arus* (river-mouth), gave the name Årsta — written "Arusboawik" in 1305, "those who live in the village of Aros". Close by stood the old farm of Ersta, one of the oldest in Brännkyrka (attested in the 1500s; Ersta gårdsväg still recalls it today).
+
+## The grave fields — "Stockholm before Stockholm"
+In 1958–59 the City Museum excavated and removed three large grave fields on the southern Årstafältet to make way for the wholesale market halls — some 400 features in all. The most remarkable was a Roman Iron Age grave field (~100–200 AD) with over 200 graves, raised bautastones and weapon graves — one of the northernmost of its kind and proof that the area was settled already around the birth of Christ. The Viking-Age grave fields of the villages Åby and Brunnby were here too. In one large mound with seven burials the topmost was a chieftain's grave from the early 900s: a sword thrust upright into the ground, a bearded axe, riding gear, gaming pieces and threads of pure gold woven into textiles — with close parallels in the graves of Birka. (Source: The Årstafältet investigations 1958–59, Bih. no. 43, 1960.)
+
+## The king's grave — what tradition says
+Folk tradition holds that the Swedish king Emund the Old (died c. 1060) was buried at Valla. But the archaeological chieftain's grave above is dated to ~900–950 — over a century earlier — so it cannot be Emund's. The tradition may have grown up around the visible large mounds. The Valla grave field RAÄ 77:1 by Valla torg survives and was delimited in a 2012 survey. Read more in the [Royal Chronicles](/royal-chronicles).
+
+## The road and the water
+Past the site ran Göta landsväg (RAÄ 227), the medieval artery south from Stockholm — a stretch is documented just south-east of the grave field. And out in Årstaviken, by the Årsta islets, lies a possible stake barrier (RAÄ 660, probable date 900–1200) that controlled the passage between the islets — the waterborne counterpart to the road on land.
+
+## Getting there
+The offering stone lies at Brunnbyvägen 20, 120 44 Årsta — easily reached by metro (Gullmarsplan) or commuter train (Årstaberg/Älvsjö) and a short walk. The Valla grave field and Göta landsväg lie near Valla torg; the barrier is visible from the southern shore of Årstaviken.
+
+Several other cup marks lie in the district — in Östberga (Åbyvägen and Östbergavägen), Älvsjö (Lerkrogen, Klockhuset, south-western Älvsjöskogen) and Högdalen. We only plot locations we could verify; the others can be found via the National Heritage Board's Fornsök.
+
+## Family-friendly
+Yes — short, easy stops in urban nature. The cup marks are fun for children to find and count.`,
+  },
+
+  // === Österleden & skärgårdshavet ===
+  {
+    id: 'aland-vikingatid',
+    name: 'Åland — Österledens nav',
+    region: 'Saltvik/Finström, Åland (Finland)',
+    group: 'Österleden & skärgårdshavet',
+    period: 'Yngre järnålder–vikingatid (550–1050)',
+    coords: { lat: 60.28, lng: 19.95 },
+    sv: 'Åland — svenskspråkigt, i århundraden svenskt, idag finländskt — var Österledens nav: sjövägen Birka → Åland → Skärgårdshavet → Ladoga passerade här, och senare följer Kung Valdemars segelled (ca 1300) samma stråk via hamnen Lemböte. Ön är exceptionellt rik på vikingatid: talrika höggravfält med kremeringsgravar, undersökta gårdar som Bartsgårda i Finström (Helsingfors universitet), fynd av pärlor, spännbucklor och Birka-kopplade spännen, och export av fisk, sältran och sälskinn. Mest gåtfull är lertass-riten: en tass av bränd lera lades på gravurnan — unik för Åland i Skandinavien, men med paralleller i Volgaområdet i Ryssland, ett direkt arkeologiskt spår av österledskontakterna. Och mitt i all denna rikedom: INTE EN ENDA runsten — en av runologins olösta gåtor. (Källa: Ålands kulturhistoriska museum, museum.ax.)',
+    en: 'Åland — Swedish-speaking, for centuries Swedish, today Finnish — was the hub of the Eastern Route: the sea road Birka → Åland → Archipelago Sea → Ladoga passed here, and King Valdemar\'s sailing route (c. 1300) later follows the same corridor via the harbour of Lemböte. The island is exceptionally rich in Viking Age remains: numerous mound cemeteries with cremation graves, excavated farms such as Bartsgårda in Finström, finds of beads, oval brooches and Birka-linked jewellery, and exports of fish, seal oil and seal skins. Most enigmatic is the clay-paw rite: a paw of fired clay placed on the burial urn — unique to Åland within Scandinavia, but paralleled in the Volga region of Russia, a direct archaeological trace of the eastern connections. And amid all this wealth: NOT A SINGLE runestone — one of runology\'s unsolved riddles. (Source: Åland Museum, museum.ax.)',
+    relatedSources: ['Kung Valdemars jordebok (Det danska itinerariet)'],
+    monumentTypes: [
+      { sv: 'Farled (Österleden)', en: 'Route (Eastern route)', color: '#b45309' },
+      { sv: 'Farled (Valdemars segelled)', en: 'Route (Valdemar\'s route)', color: '#7c3aed' },
+      { sv: 'Plats', en: 'Site', color: '#eab308' },
+    ],
+  },
+  {
+    id: 'hitis-kyrksundet',
+    name: 'Hitis & Kyrksundet — Finlands första runsten',
+    region: 'Hitis (Hiittinen), Skärgårdshavet, Finland',
+    group: 'Österleden & skärgårdshavet',
+    period: 'Vikingatid (800–1050)',
+    coords: { lat: 59.90, lng: 22.43 },
+    sv: 'Vid Kyrksundet i Hitis skärgård låg en vikingatida handelsplats vid Österledens stråk — samma sund som itinerariets Jungfrusund i Kung Valdemars segelled. Här gjordes 1997 sensationsfyndet: en boende på Stora Ängesön fick upp ett runstensfragment av sandsten ur sjöbottnen vid sin brygga — Finlands första runsten. Av inskriften kan namnet Torfast läsas samt "raþi" ("må tyda"), med parallell i Ågerstastenens (U 729) berömda "Tyde den man som runkunnig är...". Magnus Källström (Riksantikvarieämbetet) har pekat på reliefhuggningen och de ovala skiljetecknen som knyter fragmentet till ristaren Balles krets kring Löts kyrka i Uppland — men o-runans vänsterlutande bistavar talar emot Balle själv, och fyndplatsens karaktär av lastageplats gör att stenen kan ha kommit dit som barlast. En öppen forskningsfråga, redovisad med alla förbehåll. (Källa: K-blogg/RAÄ 2016-04-20.)',
+    en: 'At Kyrksundet in the Hitis archipelago lay a Viking-Age trading site on the Eastern Route — the same sound as the Jungfrusund of King Valdemar\'s itinerary. Here, in 1997, came the sensational find: a resident of Stora Ängesön pulled a sandstone runestone fragment from the seabed by his jetty — Finland\'s first runestone. The inscription yields the name Torfast and "raþi" ("may interpret"), paralleling the famous Ågersta stone (U 729). Magnus Källström (Swedish National Heritage Board) has pointed to the relief carving and oval word-dividers linking the fragment to the carver Balle\'s circle around Löt church in Uppland — but the o-rune\'s left-leaning branches argue against Balle himself, and the find spot\'s character as a loading place means the stone may have arrived as ship ballast. An open research question, presented with all caveats. (Source: K-blogg/RAÄ, 20 Apr 2016.)',
+    signum: 'FI NOR1998;14',
+    monumentTypes: [
+      { sv: 'Farled (Österleden)', en: 'Route (Eastern route)', color: '#b45309' },
+      { sv: 'Farled (Valdemars segelled)', en: 'Route (Valdemar\'s route)', color: '#7c3aed' },
+      { sv: 'Fyndplats', en: 'Find spot', color: '#ef4444' },
+      { sv: 'Handelsplats', en: 'Trading site', color: '#22c55e' },
+    ],
   },
 
   // === Öland ===
+  {
+    id: 'ismantorps-borg',
+    photoDir: 'ismantorp-borg-oland',
+    name: 'Ismantorps borg',
+    region: 'Långlöt, Öland',
+    group: 'Öland',
+    period: 'Folkvandringstid (ca 300–600 e.Kr.)',
+    coords: { lat: 56.744, lng: 16.632 },
+    sv: 'Ölands gåtfullaste fornborg, mitt på Mittlandsskogens alvar: en fullkomligt rund ringmur, 125 m i diameter, med nio portar och 88 husgrunder ordnade i kvarter kring en öppen mittplats. Nio portar är militärt orimligt — talet nio är heligt i nordisk mytologi, och borgen tolkas därför som lika mycket kult- och samlingsplats som försvarsverk.',
+    en: 'Öland\'s most enigmatic ring fort, in the middle of the Mittland forest: a perfectly circular wall, 125 m across, with nine gates and 88 house foundations arranged in blocks around an open central space. Nine gates make no military sense — nine is the sacred number of Norse mythology, and the fort is therefore read as much as a cult and assembly site as a fortification.',
+  },
+  {
+    id: 'karlevistenen',
+    photoDir: 'karlevistenen',
+    name: 'Karlevistenen',
+    region: 'Karlevi, Vickleby, Öland',
+    group: 'Öland',
+    period: 'Vikingatid (ca 1000 e.Kr.)',
+    coords: { lat: 56.607, lng: 16.442 },
+    sv: 'Skaldekonstens främsta runsten: Karlevistenen (Öl 1) restes omkring år 1000 över den danske hövdingen Sibbe "den gode" och bär den enda fullständiga dróttkvätt-strofen bevarad på en runsten — hövisk furstelovprisning i den flätade versform som annars bara överlevt i de isländska handskrifterna. Stenen står kvar på sin ursprungliga plats vid Kalmarsund.',
+    en: 'The finest skaldic runestone: the Karlevi stone (Öl 1) was raised around the year 1000 over the Danish chieftain Sibbi "the good" and bears the only complete dróttkvætt stanza preserved on a runestone — courtly princely praise in the interlaced metre otherwise known only from the Icelandic manuscripts. The stone still stands on its original spot by Kalmarsund.',
+    signum: 'Öl 1',
+  },
   {
     id: 'noaks_ark',
     name: 'Noaks Ark (skeppssättning)',
@@ -451,6 +708,8 @@ export const EXCURSIONS: Excursion[] = [
   // === Anundshög (Västmanland/Mälardalen) ===
   {
     id: 'anundshog',
+    photoDir: 'anundshog',
+    thumbCredit: 'Christer Johansson, CC BY-SA 2.5, Wikimedia Commons',
     name: 'Anundshög',
     region: 'Badelunda, Västerås',
     group: 'Uppland & Mälardalen',
@@ -676,6 +935,8 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'uppsala',
+    photoDir: 'uppsala-domkyrka',
+    thumbCredit: 'Arild Vågen, CC BY-SA 3.0, Wikimedia Commons',
     name: 'Uppsala (domkyrkan)',
     region: 'Uppsala, Uppland',
     group: 'Ting & eriksgata',

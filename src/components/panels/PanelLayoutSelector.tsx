@@ -7,8 +7,24 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useExploreProfiles } from "@/hooks/useExploreProfiles";
 import { useActiveExploreRole, setActiveExploreRole } from "@/hooks/useActiveExploreRole";
 import { PROFILE_ICONS } from "@/config/exploreCapabilities";
+import { CompactSearchBox } from "../search/CompactSearchBox";
 
-export const PanelLayoutSelector: React.FC = () => {
+interface PanelLayoutSelectorProps {
+  // Sök inbäddad i profilkortet (ersätter den stora fristående sökrutan).
+  searchQuery?: string;
+  setSearchQuery?: (query: string) => void;
+  handleSearch?: () => void;
+  totalInscriptions?: number;
+  showSearch?: boolean;
+}
+
+export const PanelLayoutSelector: React.FC<PanelLayoutSelectorProps> = ({
+  searchQuery = "",
+  setSearchQuery,
+  handleSearch,
+  totalInscriptions = 0,
+  showSearch = false,
+}) => {
   const profiles = useExploreProfiles();
   const activeId = useActiveExploreRole();
   const { language } = useLanguage();
@@ -17,6 +33,12 @@ export const PanelLayoutSelector: React.FC = () => {
   // Kondenserad som standard — visar bara aktiv profil tills man fäller ut.
   const [expanded, setExpanded] = useState(false);
   const ActiveIcon = activeProfile ? PROFILE_ICONS[activeProfile.icon] : null;
+
+  const canSearch = showSearch && !!setSearchQuery && !!handleSearch;
+  const runSearch = (query: string) => {
+    setSearchQuery?.(query);
+    handleSearch?.();
+  };
 
   return (
     <Card className="bg-slate-800/60 backdrop-blur-md border-slate-600/30">
@@ -42,6 +64,22 @@ export const PanelLayoutSelector: React.FC = () => {
             />
           </div>
         </button>
+
+        {/* Sök + profilval visas BARA utfällt — kondenserat läge ska ta minimal yta. */}
+        {expanded && canSearch && (
+          <div className="mb-3">
+            <CompactSearchBox
+              onSearch={runSearch}
+              onResultSelect={(result: any) => runSearch(result.signum)}
+              placeholder={
+                lang === "en"
+                  ? `Search ${totalInscriptions.toLocaleString()} runestones...`
+                  : `Sök bland ${totalInscriptions.toLocaleString()} runstenar...`
+              }
+              currentQuery={searchQuery}
+            />
+          </div>
+        )}
 
         {expanded && (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">

@@ -14,6 +14,192 @@ export type Database = {
   }
   public: {
     Tables: {
+      _retired_carver_inscription: {
+        Row: {
+          attribution: Database["public"]["Enums"]["attribution_type"]
+          carverid: string
+          carverinscriptionid: string
+          certainty: boolean
+          created_at: string | null
+          inscriptionid: string
+          lang: string
+          notes: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          attribution?: Database["public"]["Enums"]["attribution_type"]
+          carverid: string
+          carverinscriptionid: string
+          certainty?: boolean
+          created_at?: string | null
+          inscriptionid: string
+          lang?: string
+          notes?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          attribution?: Database["public"]["Enums"]["attribution_type"]
+          carverid?: string
+          carverinscriptionid?: string
+          certainty?: boolean
+          created_at?: string | null
+          inscriptionid?: string
+          lang?: string
+          notes?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      _retired_king_inscription_links: {
+        Row: {
+          analysis_notes: string | null
+          connection_type: string
+          created_at: string
+          evidence_strength: string
+          id: string
+          inscription_id: string
+          king_id: string
+        }
+        Insert: {
+          analysis_notes?: string | null
+          connection_type: string
+          created_at?: string
+          evidence_strength?: string
+          id?: string
+          inscription_id: string
+          king_id: string
+        }
+        Update: {
+          analysis_notes?: string | null
+          connection_type?: string
+          created_at?: string
+          evidence_strength?: string
+          id?: string
+          inscription_id?: string
+          king_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "king_inscription_links_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_inscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "king_inscription_links_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_with_coordinates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "king_inscription_links_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "king_inscription_links_king_id_fkey"
+            columns: ["king_id"]
+            isOneToOne: false
+            referencedRelation: "historical_kings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      _retired_source_inscription_links: {
+        Row: {
+          created_at: string
+          id: string
+          inscription_id: string
+          notes: string | null
+          relation: string
+          source_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inscription_id: string
+          notes?: string | null
+          relation?: string
+          source_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inscription_id?: string
+          notes?: string | null
+          relation?: string
+          source_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_inscription_links_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_inscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_inscription_links_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_with_coordinates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_inscription_links_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_inscription_links_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "historical_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      _retired_theme_links: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          notes: string | null
+          theme_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          notes?: string | null
+          theme_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          notes?: string | null
+          theme_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theme_links_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "themes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       additional_coordinates: {
         Row: {
           confidence: string | null
@@ -161,6 +347,13 @@ export type Database = {
             referencedRelation: "runic_with_coordinates"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ai_analyses_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
         ]
       }
       aliases_canonical: {
@@ -238,7 +431,7 @@ export type Database = {
       archaeological_sites: {
         Row: {
           burial_type: string | null
-          coordinates: unknown | null
+          coordinates: unknown
           country: string
           county: string | null
           created_at: string | null
@@ -253,7 +446,7 @@ export type Database = {
         }
         Insert: {
           burial_type?: string | null
-          coordinates?: unknown | null
+          coordinates?: unknown
           country: string
           county?: string | null
           created_at?: string | null
@@ -268,7 +461,7 @@ export type Database = {
         }
         Update: {
           burial_type?: string | null
-          coordinates?: unknown | null
+          coordinates?: unknown
           country?: string
           county?: string | null
           created_at?: string | null
@@ -288,6 +481,7 @@ export type Database = {
           artefact: string
           artefactid: string
           created_at: string | null
+          id: string | null
           lang: string
           updated_at: string | null
         }
@@ -295,6 +489,7 @@ export type Database = {
           artefact: string
           artefactid: string
           created_at?: string | null
+          id?: string | null
           lang?: string
           updated_at?: string | null
         }
@@ -302,6 +497,7 @@ export type Database = {
           artefact?: string
           artefactid?: string
           created_at?: string | null
+          id?: string | null
           lang?: string
           updated_at?: string | null
         }
@@ -406,6 +602,45 @@ export type Database = {
           },
         ]
       }
+      beacon_sites: {
+        Row: {
+          created_at: string
+          id: string
+          landscape: string | null
+          lat: number
+          lng: number
+          municipality: string | null
+          name: string
+          parish: string | null
+          source_uri: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          landscape?: string | null
+          lat: number
+          lng: number
+          municipality?: string | null
+          name: string
+          parish?: string | null
+          source_uri?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          landscape?: string | null
+          lat?: number
+          lng?: number
+          municipality?: string | null
+          name?: string
+          parish?: string | null
+          source_uri?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bracteatetypes: {
         Row: {
           bracteatetype: string
@@ -430,41 +665,46 @@ export type Database = {
         }
         Relationships: []
       }
-      carver_inscription: {
+      carver_attributes: {
         Row: {
-          attribution: Database["public"]["Enums"]["attribution_type"]
-          carverid: string
-          carverinscriptionid: string
-          certainty: boolean
+          attribute_type: string
+          carver_id: string
           created_at: string | null
-          inscriptionid: string
-          lang: string
-          notes: string | null
+          id: string
+          source_ref: string | null
           updated_at: string | null
+          value_en: string | null
+          value_sv: string | null
         }
         Insert: {
-          attribution?: Database["public"]["Enums"]["attribution_type"]
-          carverid: string
-          carverinscriptionid: string
-          certainty?: boolean
+          attribute_type: string
+          carver_id: string
           created_at?: string | null
-          inscriptionid: string
-          lang?: string
-          notes?: string | null
+          id?: string
+          source_ref?: string | null
           updated_at?: string | null
+          value_en?: string | null
+          value_sv?: string | null
         }
         Update: {
-          attribution?: Database["public"]["Enums"]["attribution_type"]
-          carverid?: string
-          carverinscriptionid?: string
-          certainty?: boolean
+          attribute_type?: string
+          carver_id?: string
           created_at?: string | null
-          inscriptionid?: string
-          lang?: string
-          notes?: string | null
+          id?: string
+          source_ref?: string | null
           updated_at?: string | null
+          value_en?: string | null
+          value_sv?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "carver_attributes_carver_id_fkey"
+            columns: ["carver_id"]
+            isOneToOne: false
+            referencedRelation: "carvers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       carver_source: {
         Row: {
@@ -492,36 +732,54 @@ export type Database = {
           country: string | null
           created_at: string | null
           description: string | null
+          gender: string | null
+          home_farm: string | null
           id: string
+          is_anonymous: boolean
+          is_professional: boolean | null
           language_code: string
           name: string
           period_active_end: number | null
           period_active_start: number | null
           region: string | null
+          rundata_carverid: string | null
+          source_ref: string | null
           updated_at: string | null
         }
         Insert: {
           country?: string | null
           created_at?: string | null
           description?: string | null
+          gender?: string | null
+          home_farm?: string | null
           id?: string
+          is_anonymous?: boolean
+          is_professional?: boolean | null
           language_code?: string
           name: string
           period_active_end?: number | null
           period_active_start?: number | null
           region?: string | null
+          rundata_carverid?: string | null
+          source_ref?: string | null
           updated_at?: string | null
         }
         Update: {
           country?: string | null
           created_at?: string | null
           description?: string | null
+          gender?: string | null
+          home_farm?: string | null
           id?: string
+          is_anonymous?: boolean
+          is_professional?: boolean | null
           language_code?: string
           name?: string
           period_active_end?: number | null
           period_active_start?: number | null
           region?: string | null
+          rundata_carverid?: string | null
+          source_ref?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -595,6 +853,86 @@ export type Database = {
         }
         Relationships: []
       }
+      coins: {
+        Row: {
+          category: string
+          coordinates: unknown
+          created_at: string
+          denomination: string | null
+          description: string | null
+          description_en: string | null
+          find_place: string | null
+          id: string
+          issuer: string | null
+          issuer_king_id: string | null
+          metal: string | null
+          mint: string | null
+          name: string
+          name_en: string | null
+          obverse: string | null
+          period_end: number | null
+          period_start: number | null
+          reverse: string | null
+          significance: string | null
+          sources: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          coordinates?: unknown
+          created_at?: string
+          denomination?: string | null
+          description?: string | null
+          description_en?: string | null
+          find_place?: string | null
+          id?: string
+          issuer?: string | null
+          issuer_king_id?: string | null
+          metal?: string | null
+          mint?: string | null
+          name: string
+          name_en?: string | null
+          obverse?: string | null
+          period_end?: number | null
+          period_start?: number | null
+          reverse?: string | null
+          significance?: string | null
+          sources?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          coordinates?: unknown
+          created_at?: string
+          denomination?: string | null
+          description?: string | null
+          description_en?: string | null
+          find_place?: string | null
+          id?: string
+          issuer?: string | null
+          issuer_king_id?: string | null
+          metal?: string | null
+          mint?: string | null
+          name?: string
+          name_en?: string | null
+          obverse?: string | null
+          period_end?: number | null
+          period_start?: number | null
+          reverse?: string | null
+          significance?: string | null
+          sources?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coins_issuer_king_id_fkey"
+            columns: ["issuer_king_id"]
+            isOneToOne: false
+            referencedRelation: "historical_kings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coordinates: {
         Row: {
           coordinate_id: string
@@ -604,7 +942,7 @@ export type Database = {
           latitude: number
           longitude: number
           object_id: string
-          point_coordinates: unknown | null
+          point_coordinates: unknown
           updated_at: string
         }
         Insert: {
@@ -615,7 +953,7 @@ export type Database = {
           latitude: number
           longitude: number
           object_id: string
-          point_coordinates?: unknown | null
+          point_coordinates?: unknown
           updated_at?: string
         }
         Update: {
@@ -626,7 +964,7 @@ export type Database = {
           latitude?: number
           longitude?: number
           object_id?: string
-          point_coordinates?: unknown | null
+          point_coordinates?: unknown
           updated_at?: string
         }
         Relationships: []
@@ -899,6 +1237,102 @@ export type Database = {
           },
         ]
       }
+      entity_registry: {
+        Row: {
+          entity_type: string
+          id: string
+          label: string | null
+          updated_at: string
+        }
+        Insert: {
+          entity_type: string
+          id: string
+          label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          entity_type?: string
+          id?: string
+          label?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      excursions: {
+        Row: {
+          coordinates: unknown
+          created_at: string
+          description_en: string | null
+          description_sv: string | null
+          grp: string | null
+          id: string
+          name: string
+          period: string | null
+          region: string | null
+          signum: string | null
+          updated_at: string
+        }
+        Insert: {
+          coordinates?: unknown
+          created_at?: string
+          description_en?: string | null
+          description_sv?: string | null
+          grp?: string | null
+          id: string
+          name: string
+          period?: string | null
+          region?: string | null
+          signum?: string | null
+          updated_at?: string
+        }
+        Update: {
+          coordinates?: unknown
+          created_at?: string
+          description_en?: string | null
+          description_sv?: string | null
+          grp?: string | null
+          id?: string
+          name?: string
+          period?: string | null
+          region?: string | null
+          signum?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      explore_profiles: {
+        Row: {
+          config: Json
+          created_at: string
+          description: Json
+          id: string
+          is_active: boolean
+          label: Json
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          config: Json
+          created_at?: string
+          description?: Json
+          id: string
+          is_active?: boolean
+          label: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: Json
+          id?: string
+          is_active?: boolean
+          label?: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       eye_color_genetics: {
         Row: {
           allele_variants: string[] | null
@@ -1064,6 +1498,60 @@ export type Database = {
           },
         ]
       }
+      finds: {
+        Row: {
+          coordinates: unknown
+          created_at: string | null
+          data_source: string | null
+          dating_text: string | null
+          description: string | null
+          find_place: string | null
+          find_type: string | null
+          id: string
+          landscape: string | null
+          material: string | null
+          name: string
+          object_count: number | null
+          parish: string | null
+          raa_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          coordinates?: unknown
+          created_at?: string | null
+          data_source?: string | null
+          dating_text?: string | null
+          description?: string | null
+          find_place?: string | null
+          find_type?: string | null
+          id?: string
+          landscape?: string | null
+          material?: string | null
+          name: string
+          object_count?: number | null
+          parish?: string | null
+          raa_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          coordinates?: unknown
+          created_at?: string | null
+          data_source?: string | null
+          dating_text?: string | null
+          description?: string | null
+          find_place?: string | null
+          find_type?: string | null
+          id?: string
+          landscape?: string | null
+          material?: string | null
+          name?: string
+          object_count?: number | null
+          parish?: string | null
+          raa_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       folk_group_cities: {
         Row: {
           city_id: string | null
@@ -1119,7 +1607,7 @@ export type Database = {
         Row: {
           active_period_end: number | null
           active_period_start: number | null
-          coordinates: unknown | null
+          coordinates: unknown
           created_at: string | null
           description: string | null
           description_en: string | null
@@ -1137,7 +1625,7 @@ export type Database = {
         Insert: {
           active_period_end?: number | null
           active_period_start?: number | null
-          coordinates?: unknown | null
+          coordinates?: unknown
           created_at?: string | null
           description?: string | null
           description_en?: string | null
@@ -1155,7 +1643,7 @@ export type Database = {
         Update: {
           active_period_end?: number | null
           active_period_start?: number | null
-          coordinates?: unknown | null
+          coordinates?: unknown
           created_at?: string | null
           description?: string | null
           description_en?: string | null
@@ -1327,6 +1815,45 @@ export type Database = {
         }
         Relationships: []
       }
+      gods: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          domain: string[] | null
+          id: string
+          name: string
+          name_old_norse: string | null
+          symbols: string[] | null
+          updated_at: string | null
+          wikidata_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          domain?: string[] | null
+          id?: string
+          name: string
+          name_old_norse?: string | null
+          symbols?: string[] | null
+          updated_at?: string | null
+          wikidata_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          domain?: string[] | null
+          id?: string
+          name?: string
+          name_old_norse?: string | null
+          symbols?: string[] | null
+          updated_at?: string | null
+          wikidata_id?: string | null
+        }
+        Relationships: []
+      }
       groups: {
         Row: {
           created_at: string
@@ -1426,6 +1953,57 @@ export type Database = {
         }
         Relationships: []
       }
+      heritage_sites: {
+        Row: {
+          created_at: string
+          description: string | null
+          geom: unknown
+          id: string
+          landscape: string | null
+          lat: number
+          lng: number
+          municipality: string | null
+          name: string
+          parish: string | null
+          period: string | null
+          raa_type: string
+          source_uri: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          geom?: unknown
+          id?: string
+          landscape?: string | null
+          lat: number
+          lng: number
+          municipality?: string | null
+          name: string
+          parish?: string | null
+          period?: string | null
+          raa_type: string
+          source_uri?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          geom?: unknown
+          id?: string
+          landscape?: string | null
+          lat?: number
+          lng?: number
+          municipality?: string | null
+          name?: string
+          parish?: string | null
+          period?: string | null
+          raa_type?: string
+          source_uri?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       historical_events: {
         Row: {
           created_at: string | null
@@ -1479,17 +2057,25 @@ export type Database = {
           archaeological_evidence: boolean | null
           birth_year: number | null
           created_at: string
+          de_facto_ruler: boolean
           death_year: number | null
           description: string | null
           dynasty_id: string | null
+          external_attestation: string[]
           gender: string
           id: string
+          image_caption: string | null
+          image_credit: string | null
+          image_url: string | null
           name: string
           name_variations: string[] | null
+          node_control: string | null
           region: string
           reign_end: number | null
           reign_start: number | null
+          role: string | null
           runestone_mentions: boolean | null
+          sources: string | null
           status: Database["public"]["Enums"]["king_status"]
           updated_at: string
         }
@@ -1497,17 +2083,25 @@ export type Database = {
           archaeological_evidence?: boolean | null
           birth_year?: number | null
           created_at?: string
+          de_facto_ruler?: boolean
           death_year?: number | null
           description?: string | null
           dynasty_id?: string | null
+          external_attestation?: string[]
           gender?: string
           id?: string
+          image_caption?: string | null
+          image_credit?: string | null
+          image_url?: string | null
           name: string
           name_variations?: string[] | null
+          node_control?: string | null
           region: string
           reign_end?: number | null
           reign_start?: number | null
+          role?: string | null
           runestone_mentions?: boolean | null
+          sources?: string | null
           status?: Database["public"]["Enums"]["king_status"]
           updated_at?: string
         }
@@ -1515,17 +2109,25 @@ export type Database = {
           archaeological_evidence?: boolean | null
           birth_year?: number | null
           created_at?: string
+          de_facto_ruler?: boolean
           death_year?: number | null
           description?: string | null
           dynasty_id?: string | null
+          external_attestation?: string[]
           gender?: string
           id?: string
+          image_caption?: string | null
+          image_credit?: string | null
+          image_url?: string | null
           name?: string
           name_variations?: string[] | null
+          node_control?: string | null
           region?: string
           reign_end?: number | null
           reign_start?: number | null
+          role?: string | null
           runestone_mentions?: boolean | null
+          sources?: string | null
           status?: Database["public"]["Enums"]["king_status"]
           updated_at?: string
         }
@@ -1576,46 +2178,61 @@ export type Database = {
         Row: {
           author: string
           bias_types: Database["public"]["Enums"]["bias_type"][] | null
+          collection: string | null
+          copyrighted_editions: string | null
           covers_period_end: number | null
           covers_period_start: number | null
           created_at: string
           description: string | null
           id: string
           language: string
+          manuscript: string | null
+          meter: string | null
           reliability: Database["public"]["Enums"]["source_reliability"]
           title: string
           title_en: string
           updated_at: string
+          work_type: string | null
           written_year: number | null
         }
         Insert: {
           author: string
           bias_types?: Database["public"]["Enums"]["bias_type"][] | null
+          collection?: string | null
+          copyrighted_editions?: string | null
           covers_period_end?: number | null
           covers_period_start?: number | null
           created_at?: string
           description?: string | null
           id?: string
           language: string
+          manuscript?: string | null
+          meter?: string | null
           reliability: Database["public"]["Enums"]["source_reliability"]
           title: string
           title_en: string
           updated_at?: string
+          work_type?: string | null
           written_year?: number | null
         }
         Update: {
           author?: string
           bias_types?: Database["public"]["Enums"]["bias_type"][] | null
+          collection?: string | null
+          copyrighted_editions?: string | null
           covers_period_end?: number | null
           covers_period_start?: number | null
           created_at?: string
           description?: string | null
           id?: string
           language?: string
+          manuscript?: string | null
+          meter?: string | null
           reliability?: Database["public"]["Enums"]["source_reliability"]
           title?: string
           title_en?: string
           updated_at?: string
+          work_type?: string | null
           written_year?: number | null
         }
         Relationships: []
@@ -1674,6 +2291,94 @@ export type Database = {
         }
         Relationships: []
       }
+      import_attribution_staging: {
+        Row: {
+          created_at: string
+          id: string
+          link_count: number
+          note_text: string
+          original_carver_name: string
+          related_signa: string[] | null
+          resolved: boolean
+          tier: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link_count?: number
+          note_text: string
+          original_carver_name: string
+          related_signa?: string[] | null
+          resolved?: boolean
+          tier?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link_count?: number
+          note_text?: string
+          original_carver_name?: string
+          related_signa?: string[] | null
+          resolved?: boolean
+          tier?: string | null
+        }
+        Relationships: []
+      }
+      inscription_attributions: {
+        Row: {
+          certainty: boolean | null
+          created_at: string
+          id: string
+          inscription_id: string
+          kind: string
+          note_sv: string
+          related_signa: string[] | null
+          source_ref: string | null
+        }
+        Insert: {
+          certainty?: boolean | null
+          created_at?: string
+          id?: string
+          inscription_id: string
+          kind?: string
+          note_sv: string
+          related_signa?: string[] | null
+          source_ref?: string | null
+        }
+        Update: {
+          certainty?: boolean | null
+          created_at?: string
+          id?: string
+          inscription_id?: string
+          kind?: string
+          note_sv?: string
+          related_signa?: string[] | null
+          source_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inscription_attributions_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_inscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_attributions_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_with_coordinates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_attributions_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inscription_comparisons: {
         Row: {
           comparison_type: string | null
@@ -1724,6 +2429,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "inscription_comparisons_inscription_a_id_fkey"
+            columns: ["inscription_a_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "inscription_comparisons_inscription_b_id_fkey"
             columns: ["inscription_b_id"]
             isOneToOne: false
@@ -1735,6 +2447,13 @@ export type Database = {
             columns: ["inscription_b_id"]
             isOneToOne: false
             referencedRelation: "runic_with_coordinates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_comparisons_inscription_b_id_fkey"
+            columns: ["inscription_b_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
             referencedColumns: ["id"]
           },
         ]
@@ -1756,6 +2475,56 @@ export type Database = {
           inscriptionid?: string
         }
         Relationships: []
+      }
+      inscription_material: {
+        Row: {
+          inscription_id: string
+          material_code: string
+          scheme: string
+          source_ref: string
+        }
+        Insert: {
+          inscription_id: string
+          material_code: string
+          scheme?: string
+          source_ref?: string
+        }
+        Update: {
+          inscription_id?: string
+          material_code?: string
+          scheme?: string
+          source_ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inscription_material_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_inscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_material_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_with_coordinates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_material_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_material_scheme_material_code_fkey"
+            columns: ["scheme", "material_code"]
+            isOneToOne: false
+            referencedRelation: "vocabulary"
+            referencedColumns: ["scheme", "code"]
+          },
+        ]
       }
       inscription_media: {
         Row: {
@@ -1815,56 +2584,212 @@ export type Database = {
             referencedRelation: "runic_with_coordinates"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "inscription_media_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      king_inscription_links: {
+      inscription_runetype: {
         Row: {
-          analysis_notes: string | null
-          connection_type: string
-          created_at: string
-          evidence_strength: string
-          id: string
           inscription_id: string
-          king_id: string
+          runetype_code: string
+          scheme: string
+          source_ref: string
         }
         Insert: {
-          analysis_notes?: string | null
-          connection_type: string
-          created_at?: string
-          evidence_strength?: string
-          id?: string
           inscription_id: string
-          king_id: string
+          runetype_code: string
+          scheme?: string
+          source_ref?: string
         }
         Update: {
-          analysis_notes?: string | null
-          connection_type?: string
-          created_at?: string
-          evidence_strength?: string
-          id?: string
           inscription_id?: string
-          king_id?: string
+          runetype_code?: string
+          scheme?: string
+          source_ref?: string
         }
         Relationships: [
           {
-            foreignKeyName: "king_inscription_links_inscription_id_fkey"
+            foreignKeyName: "inscription_runetype_inscription_id_fkey"
             columns: ["inscription_id"]
             isOneToOne: false
             referencedRelation: "runic_inscriptions"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "king_inscription_links_inscription_id_fkey"
+            foreignKeyName: "inscription_runetype_inscription_id_fkey"
             columns: ["inscription_id"]
             isOneToOne: false
             referencedRelation: "runic_with_coordinates"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "king_inscription_links_king_id_fkey"
-            columns: ["king_id"]
+            foreignKeyName: "inscription_runetype_inscription_id_fkey"
+            columns: ["inscription_id"]
             isOneToOne: false
-            referencedRelation: "historical_kings"
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_runetype_scheme_runetype_code_fkey"
+            columns: ["scheme", "runetype_code"]
+            isOneToOne: false
+            referencedRelation: "vocabulary"
+            referencedColumns: ["scheme", "code"]
+          },
+        ]
+      }
+      inscription_style: {
+        Row: {
+          certainty: boolean | null
+          inscription_id: string
+          scheme: string
+          source_ref: string
+          style_code: string
+        }
+        Insert: {
+          certainty?: boolean | null
+          inscription_id: string
+          scheme?: string
+          source_ref?: string
+          style_code: string
+        }
+        Update: {
+          certainty?: boolean | null
+          inscription_id?: string
+          scheme?: string
+          source_ref?: string
+          style_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inscription_style_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_inscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_style_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_with_coordinates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_style_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_style_scheme_style_code_fkey"
+            columns: ["scheme", "style_code"]
+            isOneToOne: false
+            referencedRelation: "vocabulary"
+            referencedColumns: ["scheme", "code"]
+          },
+        ]
+      }
+      inscription_uri: {
+        Row: {
+          created_at: string
+          inscription_id: string
+          source_ref: string
+          uri: string
+        }
+        Insert: {
+          created_at?: string
+          inscription_id: string
+          source_ref?: string
+          uri: string
+        }
+        Update: {
+          created_at?: string
+          inscription_id?: string
+          source_ref?: string
+          uri?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inscription_uri_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_inscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_uri_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_with_coordinates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscription_uri_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interpretations: {
+        Row: {
+          created_at: string
+          id: string
+          inscription_id: string
+          language: string | null
+          source_ref: string
+          tei_text: string | null
+          text: string | null
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          inscription_id: string
+          language?: string | null
+          source_ref?: string
+          tei_text?: string | null
+          text?: string | null
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inscription_id?: string
+          language?: string | null
+          source_ref?: string
+          tei_text?: string | null
+          text?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interpretations_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_inscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interpretations_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "runic_with_coordinates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interpretations_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
             referencedColumns: ["id"]
           },
         ]
@@ -2207,8 +3132,22 @@ export type Database = {
             foreignKeyName: "fk_object"
             columns: ["objectid"]
             isOneToOne: false
-            referencedRelation: "objects"
-            referencedColumns: ["objectid"]
+            referencedRelation: "runic_inscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_object"
+            columns: ["objectid"]
+            isOneToOne: false
+            referencedRelation: "runic_with_coordinates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_object"
+            columns: ["objectid"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_source"
@@ -2263,29 +3202,115 @@ export type Database = {
       parishes: {
         Row: {
           code: string | null
+          country: string | null
           created_at: string
-          external_id: string
+          external_id: string | null
+          hundred_external_id: string | null
           id: string
           name: string
+          parish_type: string | null
+          rundata_name: string | null
+          rundata_parishid: string | null
           updated_at: string
         }
         Insert: {
           code?: string | null
+          country?: string | null
           created_at?: string
-          external_id: string
+          external_id?: string | null
+          hundred_external_id?: string | null
           id?: string
           name: string
+          parish_type?: string | null
+          rundata_name?: string | null
+          rundata_parishid?: string | null
           updated_at?: string
         }
         Update: {
           code?: string | null
+          country?: string | null
           created_at?: string
-          external_id?: string
+          external_id?: string | null
+          hundred_external_id?: string | null
           id?: string
           name?: string
+          parish_type?: string | null
+          rundata_name?: string | null
+          rundata_parishid?: string | null
           updated_at?: string
         }
         Relationships: []
+      }
+      place_names: {
+        Row: {
+          attestation_source: string | null
+          attested_form: string | null
+          created_at: string
+          earliest_attestation_year: number | null
+          element_category: string | null
+          element_keys: string[]
+          external_id: string | null
+          feature_type: string | null
+          id: string
+          imported_at: string
+          lat: number
+          lng: number
+          name: string
+          parish_id: string | null
+          province: string | null
+          source: string
+          source_license: string
+          updated_at: string
+        }
+        Insert: {
+          attestation_source?: string | null
+          attested_form?: string | null
+          created_at?: string
+          earliest_attestation_year?: number | null
+          element_category?: string | null
+          element_keys?: string[]
+          external_id?: string | null
+          feature_type?: string | null
+          id?: string
+          imported_at?: string
+          lat: number
+          lng: number
+          name: string
+          parish_id?: string | null
+          province?: string | null
+          source?: string
+          source_license?: string
+          updated_at?: string
+        }
+        Update: {
+          attestation_source?: string | null
+          attested_form?: string | null
+          created_at?: string
+          earliest_attestation_year?: number | null
+          element_category?: string | null
+          element_keys?: string[]
+          external_id?: string | null
+          feature_type?: string | null
+          id?: string
+          imported_at?: string
+          lat?: number
+          lng?: number
+          name?: string
+          parish_id?: string | null
+          province?: string | null
+          source?: string
+          source_license?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_names_parish_id_fkey"
+            columns: ["parish_id"]
+            isOneToOne: false
+            referencedRelation: "parishes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       place_parish_links: {
         Row: {
@@ -2495,6 +3520,13 @@ export type Database = {
             referencedRelation: "runic_with_coordinates"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_readings_inscription"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
+            referencedColumns: ["id"]
+          },
         ]
       }
       reference_populations: {
@@ -2547,6 +3579,94 @@ export type Database = {
           uri_id?: string
         }
         Relationships: []
+      }
+      rel_predicates: {
+        Row: {
+          code: string
+          description: string | null
+          label_en: string
+          label_sv: string
+          object_type: string
+          qualifier_schema: Json | null
+          subject_type: string
+        }
+        Insert: {
+          code: string
+          description?: string | null
+          label_en: string
+          label_sv: string
+          object_type: string
+          qualifier_schema?: Json | null
+          subject_type: string
+        }
+        Update: {
+          code?: string
+          description?: string | null
+          label_en?: string
+          label_sv?: string
+          object_type?: string
+          qualifier_schema?: Json | null
+          subject_type?: string
+        }
+        Relationships: []
+      }
+      relationship: {
+        Row: {
+          confidence: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          object_id: string
+          predicate: string
+          qualifiers: Json | null
+          source_ref: string | null
+          subject_id: string
+        }
+        Insert: {
+          confidence?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          object_id: string
+          predicate: string
+          qualifiers?: Json | null
+          source_ref?: string | null
+          subject_id: string
+        }
+        Update: {
+          confidence?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          object_id?: string
+          predicate?: string
+          qualifiers?: Json | null
+          source_ref?: string | null
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relationship_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "entity_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relationship_predicate_fkey"
+            columns: ["predicate"]
+            isOneToOne: false
+            referencedRelation: "rel_predicates"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "relationship_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "entity_registry"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       research_notes: {
         Row: {
@@ -2607,6 +3727,13 @@ export type Database = {
             columns: ["inscription_id"]
             isOneToOne: false
             referencedRelation: "runic_with_coordinates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "research_notes_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_parish_unresolved"
             referencedColumns: ["id"]
           },
         ]
@@ -2887,6 +4014,60 @@ export type Database = {
         }
         Relationships: []
       }
+      royal_relations: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          king_a_id: string | null
+          king_b_id: string | null
+          period: string | null
+          person_a: string
+          person_b: string
+          relation_type: string
+          source: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          king_a_id?: string | null
+          king_b_id?: string | null
+          period?: string | null
+          person_a: string
+          person_b: string
+          relation_type: string
+          source?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          king_a_id?: string | null
+          king_b_id?: string | null
+          period?: string | null
+          person_a?: string
+          person_b?: string
+          relation_type?: string
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "royal_relations_king_a_id_fkey"
+            columns: ["king_a_id"]
+            isOneToOne: false
+            referencedRelation: "historical_kings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "royal_relations_king_b_id_fkey"
+            columns: ["king_b_id"]
+            isOneToOne: false
+            referencedRelation: "historical_kings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rundata_artefacts: {
         Row: {
           artefact_name: string
@@ -2920,8 +4101,11 @@ export type Database = {
           alternative_signum: string[] | null
           bibliography: Json | null
           complexity_level: string | null
+          condition: string | null
           condition_notes: string | null
-          coordinates: unknown | null
+          coord_confidence: string | null
+          coord_source: string | null
+          coordinates: unknown
           country: string | null
           county: string | null
           created_at: string | null
@@ -2932,32 +4116,42 @@ export type Database = {
           dating_text: string | null
           dimensions: string | null
           embedding: string | null
+          harad: string | null
           historical_context: string | null
           id: string
           inscription_group: string | null
+          interpretation_confidence: string | null
           is_primary_signum_verified: boolean | null
           k_samsok_uri: string | null
           lamningsnumber: string | null
           landscape: string | null
           location: string | null
           material: string | null
+          meter: string | null
           municipality: string | null
           name: string | null
           name_en: string | null
+          name_source: string | null
           normalization: string | null
+          object_category: string | null
           object_type: string | null
           paleographic_notes: string | null
           parish: string | null
+          parish_id: string | null
+          parish_match_method: string | null
+          parish_match_score: number | null
           period_end: number | null
           period_start: number | null
           primary_signum: string | null
           province: string | null
           raa_number: string | null
+          rundata_objectid: string | null
           rundata_signum: string | null
           rune_type: string | null
           rune_variant: string | null
           scholarly_notes: string | null
           signum: string
+          socken: string | null
           style_group: string | null
           text_segments: Json | null
           translation_en: string | null
@@ -2971,8 +4165,11 @@ export type Database = {
           alternative_signum?: string[] | null
           bibliography?: Json | null
           complexity_level?: string | null
+          condition?: string | null
           condition_notes?: string | null
-          coordinates?: unknown | null
+          coord_confidence?: string | null
+          coord_source?: string | null
+          coordinates?: unknown
           country?: string | null
           county?: string | null
           created_at?: string | null
@@ -2983,32 +4180,42 @@ export type Database = {
           dating_text?: string | null
           dimensions?: string | null
           embedding?: string | null
+          harad?: string | null
           historical_context?: string | null
           id?: string
           inscription_group?: string | null
+          interpretation_confidence?: string | null
           is_primary_signum_verified?: boolean | null
           k_samsok_uri?: string | null
           lamningsnumber?: string | null
           landscape?: string | null
           location?: string | null
           material?: string | null
+          meter?: string | null
           municipality?: string | null
           name?: string | null
           name_en?: string | null
+          name_source?: string | null
           normalization?: string | null
+          object_category?: string | null
           object_type?: string | null
           paleographic_notes?: string | null
           parish?: string | null
+          parish_id?: string | null
+          parish_match_method?: string | null
+          parish_match_score?: number | null
           period_end?: number | null
           period_start?: number | null
           primary_signum?: string | null
           province?: string | null
           raa_number?: string | null
+          rundata_objectid?: string | null
           rundata_signum?: string | null
           rune_type?: string | null
           rune_variant?: string | null
           scholarly_notes?: string | null
           signum: string
+          socken?: string | null
           style_group?: string | null
           text_segments?: Json | null
           translation_en?: string | null
@@ -3022,8 +4229,11 @@ export type Database = {
           alternative_signum?: string[] | null
           bibliography?: Json | null
           complexity_level?: string | null
+          condition?: string | null
           condition_notes?: string | null
-          coordinates?: unknown | null
+          coord_confidence?: string | null
+          coord_source?: string | null
+          coordinates?: unknown
           country?: string | null
           county?: string | null
           created_at?: string | null
@@ -3034,32 +4244,42 @@ export type Database = {
           dating_text?: string | null
           dimensions?: string | null
           embedding?: string | null
+          harad?: string | null
           historical_context?: string | null
           id?: string
           inscription_group?: string | null
+          interpretation_confidence?: string | null
           is_primary_signum_verified?: boolean | null
           k_samsok_uri?: string | null
           lamningsnumber?: string | null
           landscape?: string | null
           location?: string | null
           material?: string | null
+          meter?: string | null
           municipality?: string | null
           name?: string | null
           name_en?: string | null
+          name_source?: string | null
           normalization?: string | null
+          object_category?: string | null
           object_type?: string | null
           paleographic_notes?: string | null
           parish?: string | null
+          parish_id?: string | null
+          parish_match_method?: string | null
+          parish_match_score?: number | null
           period_end?: number | null
           period_start?: number | null
           primary_signum?: string | null
           province?: string | null
           raa_number?: string | null
+          rundata_objectid?: string | null
           rundata_signum?: string | null
           rune_type?: string | null
           rune_variant?: string | null
           scholarly_notes?: string | null
           signum?: string
+          socken?: string | null
           style_group?: string | null
           text_segments?: Json | null
           translation_en?: string | null
@@ -3067,6 +4287,68 @@ export type Database = {
           transliteration?: string | null
           uncertainty_level?: string | null
           updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runic_inscriptions_parish_id_fkey"
+            columns: ["parish_id"]
+            isOneToOne: false
+            referencedRelation: "parishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      search_document: {
+        Row: {
+          body_en: string | null
+          body_simple: string | null
+          body_sv: string | null
+          embedding: string | null
+          embedding_model: string | null
+          entity_id: string
+          entity_type: string
+          label: string
+          signum: string | null
+          signum_norm: string | null
+          sublabel: string | null
+          tsv_en: unknown
+          tsv_simple: unknown
+          tsv_sv: unknown
+          updated_at: string
+        }
+        Insert: {
+          body_en?: string | null
+          body_simple?: string | null
+          body_sv?: string | null
+          embedding?: string | null
+          embedding_model?: string | null
+          entity_id: string
+          entity_type: string
+          label: string
+          signum?: string | null
+          signum_norm?: string | null
+          sublabel?: string | null
+          tsv_en?: unknown
+          tsv_simple?: unknown
+          tsv_sv?: unknown
+          updated_at?: string
+        }
+        Update: {
+          body_en?: string | null
+          body_simple?: string | null
+          body_sv?: string | null
+          embedding?: string | null
+          embedding_model?: string | null
+          entity_id?: string
+          entity_type?: string
+          label?: string
+          signum?: string | null
+          signum_norm?: string | null
+          sublabel?: string | null
+          tsv_en?: unknown
+          tsv_simple?: unknown
+          tsv_sv?: unknown
+          updated_at?: string
         }
         Relationships: []
       }
@@ -3076,7 +4358,7 @@ export type Database = {
           error_message: string | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_role: Database["public"]["Enums"]["app_role"] | null
           old_role: Database["public"]["Enums"]["app_role"] | null
           success: boolean
@@ -3089,7 +4371,7 @@ export type Database = {
           error_message?: string | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_role?: Database["public"]["Enums"]["app_role"] | null
           old_role?: Database["public"]["Enums"]["app_role"] | null
           success?: boolean
@@ -3102,7 +4384,7 @@ export type Database = {
           error_message?: string | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_role?: Database["public"]["Enums"]["app_role"] | null
           old_role?: Database["public"]["Enums"]["app_role"] | null
           success?: boolean
@@ -3135,6 +4417,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      source_texts: {
+        Row: {
+          created_at: string
+          en_source: string | null
+          fts: unknown
+          id: string
+          norse_source: string | null
+          original_norse: string | null
+          source_id: string
+          stanza_no: number | null
+          sv_source: string | null
+          translation_en: string | null
+          translation_sv: string | null
+        }
+        Insert: {
+          created_at?: string
+          en_source?: string | null
+          fts?: unknown
+          id?: string
+          norse_source?: string | null
+          original_norse?: string | null
+          source_id: string
+          stanza_no?: number | null
+          sv_source?: string | null
+          translation_en?: string | null
+          translation_sv?: string | null
+        }
+        Update: {
+          created_at?: string
+          en_source?: string | null
+          fts?: unknown
+          id?: string
+          norse_source?: string | null
+          original_norse?: string | null
+          source_id?: string
+          stanza_no?: number | null
+          sv_source?: string | null
+          translation_en?: string | null
+          translation_sv?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_texts_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "historical_sources"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sources: {
         Row: {
@@ -3175,6 +4507,30 @@ export type Database = {
           title?: string | null
           updated_at?: string
           url?: string | null
+        }
+        Relationships: []
+      }
+      spatial_ref_sys: {
+        Row: {
+          auth_name: string | null
+          auth_srid: number | null
+          proj4text: string | null
+          srid: number
+          srtext: string | null
+        }
+        Insert: {
+          auth_name?: string | null
+          auth_srid?: number | null
+          proj4text?: string | null
+          srid: number
+          srtext?: string | null
+        }
+        Update: {
+          auth_name?: string | null
+          auth_srid?: number | null
+          proj4text?: string | null
+          srid?: number
+          srtext?: string | null
         }
         Relationships: []
       }
@@ -3240,7 +4596,7 @@ export type Database = {
       }
       swedish_hillforts: {
         Row: {
-          coordinates: unknown | null
+          coordinates: unknown
           country: string | null
           county: string | null
           created_at: string | null
@@ -3259,7 +4615,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          coordinates?: unknown | null
+          coordinates?: unknown
           country?: string | null
           county?: string | null
           created_at?: string | null
@@ -3278,7 +4634,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          coordinates?: unknown | null
+          coordinates?: unknown
           country?: string | null
           county?: string | null
           created_at?: string | null
@@ -3338,6 +4694,42 @@ export type Database = {
             referencedColumns: ["external_id"]
           },
         ]
+      }
+      themes: {
+        Row: {
+          created_at: string
+          description: string | null
+          description_en: string | null
+          icon: string | null
+          id: string
+          keywords: string[] | null
+          name: string
+          name_en: string | null
+          slug: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          icon?: string | null
+          id?: string
+          keywords?: string[] | null
+          name: string
+          name_en?: string | null
+          slug?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          icon?: string | null
+          id?: string
+          keywords?: string[] | null
+          name?: string
+          name_en?: string | null
+          slug?: string | null
+        }
+        Relationships: []
       }
       translations: {
         Row: {
@@ -3592,7 +4984,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           description_en: string | null
-          end_coordinates: unknown | null
+          end_coordinates: unknown
           id: string
           importance_level: string | null
           name: string
@@ -3600,7 +4992,7 @@ export type Database = {
           period_end: number | null
           period_start: number | null
           road_type: string
-          start_coordinates: unknown | null
+          start_coordinates: unknown
           total_length_km: number | null
           updated_at: string | null
         }
@@ -3608,7 +5000,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           description_en?: string | null
-          end_coordinates?: unknown | null
+          end_coordinates?: unknown
           id?: string
           importance_level?: string | null
           name: string
@@ -3616,7 +5008,7 @@ export type Database = {
           period_end?: number | null
           period_start?: number | null
           road_type: string
-          start_coordinates?: unknown | null
+          start_coordinates?: unknown
           total_length_km?: number | null
           updated_at?: string | null
         }
@@ -3624,7 +5016,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           description_en?: string | null
-          end_coordinates?: unknown | null
+          end_coordinates?: unknown
           id?: string
           importance_level?: string | null
           name?: string
@@ -3632,19 +5024,200 @@ export type Database = {
           period_end?: number | null
           period_start?: number | null
           road_type?: string
-          start_coordinates?: unknown | null
+          start_coordinates?: unknown
           total_length_km?: number | null
           updated_at?: string | null
         }
         Relationships: []
       }
+      vocabulary: {
+        Row: {
+          category: string | null
+          code: string
+          created_at: string
+          description: string | null
+          label_en: string | null
+          label_sv: string | null
+          parent_code: string | null
+          period_end: number | null
+          period_start: number | null
+          scheme: string
+          source_ref: string | null
+          source_uuid: string | null
+          wikidata_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          created_at?: string
+          description?: string | null
+          label_en?: string | null
+          label_sv?: string | null
+          parent_code?: string | null
+          period_end?: number | null
+          period_start?: number | null
+          scheme: string
+          source_ref?: string | null
+          source_uuid?: string | null
+          wikidata_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          created_at?: string
+          description?: string | null
+          label_en?: string | null
+          label_sv?: string | null
+          parent_code?: string | null
+          period_end?: number | null
+          period_start?: number | null
+          scheme?: string
+          source_ref?: string | null
+          source_uuid?: string | null
+          wikidata_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vocabulary_scheme_parent_code_fkey"
+            columns: ["scheme", "parent_code"]
+            isOneToOne: false
+            referencedRelation: "vocabulary"
+            referencedColumns: ["scheme", "code"]
+          },
+        ]
+      }
     }
     Views: {
+      carver_inscription: {
+        Row: {
+          attribution: Database["public"]["Enums"]["attribution_type"] | null
+          carverid: string | null
+          carverinscriptionid: string | null
+          certainty: boolean | null
+          created_at: string | null
+          inscriptionid: string | null
+          lang: string | null
+          notes: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          attribution?: never
+          carverid?: never
+          carverinscriptionid?: never
+          certainty?: never
+          created_at?: string | null
+          inscriptionid?: never
+          lang?: never
+          notes?: never
+          updated_at?: string | null
+        }
+        Update: {
+          attribution?: never
+          carverid?: never
+          carverinscriptionid?: never
+          certainty?: never
+          created_at?: string | null
+          inscriptionid?: never
+          lang?: never
+          notes?: never
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      geography_columns: {
+        Row: {
+          coord_dimension: number | null
+          f_geography_column: unknown
+          f_table_catalog: unknown
+          f_table_name: unknown
+          f_table_schema: unknown
+          srid: number | null
+          type: string | null
+        }
+        Relationships: []
+      }
+      geometry_columns: {
+        Row: {
+          coord_dimension: number | null
+          f_geometry_column: unknown
+          f_table_catalog: string | null
+          f_table_name: unknown
+          f_table_schema: unknown
+          srid: number | null
+          type: string | null
+        }
+        Insert: {
+          coord_dimension?: number | null
+          f_geometry_column?: unknown
+          f_table_catalog?: string | null
+          f_table_name?: unknown
+          f_table_schema?: unknown
+          srid?: number | null
+          type?: string | null
+        }
+        Update: {
+          coord_dimension?: number | null
+          f_geometry_column?: unknown
+          f_table_catalog?: string | null
+          f_table_name?: unknown
+          f_table_schema?: unknown
+          srid?: number | null
+          type?: string | null
+        }
+        Relationships: []
+      }
+      king_inscription_links: {
+        Row: {
+          analysis_notes: string | null
+          connection_type: string | null
+          created_at: string | null
+          evidence_strength: string | null
+          id: string | null
+          inscription_id: string | null
+          king_id: string | null
+        }
+        Insert: {
+          analysis_notes?: never
+          connection_type?: never
+          created_at?: string | null
+          evidence_strength?: never
+          id?: string | null
+          inscription_id?: string | null
+          king_id?: string | null
+        }
+        Update: {
+          analysis_notes?: never
+          connection_type?: never
+          created_at?: string | null
+          evidence_strength?: never
+          id?: string | null
+          inscription_id?: string | null
+          king_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relationship_object_id_fkey"
+            columns: ["king_id"]
+            isOneToOne: false
+            referencedRelation: "entity_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relationship_subject_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "entity_registry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       runic_with_coordinates: {
         Row: {
           additional_latitude: number | null
           additional_longitude: number | null
           confidence: string | null
+          coord_confidence: string | null
+          coord_source: string | null
           coordinate_source: string | null
           coordinate_status: string | null
           coordinates_latitude: number | null
@@ -3654,35 +5227,410 @@ export type Database = {
           created_at: string | null
           dating_text: string | null
           geocoding_priority: string | null
+          harad: string | null
           id: string | null
           landscape: string | null
           location: string | null
+          meter: string | null
           municipality: string | null
           object_type: string | null
-          original_coordinates: unknown | null
+          original_coordinates: unknown
           parish: string | null
           period_end: number | null
           period_start: number | null
           province: string | null
           signum: string | null
+          socken: string | null
           translation_en: string | null
           translation_sv: string | null
           transliteration: string | null
         }
         Relationships: []
       }
+      source_inscription_links: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          inscription_id: string | null
+          notes: string | null
+          relation: string | null
+          source_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          inscription_id?: string | null
+          notes?: never
+          relation?: never
+          source_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          inscription_id?: string | null
+          notes?: never
+          relation?: never
+          source_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relationship_object_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "entity_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relationship_subject_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "entity_registry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      theme_links: {
+        Row: {
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string | null
+          notes: string | null
+          theme_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relationship_object_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "entity_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relationship_subject_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entity_registry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_parish_unresolved: {
+        Row: {
+          country: string | null
+          harad: string | null
+          id: string | null
+          location: string | null
+          name: string | null
+          primary_signum: string | null
+          signum: string | null
+          socken: string | null
+        }
+        Insert: {
+          country?: string | null
+          harad?: string | null
+          id?: string | null
+          location?: string | null
+          name?: string | null
+          primary_signum?: string | null
+          signum?: string | null
+          socken?: string | null
+        }
+        Update: {
+          country?: string | null
+          harad?: string | null
+          id?: string | null
+          location?: string | null
+          name?: string | null
+          primary_signum?: string | null
+          signum?: string | null
+          socken?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
+      _postgis_deprecate: {
+        Args: { newname: string; oldname: string; version: string }
+        Returns: undefined
+      }
+      _postgis_index_extent: {
+        Args: { col: string; tbl: unknown }
         Returns: unknown
       }
-      extract_primary_signum: {
-        Args: { signum_text: string }
+      _postgis_pgsql_version: { Args: never; Returns: string }
+      _postgis_scripts_pgsql_version: { Args: never; Returns: string }
+      _postgis_selectivity: {
+        Args: { att_name: string; geom: unknown; mode?: string; tbl: unknown }
+        Returns: number
+      }
+      _postgis_stats: {
+        Args: { ""?: string; att_name: string; tbl: unknown }
         Returns: string
       }
+      _st_3dintersects: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_contains: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_containsproperly: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_coveredby:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      _st_covers:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      _st_crosses: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_dwithin: {
+        Args: {
+          geog1: unknown
+          geog2: unknown
+          tolerance: number
+          use_spheroid?: boolean
+        }
+        Returns: boolean
+      }
+      _st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      _st_intersects: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_linecrossingdirection: {
+        Args: { line1: unknown; line2: unknown }
+        Returns: number
+      }
+      _st_longestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      _st_maxdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      _st_orderingequals: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_overlaps: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_sortablehash: { Args: { geom: unknown }; Returns: number }
+      _st_touches: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_voronoi: {
+        Args: {
+          clip?: unknown
+          g1: unknown
+          return_polygons?: boolean
+          tolerance?: number
+        }
+        Returns: unknown
+      }
+      _st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      addauth: { Args: { "": string }; Returns: boolean }
+      addgeometrycolumn:
+        | {
+            Args: {
+              catalog_name: string
+              column_name: string
+              new_dim: number
+              new_srid_in: number
+              new_type: string
+              schema_name: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              column_name: string
+              new_dim: number
+              new_srid: number
+              new_type: string
+              schema_name: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              column_name: string
+              new_dim: number
+              new_srid: number
+              new_type: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
+          }
+      artefact_types_v1: {
+        Args: never
+        Returns: {
+          category: string
+          id: string
+          inscription_count: number
+          name: string
+        }[]
+      }
+      disablelongtransactions: { Args: never; Returns: string }
+      dropgeometrycolumn:
+        | {
+            Args: {
+              catalog_name: string
+              column_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              column_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
+          }
+        | { Args: { column_name: string; table_name: string }; Returns: string }
+      dropgeometrytable:
+        | {
+            Args: {
+              catalog_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
+          }
+        | { Args: { schema_name: string; table_name: string }; Returns: string }
+        | { Args: { table_name: string }; Returns: string }
+      enablelongtransactions: { Args: never; Returns: string }
+      equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      extract_primary_signum: { Args: { signum_text: string }; Returns: string }
+      geometry: { Args: { "": string }; Returns: unknown }
+      geometry_above: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_below: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_cmp: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      geometry_contained_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_contains: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_contains_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_distance_box: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      geometry_distance_centroid: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      geometry_eq: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_ge: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_gt: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_le: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_left: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_lt: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overabove: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overbelow: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overlaps: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overlaps_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overleft: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overright: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_right: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_same: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_same_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_within: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_artefact_inscriptions: {
+        Args: { p_artefact_id: string }
+        Returns: {
+          id: string
+          landscape: string
+          name: string
+          signum: string
+          socken: string
+          translation_sv: string
+        }[]
+      }
       get_carver_inscriptions: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           attribution: Database["public"]["Enums"]["attribution_type"]
           carverid: string
@@ -3693,7 +5641,7 @@ export type Database = {
         }[]
       }
       get_carver_statistics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           attributed_count: number
           carver_name: string
@@ -3703,6 +5651,12 @@ export type Database = {
           uncertain_count: number
         }[]
       }
+      get_entity_v1: {
+        Args: { p_id?: string; p_signum?: string }
+        Returns: Json
+      }
+      get_excursion_detail: { Args: { p_signum: string }; Returns: Json }
+      get_inscription_page: { Args: { p_signum: string }; Returns: Json }
       get_security_alerts: {
         Args: { hours_back?: number }
         Returns: {
@@ -3712,7 +5666,7 @@ export type Database = {
         }[]
       }
       get_viking_names_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           female_names: number
           male_names: number
@@ -3720,21 +5674,17 @@ export type Database = {
           total_names: number
         }[]
       }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
+      gettransactionid: { Args: never; Returns: unknown }
+      graph_neighborhood: {
+        Args: { p_id: string }
+        Returns: {
+          direction: string
+          notes: string
+          other_id: string
+          other_label: string
+          other_type: string
+          predicate: string
+        }[]
       }
       has_role: {
         Args: {
@@ -3743,46 +5693,10 @@ export type Database = {
         }
         Returns: boolean
       }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never> | { p_user_id: string }
-        Returns: boolean
-      }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
-      }
+      is_admin:
+        | { Args: never; Returns: boolean }
+        | { Args: { p_user_id: string }; Returns: boolean }
+      is_admin_or_editor: { Args: never; Returns: boolean }
       log_security_event: {
         Args: {
           p_error_message?: string
@@ -3794,9 +5708,45 @@ export type Database = {
         }
         Returns: undefined
       }
+      longtransactionsenabled: { Args: never; Returns: boolean }
       map_b_signum_to_modern: {
         Args: { old_signum: string; parish_name: string; province_name: string }
         Returns: string
+      }
+      match_search_docs: {
+        Args: { match_count?: number; query_embedding: string }
+        Returns: {
+          entity_id: string
+          entity_type: string
+          similarity: number
+        }[]
+      }
+      named_stones_v1: {
+        Args: never
+        Returns: {
+          country: string
+          id: string
+          image_credit: string
+          image_url: string
+          landscape: string
+          name: string
+          name_source: string
+          signum: string
+          socken: string
+          translation_en: string
+          translation_sv: string
+        }[]
+      }
+      neighbors_v1: {
+        Args: { p_id: string; p_predicate?: string }
+        Returns: {
+          confidence: string
+          direction: string
+          entity_id: string
+          entity_type: string
+          label: string
+          predicate: string
+        }[]
       }
       parse_swedish_dating: {
         Args: { dating_text: string }
@@ -3808,6 +5758,51 @@ export type Database = {
           period_start: number
         }[]
       }
+      populate_geometry_columns:
+        | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
+        | { Args: { use_typmod?: boolean }; Returns: string }
+      postgis_constraint_dims: {
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: number
+      }
+      postgis_constraint_srid: {
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: number
+      }
+      postgis_constraint_type: {
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: string
+      }
+      postgis_extensions_upgrade: { Args: never; Returns: string }
+      postgis_full_version: { Args: never; Returns: string }
+      postgis_geos_version: { Args: never; Returns: string }
+      postgis_lib_build_date: { Args: never; Returns: string }
+      postgis_lib_revision: { Args: never; Returns: string }
+      postgis_lib_version: { Args: never; Returns: string }
+      postgis_libjson_version: { Args: never; Returns: string }
+      postgis_liblwgeom_version: { Args: never; Returns: string }
+      postgis_libprotobuf_version: { Args: never; Returns: string }
+      postgis_libxml_version: { Args: never; Returns: string }
+      postgis_proj_version: { Args: never; Returns: string }
+      postgis_scripts_build_date: { Args: never; Returns: string }
+      postgis_scripts_installed: { Args: never; Returns: string }
+      postgis_scripts_released: { Args: never; Returns: string }
+      postgis_svn_version: { Args: never; Returns: string }
+      postgis_type_name: {
+        Args: {
+          coord_dimension: number
+          geomname: string
+          use_new_name?: boolean
+        }
+        Returns: string
+      }
+      postgis_version: { Args: never; Returns: string }
+      postgis_wagyu_version: { Args: never; Returns: string }
+      rebuild_search_document: {
+        Args: { p_id?: string; p_type?: string }
+        Returns: undefined
+      }
+      runestone_stats_v1: { Args: never; Returns: Json }
       search_inscriptions_by_similarity: {
         Args: {
           match_count?: number
@@ -3875,49 +5870,705 @@ export type Database = {
           updated_at: string
         }[]
       }
-      sparsevec_out: {
-        Args: { "": unknown }
+      search_source_texts: {
+        Args: { q: string }
+        Returns: {
+          rank: number
+          snippet_en: string
+          snippet_norse: string
+          snippet_sv: string
+          source_id: string
+          stanza_no: number
+          title: string
+          title_en: string
+        }[]
+      }
+      search_v1: {
+        Args: { p_limit?: number; p_q: string; p_types?: string[] }
+        Returns: {
+          entity_id: string
+          entity_type: string
+          label: string
+          score: number
+          signum: string
+          snippet: string
+          sublabel: string
+        }[]
+      }
+      set_user_role: {
+        Args: {
+          new_role: Database["public"]["Enums"]["app_role"]
+          target_user: string
+        }
+        Returns: undefined
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      sites_bbox_clusters: {
+        Args: {
+          max_lat: number
+          max_lng: number
+          min_lat: number
+          min_lng: number
+          p_types?: string[]
+          p_zoom?: number
+        }
+        Returns: {
+          cnt: number
+          lat: number
+          lng: number
+        }[]
+      }
+      sites_in_bbox: {
+        Args: {
+          max_lat: number
+          max_lng: number
+          min_lat: number
+          min_lng: number
+          p_types?: string[]
+          p_zoom?: number
+        }
+        Returns: {
+          cnt: number
+          description: string
+          id: string
+          is_cluster: boolean
+          lat: number
+          lng: number
+          name: string
+          period: string
+          raa_type: string
+        }[]
+      }
+      sites_near: {
+        Args: {
+          p_lat: number
+          p_limit?: number
+          p_lng: number
+          p_radius_m?: number
+          p_types?: string[]
+        }
+        Returns: {
+          distance_m: number
+          id: string
+          landscape: string
+          lat: number
+          lng: number
+          name: string
+          parish: string
+          raa_type: string
+        }[]
+      }
+      source_catalog: {
+        Args: never
+        Returns: {
+          author: string
+          collection: string
+          id: string
+          meter: string
+          reliability: string
+          stanza_count: number
+          title: string
+          title_en: string
+          work_type: string
+        }[]
+      }
+      st_3dclosestpoint: {
+        Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
       }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
+      st_3ddistance: {
+        Args: { geom1: unknown; geom2: unknown }
         Returns: number
       }
-      update_dating_periods: {
-        Args: Record<PropertyKey, never>
-        Returns: number
+      st_3dintersects: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
       }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
+      st_3dlongestline: {
+        Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
       }
-      vector_send: {
-        Args: { "": string }
+      st_3dmakebox: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_3dmaxdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_3dshortestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_addpoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_angle:
+        | { Args: { line1: unknown; line2: unknown }; Returns: number }
+        | {
+            Args: { pt1: unknown; pt2: unknown; pt3: unknown; pt4?: unknown }
+            Returns: number
+          }
+      st_area:
+        | { Args: { geog: unknown; use_spheroid?: boolean }; Returns: number }
+        | { Args: { "": string }; Returns: number }
+      st_asencodedpolyline: {
+        Args: { geom: unknown; nprecision?: number }
         Returns: string
       }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
+      st_asewkt: { Args: { "": string }; Returns: string }
+      st_asgeojson:
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
+          }
+        | {
+            Args: {
+              geom_column?: string
+              maxdecimaldigits?: number
+              pretty_bool?: boolean
+              r: Record<string, unknown>
+            }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+      st_asgml:
+        | {
+            Args: {
+              geog: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+            }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+        | {
+            Args: {
+              geog: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+              version: number
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              geom: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+              version: number
+            }
+            Returns: string
+          }
+      st_askml:
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; nprefix?: string }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; nprefix?: string }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+      st_aslatlontext: {
+        Args: { geom: unknown; tmpl?: string }
+        Returns: string
+      }
+      st_asmarc21: { Args: { format?: string; geom: unknown }; Returns: string }
+      st_asmvtgeom: {
+        Args: {
+          bounds: unknown
+          buffer?: number
+          clip_geom?: boolean
+          extent?: number
+          geom: unknown
+        }
+        Returns: unknown
+      }
+      st_assvg:
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; rel?: number }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; rel?: number }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+      st_astext: { Args: { "": string }; Returns: string }
+      st_astwkb:
+        | {
+            Args: {
+              geom: unknown
+              prec?: number
+              prec_m?: number
+              prec_z?: number
+              with_boxes?: boolean
+              with_sizes?: boolean
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              geom: unknown[]
+              ids: number[]
+              prec?: number
+              prec_m?: number
+              prec_z?: number
+              with_boxes?: boolean
+              with_sizes?: boolean
+            }
+            Returns: string
+          }
+      st_asx3d: {
+        Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+        Returns: string
+      }
+      st_azimuth:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: number }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+      st_boundingdiagonal: {
+        Args: { fits?: boolean; geom: unknown }
+        Returns: unknown
+      }
+      st_buffer:
+        | {
+            Args: { geom: unknown; options?: string; radius: number }
+            Returns: unknown
+          }
+        | {
+            Args: { geom: unknown; quadsegs: number; radius: number }
+            Returns: unknown
+          }
+      st_centroid: { Args: { "": string }; Returns: unknown }
+      st_clipbybox2d: {
+        Args: { box: unknown; geom: unknown }
+        Returns: unknown
+      }
+      st_closestpoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_collect: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
+      st_concavehull: {
+        Args: {
+          param_allow_holes?: boolean
+          param_geom: unknown
+          param_pctconvex: number
+        }
+        Returns: unknown
+      }
+      st_contains: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_containsproperly: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_coorddim: { Args: { geometry: unknown }; Returns: number }
+      st_coveredby:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_covers:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_crosses: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_curvetoline: {
+        Args: { flags?: number; geom: unknown; tol?: number; toltype?: number }
+        Returns: unknown
+      }
+      st_delaunaytriangles: {
+        Args: { flags?: number; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_difference: {
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
+      st_disjoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_distance:
+        | {
+            Args: { geog1: unknown; geog2: unknown; use_spheroid?: boolean }
+            Returns: number
+          }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+      st_distancesphere:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+        | {
+            Args: { geom1: unknown; geom2: unknown; radius: number }
+            Returns: number
+          }
+      st_distancespheroid: {
+        Args: { geom1: unknown; geom2: unknown }
         Returns: number
+      }
+      st_dwithin: {
+        Args: {
+          geog1: unknown
+          geog2: unknown
+          tolerance: number
+          use_spheroid?: boolean
+        }
+        Returns: boolean
+      }
+      st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_expand:
+        | { Args: { box: unknown; dx: number; dy: number }; Returns: unknown }
+        | {
+            Args: { box: unknown; dx: number; dy: number; dz?: number }
+            Returns: unknown
+          }
+        | {
+            Args: {
+              dm?: number
+              dx: number
+              dy: number
+              dz?: number
+              geom: unknown
+            }
+            Returns: unknown
+          }
+      st_force3d: { Args: { geom: unknown; zvalue?: number }; Returns: unknown }
+      st_force3dm: {
+        Args: { geom: unknown; mvalue?: number }
+        Returns: unknown
+      }
+      st_force3dz: {
+        Args: { geom: unknown; zvalue?: number }
+        Returns: unknown
+      }
+      st_force4d: {
+        Args: { geom: unknown; mvalue?: number; zvalue?: number }
+        Returns: unknown
+      }
+      st_generatepoints:
+        | { Args: { area: unknown; npoints: number }; Returns: unknown }
+        | {
+            Args: { area: unknown; npoints: number; seed: number }
+            Returns: unknown
+          }
+      st_geogfromtext: { Args: { "": string }; Returns: unknown }
+      st_geographyfromtext: { Args: { "": string }; Returns: unknown }
+      st_geohash:
+        | { Args: { geog: unknown; maxchars?: number }; Returns: string }
+        | { Args: { geom: unknown; maxchars?: number }; Returns: string }
+      st_geomcollfromtext: { Args: { "": string }; Returns: unknown }
+      st_geometricmedian: {
+        Args: {
+          fail_if_not_converged?: boolean
+          g: unknown
+          max_iter?: number
+          tolerance?: number
+        }
+        Returns: unknown
+      }
+      st_geometryfromtext: { Args: { "": string }; Returns: unknown }
+      st_geomfromewkt: { Args: { "": string }; Returns: unknown }
+      st_geomfromgeojson:
+        | { Args: { "": Json }; Returns: unknown }
+        | { Args: { "": Json }; Returns: unknown }
+        | { Args: { "": string }; Returns: unknown }
+      st_geomfromgml: { Args: { "": string }; Returns: unknown }
+      st_geomfromkml: { Args: { "": string }; Returns: unknown }
+      st_geomfrommarc21: { Args: { marc21xml: string }; Returns: unknown }
+      st_geomfromtext: { Args: { "": string }; Returns: unknown }
+      st_gmltosql: { Args: { "": string }; Returns: unknown }
+      st_hasarc: { Args: { geometry: unknown }; Returns: boolean }
+      st_hausdorffdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_hexagon: {
+        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number }
+        Returns: unknown
+      }
+      st_hexagongrid: {
+        Args: { bounds: unknown; size: number }
+        Returns: Record<string, unknown>[]
+      }
+      st_interpolatepoint: {
+        Args: { line: unknown; point: unknown }
+        Returns: number
+      }
+      st_intersection: {
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
+      st_intersects:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_isvaliddetail: {
+        Args: { flags?: number; geom: unknown }
+        Returns: Database["public"]["CompositeTypes"]["valid_detail"]
+        SetofOptions: {
+          from: "*"
+          to: "valid_detail"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      st_length:
+        | { Args: { geog: unknown; use_spheroid?: boolean }; Returns: number }
+        | { Args: { "": string }; Returns: number }
+      st_letters: { Args: { font?: Json; letters: string }; Returns: unknown }
+      st_linecrossingdirection: {
+        Args: { line1: unknown; line2: unknown }
+        Returns: number
+      }
+      st_linefromencodedpolyline: {
+        Args: { nprecision?: number; txtin: string }
+        Returns: unknown
+      }
+      st_linefromtext: { Args: { "": string }; Returns: unknown }
+      st_linelocatepoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_linetocurve: { Args: { geometry: unknown }; Returns: unknown }
+      st_locatealong: {
+        Args: { geometry: unknown; leftrightoffset?: number; measure: number }
+        Returns: unknown
+      }
+      st_locatebetween: {
+        Args: {
+          frommeasure: number
+          geometry: unknown
+          leftrightoffset?: number
+          tomeasure: number
+        }
+        Returns: unknown
+      }
+      st_locatebetweenelevations: {
+        Args: { fromelevation: number; geometry: unknown; toelevation: number }
+        Returns: unknown
+      }
+      st_longestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_makebox2d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_makeline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_makevalid: {
+        Args: { geom: unknown; params: string }
+        Returns: unknown
+      }
+      st_maxdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_minimumboundingcircle: {
+        Args: { inputgeom: unknown; segs_per_quarter?: number }
+        Returns: unknown
+      }
+      st_mlinefromtext: { Args: { "": string }; Returns: unknown }
+      st_mpointfromtext: { Args: { "": string }; Returns: unknown }
+      st_mpolyfromtext: { Args: { "": string }; Returns: unknown }
+      st_multilinestringfromtext: { Args: { "": string }; Returns: unknown }
+      st_multipointfromtext: { Args: { "": string }; Returns: unknown }
+      st_multipolygonfromtext: { Args: { "": string }; Returns: unknown }
+      st_node: { Args: { g: unknown }; Returns: unknown }
+      st_normalize: { Args: { geom: unknown }; Returns: unknown }
+      st_offsetcurve: {
+        Args: { distance: number; line: unknown; params?: string }
+        Returns: unknown
+      }
+      st_orderingequals: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_overlaps: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_perimeter: {
+        Args: { geog: unknown; use_spheroid?: boolean }
+        Returns: number
+      }
+      st_pointfromtext: { Args: { "": string }; Returns: unknown }
+      st_pointm: {
+        Args: {
+          mcoordinate: number
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+        }
+        Returns: unknown
+      }
+      st_pointz: {
+        Args: {
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+          zcoordinate: number
+        }
+        Returns: unknown
+      }
+      st_pointzm: {
+        Args: {
+          mcoordinate: number
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+          zcoordinate: number
+        }
+        Returns: unknown
+      }
+      st_polyfromtext: { Args: { "": string }; Returns: unknown }
+      st_polygonfromtext: { Args: { "": string }; Returns: unknown }
+      st_project: {
+        Args: { azimuth: number; distance: number; geog: unknown }
+        Returns: unknown
+      }
+      st_quantizecoordinates: {
+        Args: {
+          g: unknown
+          prec_m?: number
+          prec_x: number
+          prec_y?: number
+          prec_z?: number
+        }
+        Returns: unknown
+      }
+      st_reduceprecision: {
+        Args: { geom: unknown; gridsize: number }
+        Returns: unknown
+      }
+      st_relate: { Args: { geom1: unknown; geom2: unknown }; Returns: string }
+      st_removerepeatedpoints: {
+        Args: { geom: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_segmentize: {
+        Args: { geog: unknown; max_segment_length: number }
+        Returns: unknown
+      }
+      st_setsrid:
+        | { Args: { geog: unknown; srid: number }; Returns: unknown }
+        | { Args: { geom: unknown; srid: number }; Returns: unknown }
+      st_sharedpaths: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_shortestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_simplifypolygonhull: {
+        Args: { geom: unknown; is_outer?: boolean; vertex_fraction: number }
+        Returns: unknown
+      }
+      st_split: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
+      st_square: {
+        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number }
+        Returns: unknown
+      }
+      st_squaregrid: {
+        Args: { bounds: unknown; size: number }
+        Returns: Record<string, unknown>[]
+      }
+      st_srid:
+        | { Args: { geog: unknown }; Returns: number }
+        | { Args: { geom: unknown }; Returns: number }
+      st_subdivide: {
+        Args: { geom: unknown; gridsize?: number; maxvertices?: number }
+        Returns: unknown[]
+      }
+      st_swapordinates: {
+        Args: { geom: unknown; ords: unknown }
+        Returns: unknown
+      }
+      st_symdifference: {
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
+      st_symmetricdifference: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_tileenvelope: {
+        Args: {
+          bounds?: unknown
+          margin?: number
+          x: number
+          y: number
+          zoom: number
+        }
+        Returns: unknown
+      }
+      st_touches: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_transform:
+        | {
+            Args: { from_proj: string; geom: unknown; to_proj: string }
+            Returns: unknown
+          }
+        | {
+            Args: { from_proj: string; geom: unknown; to_srid: number }
+            Returns: unknown
+          }
+        | { Args: { geom: unknown; to_proj: string }; Returns: unknown }
+      st_triangulatepolygon: { Args: { g1: unknown }; Returns: unknown }
+      st_union:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
+        | {
+            Args: { geom1: unknown; geom2: unknown; gridsize: number }
+            Returns: unknown
+          }
+      st_voronoilines: {
+        Args: { extend_to?: unknown; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_voronoipolygons: {
+        Args: { extend_to?: unknown; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_wkbtosql: { Args: { wkb: string }; Returns: unknown }
+      st_wkttosql: { Args: { "": string }; Returns: unknown }
+      st_wrapx: {
+        Args: { geom: unknown; move: number; wrap: number }
+        Returns: unknown
+      }
+      unlockrows: { Args: { "": string }; Returns: number }
+      update_dating_periods: { Args: never; Returns: number }
+      updategeometrysrid: {
+        Args: {
+          catalogn_name: string
+          column_name: string
+          new_srid_in: number
+          schema_name: string
+          table_name: string
+        }
+        Returns: string
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "editor"
       attribution_type:
         | "attributed"
         | "signed"
@@ -3942,7 +6593,15 @@ export type Database = {
       source_reliability: "primary" | "secondary" | "tertiary" | "legendary"
     }
     CompositeTypes: {
-      [_ in never]: never
+      geometry_dump: {
+        path: number[] | null
+        geom: unknown
+      }
+      valid_detail: {
+        valid: boolean | null
+        reason: string | null
+        location: unknown
+      }
     }
   }
 }
@@ -4067,7 +6726,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "editor"],
       attribution_type: [
         "attributed",
         "signed",

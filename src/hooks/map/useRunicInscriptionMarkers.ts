@@ -1,4 +1,7 @@
 import L from 'leaflet';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 interface RunicInscription {
   id?: string;
@@ -113,22 +116,25 @@ export const addRunicInscriptionMarkers = (
   inscriptions: RunicInscription[],
   onMarkerClick?: (inscription: RunicInscription) => void
 ): L.Marker[] => {
-  console.log(`🗺️ addRunicInscriptionMarkers called with ${inscriptions.length} inscriptions`);
-  
-  // Debug: Log structure of first few inscriptions
-  console.log('📊 Sample inscription data for markers:', inscriptions.slice(0, 5).map(i => ({
-    signum: i.signum,
-    hasCoordinates: !!i.coordinates,
-    hasLatLng: !!i.latitude && !!i.longitude,
-    coordinates: i.coordinates,
-    lat: i.latitude,
-    lng: i.longitude,
-    location: i.location
-  })));
-
+  // OBS: ingen per-markör-loggning här — 6 000+ console.log per omritning
+  // frös renderingen (prestandafix 2026-07-20). En summeringsrad i slutet räcker.
   const markers: L.Marker[] = [];
   let validCoordinatesCount = 0;
   let invalidCoordinatesCount = 0;
+
+  // Klustring: ta bort ev. föregående grupp och skapa en ny. Gruppen lagras på map-
+  // objektet så hooken är självhanterande (anroparens per-markör-städning blir no-op).
+  const mapAny = map as unknown as { __runeClusterGroup?: L.LayerGroup };
+  if (mapAny.__runeClusterGroup && map.hasLayer(mapAny.__runeClusterGroup)) {
+    map.removeLayer(mapAny.__runeClusterGroup);
+  }
+  const clusterGroup = (L as unknown as { markerClusterGroup: (o?: unknown) => L.LayerGroup }).markerClusterGroup({
+    chunkedLoading: true,            // prestanda för ~5000 punkter
+    maxClusterRadius: 50,
+    disableClusteringAtZoom: 11,     // enskilda runstenar vid zoom ≥11, kluster under
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+  });
 
   inscriptions.forEach((inscription) => {
     let lat: number | undefined;
@@ -138,11 +144,9 @@ export const addRunicInscriptionMarkers = (
     if (inscription.coordinates) {
       lat = inscription.coordinates.lat;
       lng = inscription.coordinates.lng;
-      console.log(`📍 Using coordinates field for ${inscription.signum}: [${lat}, ${lng}]`);
     } else if (inscription.latitude && inscription.longitude) {
       lat = inscription.latitude;
       lng = inscription.longitude;
-      console.log(`📍 Using lat/lng fields for ${inscription.signum}: [${lat}, ${lng}]`);
     }
 
     if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
@@ -152,10 +156,8 @@ export const addRunicInscriptionMarkers = (
       const icon = createRuneIcon(inscription);
       
       try {
-        console.log(`🎯 Creating marker for ${inscription.signum} at [${lat}, ${lng}]`);
-        
         const marker = L.marker([lat, lng], { icon, riseOnHover: true })
-          .addTo(map);
+          .addTo(clusterGroup);
 
         // Enhanced popup content with better formatting
         const popupContent = `
@@ -184,7 +186,6 @@ export const addRunicInscriptionMarkers = (
 
         if (onMarkerClick) {
           marker.on('click', () => {
-            console.log(`🖱️ Marker clicked for ${inscription.signum}`);
             onMarkerClick({
               id: inscription.id,
               signum: inscription.signum,
@@ -204,33 +205,21 @@ export const addRunicInscriptionMarkers = (
         }
 
         markers.push(marker);
-        
-        console.log(`✅ Successfully added marker for ${inscription.signum} at [${lat}, ${lng}]`);
       } catch (error) {
         console.error(`❌ Error creating marker for ${inscription.signum}:`, error);
         invalidCoordinatesCount++;
       }
     } else {
       invalidCoordinatesCount++;
-      if (invalidCoordinatesCount <= 5) {
-        console.log(`❌ No valid coordinates for ${inscription.signum}: lat=${lat}, lng=${lng}`);
-      }
     }
   });
 
-  console.log(`📍 Marker creation summary:`);
-  console.log(`  - Total inscriptions processed: ${inscriptions.length}`);
-  console.log(`  - Valid coordinates found: ${validCoordinatesCount}`);
-  console.log(`  - Invalid/missing coordinates: ${invalidCoordinatesCount}`);
-  console.log(`  - Markers added to map: ${markers.length}`);
+  // EN summeringsrad i stället för tusentals loggar; invalidateSize borttagen —
+  // markörer kräver ingen container-omätning och timeouten bidrog till hoppandet.
+  console.log(`🗺️ Markörer: ${markers.length} klustrade (${validCoordinatesCount} med koordinater, ${invalidCoordinatesCount} utan)`);
 
-  // Force map to refresh/redraw
-  if (map && markers.length > 0) {
-    console.log(`🔄 Forcing map refresh after adding ${markers.length} markers`);
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 100);
-  }
+  clusterGroup.addTo(map);
+  mapAny.__runeClusterGroup = clusterGroup;
 
   return markers;
 };

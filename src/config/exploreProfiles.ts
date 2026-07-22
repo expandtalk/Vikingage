@@ -89,6 +89,10 @@ export const EMPTY_LEGEND_PRESET: LegendPreset = {
   religious_places: false,
   place_names: false,
   viking_roads: false,
+  beacon_sites: false,
+  // Kulturlager-kategorin PÅ (så per-typ-kryssen är synliga/åtkomliga) men alla
+  // typ-barn AV → tom karta tills man kryssar i en typ. Driven i useMapHeritageSites.
+  heritage_sites: true,
   religious_odin: false,
   religious_thor: false,
   religious_frey: false,
@@ -127,6 +131,7 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
     layers: on(
       "runic_inscriptions", "religious_places", "viking_fortresses",
       "river_routes", "water_routes", "valdemar_route",
+      "ecclesiastical_churches",
     ),
     theme: "neutral",
     primaryLayers: ["runic_inscriptions"],
@@ -202,6 +207,7 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
       "viking_fortresses",
       "runic_inscriptions",
       "battle_sites",
+      "beacon_sites",
     ),
     theme: "chronology",
     primaryLayers: ["archaeological_sites", "runic_inscriptions"],
@@ -280,6 +286,7 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         water_routes: true,
         trade_routes: true,
         valdemar_route: true,
+        eriksgatan: true,
         stake_barriers: true,
         viking_roads: true,
         viking_cities: true,
@@ -300,6 +307,25 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         place_names: false,
         historical_events: false,
         battle_sites: false,
+      });
+      break;
+    case "eriksgatan":
+      // Ren Eriksgata-vy: den kungliga riksrundan + vägar/städer som kontext, inget annat brus.
+      Object.assign(o, {
+        eriksgatan: true,
+        viking_roads: true,
+        viking_cities: true,
+        runic_inscriptions: false,
+        foreign_inscriptions: false,
+        viking_fortresses: false,
+        religious_places: false,
+        viking_regions: false,
+        hundreds: false,
+        parishes: false,
+        folk_groups: false,
+        trade_routes: false,
+        river_routes: false,
+        water_routes: false,
       });
       break;
     case "fortresses":
@@ -323,11 +349,49 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         religious_other: true,
       });
       break;
+    case "cultSites":
+      // Heliga källor & kultplatser: PLATSERNA i fokus (lista + karta), inga gudakort.
+      Object.assign(o, {
+        gods: false,
+        religious_places: true,
+        runic_inscriptions: false,
+        religious_odin: true,
+        religious_thor: true,
+        religious_frey: true,
+        religious_freyja: true,
+        religious_frigg: true,
+        religious_ull: true,
+        religious_njord: true,
+        religious_other: true,
+      });
+      break;
     case "hundreds":
       Object.assign(o, { hundreds: true, runic_inscriptions: true });
       break;
     case "parishes":
-      Object.assign(o, { parishes: true, runic_inscriptions: true });
+      // Bara socknen — kulturlagren (sockenkyrkor, kloster, vårdkasar…) tänds via legenden.
+      Object.assign(o, { parishes: true, runic_inscriptions: false });
+      break;
+    case "churches":
+      // Rikt kyrkolager (stift & bild) i fokus. Viewport-laddat, zooma in för att se kyrkor.
+      Object.assign(o, {
+        ecclesiastical_churches: true,
+        runic_inscriptions: false,
+        foreign_inscriptions: false,
+        viking_fortresses: false,
+        religious_places: false,
+        valdemar_route: false,
+        water_routes: false,
+        river_routes: false,
+        trade_routes: false,
+        viking_roads: false,
+        viking_cities: false,
+        eriksgatan: false,
+        hundreds: false,
+        parishes: false,
+        folk_groups: false,
+        germanic_timeline: false,
+      });
       break;
     case "folkGroups":
       // Folkgrupper + DNA/provplatser (arkeologiska platser med genetik) — INTE runstenar.

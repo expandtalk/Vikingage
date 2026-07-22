@@ -49,6 +49,10 @@ export interface HistoricalKing {
   external_attestation?: string[] | null;
   sources?: string | null;
   node_control?: string | null;
+  // Bild (mynt/sigill/tidig avbildning) — endast verifierbara, ej påhittade porträtt
+  image_url?: string | null;
+  image_caption?: string | null;
+  image_credit?: string | null;
   created_at: string;
   updated_at: string;
   dynasty?: RoyalDynasty;

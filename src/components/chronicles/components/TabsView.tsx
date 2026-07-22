@@ -2,7 +2,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Crown, Users, Book, Sparkles } from 'lucide-react';
-import { KingCard } from '../KingCard';
+import { CenturyKingsFlow } from '../CenturyKingsFlow';
 import { SourceCard } from '../SourceCard';
 import { DynastyCard } from '../DynastyCard';
 import { KingDetailPanel } from '../KingDetailPanel';
@@ -79,15 +79,7 @@ export const TabsView: React.FC<TabsViewProps> = ({
 
       <TabsContent value="kings" className="space-y-4">
         {regularKings && regularKings.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {regularKings.map((king) => (
-              <KingCard 
-                key={king.id} 
-                king={king}
-                onClick={() => onKingSelect(king.id)}
-              />
-            ))}
-          </div>
+          <CenturyKingsFlow kings={regularKings} onKingSelect={onKingSelect} />
         ) : (
           <div className="text-center py-8">
             <Crown className="h-12 w-12 text-slate-500 mx-auto mb-4" />

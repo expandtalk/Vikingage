@@ -1,0 +1,24 @@
+{
+ "type": "FeatureCollection",
+ "name": "langhundraleden",
+ "_kommentar": "Långhundraledens sträckning ur plattformens river_systems (Trälhavet–Uppsala, 5 stödpunkter, förenklad). Broborg ligger på ledens punkt 4 (verifierat läge). Hönsgärde gravfält: UNGEFÄRLIGT läge vid byn Hönsgärde på andra sidan borgberget — ej exakt georefererat. WGS84 [lng,lat].",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": { "type": "Farled", "raa": "Långhundraleden — segelbar led Trälhavet→Uppsala. Vattennivån ca 500 e.Kr. låg 6–7 m högre än idag." },
+   "geometry": { "type": "LineString", "coordinates": [
+     [18.3600, 59.4558], [18.3536, 59.5642], [18.2088, 59.5790], [17.9516, 59.7556], [17.7000, 59.8600]
+   ] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Fornborg", "raa": "Broborg — förglasad ringmur (>1100 °C), kontrollpunkt och vårdkase-signalplats vid leden" },
+   "geometry": { "type": "Point", "coordinates": [17.9516, 59.7556] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Gravfält", "raa": "Hönsgärde — järnåldersgravfält med 100+ gravar; bebyggelsen låg troligen vid nuvarande byn (ungefärligt läge)" },
+   "geometry": { "type": "Point", "coordinates": [17.9640, 59.7500] }
+  }
+ ]
+}

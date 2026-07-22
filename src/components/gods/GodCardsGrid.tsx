@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, Zap, Mountain, Heart, Shield, Crown, Sword, Sunrise, Wind, Trees } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getDeityPlaces } from '@/utils/religiousLocations/religiousPlacesData';
@@ -19,9 +18,10 @@ interface GodData {
   domain: string[];
   description: string;
   symbols: string[];
-  icon: React.ReactNode;
-  color: string;
+  image: string; // egna copyright-bilder i public/excursion-photos/gudar/
 }
+
+const IMG = '/excursion-photos/gudar';
 
 const VIKING_GODS_SORTED: GodData[] = [
   {
@@ -31,8 +31,7 @@ const VIKING_GODS_SORTED: GodData[] = [
     domain: ['Visdom', 'Krig', 'Död', 'Poesi'],
     description: 'Allfather, högste gud bland asarna. Envägd gud som offrade sitt öga för visdom.',
     symbols: ['Gungnir', 'Sleipner', 'Huginn & Muninn'],
-    icon: <Eye className="h-5 w-5" />,
-    color: 'from-blue-600 to-purple-700',
+    image: `${IMG}/oden-styrka-beskydd.jpg`,
   },
   {
     name: 'Tor',
@@ -41,8 +40,7 @@ const VIKING_GODS_SORTED: GodData[] = [
     domain: ['Åska', 'Styrka', 'Beskydd'],
     description: 'Åskguden, folkets beskyddare mot jättar och ondska. Son till Oden.',
     symbols: ['Mjölnir', 'Järnhandskar', 'Megingjörð'],
-    icon: <Zap className="h-5 w-5" />,
-    color: 'from-yellow-500 to-red-600',
+    image: `${IMG}/tor-aska-styrka-beskydd.jpg`,
   },
   {
     name: 'Frej',
@@ -51,8 +49,7 @@ const VIKING_GODS_SORTED: GodData[] = [
     domain: ['Fruktbarhet', 'Välstånd', 'Fred'],
     description: 'Fruktbarhets- och välståndsgud från vanernas släkt. Herre över Alfheim.',
     symbols: ['Gullinbursti', 'Skidbladner', 'Kornax'],
-    icon: <Mountain className="h-5 w-5" />,
-    color: 'from-green-500 to-emerald-600',
+    image: `${IMG}/frej-fruktbarhet.jpg`,
   },
   {
     name: 'Freja',
@@ -61,8 +58,7 @@ const VIKING_GODS_SORTED: GodData[] = [
     domain: ['Kärlek', 'Skönhet', 'Fruktbarhet'],
     description: 'Kärlekens och skönhetens gudinna. Syster till Frej och mäktigaste gudinna.',
     symbols: ['Brísingamen', 'Hildisvín', 'Seidr'],
-    icon: <Heart className="h-5 w-5" />,
-    color: 'from-pink-500 to-rose-600',
+    image: `${IMG}/freja-karlek-skonhet-fruktbarhet.jpg`,
   },
   {
     name: 'Frigg',
@@ -71,8 +67,7 @@ const VIKING_GODS_SORTED: GodData[] = [
     domain: ['Modersskap', 'Äktenskap', 'Hem'],
     description: 'Odins hustru och moderskapets gudinna. Kan se framtiden men berättar aldrig vad hon vet.',
     symbols: ['Spinnrock', 'Falkham', 'Nyckel'],
-    icon: <Crown className="h-5 w-5" />,
-    color: 'from-purple-500 to-indigo-600',
+    image: `${IMG}/frigg-moderskap-aktenskap.jpg`,
   },
   {
     name: 'Balder',
@@ -81,8 +76,16 @@ const VIKING_GODS_SORTED: GodData[] = [
     domain: ['Ljus', 'Godhet', 'Renhet'],
     description: 'Ljusets och godhetens gud, vackraste av alla gudar. Odins och Friggs älskade son.',
     symbols: ['Hringhorni', 'Draupnir', 'Ljus'],
-    icon: <Sunrise className="h-5 w-5" />,
-    color: 'from-yellow-400 to-orange-500',
+    image: `${IMG}/balder-godhet-renhet.jpg`,
+  },
+  {
+    name: 'Loke',
+    nameOldNorse: 'Loki',
+    category: 'other',
+    domain: ['List', 'Skepnadsskifte', 'Kaos'],
+    description: 'Den vackre och listige skepnadsskiftaren av jätteblod, upptagen bland asarna. Både gudarnas hjälpare och deras undergångs upphov — far till Fenrisulven, Midgårdsormen och Hel.',
+    symbols: ['Skepnadsskifte', 'Eld', 'Nät'],
+    image: `${IMG}/loke-list-skepnadsskiftare.jpg`,
   },
   {
     name: 'Ull',
@@ -91,8 +94,7 @@ const VIKING_GODS_SORTED: GodData[] = [
     domain: ['Jakt', 'Bågskytte', 'Vinter'],
     description: 'Jaktens och bågskyttes gud. Styvson till Tor och expert på skidor.',
     symbols: ['Båge', 'Skidor', 'Sköld'],
-    icon: <Sword className="h-5 w-5" />,
-    color: 'from-blue-400 to-cyan-600',
+    image: `${IMG}/ull-jakt-bagskytte-vinter.jpg`,
   },
   {
     name: 'Njord',
@@ -101,8 +103,7 @@ const VIKING_GODS_SORTED: GodData[] = [
     domain: ['Hav', 'Vind', 'Rikedom'],
     description: 'Havets och vindens gud. Far till Frej och Freja, från vanernas släkt.',
     symbols: ['Hav', 'Skepp', 'Fiskenät'],
-    icon: <Wind className="h-5 w-5" />,
-    color: 'from-blue-500 to-teal-600',
+    image: `${IMG}/njord-hav-land-rikedom.jpg`,
   },
   {
     name: 'Tyr',
@@ -111,8 +112,7 @@ const VIKING_GODS_SORTED: GodData[] = [
     domain: ['Krig', 'Rättvisa', 'Mod'],
     description: 'Krigsgud och rättvisa. Offrade sin hand för att binda Fenrisulven.',
     symbols: ['Svärd', 'Rättvåg', 'Kedja'],
-    icon: <Shield className="h-5 w-5" />,
-    color: 'from-red-500 to-orange-600',
+    image: `${IMG}/tyr-krig-rattvisa-mod.jpg`,
   },
   {
     name: 'Idun',
@@ -121,9 +121,17 @@ const VIKING_GODS_SORTED: GodData[] = [
     domain: ['Ungdom', 'Förnyelse'],
     description: 'Ungdomens gudinna som bevarar gudarnas ungdom med sina magiska äpplen.',
     symbols: ['Äpplen', 'Vår', 'Ungdom'],
-    icon: <Trees className="h-5 w-5" />,
-    color: 'from-green-400 to-lime-500',
-  }
+    image: `${IMG}/idun-ungdom-fornyelse.jpg`,
+  },
+  {
+    name: 'Draugen',
+    nameOldNorse: 'Draugr',
+    category: 'other',
+    domain: ['Gengångare', 'Övermänsklig styrka'],
+    description: 'Ingen gud utan ett fruktat väsen: den levande döde som vaktar sin gravhög med övermänsklig styrka. Draugen kunde växa i storlek, och i sagorna måste hjälten brottas ned honom för att vinna gravens skatt.',
+    symbols: ['Gravhög', 'Skatt', 'Mörker'],
+    image: `${IMG}/draugen-farlig-varelse.jpg`,
+  },
 ];
 
 interface GodCardsGridProps {
@@ -161,7 +169,7 @@ export const GodCardsGrid: React.FC<GodCardsGridProps> = ({ onFocusDeity }) => {
       case 'aesir': return 'Aser';
       case 'vanir': return 'Vaner';
       case 'giant': return 'Jätte';
-      case 'other': return 'Övrigt';
+      case 'other': return 'Väsen';
       default: return category;
     }
   };
@@ -171,7 +179,7 @@ export const GodCardsGrid: React.FC<GodCardsGridProps> = ({ onFocusDeity }) => {
       <div className="container mx-auto px-4 py-6">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Nordiska Gudar</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Nordiska Gudar & Väsen</h2>
             <p className="text-muted-foreground">Klicka på en gud för att visa dess kultplatser på kartan</p>
           </div>
           {selectedGod && (
@@ -184,35 +192,36 @@ export const GodCardsGrid: React.FC<GodCardsGridProps> = ({ onFocusDeity }) => {
             </Button>
           )}
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {VIKING_GODS_SORTED.map((god) => {
             // Verklig siffra: antal katalogförda, koordinatsatta kultplatser för guden.
             const cultSiteCount = getDeityPlaces(DEITY_KEY[god.name] ?? '').length;
             return (
             <Card
               key={god.name}
-              className={`transition-all duration-200 group ${
-                cultSiteCount > 0 ? 'cursor-pointer hover:shadow-lg' : 'opacity-70 cursor-default'
+              className={`overflow-hidden transition-all duration-200 group ${
+                cultSiteCount > 0 ? 'cursor-pointer hover:shadow-lg' : 'cursor-default'
               } ${selectedGod === god.name ? 'ring-2 ring-accent shadow-lg' : ''}`}
               onClick={() => handleGodClick(god.name, cultSiteCount)}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${god.color} flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-200`}>
-                    {god.icon}
-                  </div>
-                  <Badge className={getCategoryBadgeColor(god.category)} variant="secondary">
-                    {getCategoryName(god.category)}
-                  </Badge>
+              <div className="relative h-52 w-full overflow-hidden">
+                <img
+                  src={god.image}
+                  alt={`${god.name} (${god.nameOldNorse})`}
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <Badge className={`absolute top-2 right-2 ${getCategoryBadgeColor(god.category)}`}>
+                  {getCategoryName(god.category)}
+                </Badge>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-4 pt-8 pb-2">
+                  <CardTitle className="text-lg text-white">{god.name}</CardTitle>
+                  <p className="text-sm text-white/70">{god.nameOldNorse}</p>
                 </div>
-                <div>
-                  <CardTitle className="text-lg">{god.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{god.nameOldNorse}</p>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-3">
+              </div>
+
+              <CardContent className="space-y-3 pt-4">
                 <div>
                   <p className="text-sm font-medium text-foreground mb-1">Områden:</p>
                   <div className="flex flex-wrap gap-1">
@@ -228,11 +237,11 @@ export const GodCardsGrid: React.FC<GodCardsGridProps> = ({ onFocusDeity }) => {
                     )}
                   </div>
                 </div>
-                
+
                 <p className="text-sm text-muted-foreground line-clamp-3">
                   {god.description}
                 </p>
-                
+
                 {cultSiteCount > 0 ? (
                   <div className="pt-2 border-t text-xs text-muted-foreground">
                     {cultSiteCount} {cultSiteCount === 1 ? 'känd kultplats' : 'kända kultplatser'} i katalogen

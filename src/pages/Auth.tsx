@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Loader2, Shield, Mail } from 'lucide-react';
 import { validateEmail, validatePassword, sanitizeTextInput } from '@/utils/security/inputValidation';
 
@@ -22,13 +23,16 @@ const Auth = () => {
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { user } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
 
+  // Redirecta inloggade: admin rakt till /admin (arbetsläget), övriga till startsidan.
+  // Vänta tills rollen laddats så vi inte redirectar fel och sedan hoppar.
   useEffect(() => {
-    if (user) {
-      navigate('/');
+    if (user && !roleLoading) {
+      navigate(isAdmin ? '/admin' : '/', { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, isAdmin, roleLoading, navigate]);
 
   // Simple rate limiting for login attempts
   const isRateLimited = loginAttempts >= 5;
@@ -93,9 +97,9 @@ const Auth = () => {
         return;
       }
       
-      // Reset login attempts on successful login
+      // Reset login attempts on successful login. Redirect hanteras av useEffect
+      // ovan när user + roll är laddade (admin -> /admin, övriga -> /).
       setLoginAttempts(0);
-      navigate('/');
     } catch (error: any) {
       setError(error.message);
       setLoginAttempts(prev => prev + 1);

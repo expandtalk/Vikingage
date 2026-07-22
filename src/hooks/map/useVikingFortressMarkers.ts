@@ -1,5 +1,8 @@
 
 import L from 'leaflet';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 interface VikingFortress {
   id: string;
@@ -132,13 +135,18 @@ export const addVikingFortressMarkers = (
 
   if (!config) return [];
 
-  filteredFortresses.forEach(fortress => {
-    // Double-check map readiness before creating each marker
-    if (!map || !map.getContainer() || !document.contains(map.getContainer())) {
-      console.warn('Map container became unavailable during fortress marker creation');
-      return;
-    }
+  // Klustring: fornborgarna är nu ~1100 (Wikidata-import) — utan kluster blev
+  // kartan en oläslig prickmatta. En MarkerClusterGroup slås samman vid utzoomning
+  // och expanderar vid inzoomning. Gruppen returneras som ETT borttagbart lager
+  // (cleanup i useMapMarkers kör map.removeLayer på varje returnerad post).
+  const cluster = (L as any).markerClusterGroup({
+    chunkedLoading: true,
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    disableClusteringAtZoom: 12,
+  }) as L.LayerGroup;
 
+  filteredFortresses.forEach(fortress => {
     try {
       const iconSvg = getFortressIcon(fortressType);
       
@@ -169,22 +177,27 @@ export const addVikingFortressMarkers = (
             <span class="inline-block mt-2 px-2 py-1 ${config.bgColor} ${config.textColor} text-xs rounded">
               ${fortress.fortress_type.replace('_', ' ')}
             </span>
+            <br/>
+            <button onclick="window.setProximityProbe(${fortress.coordinates.lat},${fortress.coordinates.lng},'${String(fortress.name).replace(/['<>]/g, '')}')"
+              style="margin-top:8px;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #f59e0b;background:#fef3c7;color:#78350f;cursor:pointer">
+              Visa omkrets (fynd i närheten)</button>
           </div>
         `);
 
-      // Safely add marker to map
-      if (map && map.getContainer() && document.contains(map.getContainer())) {
-        marker.addTo(map);
-        markers.push(marker);
-      } else {
-        console.warn('Cannot add fortress marker - map container not available');
-      }
+      cluster.addLayer(marker);
+      markers.push(marker);
     } catch (error) {
       console.error('Error creating viking fortress marker:', error);
     }
   });
 
-  return markers;
+  // Lägg klustergruppen på kartan och returnera DEN (inte de enskilda markörerna)
+  // så att cleanup river hela gruppen med map.removeLayer(cluster).
+  if (markers.length && map && map.getContainer() && document.contains(map.getContainer())) {
+    cluster.addTo(map);
+    return [cluster as unknown as L.Marker];
+  }
+  return [];
 };
 
 export const getFortressMarkersByType = (fortresses: VikingFortress[]) => {

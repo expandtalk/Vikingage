@@ -9,11 +9,15 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Badge } from '@/components/ui/badge';
 import { MeterBadge } from '@/components/inscription/MeterBadge';
-import { MapPin, Calendar, Compass, ArrowLeft, ExternalLink, Scroll, User, BookOpen, Crown, Navigation } from 'lucide-react';
+import { MapPin, Calendar, Compass, ArrowLeft, ExternalLink, Scroll, User, BookOpen, Crown, Navigation, Sparkles, Landmark } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EXCURSIONS } from '@/data/excursions';
 import { supabase } from '@/integrations/supabase/client';
 import { nearestWithin } from '@/utils/geoDistance';
+import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
+import { ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFinds';
+import { PLACE_TYPE_LABEL, FIND_TYPE_LABEL } from '@/components/excursions/nearbyLabels';
+import { ExcursionProse, excerptText } from '@/components/excursions/ExcursionProse';
 
 const ATTR_LABEL: Record<string, { sv: string; en: string }> = {
   signed: { sv: 'signerad', en: 'signed' },
@@ -88,15 +92,34 @@ const ExcursionDetail = () => {
     ? nearestWithin(excursion.coords, EXCURSIONS.filter((e) => e.id !== excursion.id), (e) => e.coords, 45, 5)
     : [];
 
+  // Kultplatser & fynd inom 40 km (flyttat hit från listkorten 2026-07-20).
+  const nearbyPlaces = excursion
+    ? nearestWithin(excursion.coords, RELIGIOUS_PLACES, (p) => p.coordinates, 40, 5)
+    : [];
+  const nearbyFinds = excursion
+    ? nearestWithin(excursion.coords, ARCHAEOLOGICAL_FINDS, (f) => ({ lat: f.lat, lng: f.lng }), 40, 5)
+    : [];
+
   useEffect(() => {
     if (!excursion || !containerRef.current || mapRef.current) return;
     const { lat, lng } = excursion.coords;
-    const map = L.map(containerRef.current, { center: [lat, lng], zoom: 14, scrollWheelZoom: true });
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [lat, lng], zoom: 14, scrollWheelZoom: true });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors', maxZoom: 19,
     }).addTo(map);
     L.circleMarker([lat, lng], { radius: 9, color: '#78350f', fillColor: '#eab308', fillOpacity: 0.9, weight: 2 })
       .addTo(map).bindPopup(`<strong>${excursion.name}</strong>`);
+
+    // Extra intressepunkter (t.ex. skålgropsstenen + gravfältet i samma utflykt)
+    const extraPts = excursion.points ?? [];
+    extraPts.forEach((pt) => {
+      L.marker([pt.lat, pt.lng]).addTo(map)
+        .bindPopup(`<strong>${pt.name}</strong>${pt.note ? `<br/>${pt.note}` : ''}`);
+    });
+    if (extraPts.length) {
+      const pts: [number, number][] = [[lat, lng], ...extraPts.map((p) => [p.lat, p.lng] as [number, number])];
+      try { map.fitBounds(L.latLngBounds(pts), { padding: [40, 40], maxZoom: 15 }); } catch { /* enda punkt */ }
+    }
     mapRef.current = map;
     setTimeout(() => map.invalidateSize(), 100);
 
@@ -121,6 +144,41 @@ const ExcursionDetail = () => {
         try { const b = layer.getBounds(); if (b.isValid()) mapRef.current.fitBounds(b, { padding: [30, 30], maxZoom: 17 }); } catch { /* punktlös */ }
       })
       .catch(() => { /* ingen geodata */ });
+
+    // Regionens ALLA fornborgar live ur DB:n (single source of truth — ingen statisk kopia).
+    // Färg efter status: rekonstruerad/utgrävd/ej utgrävd (matchar monumentTypes-legenden).
+    if (excursion.fortressRegion) {
+      const statusColor = (f: { status?: string | null; excavated?: boolean | null }) =>
+        f.status === 'reconstructed' ? '#22c55e' : f.excavated ? '#eab308' : '#ef4444';
+      const parsePoint = (c: unknown): [number, number] | null => {
+        // Postgres point(lng,lat): PostgREST ger "(lng,lat)"-sträng eller {x,y}-objekt
+        if (typeof c === 'string') {
+          const m = c.match(/\(([-\d.]+),([-\d.]+)\)/);
+          return m ? [parseFloat(m[2]), parseFloat(m[1])] : null; // [lat, lng]
+        }
+        if (c && typeof c === 'object' && 'x' in (c as object)) {
+          const p = c as { x: number; y: number };
+          return [p.y, p.x];
+        }
+        return null;
+      };
+      supabase.from('viking_fortresses')
+        .select('name, fortress_type, status, excavated, description, coordinates')
+        .ilike('region', `%${excursion.fortressRegion}%`)
+        .then(({ data }) => {
+          if (cancelled || !mapRef.current || !data?.length) return;
+          const group = L.featureGroup();
+          for (const f of data) {
+            const ll = parsePoint(f.coordinates);
+            if (!ll) continue;
+            L.circleMarker(ll, { radius: 7, color: '#1c1917', weight: 1, fillColor: statusColor(f), fillOpacity: 0.9 })
+              .bindPopup(`<strong>${f.name}</strong><br/>${f.status === 'reconstructed' ? (sv ? 'Rekonstruerad' : 'Reconstructed') : f.excavated ? (sv ? 'Utgrävd' : 'Excavated') : (sv ? 'Ej utgrävd' : 'Not excavated')}${f.description ? `<br/><em>${f.description}</em>` : ''}`)
+              .addTo(group);
+          }
+          group.addTo(mapRef.current);
+          try { const b = group.getBounds(); if (b.isValid()) mapRef.current.fitBounds(b, { padding: [30, 30] }); } catch { /* tomt */ }
+        });
+    }
 
     return () => { cancelled = true; map.remove(); mapRef.current = null; };
   }, [excursion]);
@@ -148,7 +206,7 @@ const ExcursionDetail = () => {
   return (
     <div className="min-h-screen viking-bg">
       <PageMeta title={`${excursion.name} — Utflykt`} titleEn={`${excursion.name} — Excursion`}
-        description={excursion.sv} descriptionEn={excursion.en} />
+        description={excerptText(excursion.sv)} descriptionEn={excerptText(excursion.en)} />
       <Header /><Breadcrumbs />
       <main className="container mx-auto px-4 py-8">
         <Link to="/excursions" className="inline-flex items-center gap-1 text-sm text-gold hover:underline mb-4">
@@ -162,7 +220,7 @@ const ExcursionDetail = () => {
             <Badge variant="outline" className="text-xs flex items-center gap-1"><Calendar className="h-3 w-3" />{excursion.period}</Badge>
             {stone?.meter && <MeterBadge meter={stone.meter} sv={sv} />}
           </div>
-          <p className="text-muted-foreground text-lg max-w-3xl">{sv ? excursion.sv : excursion.en}</p>
+          <ExcursionProse text={sv ? excursion.sv : excursion.en} className="max-w-3xl text-lg" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -177,7 +235,10 @@ const ExcursionDetail = () => {
             <aside className="lg:col-span-1">
               <div className="viking-card rounded-lg border border-border p-4">
                 <h2 className="text-lg font-semibold text-foreground mb-1">{sv ? 'Monument på platsen' : 'Monuments on site'}</h2>
-                <p className="text-xs text-muted-foreground mb-3">{sv ? 'Gravtyper enligt informationsskylten. Kartan visar gravfältets registrerade yta (RAÄ, CC0); de ~1000 enskilda gravarna finns inte som öppen geodata.' : 'Grave types per the information sign. The map shows the registered extent (RAÄ, CC0); the ~1000 individual graves are not open geodata.'}</p>
+                {/* Jordbro-specifik förklaring — övriga utflykter får generisk legendtext */}
+                <p className="text-xs text-muted-foreground mb-3">{excursion.id === 'jordbro-gravfalt'
+                  ? (sv ? 'Gravtyper enligt informationsskylten. Kartan visar gravfältets registrerade yta (RAÄ, CC0); de ~1000 enskilda gravarna finns inte som öppen geodata.' : 'Grave types per the information sign. The map shows the registered extent (RAÄ, CC0); the ~1000 individual graves are not open geodata.')
+                  : (sv ? 'Färgerna motsvarar kartans markörer.' : 'Colours correspond to the map markers.')}</p>
                 <ul className="space-y-2">
                   {excursion.monumentTypes.map((m) => (
                     <li key={m.sv} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -272,6 +333,46 @@ const ExcursionDetail = () => {
                   <li key={k.name} className="text-sm">
                     <div className="font-semibold text-foreground">{k.name}{(k.reign_start || k.reign_end) ? <span className="text-muted-foreground font-normal"> ({k.reign_start}–{k.reign_end})</span> : null}</div>
                     {k.description && <p className="text-sm text-muted-foreground mt-1">{k.description}</p>}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* Kultplatser & kyrkor i närheten */}
+          {nearbyPlaces.length > 0 && (
+            <Section icon={<Sparkles className="h-5 w-5 text-blue-400" />} title={sv ? 'Kultplatser & kyrkor i närheten' : 'Cult sites & churches nearby'}>
+              <ul className="space-y-1">
+                {nearbyPlaces.map(({ item, km }) => (
+                  <li key={item.id} className="text-sm text-muted-foreground flex justify-between gap-2">
+                    <span className="truncate">
+                      {item.name}
+                      <span className="text-muted-foreground/60">
+                        {' · '}
+                        {(PLACE_TYPE_LABEL[item.type]?.[sv ? 'sv' : 'en']) ?? item.type}
+                      </span>
+                    </span>
+                    <span className="shrink-0 tabular-nums">{km.toFixed(0)} km</span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* Arkeologiska fynd i närheten */}
+          {nearbyFinds.length > 0 && (
+            <Section icon={<Landmark className="h-5 w-5 text-amber-500" />} title={sv ? 'Arkeologiska fynd i närheten' : 'Archaeological finds nearby'}>
+              <ul className="space-y-1">
+                {nearbyFinds.map(({ item, km }) => (
+                  <li key={item.id} className="text-sm text-muted-foreground flex justify-between gap-2">
+                    <span className="truncate">
+                      {sv ? item.name : item.nameEn}
+                      <span className="text-muted-foreground/60">
+                        {' · '}
+                        {(FIND_TYPE_LABEL[item.findType]?.[sv ? 'sv' : 'en']) ?? item.findType}
+                      </span>
+                    </span>
+                    <span className="shrink-0 tabular-nums">{km.toFixed(0)} km</span>
                   </li>
                 ))}
               </ul>

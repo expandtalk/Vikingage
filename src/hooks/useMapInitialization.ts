@@ -5,6 +5,18 @@ import { useMapInstance } from './useMapInstance';
 import { useMapTileLayer } from './useMapTileLayer';
 import { useMapRiverSystems } from './useMapRiverSystems';
 import { useMapValdemarsRoute } from './useMapValdemarsRoute';
+import { useMapEriksgata } from './useMapEriksgata';
+import { useMapBeaconSites } from './useMapBeaconSites';
+import { useMapHeritageSites } from './useMapHeritageSites';
+import { useMapChurches } from './map/useMapChurches';
+import { useMapProximityProbe } from './map/useMapProximityProbe';
+import { useMapSpeciesMarkers } from './map/useMapSpeciesMarkers';
+import { useMapElementMarkers } from './map/useMapElementMarkers';
+import { useMapRuler } from './map/useMapRuler';
+import { useMapPictureStones } from './map/useMapPictureStones';
+import { useMapCoins } from './map/useMapCoins';
+import { useMapAncestrySites } from './map/useMapAncestrySites';
+import { useMapCustomPoints } from './map/useMapCustomPoints';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -138,7 +150,62 @@ export const useMapInitialization = ({
     selectedTimePeriod
   });
 
-  return { 
+  // Eriksgatan (kungavalets riksrunda) — ritas från DB när legendknappen är på
+  useMapEriksgata({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+    safelyAddLayer,
+  });
+
+  // Vårdkasar (RAÄ-lämningar) — eget lager, klustrat, gate: legendknappen
+  useMapBeaconSites({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+    safelyAddLayer,
+  });
+
+  // Kulturarv (spatialt, viewport-laddat) — Steg 1 proof: sites_in_bbox/near.
+  // Laddar bara det som är i vyn → tål obegränsat antal punkter.
+  useMapHeritageSites({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+  });
+
+  // Rikt kyrkolager (ecclesiastical_sites: byggår/stift/socken/härad/ruin + Commons-bild).
+  useMapChurches({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+  });
+
+  // Omkrets-sond: cirkel + närliggande lager kring vald kyrka/fornborg.
+  useMapProximityProbe({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Art-/innovationsintroduktioner (koordinatsatta), filtrerat på vald tidsepok.
+  useMapSpeciesMarkers({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+
+  // Ortnamnsled-spotlight (2c): visar OSM-orter med valt led (URL ?element=tor).
+  useMapElementMarkers({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Punkt-till-punkt-linjal (2d).
+  useMapRuler({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Bildsten-spolia (picture_stone_reuse) — färg per Lindqvist-period, gate: legendknappen.
+  useMapPictureStones({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+
+  // Mynt/fynd (coins) på fyndplats-koordinat — färg per metall, gate: legendknappen.
+  useMapCoins({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+
+  // aDNA-platser (archaeological_sites + genetic_individuals) — gate: legendknappen.
+  useMapAncestrySites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+
+  // Mina punkter (localStorage) — användarens egna ortnamn, alltid synliga.
+  useMapCustomPoints({ map: map.current, isMapReady: isMapReadyRef });
+
+  return {
     mapContainer, 
     map: map.current,
     isMapReady

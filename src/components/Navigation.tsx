@@ -21,6 +21,11 @@ import {
   Compass,
   Scale,
   Swords,
+  BarChart3,
+  Library,
+  Tag,
+  CalendarClock,
+  Share2,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -115,15 +120,18 @@ const FOCUS_ROUTES: Record<string, string> = {
   GeneticEvents: 'geneticEvents',
 };
 
+// Explore-länken behövs även som direktlänk i inloggat läge.
+const explore: NavLink = {
+  pathEn: '/explore', pathSv: '/explore',
+  labelSv: 'Utforska', labelEn: 'Explore',
+  descSv: 'Interaktiv karta med alla lager — runinskrifter, platser och intresseprofiler.',
+  descEn: 'Interactive map with every layer — inscriptions, places and interest profiles.',
+  icon: Map, category: 'places',
+};
+
 // Links that aren't in routes.ts but belong in the megamenu.
 const EXTRA_LINKS: NavLink[] = [
-  {
-    pathEn: '/explore', pathSv: '/explore',
-    labelSv: 'Utforska', labelEn: 'Explore',
-    descSv: 'Interaktiv karta med alla lager — runinskrifter, platser och intresseprofiler.',
-    descEn: 'Interactive map with every layer — inscriptions, places and interest profiles.',
-    icon: Map, category: 'places',
-  },
+  explore,
   {
     pathEn: '/excursions', pathSv: '/excursions',
     labelSv: 'Utflykter', labelEn: 'Excursions',
@@ -132,11 +140,60 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Compass, category: 'places',
   },
   {
+    pathEn: '/explore?focus=churches', pathSv: '/explore?focus=churches',
+    labelSv: 'Kyrkor & stift', labelEn: 'Churches & dioceses',
+    descSv: 'Medeltidskyrkor med byggår, stift över tid och bild — samt ruiner. Zooma in på kartan.',
+    descEn: 'Medieval churches with build year, diocese over time and photo — plus ruins. Zoom in.',
+    icon: Church, category: 'places',
+  },
+  {
+    pathEn: '/place-names', pathSv: '/sv/ortnamn',
+    labelSv: 'Ortnamn', labelEn: 'Place names',
+    descSv: 'Ortnamnsleden vi söker (sakrala, makt, natur) — reproducerbar metod, källor och osäkerheter.',
+    descEn: 'The place-name elements we search (sacral, power, nature) — reproducible method, sources, caveats.',
+    icon: Tag, category: 'places',
+  },
+  {
+    pathEn: '/ontology', pathSv: '/ontologi',
+    labelSv: 'Ontologi', labelEn: 'Ontology',
+    descSv: 'Det agent-läsbara kontraktet: entitetstyper, relationer, mätmetoder, dateringsmetoder (kol-14, dendro, numismatik) och vetenskapliga referenser.',
+    descEn: 'The agent-readable contract: entity types, relations, measures, dating methods (14C, dendro, numismatic) and scientific references.',
+    icon: Share2, category: 'science',
+  },
+  {
+    pathEn: '/texts', pathSv: '/texter',
+    labelSv: 'Texter & källor', labelEn: 'Texts & sources',
+    descSv: 'Läs källorna i fulltext — Poetiska Eddan, lagar, krönikor och sagor, efter typ.',
+    descEn: 'Read the sources in full — the Poetic Edda, laws, chronicles and sagas, by type.',
+    icon: Library, category: 'history',
+  },
+  {
+    pathEn: '/historical-events', pathSv: '/sv/historiska-handelser',
+    labelSv: 'Tidslinje', labelEn: 'Timeline',
+    descSv: 'Händelser, klimatchocker och pestutbrott + introduktioner av arter/innovationer (hund, katt, häst) på samma tidsaxel — med proxy, osäkerhet och källor.',
+    descEn: 'Events, climate shocks and plague plus introductions of species/innovations on one time axis — with proxy, uncertainty and sources.',
+    icon: CalendarClock, category: 'history',
+  },
+  {
+    pathEn: '/explore?focus=eriksgatan', pathSv: '/explore?focus=eriksgatan',
+    labelSv: 'Eriksgatan', labelEn: 'Eriksgatan',
+    descSv: 'Kungavalets riksrunda genom landskapen — den medeltida Eriksgatan på kartan.',
+    descEn: 'The medieval royal election progress through the provinces, drawn on the map.',
+    icon: Crown, category: 'history',
+  },
+  {
     pathEn: '/prices', pathSv: '/prices',
     labelSv: 'Priser', labelEn: 'Prices',
     descSv: 'Diocletianus prisedikt (301 e.Kr.) — romerska priser omräknade.',
     descEn: "Diocletian's Price Edict (301 AD) — Roman prices converted.",
     icon: Scale, category: 'history',
+  },
+  {
+    pathEn: '/statistics', pathSv: '/sv/statistik',
+    labelSv: 'Statistik', labelEn: 'Statistics',
+    descSv: 'Bläddra materialet — antal per landskap, socken, härad och ristare.',
+    descEn: 'Browse the material — counts per province, parish, hundred and carver.',
+    icon: BarChart3, category: 'science',
   },
 ];
 
@@ -155,9 +212,9 @@ const profile: NavLink = {
 };
 
 const game: NavLink = {
-  pathEn: '/kungstavla', pathSv: '/kungstavla',
+  pathEn: '/kungsnave', pathSv: '/kungsnave',
   labelSv: 'Spel', labelEn: 'Game',
-  descSv: 'Spela Hnefatafl (kungstavla)', descEn: "Play Hnefatafl (the king's board)",
+  descSv: 'Spela Hnefatafl (Kungsnäve)', descEn: "Play Hnefatafl (the king's game)",
   icon: Swords,
 };
 
@@ -218,7 +275,7 @@ const MegaCard: React.FC<{ link: NavLink }> = ({ link }) => {
   );
 };
 
-/** Desktop navigation: Home + grouped megamenu columns. */
+/** Desktop navigation. Publik megameny utloggad; enklare arbetsmeny inloggad. */
 export const Navigation: React.FC = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
@@ -232,23 +289,36 @@ export const Navigation: React.FC = () => {
     'focus:bg-slate-800/50 focus:text-white data-[state=open]:bg-slate-800/50 ' +
     'data-[state=open]:text-white';
 
+  const directLink = (link: NavLink) => {
+    const Icon = link.icon;
+    return (
+      <NavigationMenuItem key={link.pathEn}>
+        <NavigationMenuLink asChild>
+          <Link
+            to={pathOf(link)}
+            className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ${
+              isActive(link) ? 'bg-slate-800 text-white' : ''
+            }`}
+          >
+            <Icon className="h-4 w-4 mr-1.5" />
+            {labelOf(link)}
+          </Link>
+        </NavigationMenuLink>
+      </NavigationMenuItem>
+    );
+  };
+
+  // Inloggat läge: inget publikt toppnav alls — rent arbetsläge. All navigation
+  // (Admin, Profil, Logga ut) ligger i kontomenyn i Header; startsidan nås via loggan.
+  if (user) {
+    return null;
+  }
+
+  // Utloggat läge: full publik megameny.
   return (
     <NavigationMenu className="hidden md:flex">
       <NavigationMenuList>
-        {/* Home — direct link, no dropdown */}
-        <NavigationMenuItem>
-          <NavigationMenuLink asChild>
-            <Link
-              to={pathOf(home)}
-              className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ${
-                isActive(home) ? 'bg-slate-800 text-white' : ''
-              }`}
-            >
-              <Home className="h-4 w-4 mr-1.5" />
-              {labelOf(home)}
-            </Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
+        {directLink(home)}
 
         {CATEGORY_ORDER.map((cat) => {
           const catLinks = byCategory(cat);
@@ -268,37 +338,7 @@ export const Navigation: React.FC = () => {
           );
         })}
 
-        {/* Spel/Game — direct link */}
-        <NavigationMenuItem>
-          <NavigationMenuLink asChild>
-            <Link
-              to={pathOf(game)}
-              className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ${
-                isActive(game) ? 'bg-slate-800 text-white' : ''
-              }`}
-            >
-              <Swords className="h-4 w-4 mr-1.5" />
-              {labelOf(game)}
-            </Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
-
-        {/* Profile — direct link when logged in */}
-        {user && (
-          <NavigationMenuItem>
-            <NavigationMenuLink asChild>
-              <Link
-                to={pathOf(profile)}
-                className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ${
-                  isActive(profile) ? 'bg-slate-800 text-white' : ''
-                }`}
-              >
-                <User className="h-4 w-4 mr-1.5" />
-                {labelOf(profile)}
-              </Link>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-        )}
+        {directLink(game)}
       </NavigationMenuList>
     </NavigationMenu>
   );

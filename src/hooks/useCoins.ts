@@ -21,6 +21,7 @@ export interface Coin {
   description: string | null;
   description_en: string | null;
   sources: string | null;
+  image_url: string | null;
 }
 
 export const useCoins = () =>

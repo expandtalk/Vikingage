@@ -1,0 +1,4 @@
+-- Speglar RPC applicerad via MCP 2026-07-20. Inskriftssidans allt-i-ett-anrop
+-- inkl. bilder, ristare, varianta läsningar/tolkningar (readings/interpretations)
+-- och litterära kopplingar. Se src/pages/InscriptionPage.tsx.
+-- (Full definition finns i DB; denna fil är dokumentation — db push är trasig i repot.)

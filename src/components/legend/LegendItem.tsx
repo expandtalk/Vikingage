@@ -21,14 +21,13 @@ export const LegendItemComponent: React.FC<LegendItemProps> = ({
   const IconComponent = getIconForLegendItem(item.id);
   const indent = level * 16;
   const cleanedLabel = cleanLabelText(item.label);
-
   return (
-    <div 
+    <div
       className={`flex items-center justify-between py-2 px-2 rounded-md transition-all duration-200 ${
-        item.enabled 
-          ? 'bg-slate-800/90 border border-slate-600/50 shadow-sm' 
-          : 'bg-slate-900/70 border border-slate-700/30 opacity-70'
-      }`} 
+        item.enabled
+          ? 'bg-slate-800/90 border border-slate-600/50 shadow-sm'
+          : 'bg-slate-900/80 border border-slate-700/40'
+      }`}
       style={{ paddingLeft: `${indent + 8}px` }}
     >
       <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -50,16 +49,18 @@ export const LegendItemComponent: React.FC<LegendItemProps> = ({
         >
           {cleanedLabel}
         </Label>
-        <Badge 
-          variant="outline" 
-          className={`text-xs px-2 py-0.5 h-5 flex-shrink-0 font-medium ${
-            item.enabled 
-              ? 'text-gray-100 border-slate-400 bg-slate-700/70' 
-              : 'text-gray-400 border-slate-600 bg-slate-800/50'
-          }`}
-        >
-          {item.count}
-        </Badge>
+        {!!item.count && (
+          <Badge
+            variant="outline"
+            className={`text-xs px-2 py-0.5 h-5 flex-shrink-0 font-medium ${
+              item.enabled
+                ? 'text-gray-100 border-slate-400 bg-slate-700/70'
+                : 'text-gray-200 border-slate-500 bg-slate-800/70'
+            }`}
+          >
+            {item.count}
+          </Badge>
+        )}
       </div>
       <div className="flex items-center gap-2 ml-2">
         <Switch
@@ -73,7 +74,7 @@ export const LegendItemComponent: React.FC<LegendItemProps> = ({
           }`}
         />
         <span className={`text-xs font-bold ${
-          item.enabled ? 'text-gray-100' : 'text-gray-400'
+          item.enabled ? 'text-gray-100' : 'text-gray-300'
         }`}>
           {item.enabled ? 'PÅ' : 'AV'}
         </span>

@@ -138,6 +138,7 @@ export const CarversMap: React.FC<CarversMapProps> = ({
 
     // Create map centered on Scandinavia
     const map = L.map(mapContainerRef.current, {
+      preferCanvas: true, // canvas-rendering: tusentals markörer utan DOM-kostnad
       center: [60.0, 15.0], // Skandinavien
       zoom: 5,
       zoomControl: true,

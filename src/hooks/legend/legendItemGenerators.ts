@@ -71,49 +71,42 @@ export const generateBasicInscriptionItems = (
     });
   }
 
-  // 3. VALDEMARS SEGELLED - ✅ Viktig vattenväg med alla koordinater
-  items.push({
-    id: 'valdemar_route',
-    label: '⚔️ ' + t('valdemarsRoute1230s'),
-    color: '#1e3a8a', // Mörkblå för vikingatid
-    count: 95, // ✅ Alla vägpunkter visas
-    enabled: enabledLegendItems.valdemar_route !== false,
-    type: 'primary' as const // ✅ Gör prominent
-  });
+  // 3+4. VATTENVÄGAR (kategori) — Valdemars segelled ligger nu UNDER vattenvägar.
+  // 5. VÄGAR som UNDERGRUPP till Vikingaleder (Daniel: flytta in vägar under
+  //    vikingaleder, döp om till "Vägar"). Byggs före water_routes så den kan bäddas in.
+  const roadNode = (selectedTimePeriod === 'viking_age' || selectedTimePeriod === 'all')
+    ? (() => {
+        const roadChildren = [
+          { id: 'road_rullstensas', label: t('eskerRoads'), color: '#CD853F', count: 5 },
+          { id: 'road_halvagar', label: t('hollowWays'), color: '#A0522D', count: 2 },
+          { id: 'road_vinteragar', label: t('winterRoads'), color: '#4682B4', count: 2 },
+          { id: 'road_landmarks', label: t('bridgesAndFords'), color: '#2F4F4F', count: 5 },
+        ].map((child) => ({ ...child, enabled: enabledLegendItems[child.id] !== false }));
+        return {
+          id: 'viking_roads',
+          label: t('vikingAgeRoads'), // "Vägar"
+          color: '#8B4513',
+          count: roadChildren.reduce((s, c) => s + c.count, 0),
+          enabled: enabledLegendItems.viking_roads !== false,
+          type: 'category' as const,
+          children: roadChildren,
+        };
+      })()
+    : null;
 
-  // 4. VIKTIGA VATTENVÄGAR - fjärde prioritet
   items.push({
-    id: 'river_routes',
-    label: t('importantWaterways'),
+    id: 'water_routes',
+    label: '🌊 ' + t('vikingWaterways'), // "Vikingaleder"
     color: '#1e40af',
-    count: 12,
-    enabled: enabledLegendItems.river_routes !== false
+    count: 95 + 12 + (roadNode?.count ?? 0),
+    enabled: enabledLegendItems.water_routes !== false,
+    type: 'category',
+    children: [
+      { id: 'valdemar_route', label: '⚔️ ' + t('valdemarsRoute'), color: '#1e3a8a', count: 95, enabled: enabledLegendItems.valdemar_route !== false },
+      { id: 'river_routes', label: t('importantWaterways'), color: '#1e40af', count: 12, enabled: enabledLegendItems.river_routes !== false },
+      ...(roadNode ? [roadNode] : []),
+    ],
   });
-
-  // 5. VIKINGATIDA VÄGAR - femte prioritet
-  if (selectedTimePeriod === 'viking_age' || selectedTimePeriod === 'all') {
-    const roadChildren = [
-      { id: 'road_rullstensas', label: t('eskerRoads'), color: '#CD853F', count: 5 },
-      { id: 'road_halvagar', label: t('hollowWays'), color: '#A0522D', count: 2 },
-      { id: 'road_vinteragar', label: t('winterRoads'), color: '#4682B4', count: 2 },
-      { id: 'road_landmarks', label: t('bridgesAndFords'), color: '#2F4F4F', count: 5 }
-    ].map(child => ({
-      ...child,
-      enabled: enabledLegendItems[child.id] !== false
-    }));
-
-    const totalRoadCount = roadChildren.reduce((sum, child) => sum + child.count, 0);
-    
-    items.push({
-      id: 'viking_roads',
-      label: t('vikingAgeRoads'),
-      color: '#8B4513',
-      count: totalRoadCount,
-      enabled: enabledLegendItems.viking_roads !== false,
-      type: 'category',
-      children: roadChildren
-    });
-  }
 
   // 6. FORNBORGAR - sjätte prioritet
   items.push({
@@ -122,6 +115,35 @@ export const generateBasicInscriptionItems = (
     color: '#dc2626',
     count: dbStats?.totalFortresses || 49,
     enabled: enabledLegendItems.viking_fortresses !== false
+  });
+
+  // (Vårdkasar ligger under "Kulturlager" som heritage_vardkase — den fristående
+  //  beacon_sites-knappen togs bort för att undvika dubblett.)
+
+  // Kulturarv (spatialt) — viewport-laddat lager (Steg 1). Skalar till obegränsat
+  // antal punkter; laddar bara det som är i vyn via sites_in_bbox. AV som standard.
+  // Kulturlager (spatialt, viewport-laddat). Kategori med per-typ-kryss — tänd
+  // en typ i taget (sockenkyrkor, kloster, vårdkasar…). Allt AV som standard.
+  // Föräldern 'heritage_sites' = "visa alla typer".
+  items.push({
+    id: 'heritage_sites',
+    label: '🗺️ Kulturlager',
+    color: '#7c3aed',
+    count: 6385,
+    // Föräldern PÅ som standard så per-typ-kryssen är åtkomliga (LegendCategory
+    // döljer barn om parent är av). Kartan drivs av barnen — alla av → tom karta.
+    enabled: enabledLegendItems.heritage_sites !== false,
+    type: 'category',
+    children: [
+      { id: 'heritage_kyrka', label: 'Sockenkyrkor', color: '#e11d48', count: 4223, enabled: enabledLegendItems.heritage_kyrka === true },
+      { id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: enabledLegendItems.heritage_kapell === true },
+      { id: 'heritage_kloster', label: 'Kloster', color: '#c026d3', count: 93, enabled: enabledLegendItems.heritage_kloster === true },
+      { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: enabledLegendItems.heritage_vardkase === true },
+      { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: enabledLegendItems.heritage_dos === true },
+      { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: enabledLegendItems.heritage_ganggrift === true },
+      { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: enabledLegendItems.heritage_bildsten === true },
+      { id: 'heritage_skeppssattning', label: 'Skeppssättningar', color: '#0d9488', count: 865, enabled: enabledLegendItems.heritage_skeppssattning === true },
+    ],
   });
 
   // 7. RESTEN - kultplatser och andra objekt - dynamisk räkning
@@ -133,7 +155,12 @@ export const generateBasicInscriptionItems = (
     { id: 'religious_njord', label: t('njordCultSites'), color: '#0ea5e9', count: getDeityPlaces('njord', selectedTimePeriod).length },
     { id: 'religious_frigg', label: t('friggCultSites'), color: '#ec4899', count: getDeityPlaces('frigg', selectedTimePeriod).length },
     { id: 'religious_other', label: t('otherCultSites'), color: '#9ca3af', count: getDeityPlaces('other', selectedTimePeriod).length }
-  ].map(child => ({
+  ].sort((a, b) => {
+    // Mest överst; "övriga" alltid sist.
+    if (a.id === 'religious_other') return 1;
+    if (b.id === 'religious_other') return -1;
+    return b.count - a.count;
+  }).map(child => ({
     ...child,
     enabled: false // Inaktiverad som standard
   }));
@@ -192,7 +219,7 @@ export const generateBasicInscriptionItems = (
     id: 'historical_events',
     label: 'Historiska händelser',
     color: '#FF6B6B',
-    count: 0,
+    count: 37, // historical_events-tabellen (2026-07). Uppdatera vid re-import.
     enabled: enabledLegendItems.historical_events !== false
   });
 
@@ -200,8 +227,70 @@ export const generateBasicInscriptionItems = (
     id: 'place_names',
     label: 'Ortnamn',
     color: '#65a30d',
-    count: 0,
+    count: 495, // place_names-tabellen (2026-07): 495 st, alla med koordinater. Uppdatera vid re-import.
     enabled: enabledLegendItems.place_names !== false
+  });
+
+  // Dåtida strandlinje (SGU strandförskjutningsmodell, CC-BY). En sammanhängande
+  // bakgrundspolygon för VALD tidsperiod — inte räknebara punkter, därför count 0
+  // (ingen sifferbadge). Av som standard (=== true matchar lagrets gate).
+  items.push({
+    id: 'paleo_shoreline',
+    label: '🌊 Dåtida strandlinje (SGU)',
+    color: '#3b82f6',
+    count: 0,
+    enabled: enabledLegendItems.paleo_shoreline === true
+  });
+
+  // Rikt kyrkolager (byggår, stift, socken/härad, ruinstatus + Commons-bild). Viewport-laddat,
+  // zoom-gate ≥8. AV som standard (=== true matchar useMapChurches-gaten).
+  items.push({
+    id: 'ecclesiastical_churches',
+    label: '⛪ Kyrkor & stift',
+    color: '#e11d48',
+    count: 0,
+    // PÅ som standard (Daniel). Gate:et sitter direkt på detta id — därför är
+    // detta en topp-nivå-post (ingen wrapper-kategori) så av-knappen faktiskt
+    // släcker kartlagret (annars går kyrkan inte att stänga av).
+    enabled: enabledLegendItems.ecclesiastical_churches !== false
+  });
+
+  // Art-/innovationsintroduktioner (species_introductions med koordinat). AV som standard.
+  // Filtreras på vald tidsepok via TimeEpoch-kontrollen. Gate === true (matchar hooken).
+  items.push({
+    id: 'species_introductions',
+    label: '🐾 Arter & händelser (tidsepok)',
+    color: '#c084fc',
+    count: 0,
+    enabled: enabledLegendItems.species_introductions === true
+  });
+
+  // Bildsten-spolia (picture_stone_reuse): hedniska bildstenar återanvända i gotländska
+  // kyrkor. Punkt = kyrkans läge. AV som standard. Gate === true (matchar hooken).
+  items.push({
+    id: 'picture_stone_reuse',
+    label: '🪨 Bildsten-spolia (kyrkor)',
+    color: '#0891b2',
+    count: 20,
+    enabled: enabledLegendItems.picture_stone_reuse === true
+  });
+
+  // Mynt & fynd (coins) på fyndplats-koordinat. Färg per metall. AV som standard.
+  items.push({
+    id: 'coins',
+    label: '🪙 Mynt & fynd (fyndplats)',
+    color: '#d4af37',
+    count: 26,
+    enabled: enabledLegendItems.coins === true
+  });
+
+  // aDNA-platser (arkeologiska platser med genetiska individer). AV som standard.
+  items.push({
+    id: 'adna_sites',
+    label: '🧬 aDNA-platser',
+    color: '#a855f7',
+    count: 4,
+    enabled: enabledLegendItems.adna_sites === true
   });
 
   // Add Christian sites if provided
@@ -222,8 +311,41 @@ export const generateBasicInscriptionItems = (
     )
   ).length;
   console.log(`🏝️ Öland inscriptions found: ${olandCount}`);
-  
-  return items;
+
+  // === FULL KATEGORI-GRUPPERING ===
+  // Efterbearbetar den platta listan till toppnivå-kategorier (visuell organisation).
+  // Rör inte lager-id:n → alla toggles/lager fortsätter fungera. Befintliga kategorier
+  // (heritage_sites/religious_places/water_routes/viking_roads) behålls som de är
+  // (LegendCategory stödjer inte djup-nästling → de ligger kvar på toppnivå).
+  const byId = new Map(items.map((i) => [i.id, i] as const));
+  const used = new Set<string>();
+  const sumCount = (children: LegendItem[]) => children.reduce((s, c) => s + (c.count || 0), 0);
+  const group = (id: string, label: string, color: string, childIds: string[]): LegendItem | null => {
+    const children = childIds.map((cid) => byId.get(cid)).filter(Boolean) as LegendItem[];
+    if (children.length === 0) return null;
+    children.forEach((c) => used.add(c.id));
+    return { id, label, color, count: sumCount(children), enabled: enabledLegendItems[id] !== false, type: 'category', children };
+  };
+  const keep = (id: string): LegendItem | null => {
+    const it = byId.get(id);
+    if (it) used.add(id);
+    return it ?? null;
+  };
+  const ordered: (LegendItem | null)[] = [
+    group('cat_runic', 'ᛘ ' + t('runestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions']),
+    keep('ecclesiastical_churches'),
+    keep('heritage_sites'),
+    keep('religious_places'),
+    keep('water_routes'), // Vägar ligger nu som undergrupp inuti water_routes
+    group('cat_defense', '🏰 ' + t('fortresses'), '#dc2626', ['viking_fortresses', 'viking_cities', 'stake_barriers']),
+    group('cat_folk', '🛡️ ' + t('germanicPeoples'), '#8b5cf6', ['germanic_timeline', 'folk_groups', 'viking_regions']),
+    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['place_names', 'historical_events', 'species_introductions', 'picture_stone_reuse', 'coins', 'adna_sites', 'paleo_shoreline']),
+  ];
+  const grouped = ordered.filter(Boolean) as LegendItem[];
+  // Allt ogrupperat (t.ex. kristna centra) läggs sist, oförändrat.
+  items.forEach((i) => { if (!used.has(i.id)) grouped.push(i); });
+
+  return grouped;
 };
 
 export const generateStatusBasedItems = (

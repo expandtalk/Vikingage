@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -103,6 +106,11 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
+  // Egen cluster-grupp för fornborgarna (~1200) — utan klustring blev kartan
+  // en oläslig prickmatta. Fästningar/centra (få) ligger kvar i markersRef.
+  const hillfortClusterRef = useRef<L.LayerGroup>(
+    (L as any).markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 55, disableClusteringAtZoom: 11 })
+  );
 
   // Initialize map
   useEffect(() => {
@@ -110,6 +118,7 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
 
     // Create map centered on Scandinavia
     const map = L.map(mapContainerRef.current, {
+      preferCanvas: true, // canvas-rendering: tusentals markörer utan DOM-kostnad
       center: [60.0, 15.0], // Skandinavien
       zoom: 5,
       zoomControl: true,
@@ -124,6 +133,7 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
 
     // Add markers layer group to map
     markersRef.current.addTo(map);
+    hillfortClusterRef.current.addTo(map);
 
     mapRef.current = map;
 
@@ -263,6 +273,7 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
 
     // Clear existing markers
     markersRef.current.clearLayers();
+    hillfortClusterRef.current.clearLayers();
 
     // Add fortress markers
     if (showFortresses) {
@@ -287,7 +298,7 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
       hillforts.forEach(hillfort => {
         const isHighlighted = highlightedLocation?.id === hillfort.id && highlightedLocation?.type === 'hillfort';
         const marker = createHillfortMarker(hillfort, isHighlighted);
-        markersRef.current.addLayer(marker);
+        hillfortClusterRef.current.addLayer(marker);
       });
     }
   }, [fortresses, cities, hillforts, showFortresses, showCities, showHillforts, highlightedLocation, onLocationClick]);

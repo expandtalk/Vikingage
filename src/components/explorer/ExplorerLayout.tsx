@@ -5,6 +5,8 @@ import { FiltersStatusSection } from './FiltersStatusSection';
 import { ExplorerPanels } from './ExplorerPanels';
 import { TimelineModule } from '../modules/TimelineModule';
 import { GodCardsGrid } from '../gods/GodCardsGrid';
+import { CultSitesView } from '../gods/CultSitesView';
+import { PanelLayoutSelector } from '../panels/PanelLayoutSelector';
 import { usePanelManager } from '@/hooks/usePanelManager';
 import { useFocusManager } from '@/hooks/useFocusManager';
 import { LayoutHeader } from './layout/LayoutHeader';
@@ -51,6 +53,8 @@ interface ExplorerLayoutProps {
   onMarkerClick: (inscription: any) => void;
   onMapNavigate: (navFunction: (lat: number, lng: number, zoom: number) => void) => void;
   onLegendToggle: (id: string) => void;
+  onShowAll?: () => void;
+  onHideAll?: () => void;
   onToggleExpanded: (id: string) => void;
   onResultClick: (inscription: any) => void;
   onPageChange: (page: number) => void;
@@ -109,6 +113,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   onMarkerClick,
   onMapNavigate,
   onLegendToggle,
+  onShowAll,
+  onHideAll,
   onToggleExpanded,
   onResultClick,
   onPageChange,
@@ -251,22 +257,38 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
 
   return (
     <div className="max-w-7xl mx-auto space-y-3">
-      <LayoutHeader
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        handleSearch={handleSearchWithResults}
-        isLoading={isLoading}
-        totalInscriptions={totalInscriptions}
-        isExplorerMode={isExplorerMode}
-        onGodNameSearchWithLegend={handleGodNameSearchWithLegend}
-        onLegendToggle={onLegendToggle}
-        isSearchMinimized={isSearchMinimized}
-        setIsSearchMinimized={setIsSearchMinimized}
-        shouldShowTimeline={false}
-        mapNavigate={mapNavigate}
-        isTimelineMinimized={isTimelineMinimized}
-        setIsTimelineMinimized={setIsTimelineMinimized}
-      />
+      {/* cultSites: runstenssöket är irrelevant (platserna är innehållet) —
+          behåll profilväljaren men släck sök-/tidslinjemodulen (Daniel 2026-07-20). */}
+      {currentFocus === 'cultSites' ? (
+        <PanelLayoutSelector />
+      ) : (
+        <LayoutHeader
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          handleSearch={handleSearchWithResults}
+          isLoading={isLoading}
+          totalInscriptions={totalInscriptions}
+          isExplorerMode={isExplorerMode}
+          onGodNameSearchWithLegend={handleGodNameSearchWithLegend}
+          onLegendToggle={onLegendToggle}
+          isSearchMinimized={isSearchMinimized}
+          setIsSearchMinimized={setIsSearchMinimized}
+          shouldShowTimeline={false}
+          mapNavigate={mapNavigate}
+          isTimelineMinimized={isTimelineMinimized}
+          setIsTimelineMinimized={setIsTimelineMinimized}
+        />
+      )}
+
+      {/* Gudakorten FÖRST i gods-fokus — bilderna är huvudinnehållet, kartan stöd */}
+      {currentFocus === 'gods' && (
+        <GodCardsGrid onFocusDeity={onFocusDeity} />
+      )}
+
+      {/* Heliga källor & kultplatser: PLATSLISTAN i fokus (Frej/Freja först), klick zoomar kartan */}
+      {currentFocus === 'cultSites' && (
+        <CultSitesView onNavigate={mapNavigate ? (lat, lng, zoom) => mapNavigate(lat, lng, zoom ?? 12) : undefined} />
+      )}
 
       {/* Mobile Quick Actions */}
       {isMobile && (
@@ -301,8 +323,9 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         </div>
       )}
 
-      {/* Stats and Filters Status - Desktop */}
-      {!isMobile && (
+      {/* Stats and Filters Status - Desktop. Visas bara vid aktiv sökning/filtrering —
+          annars tar "Resultat"-rutan onödig yta i kondenserat läge (Daniel). */}
+      {!isMobile && (hasActiveSearch || activeFiltersCount > 0) && (
         <div className="bg-white/10 backdrop-blur-md border-white/20 rounded-lg p-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <StatsSection
@@ -392,6 +415,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         onMarkerClick={onMarkerClick}
         onMapNavigate={onMapNavigate}
         onLegendToggle={onLegendToggle}
+        onShowAll={onShowAll}
+        onHideAll={onHideAll}
         onToggleExpanded={onToggleExpanded}
         onResultClick={onResultClick}
         onPageChange={onPageChange}
@@ -420,12 +445,6 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         </div>
       )}
 
-      {/* Gods Cards Grid - only show when in gods focus */}
-      {currentFocus === 'gods' && (
-        <div className="mt-6">
-          <GodCardsGrid onFocusDeity={onFocusDeity} />
-        </div>
-      )}
     </div>
   );
 };

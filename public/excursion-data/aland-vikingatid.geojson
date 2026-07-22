@@ -1,0 +1,36 @@
+{
+ "type": "FeatureCollection",
+ "name": "aland-vikingatid",
+ "_kommentar": "Österleden + Kung Valdemars segelled (FÖRENKLADE stödpunkter, samma som river_systems i DB) + åländska nyckelplatser. Bartsgårda/Kvarnbo: ungefärliga lägen. WGS84 [lng,lat].",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": { "type": "Farled (Österleden)", "raa": "Österleden: Birka → Åland → Skärgårdshavet → Ladoga (vikingatid)" },
+   "geometry": { "type": "LineString", "coordinates": [
+     [17.542, 59.336], [19.07, 59.85], [19.95, 60.28], [22.43, 59.90], [26.00, 59.95], [30.30, 59.95], [32.297, 59.997]
+   ] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Farled (Valdemars segelled)", "raa": "Kung Valdemars segelled (ca 1300): Utlängan → Åland (Lemböte) → Reval" },
+   "geometry": { "type": "LineString", "coordinates": [
+     [15.78, 55.95], [16.36, 56.66], [17.87, 58.74], [19.07, 59.85], [19.93, 60.05], [20.91, 59.92], [22.40, 59.90], [22.97, 59.82], [24.75, 59.44]
+   ] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Plats", "raa": "Saltvik/Kvarnbo — centralbygd med rika höggravfält (ungefärligt läge)" },
+   "geometry": { "type": "Point", "coordinates": [19.95, 60.28] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Plats", "raa": "Bartsgårda, Finström — undersökta järnåldersgårdar (Helsingfors universitet; ungefärligt läge)" },
+   "geometry": { "type": "Point", "coordinates": [19.88, 60.22] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Plats", "raa": "Lemböte — Valdemarsledens Ålandshamn med medeltida sjöfararkapell" },
+   "geometry": { "type": "Point", "coordinates": [19.93, 60.05] }
+  }
+ ]
+}

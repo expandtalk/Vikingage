@@ -14,15 +14,16 @@ import { useCoins, parseCoinCoord, type Coin } from '@/hooks/useCoins';
 const CATEGORY_LABEL: Record<string, { sv: string; en: string }> = {
   nordic_royal: { sv: 'Nordisk kunglig myntning', en: 'Nordic royal coinage' },
   runmynt: { sv: 'Runmynt', en: 'Rune coins' },
+  seal: { sv: 'Sigill', en: 'Seals' },
   islamic: { sv: 'Islamiska mynt (dirhamer)', en: 'Islamic coins (dirhams)' },
   roman_solidus: { sv: 'Romerska solidi', en: 'Roman solidi' },
   hoard: { sv: 'Skatter', en: 'Hoards' },
   imitation: { sv: 'Imitationer', en: 'Imitations' },
 };
 const CATEGORY_COLOR: Record<string, string> = {
-  nordic_royal: '#f59e0b', runmynt: '#a855f7', islamic: '#14b8a6', roman_solidus: '#eab308', hoard: '#22c55e', imitation: '#0ea5e9',
+  nordic_royal: '#f59e0b', runmynt: '#a855f7', seal: '#b45309', islamic: '#14b8a6', roman_solidus: '#eab308', hoard: '#22c55e', imitation: '#0ea5e9',
 };
-const CATEGORY_ORDER = ['nordic_royal', 'runmynt', 'islamic', 'roman_solidus', 'hoard', 'imitation'];
+const CATEGORY_ORDER = ['nordic_royal', 'runmynt', 'seal', 'islamic', 'roman_solidus', 'hoard', 'imitation'];
 
 const CoinsMap: React.FC<{ coins: Coin[] }> = ({ coins }) => {
   const mapRef = useRef<L.Map | null>(null);
@@ -31,7 +32,7 @@ const CoinsMap: React.FC<{ coins: Coin[] }> = ({ coins }) => {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { center: [58, 16], zoom: 4, scrollWheelZoom: true });
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [58, 16], zoom: 4, scrollWheelZoom: true });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors', maxZoom: 19,
     }).addTo(map);
@@ -135,6 +136,15 @@ const Coins = () => {
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-2 text-sm">
+                        {c.image_url && (
+                          <img
+                            src={c.image_url}
+                            alt={c.name}
+                            loading="lazy"
+                            className="w-full h-40 object-contain rounded-md bg-muted/30 mb-1"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        )}
                         {period(c.period_start, c.period_end) && (
                           <div className="text-muted-foreground">{period(c.period_start, c.period_end)}</div>
                         )}

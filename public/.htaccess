@@ -1,5 +1,9 @@
 Options -MultiViews
 RewriteEngine On
+
+# /welcome var en dublett av startsidan — permanent redirect (SEO: en kanonisk URL)
+RewriteRule ^welcome/?$ / [R=301,L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.html [QSA,L]
 

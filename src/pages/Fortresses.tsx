@@ -13,8 +13,6 @@ import { useVikingFortresses } from '../hooks/useVikingFortresses';
 import { useVikingCities, getCategoryColor, getCategoryLabel } from '../hooks/useVikingCities';
 import { useSwedishHillforts } from '../hooks/useSwedishHillforts';
 import { FortressesCitiesMap } from '../components/fortresses/FortressesCitiesMap';
-import { bulkImportSwedishHillforts } from '../utils/swedishHillfortsBulkImport';
-import { bulkImportExtendedSwedishHillforts } from '../utils/swedishHillfortsBulkImportExtended';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Fortresses = () => {
@@ -65,9 +63,32 @@ const Fortresses = () => {
   const [selectedFortressType, setSelectedFortressType] = useState<string>('all');
   const [selectedCityCategory, setSelectedCityCategory] = useState<string>('all');
   const [selectedLandscape, setSelectedLandscape] = useState<string>('all');
-  const [isImporting, setIsImporting] = useState(false);
+  const [selectedFortressRegion, setSelectedFortressRegion] = useState<string>('all');
+  const [selectedCityRegion, setSelectedCityRegion] = useState<string>('all');
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [showHillforts, setShowHillforts] = useState(true);
-  
+  const [hillfortSort, setHillfortSort] = useState<'landscape' | 'age' | 'runestones'>('landscape');
+
+  // Grov åldersrank ur period-texten (odaterade sist). Neolitikum → medeltid.
+  const eraRank = (p?: string): number => {
+    const s = (p || '').toLowerCase();
+    if (!s) return 999999;
+    if (s.includes('neolit') || s.includes('bondesten') || s.includes('stenålder') || s.includes('f.kr')) return -2800;
+    if (s.includes('brons')) return -1000;
+    if (s.includes('folkvandring')) return 400;
+    if (s.includes('vendel')) return 550;
+    if (s.includes('vikinga')) return 800;
+    if (s.includes('medeltid')) return 1100;
+    if (s.includes('romersk') || s.includes('äldre järn') || /(före|omkring).*\b100\b/.test(s)) return 50;
+    if (s.includes('järn')) return 300;
+    return 999998;
+  };
+  const sortHillforts = (arr: typeof hillforts) => {
+    if (hillfortSort === 'age') return [...arr].sort((a, b) => eraRank(a.period) - eraRank(b.period) || a.name.localeCompare(b.name));
+    if (hillfortSort === 'runestones') return [...arr].sort((a, b) => (b.nearby_runestones ?? -1) - (a.nearby_runestones ?? -1) || a.name.localeCompare(b.name));
+    return arr; // 'landscape' = hookens ordning (landskap, namn)
+  };
+
   // Map state
   const [showFortresses, setShowFortresses] = useState(true);
   const [showCities, setShowCities] = useState(true);
@@ -93,13 +114,19 @@ const Fortresses = () => {
     { value: 'koping', label: L.kopings }
   ];
 
-  const filteredFortresses = selectedFortressType === 'all' 
-    ? fortresses 
-    : fortresses.filter(f => f.fortress_type === selectedFortressType);
+  const filteredFortresses = fortresses
+    .filter(f => selectedFortressType === 'all' || f.fortress_type === selectedFortressType)
+    .filter(f => selectedFortressRegion === 'all' || (f.region || f.country) === selectedFortressRegion);
 
-  const filteredCities = selectedCityCategory === 'all' 
-    ? (cities || [])
-    : (cities || []).filter(c => c.category === selectedCityCategory);
+  const filteredCities = (cities || [])
+    .filter(c => selectedCityCategory === 'all' || c.category === selectedCityCategory)
+    .filter(c => selectedCityRegion === 'all' || (c.region || c.country) === selectedCityRegion);
+
+  // Regioner för filterrader (fästningar/centra saknar svenska landskap → region ⇒ land som fallback).
+  const fortressRegions = Array.from(new Set(fortresses.map(f => f.region || f.country).filter(Boolean))).sort();
+  const cityRegions = Array.from(new Set((cities || []).map(c => c.region || c.country).filter(Boolean))).sort();
+
+  const toggleExpanded = (id: string) => setExpandedCard(prev => (prev === id ? null : id));
 
   const getFortressTypeLabel = (type: string) => {
     const typeInfo = fortressTypes.find(t => t.value === type);
@@ -265,45 +292,6 @@ const Fortresses = () => {
                     <div className="text-sm text-muted-foreground">{L.municipalities}</div>
                   </div>
                 </div>
-                
-                <div className="mt-4 flex gap-2">
-                  <Button 
-                    onClick={async () => {
-                      setIsImporting(true);
-                      try {
-                        const result = await bulkImportSwedishHillforts();
-                        console.log('Import result:', result);
-                      } catch (error) {
-                        console.error('Import error:', error);
-                      } finally {
-                        setIsImporting(false);
-                      }
-                    }}
-                    disabled={isImporting}
-                    variant="outline"
-                    size="sm"
-                  >
-                    {isImporting ? L.importing : L.importOlandSmaland}
-                  </Button>
-                  <Button 
-                    onClick={async () => {
-                      setIsImporting(true);
-                      try {
-                        const result = await bulkImportExtendedSwedishHillforts();
-                        console.log('Extended import result:', result);
-                      } catch (error) {
-                        console.error('Extended import error:', error);
-                      } finally {
-                        setIsImporting(false);
-                      }
-                    }}
-                    disabled={isImporting}
-                    variant="default"
-                    size="sm"
-                  >
-                    {isImporting ? L.importing : L.importNarkeUppland}
-                  </Button>
-                </div>
               </CardContent>
             </Card>
 
@@ -326,18 +314,37 @@ const Fortresses = () => {
               ))}
             </div>
 
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className="text-xs text-muted-foreground">{sv ? 'Sortera:' : 'Sort:'}</span>
+              {([['landscape', sv ? 'Landskap' : 'Landscape'], ['age', sv ? 'Ålder' : 'Age'], ['runestones', sv ? 'Runstenar i närheten' : 'Nearby runestones']] as const).map(([key, label]) => (
+                <Button key={key} variant={hillfortSort === key ? 'default' : 'outline'} size="sm" onClick={() => setHillfortSort(key)}>{label}</Button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(selectedLandscape === 'all' ? hillforts : hillforts.filter(h => h.landscape === selectedLandscape)).map((hillfort) => (
-                <Card key={hillfort.id} className="viking-card hover:bg-card/80 transition-colors animate-fade-in">
+              {sortHillforts(selectedLandscape === 'all' ? hillforts : hillforts.filter(h => h.landscape === selectedLandscape)).map((hillfort) => (
+                <Card
+                  key={hillfort.id}
+                  className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
+                    expandedCard === `hillfort-${hillfort.id}` ? 'ring-2 ring-gold' : ''
+                  }`}
+                  onClick={() => toggleExpanded(`hillfort-${hillfort.id}`)}
+                >
                   <CardHeader className="pb-3">
                     <CardTitle className="text-foreground text-lg flex items-center gap-2">
                       <Castle className="h-4 w-4" />
                       {hillfort.name || L.namelessHillfort}
                     </CardTitle>
                     <div className="flex gap-2 flex-wrap">
-                      <Badge variant="secondary" className="text-xs">
-                        {hillfort.landscape}
-                      </Badge>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setSelectedLandscape(hillfort.landscape); }}
+                        title={sv ? `Visa alla i ${hillfort.landscape}` : `Show all in ${hillfort.landscape}`}
+                      >
+                        <Badge variant="secondary" className="text-xs hover:bg-gold/30 transition-colors">
+                          {hillfort.landscape}
+                        </Badge>
+                      </button>
                       <Badge variant="outline" className="text-xs">
                         {hillfort.raa_number}
                       </Badge>
@@ -376,6 +383,18 @@ const Fortresses = () => {
                         {hillfort.period && (
                           <p className="text-xs text-muted-foreground mb-1">
                             <strong>{L.period}:</strong> {hillfort.period}
+                            {hillfort.dating_confidence && (
+                              <span
+                                className={`ml-2 px-1.5 py-0.5 rounded border text-[10px] align-middle ${
+                                  hillfort.dating_confidence === 'belagd' ? 'border-emerald-500 text-emerald-300'
+                                    : hillfort.dating_confidence === 'omtvistad' ? 'border-rose-500 text-rose-300'
+                                    : 'border-amber-500 text-amber-300'
+                                }`}
+                                title={hillfort.dating_basis || undefined}
+                              >
+                                {hillfort.dating_confidence}
+                              </span>
+                            )}
                           </p>
                         )}
                         {hillfort.cultural_significance && (
@@ -383,6 +402,38 @@ const Fortresses = () => {
                             <strong>{L.culturalSig}:</strong> {hillfort.cultural_significance}
                           </p>
                         )}
+                      </div>
+                    )}
+
+                    {expandedCard === `hillfort-${hillfort.id}` && (
+                      <div className="pt-2 border-t border-border space-y-2">
+                        {hillfort.dating_basis && (
+                          <p className="text-xs text-muted-foreground">
+                            <strong>{sv ? 'Dateringsgrund' : 'Dating basis'}:</strong> {hillfort.dating_basis}
+                            {hillfort.dating_source ? ` — ${hillfort.dating_source}` : ''}
+                          </p>
+                        )}
+                        {(hillfort.parish || hillfort.municipality) && (
+                          <p className="text-xs text-muted-foreground">
+                            <strong>{sv ? 'Socken' : 'Parish'}:</strong> {[hillfort.parish, hillfort.municipality, hillfort.landscape].filter(Boolean).join(' · ')}
+                          </p>
+                        )}
+                        {hillfort.nearby_runestones != null && (
+                          <p className="text-xs text-muted-foreground">
+                            <strong>{sv ? 'Runstenar inom 3 km' : 'Runestones within 3 km'}:</strong> {hillfort.nearby_runestones}
+                          </p>
+                        )}
+                        {hillfort.raa_number && (
+                          <p className="text-xs text-muted-foreground"><strong>RAÄ:</strong> {hillfort.raa_number}</p>
+                        )}
+                        <a
+                          href={`/explore?lat=${hillfort.coordinates.lat}&lng=${hillfort.coordinates.lng}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
+                        >
+                          <MapPin className="h-3 w-3" />
+                          {sv ? 'Utforska i kartan' : 'Explore on map'}
+                        </a>
                       </div>
                     )}
                   </CardContent>
@@ -458,19 +509,46 @@ const Fortresses = () => {
               ))}
             </div>
 
+            {/* Regionfilter — klick på en region visar bara dess befästningar. */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={selectedFortressRegion === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedFortressRegion('all')}
+                className="text-sm"
+              >
+                {L.allLandscapes}
+              </Button>
+              {fortressRegions.map((region) => (
+                <Button
+                  key={region}
+                  variant={selectedFortressRegion === region ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedFortressRegion(region)}
+                  className="text-sm"
+                >
+                  {region}
+                  <Badge variant="secondary" className="ml-2">
+                    {fortresses.filter(f => (f.region || f.country) === region).length}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredFortresses.map((fortress) => (
-                <Card 
-                  key={fortress.id} 
+                <Card
+                  key={fortress.id}
                   id={`fortress-${fortress.id}`}
                   className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
-                    highlightedLocation?.id === fortress.id && highlightedLocation?.type === 'fortress' 
+                    (highlightedLocation?.id === fortress.id && highlightedLocation?.type === 'fortress') ||
+                    expandedCard === `fortress-${fortress.id}`
                       ? 'ring-2 ring-gold'
                       : ''
                   }`}
                   onMouseEnter={() => handleCardHover(fortress.id, 'fortress')}
                   onMouseLeave={handleCardLeave}
-                  onClick={() => handleLocationClick(fortress, 'fortress')}
+                  onClick={() => toggleExpanded(`fortress-${fortress.id}`)}
                 >
                   <CardHeader className="pb-3">
                     <CardTitle className="text-foreground text-lg flex items-center gap-2">
@@ -501,9 +579,16 @@ const Fortresses = () => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" />
-                        <span>{fortress.country}{fortress.region && `, ${fortress.region}`}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setSelectedFortressRegion(fortress.region || fortress.country); }}
+                          className="hover:text-gold hover:underline transition-colors"
+                          title={sv ? 'Visa alla i regionen' : 'Show all in region'}
+                        >
+                          {fortress.country}{fortress.region && `, ${fortress.region}`}
+                        </button>
                       </div>
-                      
+
                       {fortress.construction_period && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="h-4 w-4" />
@@ -531,6 +616,30 @@ const Fortresses = () => {
                         <p className="text-xs text-muted-foreground">
                           <strong>{L.historicalSig}:</strong> {fortress.historical_significance}
                         </p>
+                      </div>
+                    )}
+
+                    {expandedCard === `fortress-${fortress.id}` && (
+                      <div className="pt-2 border-t border-border space-y-2">
+                        {(fortress.construction_start || fortress.construction_end) && (
+                          <p className="text-xs text-muted-foreground">
+                            <strong>{L.period}:</strong> {fortress.construction_start ?? '?'}–{fortress.construction_end ?? '?'}
+                          </p>
+                        )}
+                        {fortress.status && (
+                          <p className="text-xs text-muted-foreground"><strong>Status:</strong> {fortress.status}</p>
+                        )}
+                        <span className="block text-xs font-mono text-muted-foreground">
+                          {fortress.coordinates.lat.toFixed(5)}°N {fortress.coordinates.lng.toFixed(5)}°E
+                        </span>
+                        <a
+                          href={`/explore?lat=${fortress.coordinates.lat}&lng=${fortress.coordinates.lng}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
+                        >
+                          <MapPin className="h-3 w-3" />
+                          {sv ? 'Utforska i kartan' : 'Explore on map'}
+                        </a>
                       </div>
                     )}
                   </CardContent>
@@ -606,19 +715,46 @@ const Fortresses = () => {
               ))}
             </div>
 
+            {/* Regionfilter — klick på en region visar bara dess centra. */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={selectedCityRegion === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCityRegion('all')}
+                className="text-sm"
+              >
+                {L.allLandscapes}
+              </Button>
+              {cityRegions.map((region) => (
+                <Button
+                  key={region}
+                  variant={selectedCityRegion === region ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedCityRegion(region)}
+                  className="text-sm"
+                >
+                  {region}
+                  <Badge variant="secondary" className="ml-2">
+                    {(cities || []).filter(c => (c.region || c.country) === region).length}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCities.map((city) => (
-                <Card 
-                  key={city.id} 
+                <Card
+                  key={city.id}
                   id={`city-${city.id}`}
                   className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
-                    highlightedLocation?.id === city.id && highlightedLocation?.type === 'city' 
+                    (highlightedLocation?.id === city.id && highlightedLocation?.type === 'city') ||
+                    expandedCard === `city-${city.id}`
                       ? 'ring-2 ring-gold'
                       : ''
                   }`}
                   onMouseEnter={() => handleCardHover(city.id, 'city')}
                   onMouseLeave={handleCardLeave}
-                  onClick={() => handleLocationClick(city, 'city')}
+                  onClick={() => toggleExpanded(`city-${city.id}`)}
                 >
                   <CardHeader className="pb-3">
                     <CardTitle className="text-foreground text-lg flex items-center gap-2">
@@ -648,9 +784,16 @@ const Fortresses = () => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" />
-                        <span>{city.country}{city.region && `, ${city.region}`}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setSelectedCityRegion(city.region || city.country); }}
+                          className="hover:text-gold hover:underline transition-colors"
+                          title={sv ? 'Visa alla i regionen' : 'Show all in region'}
+                        >
+                          {city.country}{city.region && `, ${city.region}`}
+                        </button>
                       </div>
-                      
+
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
                         <span>{city.period_start} - {city.period_end}</span>
@@ -669,6 +812,22 @@ const Fortresses = () => {
                         <p className="text-xs text-muted-foreground">
                           <strong>{L.historicalSig}:</strong> {city.historical_significance}
                         </p>
+                      </div>
+                    )}
+
+                    {expandedCard === `city-${city.id}` && (
+                      <div className="pt-2 border-t border-border space-y-2">
+                        <span className="block text-xs font-mono text-muted-foreground">
+                          {city.coordinates.lat.toFixed(5)}°N {city.coordinates.lng.toFixed(5)}°E
+                        </span>
+                        <a
+                          href={`/explore?lat=${city.coordinates.lat}&lng=${city.coordinates.lng}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
+                        >
+                          <MapPin className="h-3 w-3" />
+                          {sv ? 'Utforska i kartan' : 'Explore on map'}
+                        </a>
                       </div>
                     )}
                   </CardContent>

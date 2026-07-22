@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ExplorerLayout } from './ExplorerLayout';
 import { ErrorDisplay } from './ErrorDisplay';
 import { useLayoutManager } from '@/hooks/useLayoutManager';
@@ -60,6 +60,8 @@ export const ExplorerMain: React.FC = () => {
     legendItems,
     mapInscriptions,
     handleLegendToggle,
+    handleShowAll,
+    handleHideAll,
     focusDeity,
     selectedTimePeriod,
     setSelectedTimePeriod,
@@ -119,13 +121,18 @@ export const ExplorerMain: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentFocus, toast, language]);
 
-  // IMPROVED: Enhanced Swedish location search with better city mappings
+  // Kart-centrering EN gång per NY sökfråga — inte vid varje dataomladdning.
+  // (Effekten körs om när inscriptions byter identitet, dvs. vid varje refetch;
+  // utan vakten recentrerade kartan + toastade den om och om igen = "hoppandet".)
+  const lastNavigatedQuery = useRef<string>('');
   useEffect(() => {
     if (hasActiveSearch && mapNavigate) {
       const query = (searchQuery || godNameSearch).toLowerCase().trim();
-      console.log(`🗺️ [ExplorerMain] Searching for "${query}". Enhanced location detection active.`);
+      if (query && query === lastNavigatedQuery.current) return; // redan centrerad för denna sökning
+      if (isLoading) return; // vänta på FÄRSKA resultat — annars centreras mot gammal lista
 
       if (query) {
+        lastNavigatedQuery.current = query;
         // EXPANDED: Comprehensive Swedish city mappings for better search
         const swedishCityMappings: { [key: string]: { lat: number; lng: number; zoom: number } } = {
           'kalmar': { lat: 56.6634, lng: 16.3567, zoom: 12 },
@@ -245,7 +252,7 @@ export const ExplorerMain: React.FC = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inscriptions, hasActiveSearch, mapNavigate, searchQuery, godNameSearch, toast, language]);
+  }, [inscriptions, isLoading, hasActiveSearch, mapNavigate, searchQuery, godNameSearch, toast, language]);
 
   if (connectionError) {
     return <ErrorDisplay onRetry={loadData} />;
@@ -282,6 +289,8 @@ export const ExplorerMain: React.FC = () => {
         onMarkerClick={handleMarkerClick}
         onMapNavigate={setMapNavigate}
         onLegendToggle={handleLegendToggle}
+        onShowAll={handleShowAll}
+        onHideAll={handleHideAll}
         onToggleExpanded={toggleExpanded}
         onResultClick={handleResultClick}
         onPageChange={setCurrentPage}

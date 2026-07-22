@@ -1,0 +1,4 @@
+-- Speglar MCP-applicerade ändringar 2026-07-20:
+--  * runestone_stats_v1() — aggregat för /statistics-hubben.
+--  * inscription_media SELECT öppnad för publik (var authenticated-only → foton
+--    osynliga för anonyma besökare). Skrivning förblir admin-only.

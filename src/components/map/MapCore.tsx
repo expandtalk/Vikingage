@@ -17,6 +17,7 @@ import { MapLegend } from "../MapLegend";
 import { VikingRoadsRenderer } from "./layers/VikingRoadsRenderer";
 import { TradeRoutesLayer } from "./layers/TradeRoutesLayer";
 import { PlaceNamesLayer } from "./layers/PlaceNamesLayer";
+import { PaleoShorelinesLayer } from "./layers/PaleoShorelinesLayer";
 import { useTradeRoutes } from "@/hooks/useTradeRoutes";
 import { InteractiveMapProps } from './types';
 import 'leaflet/dist/leaflet.css';
@@ -156,6 +157,14 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
           <PlaceNamesLayer
             map={map}
             enabledLegendItems={enabledLegendItems}
+            isVisible={isMapReady}
+          />
+
+          {/* Dåtida strandlinje (SGU strandförskjutningsmodell) */}
+          <PaleoShorelinesLayer
+            map={map}
+            enabledLegendItems={enabledLegendItems}
+            selectedTimePeriod={selectedTimePeriod}
             isVisible={isMapReady}
           />
 

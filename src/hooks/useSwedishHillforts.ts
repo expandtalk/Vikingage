@@ -18,6 +18,10 @@ export interface SwedishHillfort {
   description?: string;
   status: string;
   period?: string;
+  dating_basis?: string;
+  dating_confidence?: string;
+  dating_source?: string;
+  nearby_runestones?: number;
   cultural_significance?: string;
   source_reference?: string;
 }
@@ -62,19 +66,28 @@ export const useSwedishHillforts = (enabled: boolean = false) => {
       setError(null);
 
       try {
-        const { data, error: supabaseError } = await supabase
-          .from('swedish_hillforts')
-          .select('*')
-          .order('landscape', { ascending: true })
-          .order('name', { ascending: true });
-
-        if (supabaseError) {
-          console.error('Error fetching Swedish hillforts:', supabaseError);
-          setError('Failed to load Swedish hillforts');
-          return;
+        // Paginera förbi PostgREST:s 1000-radstak — vi har nu ~1235 fornborgar.
+        const pageSize = 1000;
+        let from = 0;
+        const allRows: any[] = [];
+        for (;;) {
+          const { data, error: supabaseError } = await supabase
+            .from('swedish_hillforts')
+            .select('*')
+            .order('landscape', { ascending: true })
+            .order('name', { ascending: true })
+            .range(from, from + pageSize - 1);
+          if (supabaseError) {
+            console.error('Error fetching Swedish hillforts:', supabaseError);
+            setError('Failed to load Swedish hillforts');
+            return;
+          }
+          allRows.push(...(data || []));
+          if (!data || data.length < pageSize) break;
+          from += pageSize;
         }
 
-        const processedHillforts = (data || []).map(hillfort => ({
+        const processedHillforts = allRows.map(hillfort => ({
           ...hillfort,
           coordinates: parseCoordinates(hillfort.coordinates)
         })).filter(hillfort => hillfort.coordinates !== null) as SwedishHillfort[];

@@ -42,6 +42,18 @@ export const Breadcrumbs: React.FC = () => {
       'genetic-events': 'Genetiska Händelser',
       'royal-chronicles': 'Kungakrönikor',
       fortresses: 'Borgar',
+      inscription: 'Runinskrift',
+      sources: 'Källor',
+      tema: 'Tema',
+      themes: 'Tema',
+      texter: 'Texter & källor',
+      texts: 'Texter & källor',
+      excursions: 'Utflykter',
+      coins: 'Mynt',
+      statistics: 'Statistik',
+      statistik: 'Statistik',
+      prices: 'Priser',
+      kungsnave: 'Kungsnäve',
       profile: 'Profil',
       admin: 'Admin',
       auth: 'Autentisering'
@@ -61,6 +73,17 @@ export const Breadcrumbs: React.FC = () => {
       'genetic-events': 'Genetic Events',
       'royal-chronicles': 'Royal Chronicles',
       fortresses: 'Fortresses',
+      inscription: 'Runic Inscription',
+      sources: 'Sources',
+      tema: 'Theme',
+      themes: 'Theme',
+      texter: 'Texts & sources',
+      texts: 'Texts & sources',
+      excursions: 'Excursions',
+      coins: 'Coins',
+      statistics: 'Statistics',
+      prices: 'Prices',
+      kungsnave: 'Kungsnäve',
       profile: 'Profile',
       admin: 'Admin',
       auth: 'Authentication'
@@ -94,7 +117,11 @@ export const Breadcrumbs: React.FC = () => {
             const prefix = pathnames[0] === 'sv' ? '/sv' : '';
             const routeTo = `${prefix}/${displayPathnames.slice(0, index + 1).join('/')}`;
             const isLast = index === displayPathnames.length - 1;
-            const displayName = routeNames[language][name] || name;
+            // Sista segmentet är ofta en id/signum (t.ex. "Ög%20136") — avkoda så
+            // det inte visas URL-kodat. Kända rutter översätts, annars avkodad text.
+            let decoded = name;
+            try { decoded = decodeURIComponent(name); } catch { /* behåll rå */ }
+            const displayName = routeNames[language][name] || decoded;
 
             return (
               <React.Fragment key={routeTo}>

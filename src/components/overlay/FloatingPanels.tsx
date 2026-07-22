@@ -2,10 +2,14 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Filter, X, ChevronDown, ChevronUp, Map } from 'lucide-react';
+import { X, ChevronDown, Map } from 'lucide-react';
 import { FilterPanel } from '../filters/FilterPanel';
-import { MapLegend } from '../MapLegend';
 import { DraggableLegend } from '../legend/DraggableLegend';
+import { ProximityControl } from './ProximityControl';
+import { CustomPointsControl } from './CustomPointsControl';
+import { EpochControl } from './EpochControl';
+import { ElementSpotlightControl } from './ElementSpotlightControl';
+import { RulerControl } from './RulerControl';
 import { LegendItem } from '@/types/common';
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -76,12 +80,25 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
 }) => {
   const { language } = useLanguage();
   const sv = language === 'sv';
+  // Är arts-lagret påslaget? (Sök rekursivt i legend-träden.)
+  const findEnabled = (items: LegendItem[] | undefined, id: string): boolean => {
+    for (const it of items ?? []) {
+      if (it.id === id) return !!it.enabled;
+      if (it.children && findEnabled(it.children, id)) return true;
+    }
+    return false;
+  };
+  const speciesOn = findEnabled(legendItems, 'species_introductions');
   return (
     <>
-      {/* Control Buttons */}
-      <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">
-        {/* Legend Toggle Button - NU FÖRST */}
-        {onToggleLegend && (
+      <ProximityControl />
+      <CustomPointsControl />
+      <EpochControl visible={speciesOn} />
+      <ElementSpotlightControl />
+      <RulerControl />
+      {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
+      {onToggleLegend && !showLegend && (
+        <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">
           <Button
             onClick={onToggleLegend}
             className="bg-slate-900/95 backdrop-blur-md border-slate-500 text-white hover:bg-slate-800/95 flex items-center gap-2 shadow-lg border-2"
@@ -89,96 +106,22 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
           >
             <Map className="h-4 w-4" />
             <span className="text-xs font-medium">{sv ? 'Teckenförklaring' : 'Legend'}</span>
-            {showLegend ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {activeFiltersCount > 0 && (
+              <Badge variant="secondary" className="text-xs bg-orange-600 text-white border-orange-500 font-bold">
+                {activeFiltersCount}
+              </Badge>
+            )}
+            <ChevronDown className="h-3 w-3" />
           </Button>
-        )}
-
-        {/* Filter Toggle Button - nu sekundär med bättre kontrast */}
-        <Button
-          onClick={onToggleFilters}
-          className="bg-slate-900/95 backdrop-blur-md border-slate-500 text-white hover:bg-slate-800/95 flex items-center gap-2 shadow-lg border-2"
-          size="sm"
-        >
-          <Filter className="h-4 w-4" />
-          <span className="text-xs font-medium">Filter</span>
-          {activeFiltersCount > 0 && (
-            <Badge variant="secondary" className="text-xs bg-orange-600 text-white border-orange-500 font-bold">
-              {activeFiltersCount}
-            </Badge>
-          )}
-          {showFilters ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-        </Button>
-      </div>
-
-      {/* Filter Panel */}
-      {showFilters && (
-        <div className="absolute top-20 left-4 z-40 w-[380px] max-h-[70vh] overflow-y-auto">
-          <div className="bg-slate-800/98 backdrop-blur-md border-slate-600/50 rounded-lg shadow-2xl p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-medium">Filtrera resultat</h3>
-              <Button
-                onClick={onToggleFilters}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-white hover:bg-slate-700/50"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <FilterPanel
-              selectedLandscape={selectedLandscape}
-              selectedCountry={selectedCountry}
-              selectedPeriod={selectedPeriod}
-              selectedStatus={selectedStatus}
-              selectedObjectType={selectedObjectType}
-              onLandscapeChange={onLandscapeChange}
-              onCountryChange={onCountryChange}
-              onPeriodChange={onPeriodChange}
-              onStatusChange={onStatusChange}
-              onObjectTypeChange={onObjectTypeChange}
-              onClearFilters={onClearFilters}
-              activeFiltersCount={activeFiltersCount}
-            />
-          </div>
         </div>
       )}
 
-      {/* Legacy Legend Panel (for backward compatibility) - FIXAD z-index för att inte täcka sökresultat */}
-      {showLegend && onLegendToggle && !legendVisible && (
-        <div className="absolute top-4 right-4 z-30 w-[320px] max-h-[70vh] overflow-hidden">
-          <div className="bg-slate-800/98 backdrop-blur-md border-slate-600/50 rounded-lg shadow-2xl">
-            <div className="flex items-center justify-between p-3 border-b border-slate-600/50">
-              <h3 className="text-white font-medium flex items-center gap-2">
-                <Map className="h-4 w-4" />
-                {sv ? 'Teckenförklaring' : 'Legend'}
-              </h3>
-              <Button
-                onClick={onToggleLegend}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-white hover:bg-slate-700/50"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="p-0">
-              <MapLegend
-                isVikingMode={isVikingMode}
-                legendItems={legendItems}
-                onToggleItem={onLegendToggle}
-                className="bg-transparent border-0"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Draggable Legend Panel */}
-      {legendVisible && onLegendToggle && onLegendMinimize && onLegendPositionChange && onLegendSizeChange && (
+      {/* Enda legenden: dragbar panel. Filtret ligger som en sektion INUTI legenden
+          (togglas av filter-ikonen i headern) — så det ligger parallellt med legenden
+          och ärver panelens ogenomskinliga bakgrund. */}
+      {showLegend && onLegendToggle && onToggleLegend && (
         <DraggableLegend
-          visible={legendVisible}
+          visible={showLegend}
           minimized={legendMinimized}
           position={legendPosition}
           size={legendSize}
@@ -186,11 +129,43 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
           legendItems={legendItems}
           onToggleItem={onLegendToggle}
           onClose={() => onToggleLegend()}
-          onMinimize={onLegendMinimize}
-          onPositionChange={onLegendPositionChange}
-          onSizeChange={onLegendSizeChange}
+          onMinimize={onLegendMinimize ?? (() => {})}
+          onPositionChange={onLegendPositionChange ?? (() => {})}
+          onSizeChange={onLegendSizeChange ?? (() => {})}
           onShowAll={onShowAll}
           onHideAll={onHideAll}
+          onOpenFilter={onToggleFilters}
+          filterActive={showFilters}
+          activeFiltersCount={activeFiltersCount}
+          filterSection={showFilters && (
+            <div className="bg-slate-900 border-b border-slate-600/60 p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-white font-medium text-sm">{sv ? 'Filtrera' : 'Filter'}</h3>
+                <Button
+                  onClick={onToggleFilters}
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-white hover:bg-slate-700/50"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <FilterPanel
+                selectedLandscape={selectedLandscape}
+                selectedCountry={selectedCountry}
+                selectedPeriod={selectedPeriod}
+                selectedStatus={selectedStatus}
+                selectedObjectType={selectedObjectType}
+                onLandscapeChange={onLandscapeChange}
+                onCountryChange={onCountryChange}
+                onPeriodChange={onPeriodChange}
+                onStatusChange={onStatusChange}
+                onObjectTypeChange={onObjectTypeChange}
+                onClearFilters={onClearFilters}
+                activeFiltersCount={activeFiltersCount}
+              />
+            </div>
+          )}
         />
       )}
     </>

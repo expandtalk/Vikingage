@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-export type FocusType = 'inscriptions' | 'coordinates' | 'carvers' | 'rivers' | 'fortresses' | 'gods' | 'hundreds' | 'parishes' | 'names' | 'folkGroups' | 'geneticEvents' | null;
+export type FocusType = 'inscriptions' | 'coordinates' | 'carvers' | 'rivers' | 'fortresses' | 'gods' | 'cultSites' | 'hundreds' | 'parishes' | 'names' | 'folkGroups' | 'geneticEvents' | null;
 
 export const useFocusManager = () => {
   const [searchParams, setSearchParams] = useSearchParams();

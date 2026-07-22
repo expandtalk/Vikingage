@@ -77,6 +77,13 @@ export const useMapLayers = ({
     });
     stakeBarrierMarkersRef.current = [];
 
+    // Koppla bort ev. zoom-handler för spärrar (satt i addStakeBarrierMarkers).
+    const barrierZoom = (map as any).__stakeBarrierZoom as (() => void) | undefined;
+    if (barrierZoom) {
+      map.off('zoomend', barrierZoom);
+      (map as any).__stakeBarrierZoom = null;
+    }
+
     // Add stake barriers if enabled and in correct time period
     const shouldShowStakeBarriers = selectedTimePeriod === 'viking_age' && 
                                    enabledLegendItems.stake_barriers !== false;

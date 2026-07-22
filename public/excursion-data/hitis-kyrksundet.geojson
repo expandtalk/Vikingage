@@ -1,0 +1,31 @@
+{
+ "type": "FeatureCollection",
+ "name": "hitis-kyrksundet",
+ "_kommentar": "Kyrksundet handelsplats + fyndplatsen för Finlands första runstensfragment (Stora Ängesön, UNGEFÄRLIGT läge) + ledernas passage. WGS84 [lng,lat].",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": { "type": "Farled (Österleden)", "raa": "Österleden genom Skärgårdshavet" },
+   "geometry": { "type": "LineString", "coordinates": [
+     [19.95, 60.28], [20.91, 59.92], [22.43, 59.90], [24.00, 59.90]
+   ] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Farled (Valdemars segelled)", "raa": "Valdemarsleden: Kökar → Jungfrusund → Hangö" },
+   "geometry": { "type": "LineString", "coordinates": [
+     [20.91, 59.92], [22.40, 59.90], [22.97, 59.82]
+   ] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Handelsplats", "raa": "Kyrksundet — vikingatida handelsplats (Jungfrusund i Valdemars itinerarium)" },
+   "geometry": { "type": "Point", "coordinates": [22.43, 59.90] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Fyndplats", "raa": "Stora Ängesön — runstensfragmentet FI NOR1998;14 upptaget ur sjöbottnen 1997 (ungefärligt läge; möjlig barlast)" },
+   "geometry": { "type": "Point", "coordinates": [22.52, 59.86] }
+  }
+ ]
+}

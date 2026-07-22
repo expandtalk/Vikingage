@@ -18,7 +18,7 @@ export const MapLegend: React.FC<MapLegendProps> = ({
   onHideAll
 }) => {
   const { t } = useLanguage();
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(['religious_places']);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['religious_places', 'heritage_sites']);
   
   const totalVisible = legendItems.filter(item => item.enabled).reduce((sum, item) => {
     let total = item.count;

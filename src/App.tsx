@@ -8,11 +8,11 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import Index from "./pages/Index";
+import { RequireRole } from "@/components/auth/RequireRole";
+import Welcome from "./pages/Welcome";
 
 // Route-level code splitting: each page becomes its own chunk, loaded on demand.
 // Keep the landing page (Index) eager so first paint has no extra round-trip.
-const Welcome = lazy(() => import("./pages/Welcome"));
 const Explore = lazy(() => import("./pages/Explore"));
 const Inscriptions = lazy(() => import("./pages/Inscriptions"));
 const Artefacts = lazy(() => import("./pages/Artefacts"));
@@ -27,6 +27,14 @@ const Excursions = lazy(() => import("./pages/Excursions"));
 const Coins = lazy(() => import("./pages/Coins"));
 const Kungstavla = lazy(() => import("./pages/Kungstavla"));
 const ExcursionDetail = lazy(() => import("./pages/ExcursionDetail"));
+const SourceDetail = lazy(() => import("./pages/SourceDetail"));
+const SourceLibrary = lazy(() => import("./pages/SourceLibrary"));
+const ThemePage = lazy(() => import("./pages/ThemePage"));
+const InscriptionPage = lazy(() => import("./pages/InscriptionPage"));
+const Statistics = lazy(() => import("./pages/Statistics"));
+const PlaceNames = lazy(() => import("./pages/PlaceNames"));
+const Ontology = lazy(() => import("./pages/Ontology"));
+const HistoricalEvents = lazy(() => import("./pages/HistoricalEvents"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -51,8 +59,11 @@ const App = () => (
               <Sonner />
               <Suspense fallback={<RouteFallback />}>
                 <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/welcome" element={<Welcome />} />
+                  {/* Startsidan renderas DIREKT på roten (tidigare Index → navigate('/welcome')
+                      + /welcome → / gav en oändlig redirect-loop). */}
+                  <Route path="/" element={<Welcome />} />
+                  {/* /welcome var en dublett av startsidan — 301 i .htaccess + client-redirect här */}
+                  <Route path="/welcome" element={<Navigate to="/" replace />} />
                   <Route path="/explore" element={<Explore />} />
 
                   {/* Dedicated pages */}
@@ -84,17 +95,40 @@ const App = () => (
                   <Route path="/sv/genetiska-handelser" element={<Navigate to="/explore?focus=geneticEvents" replace />} />
 
                   {/* Other routes */}
+                  <Route path="/place-names" element={<PlaceNames />} />
+                  <Route path="/sv/ortnamn" element={<PlaceNames />} />
+                  <Route path="/ontology" element={<Ontology />} />
+                  <Route path="/ontologi" element={<Ontology />} />
+                  <Route path="/historical-events" element={<HistoricalEvents />} />
+                  <Route path="/sv/historiska-handelser" element={<HistoricalEvents />} />
                   <Route path="/prices" element={<Prices />} />
                   <Route path="/excursions" element={<Excursions />} />
                   <Route path="/sv/utflykter" element={<Excursions />} />
                   <Route path="/excursions/:id" element={<ExcursionDetail />} />
+                  <Route path="/texts" element={<SourceLibrary />} />
+                  <Route path="/texter" element={<SourceLibrary />} />
+                  <Route path="/tema/:slug" element={<ThemePage />} />
+                  <Route path="/themes/:slug" element={<ThemePage />} />
+                  <Route path="/sources/text/:textId" element={<SourceDetail />} />
+                  <Route path="/sources/:id" element={<SourceDetail />} />
+                  <Route path="/inscription/:signum" element={<InscriptionPage />} />
+                  <Route path="/statistics" element={<Statistics />} />
+                  <Route path="/sv/statistik" element={<Statistics />} />
                   <Route path="/utflykter/:id" element={<ExcursionDetail />} />
                   <Route path="/coins" element={<Coins />} />
                   <Route path="/sv/mynt" element={<Coins />} />
-                  <Route path="/kungstavla" element={<Kungstavla />} />
-                  <Route path="/kings-board" element={<Kungstavla />} />
+                  <Route path="/kungsnave" element={<Kungstavla />} />
+                  <Route path="/kungstavla" element={<Navigate to="/kungsnave" replace />} />
+                  <Route path="/kings-board" element={<Navigate to="/kungsnave" replace />} />
                   <Route path="/auth" element={<Auth />} />
-                  <Route path="/admin" element={<Admin />} />
+                  <Route
+                    path="/admin"
+                    element={
+                      <RequireRole roles={['admin']}>
+                        <Admin />
+                      </RequireRole>
+                    }
+                  />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

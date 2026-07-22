@@ -59,6 +59,22 @@ export const KingDetailPanel: React.FC<KingDetailPanelProps> = ({ king, sourceMe
         </div>
       </CardHeader>
       <CardContent className="space-y-4 text-sm">
+        {king.image_url && (
+          <figure className="float-right ml-3 mb-2 w-32 sm:w-40">
+            <img
+              src={king.image_url}
+              alt={king.image_caption ?? king.name}
+              loading="lazy"
+              className="w-full rounded-md border border-amber-500/30 bg-slate-900/60 object-contain"
+            />
+            {(king.image_caption || king.image_credit) && (
+              <figcaption className="mt-1 text-[10px] leading-tight text-slate-400">
+                {king.image_caption}
+                {king.image_credit && <span className="block italic">{king.image_credit}</span>}
+              </figcaption>
+            )}
+          </figure>
+        )}
         {king.description && <p className="text-slate-200 leading-relaxed">{king.description}</p>}
 
         <div className="flex flex-wrap gap-2">

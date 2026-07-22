@@ -1,0 +1,20 @@
+-- Geokodning + Öland-berikning. Applicerad via MCP execute_sql; fil = proveniens.
+--
+-- 1. 17 gotländska kyrkor → christian_sites (site_type church, period medieval, province Gotland).
+--    Koordinater ur Wikidata (P625, CC0) via WDQS wikibase:around-fråga (center 18.48/57.47, r=95 km).
+--    Kyrkor: Bro, Akebäck, Viklau, Sproge, Gothem, Levide, Roma, Alskog, Hangvar, Stenkyrka,
+--    Buttle, Källunge, Lokrume, Vallstena, Väskinde, Kräklingbo, Sanda.
+-- 2. picture_stone_reuse (se 20260722320000): christian_site_id + lat/lng satt via join
+--    cs.name = parish||' kyrka'. 20 gotländska stenar länkade+koordinatsatta; Hørdum lämnas null.
+-- 3. Nytt mynt i coins: romersk denar präglad för kejsar Didius Julianus (193 e.Kr.), funnen
+--    2026 i Vedby borg, Öland — första utanför Gotland. Projektet "Kris, konflikt och klimat"
+--    (Stockholms universitet), nyhet 2026-07-02; num. id. Lennart Lind & Slava Kuleshov.
+--    coordinates = Vedby borgs punkt (16.99015, 57.21088).
+-- 4. swedish_hillforts: Vedby borg (Högby sn, RAÄ Högby 23:1) berikad — period folkvandringstid
+--    + kontext (mellan Vedbyträsk och Vedborme träsk; denar + agraffknapp). Fanns redan i DB
+--    med korrekt koordinat; vi har 21 Öland-taggade borgar (ringforts.com-projektet listar 20).
+-- 5. Korslänk: nytt tema 'Gotländska bildstenar' (slug gotlandska-bildstenar) länkar 35 gotländska
+--    runbildstenar (runic_inscriptions, object_type bildsten, G-signum) + 21 återanvändningsfall
+--    via theme_links-vyn → has_theme-kanter i relationship-grafen. Se [[kg-materialization-mechanism]].
+--
+-- (Fullständig SQL kördes via execute_sql; värden ovan är auktoritativa.)

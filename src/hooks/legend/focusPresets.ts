@@ -68,10 +68,24 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
         european_rivers: true, // Europeiska floder
         trade_routes: true, // Handelsrutter
         valdemar_route: true,
+        eriksgatan: true, // Kungavalets riksrunda ritas i farleds-/ruttvyn
+        land_routes: true,
         viking_cities: true, // Aktivera städer för handelskontexten
         stake_barriers: true // Aktivera Danvirke/Götavirke
       };
       
+    case 'eriksgatan':
+      console.log('👑 Eriksgata focus: den kungliga riksrundan + vägar/städer, inget brus');
+      return {
+        ...basePresets,
+        runic_inscriptions: false,
+        religious_places: false,
+        viking_fortresses: false,
+        eriksgatan: true,
+        land_routes: true,
+        viking_cities: true
+      };
+
     case 'fortresses':
       console.log('🏰 Fortresses focus: Only fortresses and runestones');
       return {
@@ -117,10 +131,19 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
       };
       
     case 'parishes':
-      console.log('⛪ Parishes focus: Only parishes and runestones');
+      console.log('⛪ Parishes focus: bara socknen — tänd kulturlager själv');
       return {
         ...basePresets,
-        parishes: true
+        parishes: true,
+        runic_inscriptions: false // tom utom socknen; kulturlagren tänds via legenden
+      };
+
+    case 'churches':
+      console.log('⛪ Churches focus: rikt kyrkolager (stift & bild) — zooma in för att se kyrkor');
+      return {
+        ...basePresets,
+        runic_inscriptions: false,
+        ecclesiastical_churches: true // rika kyrkolagret tänt; viewport-laddat vid zoom ≥8
       };
       
     case 'folkGroups':
@@ -135,8 +158,10 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
       return basePresets;
       
     case 'geneticEvents':
-      console.log('🧬 Genetic Events focus: Only runestones');
-      return basePresets;
+      // Genetik/djuptid: tänd arts- & händelselagret (aDNA-introduktioner + befolknings-/
+      // migrationshändelser) så deep-time-datat syns. Epok-väljaren står på "Alla" som default.
+      console.log('🧬 Genetic Events focus: arter & händelser (djuptid) + aDNA-platser');
+      return { ...basePresets, species_introductions: true, adna_sites: true };
       
     case 'inscriptions':
     default:

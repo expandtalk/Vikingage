@@ -8,13 +8,10 @@ import { AdminCarvers } from './admin/AdminCarvers';
 import { AdminCarverInscriptions } from './admin/AdminCarverInscriptions';
 import { AdminArtefactMappings } from './admin/AdminArtefactMappings';
 import { AdminVikingLocations } from './admin/AdminVikingLocations';
-import { AdminVikingRegions } from './admin/AdminVikingRegions';
 import { AdminRiverSystems } from './admin/AdminRiverSystems';
 import { AdminMapConfiguration } from './admin/AdminMapConfiguration';
-import { AdminGermanicGroups } from './admin/AdminGermanicGroups';
 import { AdminFolkGroups } from './admin/AdminFolkGroups';
 import { AdminEyeColors } from './admin/AdminEyeColors';
-import { AdminGeneticEvolution } from './admin/AdminGeneticEvolution';
 import { AdminAudioFiles } from './admin/AdminAudioFiles';
 import { DataImporter } from './DataImporter';
 import { PlaceParishLinksImportSection } from './import/PlaceParishLinksImportSection';
@@ -23,7 +20,7 @@ import { DanishParishesImportSection } from './import/DanishParishesImportSectio
 import { ReferenceUriImportSection } from './import/reference-uri/ReferenceUriImportSection';
 import { UrisImportSection } from './import/uris/UrisImportSection';
 import { TranslationsImportSection } from './import/translations/TranslationsImportSection';
-import { Database, MapPin, Languages, Users, Hammer, Package, Castle, Waves, Settings, Users2, Eye, Dna, Upload, Link, Link2, Puzzle, Globe2, Globe, Music } from 'lucide-react';
+import { Database, MapPin, Languages, Users, Hammer, Package, Castle, Waves, Settings, Users2, Eye, Upload, Link, Link2, Puzzle, Globe2, Globe, Music } from 'lucide-react';
 import { CoordinateImport } from './admin/CoordinateImport';
 import { SRDIntegration } from './admin/SRDIntegration';
 import { GeocodingManager } from './admin/GeocodingManager';
@@ -58,7 +55,7 @@ export const AdminDataManagement: React.FC = () => {
 
               {/* Main Admin Layers */}
               <div className="bg-slate-800/30 rounded-lg p-2">
-                <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12 bg-slate-800/50 gap-1">
+                <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 bg-slate-800/50 gap-1">
                   <TabsTrigger value="locations" className="text-white data-[state=active]:bg-green-600">
                     <MapPin className="h-4 w-4 mr-1" />
                     <span className="hidden sm:inline">Platser</span>
@@ -83,10 +80,6 @@ export const AdminDataManagement: React.FC = () => {
                     <Castle className="h-4 w-4 mr-1" />
                     <span className="hidden sm:inline">Vikingastäder</span>
                   </TabsTrigger>
-                  <TabsTrigger value="viking-regions" className="text-white data-[state=active]:bg-pink-600">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">Regioner</span>
-                  </TabsTrigger>
                   <TabsTrigger value="river-systems" className="text-white data-[state=active]:bg-cyan-600">
                     <Waves className="h-4 w-4 mr-1" />
                     <span className="hidden sm:inline">Flodsystem</span>
@@ -102,10 +95,6 @@ export const AdminDataManagement: React.FC = () => {
                   <TabsTrigger value="eye-colors" className="text-white data-[state=active]:bg-violet-600">
                     <Eye className="h-4 w-4 mr-1" />
                     <span className="hidden sm:inline">Ögonfärger</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="genetic-evolution" className="text-white data-[state=active]:bg-rose-600">
-                    <Dna className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">Genetik</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -202,10 +191,6 @@ export const AdminDataManagement: React.FC = () => {
                 <AdminVikingLocations />
               </TabsContent>
               
-              <TabsContent value="viking-regions" className="mt-6">
-                <AdminVikingRegions />
-              </TabsContent>
-              
               <TabsContent value="river-systems" className="mt-6">
                 <AdminRiverSystems />
               </TabsContent>
@@ -220,10 +205,6 @@ export const AdminDataManagement: React.FC = () => {
 
               <TabsContent value="eye-colors" className="mt-6">
                 <AdminEyeColors />
-              </TabsContent>
-
-              <TabsContent value="genetic-evolution" className="mt-6">
-                <AdminGeneticEvolution />
               </TabsContent>
 
               <TabsContent value="audio-files" className="mt-6">

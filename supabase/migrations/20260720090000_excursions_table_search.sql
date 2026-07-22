@@ -1,0 +1,15 @@
+-- P1: Utflykter → DB (option B, phase 1). 2026-07-20.
+--  * Ny tabell public.excursions (id-slug, name, region, grp, period, coordinates,
+--    signum, description_sv/en). RLS: publik läsning, admin skriv. Seedad från
+--    src/data/excursions.ts (75 rader) via engångs-edge-function seed-excursions.
+--  * rebuild_search_document indexerar nu 'excursion' (label=namn, signum=slug för
+--    deep-link /excursions/:slug). Fornsalen, Ales stenar, Rösaring m.fl. blir
+--    sökbara i det federerade söket.
+-- OBS phase 1: UI:t läser fortfarande TS (rika fält: monumentTypes/photoDir/
+-- relatedKings). Phase 2 = UI läser DB. TS är sanningskälla tills dess; kör
+-- seed-excursions igen när TS ändras.
+--
+-- Dessutom (samma dag): 38 falska Commons-bilder raderade ur inscription_media
+-- (ubåtar U-530/U-96/U-455 m.fl., Messier M13, Suzuki DR350, PSVR2, kartor) —
+-- signum-matchning på Commons kolliderar med fordon/kataloger; kräver runstens-
+-- nyckelord i filnamnet.

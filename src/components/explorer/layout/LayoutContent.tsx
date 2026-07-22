@@ -33,6 +33,8 @@ interface LayoutContentProps {
   onMarkerClick: (inscription: any) => void;
   onMapNavigate: (navFunction: (lat: number, lng: number, zoom: number) => void) => void;
   onLegendToggle: (id: string) => void;
+  onShowAll?: () => void;
+  onHideAll?: () => void;
   onToggleExpanded: (id: string) => void;
   onResultClick: (inscription: any) => void;
   onPageChange: (page: number) => void;
@@ -77,6 +79,8 @@ export const LayoutContent: React.FC<LayoutContentProps> = ({
   onMarkerClick,
   onMapNavigate,
   onLegendToggle,
+  onShowAll,
+  onHideAll,
   onToggleExpanded,
   onResultClick,
   onPageChange,
@@ -91,12 +95,12 @@ export const LayoutContent: React.FC<LayoutContentProps> = ({
   selectedTimePeriod = 'all',
   onInscriptionUpdate
 }) => {
-  const [isLegendMinimized, setIsLegendMinimized] = React.useState(false);
-  const [legendPosition, setLegendPosition] = React.useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = React.useState(false);
+  const [legendMinimized, setLegendMinimized] = React.useState(false);
+  const [legendPosition, setLegendPosition] = React.useState({ x: 880, y: 60 });
+  const [legendSize, setLegendSize] = React.useState({ width: 340, height: 520 });
   // Använd props för legend state, med fallback till lokal state
   const showLegend = showLegendProp ?? false;
-  const handleToggleLegend = onToggleLegendProp ?? (() => {});;
+  const handleToggleLegend = onToggleLegendProp ?? (() => {});
 
   return (
     <div className="flex gap-6 relative">
@@ -141,6 +145,15 @@ export const LayoutContent: React.FC<LayoutContentProps> = ({
         isVikingMode={false}
         legendItems={legendItems}
         onLegendToggle={onLegendToggle}
+        onShowAll={onShowAll}
+        onHideAll={onHideAll}
+        // Draggable legend state
+        legendMinimized={legendMinimized}
+        legendPosition={legendPosition}
+        legendSize={legendSize}
+        onLegendMinimize={() => setLegendMinimized((v) => !v)}
+        onLegendPositionChange={setLegendPosition}
+        onLegendSizeChange={setLegendSize}
       />
 
       {/* Search Results Section - Takes remaining space - FIXAD z-index för att inte täckas av legend */}

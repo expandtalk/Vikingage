@@ -1,72 +1,139 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Compass, Calendar, Sparkles, Landmark, ExternalLink } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { MapPin, Compass, Calendar, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EXCURSIONS, EXCURSION_GROUPS } from '@/data/excursions';
 import { ExcursionsMap } from '@/components/excursions/ExcursionsMap';
-import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
-import { ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFinds';
-import { nearestWithin } from '@/utils/geoDistance';
-
-// Radie (km) och antal för "relaterat i närheten" per utflykt.
-const RADIUS_KM = 40;
-const MAX_NEARBY = 5;
-
-const PLACE_TYPE_LABEL: Record<string, { sv: string; en: string }> = {
-  temple: { sv: 'tempel', en: 'temple' },
-  sacred_grove: { sv: 'offerlund', en: 'sacred grove' },
-  offering_spring: { sv: 'offerkälla', en: 'offering spring' },
-  royal_center: { sv: 'kungsgård', en: 'royal centre' },
-  cult_site: { sv: 'kultplats', en: 'cult site' },
-  rock_carving: { sv: 'hällristning', en: 'rock carving' },
-  archbishop_seat: { sv: 'ärkebiskopssäte', en: 'archbishop seat' },
-  bishop_seat: { sv: 'biskopssäte', en: 'bishop seat' },
-  monastery: { sv: 'kloster', en: 'monastery' },
-  mission_site: { sv: 'missionsplats', en: 'mission site' },
-  franciscan: { sv: 'franciskankloster', en: 'Franciscan' },
-  dominican: { sv: 'dominikankloster', en: 'Dominican' },
-  cistercian: { sv: 'cistercienskloster', en: 'Cistercian' },
-  birgittine: { sv: 'birgittinkloster', en: 'Birgittine' },
-  carmelite: { sv: 'karmelitkloster', en: 'Carmelite' },
-  augustinian: { sv: 'augustinkloster', en: 'Augustinian' },
-};
-
-const FIND_TYPE_LABEL: Record<string, { sv: string; en: string }> = {
-  settlement: { sv: 'boplats', en: 'settlement' },
-  burial: { sv: 'grav', en: 'burial' },
-  artifacts: { sv: 'föremål', en: 'artefacts' },
-  human_remains: { sv: 'skelett', en: 'human remains' },
-  weapons: { sv: 'vapen', en: 'weapons' },
-  boats: { sv: 'båt', en: 'boat' },
-  cave: { sv: 'grotta', en: 'cave' },
-  workshop: { sv: 'verkstad', en: 'workshop' },
-  trade: { sv: 'handel', en: 'trade' },
-  ritual: { sv: 'ritual', en: 'ritual' },
-  city: { sv: 'stad', en: 'city' },
-  boat_graves: { sv: 'båtgravar', en: 'boat graves' },
-  royal_burial: { sv: 'kungagrav', en: 'royal burial' },
-  metalwork: { sv: 'metallarbete', en: 'metalwork' },
-  trading_post: { sv: 'handelsplats', en: 'trading post' },
-  trading_city: { sv: 'handelsstad', en: 'trading city' },
-  raid: { sv: 'räd', en: 'raid' },
-};
+import { excerptText } from '@/components/excursions/ExcursionProse';
 
 const Excursions = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
 
+  // Gruppera per region/tema; okända grupper hamnar sist under "Övrigt".
+  // Stabil `key` (gruppnamn eller 'ungrouped') så accordion-läget överlever språkbyte.
+  const sections = useMemo(() => {
+    const groupsInData = Array.from(
+      new Set(EXCURSIONS.map((e) => e.group).filter(Boolean) as string[]),
+    );
+    const orderedGroups = [
+      ...EXCURSION_GROUPS.filter((g) => groupsInData.includes(g)),
+      ...groupsInData.filter((g) => !EXCURSION_GROUPS.includes(g)),
+    ];
+    const ungrouped = EXCURSIONS.filter((e) => !e.group);
+    return [
+      ...orderedGroups.map((g) => ({ key: g, title: g, items: EXCURSIONS.filter((e) => e.group === g) })),
+      ...(ungrouped.length ? [{ key: 'ungrouped', title: sv ? 'Övrigt' : 'Other', items: ungrouped }] : []),
+    ];
+  }, [sv]);
+
+  // Kondenserad som standard: bara första regionen öppen. Kartklick fäller ut rätt region.
+  const [openSections, setOpenSections] = useState<string[]>(() =>
+    sections.length ? [sections[0].key] : [],
+  );
+
   const handleSelect = useCallback((id: string) => {
-    const el = document.getElementById(`exc-${id}`);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el?.classList.add('ring-2', 'ring-gold');
-    window.setTimeout(() => el?.classList.remove('ring-2', 'ring-gold'), 1600);
+    const exc = EXCURSIONS.find((e) => e.id === id);
+    const key = exc?.group ?? 'ungrouped';
+    setOpenSections((prev) => (prev.includes(key) ? prev : [...prev, key]));
+    // Vänta tills accordion-innehållet renderats innan vi scrollar/markerar.
+    window.setTimeout(() => {
+      const el = document.getElementById(`exc-${id}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.classList.add('ring-2', 'ring-gold');
+      window.setTimeout(() => el?.classList.remove('ring-2', 'ring-gold'), 1600);
+    }, 120);
   }, []);
+
+  const renderCard = (e: (typeof EXCURSIONS)[number]) => {
+    const exploreUrl = `/explore?lat=${e.coords.lat}&lng=${e.coords.lng}`;
+
+    return (
+      <Card
+        id={`exc-${e.id}`}
+        key={e.id}
+        className="viking-card hover:bg-card/80 transition-all scroll-mt-24 overflow-hidden group"
+      >
+        {/* Thumbnail med rubriken i vit text ovanpå. Mörk gradient-scrim garanterar
+            WCAG-läsbarhet oavsett foto. Bildlösa mål får en deterministisk platta. */}
+        <Link to={`/excursions/${e.id}`} className="block relative h-44 w-full overflow-hidden">
+          {e.photoDir ? (
+            <img
+              src={`/excursion-photos/${e.photoDir}/${e.thumbFile ?? 'thumb.jpg'}`}
+              alt={e.name}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
+              <Compass className="h-10 w-10 text-slate-500/70" />
+            </div>
+          )}
+          {/* Scrim: mörkare nedtill för kontrast bakom titeln */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-3">
+            <h3 className="text-white font-bold text-lg leading-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
+              {e.name}
+            </h3>
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              <Badge variant="secondary" className="text-[10px] bg-black/50 text-white border-white/20 backdrop-blur-sm">
+                {e.region}
+              </Badge>
+              <Badge variant="secondary" className="text-[10px] bg-black/50 text-white border-white/20 backdrop-blur-sm flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {e.period}
+              </Badge>
+            </div>
+          </div>
+          {e.thumbCredit && (
+            <span className="absolute top-1 right-2 text-[9px] text-white/50 max-w-[60%] truncate text-right">
+              {sv ? 'Foto' : 'Photo'}: {e.thumbCredit}
+            </span>
+          )}
+        </Link>
+        <CardContent className="space-y-3 pt-3">
+          {/* Teaser — markdown strippad; hela texten + närhetslistor bor på detaljsidan. */}
+          <p className="text-sm text-muted-foreground line-clamp-2">{excerptText(sv ? e.sv : e.en)}</p>
+
+          <div className="flex flex-wrap gap-3 pt-1">
+            <Link
+              to={`/excursions/${e.id}`}
+              className="inline-flex items-center gap-1 text-xs text-gold hover:underline font-medium"
+            >
+              <MapPin className="h-3 w-3" />
+              {e.monumentTypes?.length
+                ? (sv ? 'Detaljsida & gravtyper' : 'Details & grave types')
+                : (sv ? 'Detaljsida' : 'Details')}
+            </Link>
+            <a
+              href={exploreUrl}
+              className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
+            >
+              <Compass className="h-3 w-3" />
+              {sv ? 'Utforska i kartan' : 'Explore on map'}
+            </a>
+            <a
+              href={`https://www.openstreetmap.org/?mlat=${e.coords.lat}&mlon=${e.coords.lng}#map=13/${e.coords.lat}/${e.coords.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" />
+              {sv ? 'Öppna i OpenStreetMap' : 'Open in OpenStreetMap'}
+            </a>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="min-h-screen viking-bg">
@@ -87,8 +154,8 @@ const Excursions = () => {
           </h1>
           <p className="text-muted-foreground text-lg">
             {sv
-              ? 'Platser att besöka på riktigt — heliga åsar, handelsstäder och fornborgar från vikingatiden och äldre. Klicka en markör på kartan för att hoppa till platsen.'
-              : 'Places to visit in real life — sacred eskers, trading towns and hillforts from the Viking Age and earlier. Click a marker on the map to jump to a place.'}
+              ? 'Platser att besöka på riktigt — heliga åsar, handelsstäder och fornborgar från vikingatiden och äldre. Klicka en markör på kartan eller fäll ut en region nedan.'
+              : 'Places to visit in real life — sacred eskers, trading towns and hillforts from the Viking Age and earlier. Click a marker on the map or expand a region below.'}
           </p>
         </div>
 
@@ -111,151 +178,34 @@ const Excursions = () => {
           </div>
         </div>
 
-        {(() => {
-          // Gruppera per region/tema; okända grupper hamnar sist under "Övrigt".
-          const groupsInData = Array.from(
-            new Set(EXCURSIONS.map((e) => e.group).filter(Boolean) as string[]),
-          );
-          const orderedGroups = [
-            ...EXCURSION_GROUPS.filter((g) => groupsInData.includes(g)),
-            ...groupsInData.filter((g) => !EXCURSION_GROUPS.includes(g)),
-          ];
-          const ungrouped = EXCURSIONS.filter((e) => !e.group);
-          const sections: Array<{ title: string | null; items: typeof EXCURSIONS }> = [
-            ...orderedGroups.map((g) => ({ title: g, items: EXCURSIONS.filter((e) => e.group === g) })),
-            ...(ungrouped.length ? [{ title: sv ? 'Övrigt' : 'Other', items: ungrouped }] : []),
-          ];
-
-          const renderCard = (e: (typeof EXCURSIONS)[number]) => {
-            const nearbyPlaces = nearestWithin(
-              e.coords,
-              RELIGIOUS_PLACES,
-              (p) => p.coordinates,
-              RADIUS_KM,
-              MAX_NEARBY,
-            );
-            const nearbyFinds = nearestWithin(
-              e.coords,
-              ARCHAEOLOGICAL_FINDS,
-              (f) => ({ lat: f.lat, lng: f.lng }),
-              RADIUS_KM,
-              MAX_NEARBY,
-            );
-            const exploreUrl = `/explore?lat=${e.coords.lat}&lng=${e.coords.lng}`;
-
-            return (
-              <Card
-                id={`exc-${e.id}`}
-                key={e.id}
-                className="viking-card hover:bg-card/80 transition-all scroll-mt-24"
-              >
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-foreground text-lg flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-gold" />
-                    {e.name}
-                  </CardTitle>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary" className="text-xs">{e.region}</Badge>
-                    <Badge variant="outline" className="text-xs flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />{e.period}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-muted-foreground">{sv ? e.sv : e.en}</p>
-
-                  {nearbyPlaces.length > 0 && (
-                    <div>
-                      <p className="text-xs font-semibold text-foreground/80 flex items-center gap-1.5 mb-1">
-                        <Sparkles className="h-3.5 w-3.5 text-blue-400" />
-                        {sv ? 'Kultplatser & kyrkor i närheten' : 'Cult sites & churches nearby'}
-                      </p>
-                      <ul className="space-y-0.5">
-                        {nearbyPlaces.map(({ item, km }) => (
-                          <li key={item.id} className="text-xs text-muted-foreground flex justify-between gap-2">
-                            <span className="truncate">
-                              {item.name}
-                              <span className="text-muted-foreground/60">
-                                {' · '}
-                                {(PLACE_TYPE_LABEL[item.type]?.[sv ? 'sv' : 'en']) ?? item.type}
-                              </span>
-                            </span>
-                            <span className="shrink-0 tabular-nums">{km.toFixed(0)} km</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {nearbyFinds.length > 0 && (
-                    <div>
-                      <p className="text-xs font-semibold text-foreground/80 flex items-center gap-1.5 mb-1">
-                        <Landmark className="h-3.5 w-3.5 text-amber-500" />
-                        {sv ? 'Arkeologiska fynd i närheten' : 'Archaeological finds nearby'}
-                      </p>
-                      <ul className="space-y-0.5">
-                        {nearbyFinds.map(({ item, km }) => (
-                          <li key={item.id} className="text-xs text-muted-foreground flex justify-between gap-2">
-                            <span className="truncate">
-                              {sv ? item.name : item.nameEn}
-                              <span className="text-muted-foreground/60">
-                                {' · '}
-                                {(FIND_TYPE_LABEL[item.findType]?.[sv ? 'sv' : 'en']) ?? item.findType}
-                              </span>
-                            </span>
-                            <span className="shrink-0 tabular-nums">{km.toFixed(0)} km</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className="flex flex-wrap gap-3 pt-1">
-                    <Link
-                      to={`/excursions/${e.id}`}
-                      className="inline-flex items-center gap-1 text-xs text-gold hover:underline font-medium"
-                    >
-                      <MapPin className="h-3 w-3" />
-                      {e.monumentTypes?.length
-                        ? (sv ? 'Detaljsida & gravtyper' : 'Details & grave types')
-                        : (sv ? 'Detaljsida' : 'Details')}
-                    </Link>
-                    <a
-                      href={exploreUrl}
-                      className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
-                    >
-                      <Compass className="h-3 w-3" />
-                      {sv ? 'Utforska i kartan' : 'Explore on map'}
-                    </a>
-                    <a
-                      href={`https://www.openstreetmap.org/?mlat=${e.coords.lat}&mlon=${e.coords.lng}#map=13/${e.coords.lat}/${e.coords.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      {sv ? 'Öppna i OpenStreetMap' : 'Open in OpenStreetMap'}
-                    </a>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          };
-
-          return (
-            <div className="space-y-10 mt-8">
-              {sections.map((section) => (
-                <section key={section.title}>
-                  <h2 className="text-2xl font-bold text-foreground mb-1">{section.title}</h2>
-                  <div className="h-0.5 w-16 bg-accent/60 rounded mb-5" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {section.items.map(renderCard)}
-                  </div>
-                </section>
-              ))}
-            </div>
-          );
-        })()}
+        <Accordion
+          type="multiple"
+          value={openSections}
+          onValueChange={setOpenSections}
+          className="space-y-3 mt-8"
+        >
+          {sections.map((section) => (
+            <AccordionItem
+              key={section.key}
+              value={section.key}
+              className="border border-slate-700/40 rounded-lg bg-slate-800/40 overflow-hidden"
+            >
+              <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-slate-700/30">
+                <span className="flex items-center gap-3 text-left">
+                  <span className="text-xl font-bold text-foreground">{section.title}</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {section.items.length} {sv ? 'platser' : 'places'}
+                  </Badge>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-1">
+                  {section.items.map(renderCard)}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </main>
       <Footer />
     </div>

@@ -8,8 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Search } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { addRunicInscriptionMarkers } from '@/hooks/map/useRunicInscriptionMarkers';
+import { useParishGovernance } from '@/hooks/useParishGovernance';
 
 type RegionMode = 'hundreds' | 'parishes';
+
+const ROLE_LABEL: Record<string, string> = {
+  archbishop: 'ärkebiskop', bishop: 'biskop', parish_priest: 'kyrkoherde',
+  abbot: 'abbot', abbess: 'abbedissa', prior: 'prior', dean: 'dekan', provost: 'prost',
+};
 
 interface RegionFindsViewProps {
   /** Hela den laddade inskriftsuppsättningen (med socken/harad + coordinates). */
@@ -146,6 +152,24 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
   const [selected, setSelected] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'name' | 'count' | 'country'>('name');
 
+  // Socken-styrpanel: kyrkor + stiftshistorik + ledarskap (bara i parishes-läget).
+  const governance = useParishGovernance(mode === 'parishes' ? selected : null);
+
+  // Deep-link: /explore?focus=parishes&region=Runsten förväljer socknen/häradet.
+  // (Globalsökets socken-träffar länkar hit — textsök på t.ex. "Runsten" är fel
+  // verktyg för ett ortnamn som också är ett vanligt ord.)
+  const appliedRegionParam = useRef(false);
+  useEffect(() => {
+    if (appliedRegionParam.current || regions.length === 0) return;
+    const param = new URLSearchParams(window.location.search).get('region')?.trim();
+    if (!param) { appliedRegionParam.current = true; return; }
+    const match = regions.find((r) => r.name.toLowerCase() === param.toLowerCase())
+      ?? regions.find((r) => r.name.toLowerCase().startsWith(param.toLowerCase()));
+    if (match) { setSelected(match.name); setQuery(match.name); }
+    else setQuery(param);
+    appliedRegionParam.current = true;
+  }, [regions]);
+
   const filteredRegions = useMemo(() => {
     const q = query.trim().toLowerCase();
     const base = q
@@ -189,7 +213,7 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { center: [59.5, 16.5], zoom: 5, scrollWheelZoom: true });
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [59.5, 16.5], zoom: 5, scrollWheelZoom: true });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 18,
@@ -317,6 +341,78 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
             <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-white/10" />
           </div>
         </div>
+
+        {mode === 'parishes' && selected && (
+          <div className="mt-4 border-t border-white/10 pt-4">
+            <h3 className="text-white font-semibold mb-3">⛪ {selected} — {sv ? 'kyrkor & stift' : 'churches & diocese'}</h3>
+            {governance.loading ? (
+              <p className="text-slate-400 text-sm">{sv ? 'Laddar…' : 'Loading…'}</p>
+            ) : governance.data ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                {/* Kyrkor i socknen */}
+                <div>
+                  <div className="text-amber-200 text-xs font-semibold mb-1">{sv ? 'Kyrkor' : 'Churches'} ({governance.data.churches.length})</div>
+                  {governance.data.churches.length === 0 ? (
+                    <p className="text-slate-400 text-xs">{sv ? 'Inga kopplade kyrkor än.' : 'No linked churches yet.'}</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {governance.data.churches.map((k, i) => (
+                        <li key={i} className="bg-white/5 rounded p-2">
+                          {k.image_url && (
+                            <img src={`${k.image_url}?width=240`} alt={k.name} loading="lazy"
+                              className="w-full h-24 object-cover rounded mb-1"
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                          )}
+                          <div className="text-white">{k.name}{k.status === 'ruin' ? <span className="text-slate-400"> · ruin</span> : null}</div>
+                          <div className="text-slate-400 text-xs">
+                            {k.built_from ? `${sv ? 'Byggår' : 'Built'} ${k.built_from}` : (k.dating_class ?? '')}
+                            {k.diocese ? ` · ${k.diocese}` : ''}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                {/* Stiftshistorik */}
+                <div>
+                  <div className="text-amber-200 text-xs font-semibold mb-1">{sv ? 'Stift över tid' : 'Diocese over time'}</div>
+                  {governance.data.history.length === 0 ? (
+                    <p className="text-slate-400 text-xs">—</p>
+                  ) : (
+                    <ul className="space-y-1">
+                      {governance.data.history.map((h, i) => (
+                        <li key={i} className="text-slate-300 text-xs">
+                          <span className="text-white">{h.from_year}{h.to_year ? `–${h.to_year}` : '–'}</span> {h.diocese}
+                          {h.note ? <div className="text-slate-500">{h.note}</div> : null}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                {/* Stiftets ledare */}
+                <div>
+                  <div className="text-amber-200 text-xs font-semibold mb-1">{sv ? 'Stiftets ledare' : 'Diocese leaders'} ({governance.data.leadership.length})</div>
+                  {governance.data.leadership.length === 0 ? (
+                    <p className="text-slate-400 text-xs">—</p>
+                  ) : (
+                    <ScrollArea className="h-48 pr-2">
+                      <ul className="space-y-0.5">
+                        {governance.data.leadership.map((l, i) => (
+                          <li key={i} className="text-slate-300 text-xs">
+                            <span className="text-slate-500">{l.from_year ?? '?'}{l.to_year ? `–${l.to_year}` : (l.from_year ? '–' : '')}</span> {l.person_name}
+                            <span className="text-slate-500"> ({ROLE_LABEL[l.role] ?? l.role})</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </ScrollArea>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-slate-400 text-sm">{sv ? 'Ingen data.' : 'No data.'}</p>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
