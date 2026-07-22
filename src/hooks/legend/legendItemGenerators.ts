@@ -4,6 +4,7 @@ import { getGroupsByPeriod } from '@/utils/germanicTimeline/timelineData';
 import { getFindsInPeriod, ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFinds';
 import { getDeityPlaces, getChristianCenters, getChristianCentersByType } from '@/utils/religiousLocations/religiousPlacesData';
 import { generateChristianSitesLegendItems } from './christianSitesLegend';
+import { itemEnabled } from './itemEnabled';
 import { ChristianSite } from '@/hooks/useChristianSites';
 import { LegendItem, RunicInscription } from './types';
 
@@ -46,7 +47,7 @@ export const generateBasicInscriptionItems = (
     label: t('swedishRunestones'),
     color: isVikingMode ? '#f97316' : '#ef4444',
     count: swedishInscriptions.length,
-    enabled: enabledLegendItems.runic_inscriptions !== false
+    enabled: itemEnabled(enabledLegendItems, 'runic_inscriptions')
   });
 
   // 2. UTLÄNDSKA RUNSTENAR - andra prioritet
@@ -56,7 +57,7 @@ export const generateBasicInscriptionItems = (
       label: t('runestonesInOtherCountries'),
       color: isVikingMode ? '#8b5cf6' : '#a855f7',
       count: foreignInscriptions.length,
-      enabled: enabledLegendItems.foreign_inscriptions !== false
+      enabled: itemEnabled(enabledLegendItems, 'foreign_inscriptions')
     });
   }
 
@@ -67,7 +68,7 @@ export const generateBasicInscriptionItems = (
       label: t('vikingCenters'),
       color: '#8b5cf6',
       count: dbStats?.totalCities || 58,
-      enabled: enabledLegendItems.viking_cities !== false
+      enabled: itemEnabled(enabledLegendItems, 'viking_cities')
     });
   }
 
@@ -81,13 +82,13 @@ export const generateBasicInscriptionItems = (
           { id: 'road_halvagar', label: t('hollowWays'), color: '#A0522D', count: 2 },
           { id: 'road_vinteragar', label: t('winterRoads'), color: '#4682B4', count: 2 },
           { id: 'road_landmarks', label: t('bridgesAndFords'), color: '#2F4F4F', count: 5 },
-        ].map((child) => ({ ...child, enabled: enabledLegendItems[child.id] !== false }));
+        ].map((child) => ({ ...child, enabled: itemEnabled(enabledLegendItems, child.id, true) }));
         return {
           id: 'viking_roads',
           label: t('vikingAgeRoads'), // "Vägar"
           color: '#8B4513',
           count: roadChildren.reduce((s, c) => s + c.count, 0),
-          enabled: enabledLegendItems.viking_roads !== false,
+          enabled: itemEnabled(enabledLegendItems, 'viking_roads'),
           type: 'category' as const,
           children: roadChildren,
         };
@@ -99,11 +100,11 @@ export const generateBasicInscriptionItems = (
     label: '🌊 ' + t('vikingWaterways'), // "Vikingaleder"
     color: '#1e40af',
     count: 95 + 12 + (roadNode?.count ?? 0),
-    enabled: enabledLegendItems.water_routes !== false,
+    enabled: itemEnabled(enabledLegendItems, 'water_routes'),
     type: 'category',
     children: [
-      { id: 'valdemar_route', label: '⚔️ ' + t('valdemarsRoute'), color: '#1e3a8a', count: 95, enabled: enabledLegendItems.valdemar_route !== false },
-      { id: 'river_routes', label: t('importantWaterways'), color: '#1e40af', count: 12, enabled: enabledLegendItems.river_routes !== false },
+      { id: 'valdemar_route', label: '⚔️ ' + t('valdemarsRoute'), color: '#1e3a8a', count: 95, enabled: itemEnabled(enabledLegendItems, 'valdemar_route') },
+      { id: 'river_routes', label: t('importantWaterways'), color: '#1e40af', count: 12, enabled: itemEnabled(enabledLegendItems, 'river_routes') },
       ...(roadNode ? [roadNode] : []),
     ],
   });
@@ -114,7 +115,7 @@ export const generateBasicInscriptionItems = (
     label: t('fortresses'),
     color: '#dc2626',
     count: dbStats?.totalFortresses || 49,
-    enabled: enabledLegendItems.viking_fortresses !== false
+    enabled: itemEnabled(enabledLegendItems, 'viking_fortresses')
   });
 
   // (Vårdkasar ligger under "Kulturlager" som heritage_vardkase — den fristående
@@ -129,12 +130,12 @@ export const generateBasicInscriptionItems = (
   // "Kyrka & kristendom" (grupperas nedan). Kvar i Kulturlager: fornlämningar + traditionella
   // källor. Toggle-id:na är oförändrade → kartlagren fungerar som förr.
   const heritageChildren = [
-    { id: 'heritage_kalla', label: 'Källor (traditionella)', color: '#0ea5e9', count: 2098, enabled: enabledLegendItems.heritage_kalla === true },
-    { id: 'heritage_skeppssattning', label: 'Skeppssättningar', color: '#0d9488', count: 865, enabled: enabledLegendItems.heritage_skeppssattning === true },
-    { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: enabledLegendItems.heritage_ganggrift === true },
-    { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: enabledLegendItems.heritage_vardkase === true },
-    { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: enabledLegendItems.heritage_dos === true },
-    { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: enabledLegendItems.heritage_bildsten === true },
+    { id: 'heritage_kalla', label: 'Källor (traditionella)', color: '#0ea5e9', count: 2098, enabled: itemEnabled(enabledLegendItems, 'heritage_kalla') },
+    { id: 'heritage_skeppssattning', label: 'Skeppssättningar', color: '#0d9488', count: 865, enabled: itemEnabled(enabledLegendItems, 'heritage_skeppssattning') },
+    { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: itemEnabled(enabledLegendItems, 'heritage_ganggrift') },
+    { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: itemEnabled(enabledLegendItems, 'heritage_vardkase') },
+    { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_dos') },
+    { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_bildsten') },
   ];
   items.push({
     id: 'heritage_sites',
@@ -143,15 +144,15 @@ export const generateBasicInscriptionItems = (
     count: heritageChildren.reduce((s, c) => s + c.count, 0),
     // Föräldern PÅ som standard så per-typ-kryssen är åtkomliga (LegendCategory
     // döljer barn om parent är av). Kartan drivs av barnen — alla av → tom karta.
-    enabled: enabledLegendItems.heritage_sites !== false,
+    enabled: itemEnabled(enabledLegendItems, 'heritage_sites'),
     type: 'category',
     children: heritageChildren,
   });
 
   // Kyrko-typerna som fristående poster (grupperas in i Kyrka & kristendom nedan).
-  items.push({ id: 'heritage_kyrka', label: 'Sockenkyrkor (RAÄ)', color: '#e11d48', count: 4223, enabled: enabledLegendItems.heritage_kyrka === true });
-  items.push({ id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: enabledLegendItems.heritage_kapell === true });
-  items.push({ id: 'heritage_kloster', label: 'Kloster (RAÄ)', color: '#c026d3', count: 94, enabled: enabledLegendItems.heritage_kloster === true });
+  items.push({ id: 'heritage_kyrka', label: 'Sockenkyrkor (RAÄ)', color: '#e11d48', count: 4223, enabled: itemEnabled(enabledLegendItems, 'heritage_kyrka') });
+  items.push({ id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: itemEnabled(enabledLegendItems, 'heritage_kapell') });
+  items.push({ id: 'heritage_kloster', label: 'Kloster (RAÄ)', color: '#c026d3', count: 94, enabled: itemEnabled(enabledLegendItems, 'heritage_kloster') });
 
   // 7. RESTEN - kultplatser och andra objekt - dynamisk räkning
   const religiousChildren = [
@@ -169,7 +170,7 @@ export const generateBasicInscriptionItems = (
     return b.count - a.count;
   }).map(child => ({
     ...child,
-    enabled: false // Inaktiverad som standard
+    enabled: itemEnabled(enabledLegendItems, child.id)
   }));
 
   const totalReligiousCount = religiousChildren.reduce((sum, child) => sum + child.count, 0);
@@ -179,7 +180,7 @@ export const generateBasicInscriptionItems = (
     label: t('paganCultSites'),
     color: '#fbbf24',
     count: totalReligiousCount,
-    enabled: false, // Inaktiverad som standard
+    enabled: itemEnabled(enabledLegendItems, 'religious_places'),
     type: 'category',
     children: religiousChildren
   });
@@ -192,7 +193,7 @@ export const generateBasicInscriptionItems = (
       label: '🛡️ ' + t('germanicPeoples'),
       color: '#8b5cf6',
       count: germanicGroups.length,
-      enabled: enabledLegendItems.germanic_timeline !== false, // ✅ Default enabled for prominence
+      enabled: itemEnabled(enabledLegendItems, 'germanic_timeline'), // ✅ Default enabled for prominence
       type: 'primary' as const // ✅ Make prominent
     });
   }
@@ -202,7 +203,7 @@ export const generateBasicInscriptionItems = (
     label: t('barrierDefenses'),
     color: '#dc2626',
     count: 8,
-    enabled: false
+    enabled: itemEnabled(enabledLegendItems, 'stake_barriers')
   });
 
   items.push({
@@ -210,7 +211,7 @@ export const generateBasicInscriptionItems = (
     label: t('vikingRegiments'),
     color: '#7c3aed',
     count: 12,
-    enabled: false
+    enabled: itemEnabled(enabledLegendItems, 'viking_regions')
   });
 
   // ✅ ORPHAN LAYERS - renderas redan på kartan men saknade kryssruta i legenden
@@ -219,7 +220,7 @@ export const generateBasicInscriptionItems = (
     label: 'Folkgrupper',
     color: '#0d9488',
     count: 0,
-    enabled: enabledLegendItems.folk_groups !== false
+    enabled: itemEnabled(enabledLegendItems, 'folk_groups')
   });
 
   items.push({
@@ -227,7 +228,7 @@ export const generateBasicInscriptionItems = (
     label: 'Historiska händelser',
     color: '#FF6B6B',
     count: 37, // historical_events-tabellen (2026-07). Uppdatera vid re-import.
-    enabled: enabledLegendItems.historical_events !== false
+    enabled: itemEnabled(enabledLegendItems, 'historical_events')
   });
 
   items.push({
@@ -237,7 +238,7 @@ export const generateBasicInscriptionItems = (
     count: 495, // place_names-tabellen (2026-07): 495 st, alla med koordinater. Uppdatera vid re-import.
     // OPT-IN (default AV): ~495 ortnamn på en gång klottrar ner kartan. Slås på medvetet
     // via legenden/intresseprofil/sök. Matchar usePlaceNameMarkers-gaten (=== true).
-    enabled: enabledLegendItems.place_names === true
+    enabled: itemEnabled(enabledLegendItems, 'place_names')
   });
 
   // Dåtida strandlinje (SGU strandförskjutningsmodell, CC-BY). En sammanhängande
@@ -248,7 +249,7 @@ export const generateBasicInscriptionItems = (
     label: '🌊 Dåtida strandlinje (SGU)',
     color: '#3b82f6',
     count: 0,
-    enabled: enabledLegendItems.paleo_shoreline === true
+    enabled: itemEnabled(enabledLegendItems, 'paleo_shoreline')
   });
 
   // Rikt kyrkolager (byggår, stift, socken/härad, ruinstatus + Commons-bild). Viewport-laddat,
@@ -261,7 +262,7 @@ export const generateBasicInscriptionItems = (
     // PÅ som standard (Daniel). Gate:et sitter direkt på detta id — därför är
     // detta en topp-nivå-post (ingen wrapper-kategori) så av-knappen faktiskt
     // släcker kartlagret (annars går kyrkan inte att stänga av).
-    enabled: enabledLegendItems.ecclesiastical_churches !== false
+    enabled: itemEnabled(enabledLegendItems, 'ecclesiastical_churches')
   });
 
   // Art-/innovationsintroduktioner (species_introductions med koordinat). AV som standard.
@@ -271,7 +272,7 @@ export const generateBasicInscriptionItems = (
     label: '🐾 Arter & händelser (tidsepok)',
     color: '#c084fc',
     count: dbStats?.layerCounts?.species ?? 21,
-    enabled: enabledLegendItems.species_introductions === true
+    enabled: itemEnabled(enabledLegendItems, 'species_introductions')
   });
 
   // Bildsten-spolia (picture_stone_reuse): hedniska bildstenar återanvända i gotländska
@@ -281,7 +282,7 @@ export const generateBasicInscriptionItems = (
     label: '🪨 Bildsten-spolia (kyrkor)',
     color: '#0891b2',
     count: dbStats?.layerCounts?.spolia ?? 21,
-    enabled: enabledLegendItems.picture_stone_reuse === true
+    enabled: itemEnabled(enabledLegendItems, 'picture_stone_reuse')
   });
 
   // Mynt & fynd (coins) på fyndplats-koordinat. Färg per metall. AV som standard.
@@ -290,7 +291,7 @@ export const generateBasicInscriptionItems = (
     label: '🪙 Mynt & fynd (fyndplats)',
     color: '#d4af37',
     count: dbStats?.layerCounts?.coins ?? 32,
-    enabled: enabledLegendItems.coins === true
+    enabled: itemEnabled(enabledLegendItems, 'coins')
   });
 
   // aDNA-platser (arkeologiska platser med genetiska individer). AV som standard.
@@ -299,7 +300,7 @@ export const generateBasicInscriptionItems = (
     label: '🧬 aDNA-platser',
     color: '#a855f7',
     count: dbStats?.layerCounts?.adnaSites ?? 4,
-    enabled: enabledLegendItems.adna_sites === true
+    enabled: itemEnabled(enabledLegendItems, 'adna_sites')
   });
 
   // Add Christian sites if provided
@@ -333,7 +334,7 @@ export const generateBasicInscriptionItems = (
     const children = childIds.map((cid) => byId.get(cid)).filter(Boolean) as LegendItem[];
     if (children.length === 0) return null;
     children.forEach((c) => used.add(c.id));
-    return { id, label, color, count: sumCount(children), enabled: enabledLegendItems[id] !== false, type: 'category', children };
+    return { id, label, color, count: sumCount(children), enabled: itemEnabled(enabledLegendItems, id, true), type: 'category', children };
   };
   const keep = (id: string): LegendItem | null => {
     const it = byId.get(id);
@@ -370,7 +371,7 @@ export const generateBasicInscriptionItems = (
   churchChildren.forEach((c) => used.add(c.id));
   const catChurch: LegendItem | null = churchChildren.length
     ? { id: 'cat_church', label: '⛪ ' + t('churchAndChristianity'), color: '#e11d48',
-        count: sumCount(churchChildren), enabled: enabledLegendItems.cat_church !== false,
+        count: sumCount(churchChildren), enabled: itemEnabled(enabledLegendItems, 'cat_church'),
         type: 'category', children: churchChildren }
     : null;
 
