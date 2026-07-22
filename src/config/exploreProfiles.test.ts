@@ -30,7 +30,7 @@ describe("normalizeProfileId", () => {
 });
 
 describe("PROFILE_SEEDS", () => {
-  it("has exactly the six profile ids", () => {
+  it("has exactly the seven profile ids", () => {
     expect(PROFILE_SEEDS.map((p) => p.id).sort()).toEqual([...PROFILE_IDS].sort());
   });
   it("every seed passes validation (all refs known)", () => {
