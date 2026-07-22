@@ -148,6 +148,19 @@ export const generateBasicInscriptionItems = (
     { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_dos') },
     { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_bildsten') },
     { id: 'heritage_labyrint', label: '🌀 Labyrinter', color: '#0d9488', count: 493, enabled: itemEnabled(enabledLegendItems, 'heritage_labyrint') },
+    // Ortnamn ligger under Kulturlager (Daniel), som egen underkategori med element-typ-barn
+    // (sakral/makt/natur). Opt-in; kaskad tänder de tre typerna. usePlaceNameMarkers gate:ar
+    // hellagret på place_names + filtrerar per place_names_<kategori>.
+    {
+      id: 'place_names', label: '📝 Ortnamn', color: '#65a30d', count: 495,
+      enabled: itemEnabled(enabledLegendItems, 'place_names'),
+      type: 'category' as const,
+      children: [
+        { id: 'place_names_sacral', label: '◆ Sakralt / kult', color: '#9932CC', count: 0, enabled: itemEnabled(enabledLegendItems, 'place_names_sacral', true) },
+        { id: 'place_names_power', label: '■ Makt / centralplats', color: '#C99A2E', count: 0, enabled: itemEnabled(enabledLegendItems, 'place_names_power', true) },
+        { id: 'place_names_nature', label: '● Natur / topografi', color: '#2E8B57', count: 0, enabled: itemEnabled(enabledLegendItems, 'place_names_nature', true) },
+      ],
+    },
   ];
   items.push({
     id: 'heritage_sites',
@@ -243,15 +256,7 @@ export const generateBasicInscriptionItems = (
     enabled: itemEnabled(enabledLegendItems, 'historical_events')
   });
 
-  items.push({
-    id: 'place_names',
-    label: 'Ortnamn',
-    color: '#65a30d',
-    count: 495, // place_names-tabellen (2026-07): 495 st, alla med koordinater. Uppdatera vid re-import.
-    // OPT-IN (default AV): ~495 ortnamn på en gång klottrar ner kartan. Slås på medvetet
-    // via legenden/intresseprofil/sök. Matchar usePlaceNameMarkers-gaten (=== true).
-    enabled: itemEnabled(enabledLegendItems, 'place_names')
-  });
+  // (Ortnamn ligger nu som underkategori under Kulturlager ovan — ingen fristående post här.)
 
   // Dåtida strandlinje (SGU strandförskjutningsmodell, CC-BY). En sammanhängande
   // bakgrundspolygon för VALD tidsperiod — inte räknebara punkter, därför count 0
