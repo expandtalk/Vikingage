@@ -20,14 +20,16 @@ export const DatingIntegration: React.FC<DatingIntegrationProps> = ({
   endYear
 }) => {
   const [showDetails, setShowDetails] = useState(false);
-  const { 
-    datingRecords, 
-    isLoading, 
-    updateDatingPeriods, 
-    isUpdating, 
+  // Lat hämtning: dra INTE in hela dating-tabellen förrän användaren öppnar detaljerna.
+  // Annars laddades allt + kördes sync-statistik vid varje tidslinje-klick → frös sajten.
+  const {
+    datingRecords,
+    isLoading,
+    updateDatingPeriods,
+    isUpdating,
     getDatingInPeriod,
-    getParsingStats 
-  } = useDatingPeriods();
+    getParsingStats
+  } = useDatingPeriods({ enabled: showDetails });
   const { toast } = useToast();
 
   const stats = getParsingStats();
