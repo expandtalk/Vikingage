@@ -95,7 +95,10 @@ export const usePlaceNameMarkers = (
   enabledLegendItems: { [key: string]: boolean } = {},
   isEnabled: boolean = true
 ) => {
-  const layerOn = enabledLegendItems.place_names !== false;
+  // Ortnamn är OPT-IN (default AV) — annars klottrade ~495 ortnamn ner kartan och dolde
+  // det relevanta. Slås på via legenden, en intresseprofil (t.ex. lingvist), eller sök/filter.
+  // Samma === true-gate som övriga punktlager (species/coins/adna/paleo_shoreline).
+  const layerOn = enabledLegendItems.place_names === true;
 
   return useQuery({
     queryKey: ['place-name-markers'],
