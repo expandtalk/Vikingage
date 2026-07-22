@@ -5,6 +5,7 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { RunicExplorerSimple } from '../components/RunicExplorerSimple';
 import { NamedStonesSection } from '../components/inscriptions/NamedStonesSection';
+import { DatingCategoriesSection } from '../components/inscriptions/DatingCategoriesSection';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Inscriptions = () => {
@@ -35,6 +36,9 @@ const Inscriptions = () => {
         </div>
         {/* Nivå 1: namngivna stenar som ingång (landskaps-grupperade) */}
         <NamedStonesSection />
+
+        {/* Datering-kategorisering (Gräslunds stilkronologi) */}
+        <DatingCategoriesSection />
 
         {/* Nivå 2: hela materialet med sök/filter */}
         <h2 className="text-2xl font-bold text-white mb-4">
