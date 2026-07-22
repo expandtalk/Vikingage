@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
-import { useChurchYearFrom } from '@/hooks/useChurchYearFilter';
+
+// Kyrkor efter reformationen (~1550) utan medeltida ursprung göms — de moderna
+// kyrkorna (t.ex. 1900-/2000-tal) är inte relevanta för det forn-/medeltida temat.
+const MEDIEVAL_MAX_YEAR = 1550;
 
 // Rikt kyrkolager ur ecclesiastical_sites: byggår, stift, socken/härad, ruinstatus + bild
 // (Wikimedia Commons via Wikidata P18). Viewport-laddat via ecclesiastical_in_bbox, zoom-gate ≥8.
@@ -66,7 +69,6 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
   const tokenRef = useRef(0);
   const zoomedRef = useRef(false);
   const enabled = enabledLegendItems.ecclesiastical_churches === true;
-  const yearFrom = useChurchYearFrom(); // 0 = alla; >0 = built_from >= yearFrom
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;
@@ -96,8 +98,10 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
       layer.clearLayers();
       (data as any[] || []).forEach((r) => {
         if (r.lat == null || r.lng == null) return;
-        // Byggårsfilter: >0 → visa bara kyrkor byggda från det året (daterade).
-        if (yearFrom > 0 && (r.built_from == null || r.built_from < yearFrom)) return;
+        // Göm moderna kyrkor: byggda efter ~1550 utan medeltida ursprung. Odaterade
+        // (built_from = null) och medeltida behålls.
+        if (r.built_from != null && r.built_from > MEDIEVAL_MAX_YEAR
+            && !/medeltid/i.test(String(r.dating_class ?? ''))) return;
         L.marker([r.lat, r.lng], { icon: iconFor(r.kind, r.status) })
           .bindPopup(popupHtml(r), { maxWidth: 320, className: 'church-popup' })
           .addTo(layer);
@@ -107,7 +111,7 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
     map.on('moveend zoomend', debounced);
     refresh();
     return () => { map.off('moveend zoomend', debounced); if (timer) clearTimeout(timer); layer.clearLayers(); };
-  }, [map, enabled, isMapReady, yearFrom]);
+  }, [map, enabled, isMapReady]);
 
   useEffect(() => () => {
     try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }
