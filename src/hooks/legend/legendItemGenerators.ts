@@ -320,7 +320,7 @@ export const generateBasicInscriptionItems = (
     id: 'estates',
     label: '⚔️ Maktsäten (kungsgårdar)',
     color: '#b91c1c',
-    count: dbStats?.layerCounts?.estates ?? 2,
+    count: dbStats?.layerCounts?.estates ?? 81,
     enabled: itemEnabled(enabledLegendItems, 'estates')
   });
 
@@ -401,7 +401,7 @@ export const generateBasicInscriptionItems = (
   const fg = byId.get('folk_groups'); if (fg) { fg.label = 'Folkgrupper (karta)'; fg.count = dbStats?.totalFolkGroups ?? fg.count; }
 
   const ordered: (LegendItem | null)[] = [
-    group('cat_runic', 'ᛘ ' + t('runestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions']),
+    group('cat_runic', 'ᛘ ' + t('runestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions', 'runestone_density']),
     catChurch,
     keep('heritage_sites'),
     keep('religious_places'),
