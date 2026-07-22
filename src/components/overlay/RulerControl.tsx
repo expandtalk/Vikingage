@@ -1,7 +1,16 @@
 import React from 'react';
-import { Ruler, GripVertical } from 'lucide-react';
+import { Ruler, GripVertical, Target } from 'lucide-react';
 import { useRuler, toggleRuler, clearRuler, rulerKm } from '@/hooks/useRuler';
+import { setProbe, setProbeRadiusKm } from '@/hooks/useProximityProbe';
 import { useDraggable } from '@/hooks/useDraggable';
+
+// Gör linjalens två punkter till ett hypotes-område: sond i mittpunkten med radie = halva
+// avståndet (så formen spänner mellan punkterna). Namn + hypotes fylls sen i sond-panelen.
+const rulerToProbe = (a: { lat: number; lng: number }, b: { lat: number; lng: number }, km: number) => {
+  const mid = { lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 };
+  setProbe(mid.lat, mid.lng, `Linjal-område (${km.toFixed(1)} km)`);
+  setProbeRadiusKm(Math.max(1, Math.round(km / 2)));
+};
 
 // Steg 2d: knapp för punkt-till-punkt-linjalen + avståndsvisning. Flyttbar via greppet.
 export const RulerControl: React.FC = () => {
@@ -22,10 +31,21 @@ export const RulerControl: React.FC = () => {
         </button>
       </div>
       {active && (
-        <div className="bg-slate-900/95 border border-slate-600 rounded-lg shadow-lg px-2.5 py-1.5 text-[11px] text-slate-200">
-          {pts.length === 2
-            ? <span><strong className="text-amber-300">{rulerKm(pts[0], pts[1]).toFixed(1)} km</strong> · <button onClick={clearRuler} className="text-slate-400 hover:text-white underline">rensa</button></span>
-            : <span>Klicka {2 - pts.length} punkt{2 - pts.length === 1 ? '' : 'er'} till på kartan</span>}
+        <div className="bg-slate-900/95 border border-slate-600 rounded-lg shadow-lg px-2.5 py-1.5 text-[11px] text-slate-200 flex flex-col items-end gap-1.5">
+          {pts.length === 2 ? (
+            <>
+              <span><strong className="text-amber-300">{rulerKm(pts[0], pts[1]).toFixed(1)} km</strong> · <button onClick={clearRuler} className="text-slate-400 hover:text-white underline">rensa</button></span>
+              <button
+                onClick={() => rulerToProbe(pts[0], pts[1], rulerKm(pts[0], pts[1]))}
+                title="Gör om sträckan till ett hypotes-område: sätt form, radie och skriv din hypotes i sond-panelen"
+                className="flex items-center gap-1 px-2 py-1 rounded border border-amber-600/60 text-amber-200 hover:bg-amber-500/15"
+              >
+                <Target className="h-3 w-3" />Gör hypotes-område
+              </button>
+            </>
+          ) : (
+            <span>Klicka {2 - pts.length} punkt{2 - pts.length === 1 ? '' : 'er'} till på kartan</span>
+          )}
         </div>
       )}
     </div>
