@@ -12,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
 import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceNameAttestations';
 import { useRunicTheophoricSummary } from '@/hooks/useRunicTheophoricSummary';
+import { useNameDatings, eraSortYear } from '@/hooks/useNameDatings';
 import {
   PLACE_NAME_ELEMENTS,
   ELEMENT_CATEGORY_META,
@@ -40,6 +41,7 @@ const PlaceNames = () => {
   const { data: places = [], isLoading } = usePlaceNamesData();
   const { data: attestations = [] } = usePlaceNameAttestations();
   const { data: runic } = useRunicTheophoricSummary();
+  const { data: datings = [] } = useNameDatings();
   const [category, setCategory] = useState<string>('all');
   const [elementKey, setElementKey] = useState<string>('all');
   const [query, setQuery] = useState<string>('');
@@ -85,6 +87,15 @@ const PlaceNames = () => {
       .map(([label, items]) => ({ label, items: [...items].sort((x, y) => x.year - y.year) }))
       .sort((a, b) => a.items[0].year - b.items[0].year);
   }, [attestations]);
+
+  // De äldsta daterade bebyggelsenamnen, äldst först.
+  const oldestNames = useMemo(
+    () => [...datings].sort(
+      (a, b) => eraSortYear(a.dating_text) - eraSortYear(b.dating_text) || a.name.localeCompare(b.name),
+    ),
+    [datings],
+  );
+  const datingsWithCoord = datings.filter((d) => d.lat != null).length;
 
   const FORM_STYLE: Record<string, string> = {
     val: 'border-emerald-500 text-emerald-300',
@@ -145,6 +156,63 @@ const PlaceNames = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* De äldsta daterade bebyggelsenamnen (Vikstrand 2013) */}
+        {oldestNames.length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'De äldsta bebyggelsenamnen' : 'The oldest settlement names'}</h2>
+            <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
+            <p className="text-sm text-muted-foreground max-w-3xl mb-3">
+              {sv
+                ? 'Namn som går att datera arkeologiskt, äldst först. Dateringen är fyndplatsens (boplats eller gravfält intill bytomten) och en hypotes om namnets ålder — inte en objektiv mätpunkt. ⚠︎ markerar de fall där Vikstrand själv satte frågetecken.'
+                : 'Names that can be dated archaeologically, oldest first. The dating is that of the find spot (settlement or grave field by the village toft) and a hypothesis about the name’s age — not an objective measurement. ⚠︎ marks the cases where Vikstrand himself was uncertain.'}
+            </p>
+            <div className="flex flex-wrap gap-4 mb-4 text-sm text-muted-foreground">
+              <span><strong className="text-foreground">{datings.length}</strong> {sv ? 'daterade namn' : 'dated names'}</span>
+              <span><strong className="text-foreground">{datingsWithCoord}</strong> {sv ? 'med verifierad koordinat' : 'with a verified coordinate'}</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {oldestNames.map((d) => (
+                <Card key={d.id} className="viking-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-foreground text-base flex items-center gap-2">
+                      <CalendarClock className="h-4 w-4 text-gold" />
+                      {d.name}
+                      {d.uncertainty === 'hög' && (
+                        <span title={sv ? 'Vikstrand satte frågetecken' : 'Vikstrand was uncertain'}>
+                          <AlertTriangle className="h-4 w-4 text-amber-400" />
+                        </span>
+                      )}
+                    </CardTitle>
+                    <div className="flex flex-wrap gap-2">
+                      {d.name_type && <Badge variant="secondary" className="text-xs">{d.name_type}</Badge>}
+                      {d.dating_basis && <Badge variant="outline" className="text-xs border-slate-500 text-slate-300">{d.dating_basis}</Badge>}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-1 text-xs text-muted-foreground">
+                    <div className="text-sm text-foreground">{d.dating_text}</div>
+                    {(d.socken || d.landscape) && (
+                      <div>{[d.socken && `${d.socken} sn`, d.landscape].filter(Boolean).join(' · ')}</div>
+                    )}
+                    {d.note && <div className="italic opacity-80">{d.note}</div>}
+                    <div className="text-[11px] opacity-75">
+                      {sv ? 'Källa' : 'Source'}: {d.source}{d.page ? `, s. ${d.page}` : ''}
+                    </div>
+                    {d.lat != null && d.lng != null && (
+                      <a
+                        href={`/explore?lat=${d.lat}&lng=${d.lng}`}
+                        className="inline-flex items-center gap-1 text-gold hover:underline pt-1"
+                      >
+                        <MapPin className="h-3 w-3" />
+                        {sv ? 'Visa på kartan' : 'Show on map'}
+                      </a>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Namnleds-katalog — "vilka ord", grupperat i evidensskikt */}
         <h2 className="text-2xl font-bold text-foreground mb-1">{sv ? 'Namnleden vi söker' : 'The elements we search for'}</h2>
