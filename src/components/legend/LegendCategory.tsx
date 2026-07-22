@@ -19,6 +19,12 @@ export const LegendCategory: React.FC<LegendCategoryProps> = ({
   onCategoryToggle
 }) => {
   const isExpanded = expandedCategories.includes(item.id);
+  // Rec #2 (tom-karta-fällan): visa summan av PÅSLAGNA barn, inte alla barn. En kategori
+  // som är på men vars barn alla är av ritar inget på kartan — då ska ingen vilseledande
+  // totalsiffra visas. Barnlösa kategorier faller tillbaka på item.count.
+  const shownCount = item.children && item.children.length
+    ? item.children.filter((c) => c.enabled).reduce((s, c) => s + (c.count || 0), 0)
+    : (item.count || 0);
   return (
     <div className="mt-2">
       {/* Category header — hela raden fäller ut/in; bara switchen togglar på/av. */}
@@ -49,14 +55,14 @@ export const LegendCategory: React.FC<LegendCategoryProps> = ({
             {item.label}
           </span>
 
-          {/* Summan visas bara när kategorin är på, dämpat grått (undviker vilseledande
-              siffra när föräldern är av). */}
-          {item.enabled && !!item.count && (
+          {/* Summan visas bara när kategorin är på OCH minst ett barn är på, dämpat grått.
+              Undviker både vilseledande siffra vid av-förälder och "på men karta tom". */}
+          {item.enabled && shownCount > 0 && (
             <span
               className="text-[11px] tabular-nums text-slate-400 flex-shrink-0"
-              title={`${item.count} objekt`}
+              title={`${shownCount} objekt`}
             >
-              {item.count.toLocaleString('sv-SE')}
+              {shownCount.toLocaleString('sv-SE')}
             </span>
           )}
         </button>
