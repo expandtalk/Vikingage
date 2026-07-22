@@ -14,6 +14,7 @@ import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceN
 import { useRunicTheophoricSummary } from '@/hooks/useRunicTheophoricSummary';
 import { useNameDatings, eraSortYear } from '@/hooks/useNameDatings';
 import { DistanceStatsCard } from '@/components/placenames/DistanceStatsCard';
+import { useElementCounts } from '@/hooks/useElementCounts';
 import {
   PLACE_NAME_ELEMENTS,
   ELEMENT_CATEGORY_META,
@@ -43,6 +44,7 @@ const PlaceNames = () => {
   const { data: attestations = [] } = usePlaceNameAttestations();
   const { data: runic } = useRunicTheophoricSummary();
   const { data: datings = [] } = useNameDatings();
+  const { data: elementCounts = {} } = useElementCounts();
   const [category, setCategory] = useState<string>('all');
   const [elementKey, setElementKey] = useState<string>('all');
   const [query, setQuery] = useState<string>('');
@@ -97,6 +99,18 @@ const PlaceNames = () => {
     [datings],
   );
   const datingsWithCoord = datings.filter((d) => d.lat != null).length;
+
+  // Kultled i ortnamnsregistret, sorterat på antal orter (OSM-gazetteern). Länkas
+  // till runkorpusens siffror där de finns (tor/oden/frö). Karta = filtrera listan.
+  const RUNIC_OF: Record<string, 'thor_names' | 'odin_names' | 'frey'> = { tor: 'thor_names', oden: 'odin_names', frö: 'frey' };
+  const CORPUS_KEYS = ['tor', 'frö', 'oden', 'ull', 'vi', 'lund', 'harg', 'hov', 'njärd'];
+  const corpusRows = useMemo(
+    () => CORPUS_KEYS
+      .map((k) => ({ key: k, n_osm: elementCounts[k]?.n_osm ?? 0, n_curated: elementCounts[k]?.n_curated ?? 0 }))
+      .filter((r) => r.n_osm > 0 || r.n_curated > 0)
+      .sort((a, b) => b.n_osm - a.n_osm),
+    [elementCounts],
+  );
 
   const FORM_STYLE: Record<string, string> = {
     val: 'border-emerald-500 text-emerald-300',
@@ -315,21 +329,26 @@ const PlaceNames = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <Card className="viking-card"><CardContent className="py-4 text-center">
                 <div className="text-2xl font-bold text-gold">{runic.thor_names}</div>
-                <div className="text-xs text-muted-foreground">{sv ? 'Tor-namn (þur-/þor-)' : 'Thor names'}</div>
+                <div className="text-xs text-muted-foreground">{sv ? 'runinskrifter med Tor-namn (þur-/þor-)' : 'inscriptions with Thor names'}</div>
               </CardContent></Card>
               <Card className="viking-card"><CardContent className="py-4 text-center">
                 <div className="text-2xl font-bold text-gold">{runic.thor_vigi.length}</div>
-                <div className="text-xs text-muted-foreground">{sv ? '"Þórr vígi"-formler' : '"Þórr vígi" formulas'}</div>
+                <div className="text-xs text-muted-foreground">{sv ? 'inskrifter med "Þórr vígi"-formel' : 'inscriptions with a "Þórr vígi" formula'}</div>
               </CardContent></Card>
               <Card className="viking-card"><CardContent className="py-4 text-center">
                 <div className="text-2xl font-bold text-gold">{runic.odin_names}</div>
-                <div className="text-xs text-muted-foreground">{sv ? 'Oden (endast namn)' : 'Odin (names only)'}</div>
+                <div className="text-xs text-muted-foreground">{sv ? 'runinskrifter med Oden-namn (aldrig åkallan)' : 'inscriptions with Odin names (never invoked)'}</div>
               </CardContent></Card>
               <Card className="viking-card"><CardContent className="py-4 text-center">
                 <div className="text-2xl font-bold text-gold">{runic.frey}</div>
-                <div className="text-xs text-muted-foreground">{sv ? 'Frö/Frey' : 'Frey'}</div>
+                <div className="text-xs text-muted-foreground">{sv ? 'runinskrifter med Frö/Frey-namn' : 'inscriptions with Frey names'}</div>
               </CardContent></Card>
             </div>
+            <p className="text-[11px] text-muted-foreground opacity-70 mb-4">
+              {sv
+                ? `Siffrorna räknar runinskrifter (av ${runic.total_with_translit.toLocaleString()} translittererade) där ledet ingår i ett person- eller gudanamn — inte antal förekomster.`
+                : `The numbers count runic inscriptions (of ${runic.total_with_translit.toLocaleString()} transliterated) where the element occurs in a personal or divine name — not the number of occurrences.`}
+            </p>
             <h3 className="text-lg font-semibold text-foreground mb-2">{sv ? 'Tor helgar — de äkta kultformlerna' : 'Thor hallows — the genuine cult formulas'}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
               {runic.thor_vigi.map((s) => (
@@ -349,6 +368,59 @@ const PlaceNames = () => {
                 ? 'Ärligt: Tor/Oden/Frö förekommer främst i personnamn (Þorsteinn, Óðinkárr), inte som gudaåkallan. Undantaget är de fyra "Þórr vígi"-stenarna ovan (Glavendrup DR 209, Velanda Vg 150, Virring DR 110, Canterbury-besvärjelsen) där Tor faktiskt åkallas. Oden nämns bara i namn — aldrig direkt — helt i linje med forskningen.'
                 : 'Honestly: Thor/Odin/Frey occur mainly in personal names, not as invocations. The exception is the four "Þórr vígi" stones above, where Thor is actually invoked. Odin appears only in names — never directly — consistent with scholarship.'}
             </p>
+
+            {/* Samma led i ortnamnsregistret — antal orter, sorterat, jämfört med runorna */}
+            {corpusRows.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-foreground mb-2">{sv ? 'Samma led i ortnamnsregistret' : 'The same elements in the place-name register'}</h3>
+                <p className="text-xs text-muted-foreground max-w-3xl mb-3">
+                  {sv
+                    ? 'Hur många orter som bär respektive led, sorterat på antal. "Orter" = hela registret (OSM-gazetteern); "kurerade" = det granskade urval som visas på kartan. Klicka för att filtrera ortnamnslistan nedan.'
+                    : 'How many places carry each element, sorted by count. "Places" = the full register (OSM gazetteer); "curated" = the reviewed subset shown on the map. Click to filter the list below.'}
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full max-w-2xl text-sm">
+                    <thead>
+                      <tr className="text-left text-xs text-muted-foreground border-b border-slate-700/50">
+                        <th className="py-2 pr-4">{sv ? 'Led' : 'Element'}</th>
+                        <th className="py-2 pr-4 text-right">{sv ? 'Orter (registret)' : 'Places (register)'}</th>
+                        <th className="py-2 pr-4 text-right">{sv ? 'varav kurerade' : 'of which curated'}</th>
+                        <th className="py-2 pr-4 text-right">{sv ? 'i runorna' : 'in runes'}</th>
+                        <th className="py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {corpusRows.map((r) => {
+                        const el = getElement(r.key);
+                        const runicKey = RUNIC_OF[r.key];
+                        const runicN = runic && runicKey ? (runic as any)[runicKey] : null;
+                        return (
+                          <tr key={r.key} className="border-b border-slate-800/60 hover:bg-slate-800/40">
+                            <td className="py-2 pr-4 text-foreground font-medium">{el ? el.label : r.key}</td>
+                            <td className="py-2 pr-4 text-right text-foreground">{r.n_osm.toLocaleString()}</td>
+                            <td className="py-2 pr-4 text-right text-muted-foreground">{r.n_curated}</td>
+                            <td className="py-2 pr-4 text-right text-muted-foreground">{runicN != null ? runicN : '—'}</td>
+                            <td className="py-2 text-right">
+                              {r.n_curated > 0 && (
+                                <Button variant="ghost" size="sm" className="h-7 text-xs text-gold hover:bg-slate-700/40"
+                                  onClick={() => { setElementKey(r.key); scrollToList(); }}>
+                                  <MapPin className="h-3 w-3 mr-1" />{sv ? 'visa' : 'show'}
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[11px] text-muted-foreground opacity-70 mt-2 max-w-3xl">
+                  {sv
+                    ? 'Obs: "i runorna" räknar inskrifter med gudanamnet (bara tor/oden/frö kan jämföras direkt). Att lund toppar registret betyder inte att det är sakralt — de flesta -lund är sena, profana namn (se varningen ovan).'
+                    : 'Note: "in runes" counts inscriptions with the divine name (only tor/oden/frö compare directly). That -lund tops the register does not make it sacral — most -lund names are late and secular (see the warning above).'}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
