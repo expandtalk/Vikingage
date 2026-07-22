@@ -40,12 +40,16 @@ const Explore = () => {
       <Breadcrumbs />
 
       <main className="container mx-auto px-4 py-8">
-        {/* Main Explorer */}
-        <div className="mb-8">
+        {/* Main Explorer. `relative isolate` = eget stacking-context så kartans flytande
+            paneler (absolute, z-[1100]) inte kan bläda ut och lägga sig över innehållet under
+            (Daniel: AI-kortet/texten doldes av ett lager). Ingen overflow-hidden — skulle
+            klippa Leaflet-popups. */}
+        <div className="mb-8 relative isolate">
           <RunicExplorerSimple />
         </div>
 
-        <Tabs defaultValue="ai-analysis" className="w-full">
+        {/* Egen isolerad nivå under kartan så AI-panelen aldrig överlappas av kart-lager. */}
+        <Tabs defaultValue="ai-analysis" className="w-full relative isolate">
           <TabsList className={`grid w-full ${user ? 'grid-cols-2' : 'grid-cols-1'} mb-6 bg-card border border-border`}>
             <TabsTrigger value="ai-analysis" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{t.ai}</TabsTrigger>
             {user && (
