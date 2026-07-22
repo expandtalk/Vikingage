@@ -1,7 +1,8 @@
 import React from 'react';
-import { X, Circle, Square, Hexagon } from 'lucide-react';
+import { X, Circle, Square, Hexagon, Save, Trash2 } from 'lucide-react';
 import {
   useProximityProbe,
+  setProbe,
   setProbeRadiusKm,
   setProbeShape,
   setProbeMode,
@@ -10,6 +11,7 @@ import {
   TRANSPORT_MODES,
   type ProbeShape,
 } from '@/hooks/useProximityProbe';
+import { useHypothesisAreas } from '@/hooks/useHypothesisAreas';
 
 // Flytande kontroll som visas när en räckvidds-sond är aktiv (klick på kyrka/fornborg).
 // Form (cirkel/fyrkant/hexagon), transport-preset (dagsresa) och fri radie.
@@ -21,6 +23,7 @@ const SHAPES: { key: ProbeShape; label: string; Icon: typeof Circle }[] = [
 
 export const ProximityControl: React.FC = () => {
   const { probe, radiusKm, shape, modeKey, counts, note } = useProximityProbe();
+  const { areas, save, remove, isLoggedIn } = useHypothesisAreas();
   if (!probe) return null;
   const activeMode = TRANSPORT_MODES.find((m) => m.key === modeKey);
   const shapeSv = shape === 'circle' ? 'cirkeln' : shape === 'square' ? 'fyrkanten' : 'hexagonen';
@@ -102,6 +105,32 @@ export const ProximityControl: React.FC = () => {
         rows={2}
         className="w-full mt-2 px-2 py-1 rounded bg-slate-800 border border-slate-700 text-white text-[11px] placeholder:text-slate-500 resize-y"
       />
+
+      {/* Spara till kontot (inloggad): namnge + hypotes bevaras i DB (RLS = bara dina). */}
+      {isLoggedIn && (
+        <div className="mt-2">
+          <button
+            onClick={() => save.mutate({ name: probe.label || 'Namnlöst område', note, lat: probe.lat, lng: probe.lng, shape, radius_km: radiusKm })}
+            disabled={save.isPending}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded text-[11px] border border-emerald-600/60 text-emerald-200 hover:bg-emerald-500/15 disabled:opacity-50"
+          >
+            <Save className="h-3.5 w-3.5" />{save.isPending ? 'Sparar…' : 'Spara område till mitt konto'}
+          </button>
+          {areas.length > 0 && (
+            <div className="mt-1.5 max-h-28 overflow-y-auto space-y-1">
+              {areas.map((a) => (
+                <div key={a.id} className="flex items-center gap-1 text-[11px]">
+                  <button
+                    onClick={() => { setProbe(a.lat, a.lng, a.name); setProbeShape(a.shape); setProbeRadiusKm(Number(a.radius_km)); if (a.note) setProbeNote(a.note); }}
+                    className="flex-1 min-w-0 truncate text-left text-slate-300 hover:text-white" title={a.note ?? undefined}
+                  >{a.name}</button>
+                  <button onClick={() => remove.mutate(a.id)} title="Ta bort" className="text-slate-500 hover:text-rose-400"><Trash2 className="h-3 w-3" /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Antal INUTI formen (punkt-i-polygon) — det analytiska värdet */}
       {counts && (
