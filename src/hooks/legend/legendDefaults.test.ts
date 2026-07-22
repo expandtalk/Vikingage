@@ -24,6 +24,9 @@ const DEFAULT_ENABLED: Record<string, boolean> = {
   runestone_density: false,
   // Maktsäten (ekonomihistorikerns lager) — medvetet AV som standard.
   estates: false,
+  place_names_sacral: true,
+  place_names_power: true,
+  place_names_nature: true,
   estates_kungsgard: true,
   estates_husaby: true,
   estates_borg: true,

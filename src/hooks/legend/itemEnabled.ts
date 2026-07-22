@@ -36,7 +36,11 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
 
   // --- Opt-in-lager AV som standard ---
   runestone_density: false, // GIS-analyslager: runstenstäthet per härad (centroid-cirklar)
-  place_names: false, // ~495 ortnamn klottrar kartan; tänds medvetet (PR: place-names-opt-in)
+  place_names: false, // ~495 ortnamn klottrar kartan; tänds medvetet (opt-in). Ligger under
+  // Kulturlager (Daniel), kategoriserat på element-typ (sakral/makt/natur):
+  place_names_sacral: true,
+  place_names_power: true,
+  place_names_nature: true,
   paleo_shoreline: false,
   species_introductions: false,
   picture_stone_reuse: false,
