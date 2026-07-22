@@ -27,12 +27,16 @@ export const CustomPointsControl: React.FC = () => {
 
   return (
     <div ref={rootRef} style={style} className="absolute bottom-4 left-4 z-[1100] w-72 bg-slate-900 border border-slate-600 rounded-lg shadow-2xl">
-      <div {...dragHandleProps} className="flex items-center cursor-grab active:cursor-grabbing">
-        <GripVertical className="h-4 w-4 text-slate-500 ml-1.5 shrink-0" />
-        <button onClick={() => setOpen((o) => !o)} className="flex-1 flex items-center justify-between px-2 py-2 text-white text-xs font-medium">
-          <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-amber-400" />Mina punkter {points.length > 0 && `(${points.length})`}</span>
-          <span className="text-slate-400">{open ? '▾' : '▸'}</span>
-        </button>
+      {/* Hela rubriken (utom chevron-knappen) är draghandtag — useDraggable ignorerar
+          drag som startar på en <button>, så tidigare gick bara den lilla grip-ikonen
+          att dra i. Nu: titel + grepp drar, bara ▾/▸-knappen togglar. */}
+      <div {...dragHandleProps} className="flex items-center cursor-grab active:cursor-grabbing px-2 py-2 select-none">
+        <GripVertical className="h-4 w-4 text-slate-500 shrink-0" />
+        <span className="flex-1 flex items-center gap-1.5 text-white text-xs font-medium ml-1">
+          <MapPin className="h-4 w-4 text-amber-400" />Mina punkter {points.length > 0 && `(${points.length})`}
+        </span>
+        <button onClick={() => setOpen((o) => !o)} title={open ? 'Fäll ihop' : 'Expandera'}
+          className="text-slate-400 hover:text-white px-1">{open ? '▾' : '▸'}</button>
       </div>
       {open && (
         <div className="px-3 pb-3">
