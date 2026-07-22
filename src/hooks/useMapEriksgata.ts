@@ -70,7 +70,7 @@ export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAdd
         }).bindPopup(`<strong>${r.signum}</strong><br/>Runsten nära Eriksgatan`);
         if (safelyAddLayer(m)) layersRef.current.push(m);
       });
-      // Medeltida kyrkor/kapell/kloster inom 1 km (små lila prickar).
+      // Medeltida kyrkor inom 500 m av leden (ecclesiastical_sites, ej moderna).
       data.nearby.churches.forEach((c) => {
         const m = L.circleMarker([c.lat, c.lng], {
           radius: 3, color: '#7e22ce', weight: 1, fillColor: '#a855f7', fillOpacity: 0.85,
