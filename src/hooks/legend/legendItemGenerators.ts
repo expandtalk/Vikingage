@@ -235,7 +235,9 @@ export const generateBasicInscriptionItems = (
     label: 'Ortnamn',
     color: '#65a30d',
     count: 495, // place_names-tabellen (2026-07): 495 st, alla med koordinater. Uppdatera vid re-import.
-    enabled: enabledLegendItems.place_names !== false
+    // OPT-IN (default AV): ~495 ortnamn på en gång klottrar ner kartan. Slås på medvetet
+    // via legenden/intresseprofil/sök. Matchar usePlaceNameMarkers-gaten (=== true).
+    enabled: enabledLegendItems.place_names === true
   });
 
   // Dåtida strandlinje (SGU strandförskjutningsmodell, CC-BY). En sammanhängande
