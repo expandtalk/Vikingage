@@ -5,6 +5,7 @@ import { getFindsInPeriod, ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFi
 import { getDeityPlaces, getChristianCenters, getChristianCentersByType } from '@/utils/religiousLocations/religiousPlacesData';
 import { generateChristianSitesLegendItems } from './christianSitesLegend';
 import { itemEnabled } from './itemEnabled';
+import { computeHaradDensity } from '@/hooks/map/runeDensity';
 import { ChristianSite } from '@/hooks/useChristianSites';
 import { LegendItem, RunicInscription } from './types';
 
@@ -60,6 +61,16 @@ export const generateBasicInscriptionItems = (
       enabled: itemEnabled(enabledLegendItems, 'foreign_inscriptions')
     });
   }
+
+  // RUNSTENSTÄTHET (härad) — GIS-analyslager (opt-in, av som standard). Count = antal
+  // härader med koordinatsatta stenar. Ritas som centroid-cirklar av useRuneDensityLayer.
+  items.push({
+    id: 'runestone_density',
+    label: '🔥 Runstenstäthet (härad)',
+    color: '#ea580c',
+    count: computeHaradDensity(inscriptions as any[]).length,
+    enabled: itemEnabled(enabledLegendItems, 'runestone_density'),
+  });
 
   // 2. VIKINGACENTRA - andra prioritet
   if (selectedTimePeriod === 'viking_age' || selectedTimePeriod === 'all') {

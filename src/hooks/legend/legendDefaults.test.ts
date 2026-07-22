@@ -20,6 +20,8 @@ const DEFAULT_ENABLED: Record<string, boolean> = {
   cat_folk: true, folk_groups: true, viking_regions: false, cat_geo: true, place_names: false,
   historical_events: true, species_introductions: false, picture_stone_reuse: false,
   coins: false, adna_sites: false, paleo_shoreline: false,
+  // GIS-analyslager tillagt (runstenstäthet per härad) — medvetet AV som standard.
+  runestone_density: false,
 };
 
 const buildMap = () => {

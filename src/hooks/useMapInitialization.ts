@@ -17,6 +17,7 @@ import { useMapPictureStones } from './map/useMapPictureStones';
 import { useMapCoins } from './map/useMapCoins';
 import { useMapAncestrySites } from './map/useMapAncestrySites';
 import { useMapCustomPoints } from './map/useMapCustomPoints';
+import { useRuneDensityLayer } from './map/useRuneDensityLayer';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -24,14 +25,16 @@ interface UseMapInitializationProps {
   enabledLegendItems: { [key: string]: boolean };
   selectedPeriod: string;
   selectedTimePeriod: string;
+  inscriptions?: any[];
   onRefreshRivers?: (refreshFn: () => void) => void; // Fix callback signature
 }
 
-export const useMapInitialization = ({ 
-  isVikingMode, 
+export const useMapInitialization = ({
+  isVikingMode,
   enabledLegendItems,
   selectedPeriod,
   selectedTimePeriod,
+  inscriptions = [],
   onRefreshRivers
 }: UseMapInitializationProps) => {
   const [isMapReady, setIsMapReady] = useState(false);
@@ -204,6 +207,15 @@ export const useMapInitialization = ({
 
   // Mina punkter (localStorage) — användarens egna ortnamn, alltid synliga.
   useMapCustomPoints({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Runstenstäthet per härad (GIS-analyslager) — centroid-cirklar, gate: legendknappen.
+  useRuneDensityLayer({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+    safelyAddLayer,
+    inscriptions,
+  });
 
   return {
     mapContainer, 
