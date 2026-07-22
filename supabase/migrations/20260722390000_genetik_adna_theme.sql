@@ -1,0 +1,9 @@
+-- Tema "Genetik & aDNA" som binder samman den genetiska bevislinjen. Applicerad via MCP
+-- execute_sql; fil = proveniens. Se [[kg-materialization-mechanism]].
+-- Registrerar species_introductions (proxy adna, 16 djur: hund/katt/varg/svartråtta) som
+-- entity_type 'species_introduction' och archaeological_sites (4 mänskliga aDNA-platser) som
+-- 'adna_site', länkar båda till temat genetik-adna → 20 has_theme-kanter i relationship-grafen.
+-- Djur-aDNA-källor: Bergström 2026 (Nature), De Martino 2025 (Science), Han 2026 (Cell Genomics),
+-- Ottoni 2017, Baca 2018, Yu 2022, Girdland-Flink/Bergström 2025 (PNAS).
+-- Mänsklig aDNA tunn (7 individer/4 platser) — utbyggnad kräver publicerade dataset
+-- (Margaryan 2020, Krzewińska 2018, Rodríguez-Varela 2023); inga genotyper fabriceras.
