@@ -15,7 +15,8 @@ export type ProfileId =
   | "linguist"
   | "archaeologist"
   | "trade"
-  | "geneticist";
+  | "geneticist"
+  | "osteolog";
 
 export type TimePeriod = "all" | "viking_age";
 
@@ -48,6 +49,7 @@ export const PROFILE_IDS: ProfileId[] = [
   "archaeologist",
   "trade",
   "geneticist",
+  "osteolog",
 ];
 
 /** Legacy localStorage-id:n (pre-refaktor-roster) → nya id:n. */
@@ -260,6 +262,28 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
     layers: on("archaeological_sites", "folk_groups"),
     theme: "genetic",
     primaryLayers: ["archaeological_sites", "folk_groups"],
+    defaultPeriod: "all",
+    showTimeline: true,
+    panels: {
+      legend: { visible: true },
+      results: { visible: true, emphasis: "primary" },
+      search: { visible: false },
+      filters: { visible: true, emphasis: "minimized" },
+    },
+  },
+  {
+    id: "osteolog",
+    sortOrder: 6,
+    label: { sv: "Osteolog", en: "Osteologist" },
+    description: { sv: "Skelett, kön/ålder & isotoper", en: "Skeletons, sex/age & isotopes" },
+    icon: "bone",
+    basemap: "osm",
+    // Osteologen ser gravplatser/individer (samma provplatser som genetikern) — INTE
+    // runstenar. Rik osteologi/isotop-rendering (kön/ursprung-färg, isoscape) byggs i
+    // senare steg ovanpå isotope_measurements; profilen är ingången.
+    layers: on("archaeological_sites"),
+    theme: "genetic",
+    primaryLayers: ["archaeological_sites"],
     defaultPeriod: "all",
     showTimeline: true,
     panels: {
