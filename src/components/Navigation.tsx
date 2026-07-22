@@ -161,9 +161,9 @@ const EXTRA_LINKS: NavLink[] = [
   },
   {
     pathEn: '/historical-events', pathSv: '/sv/historiska-handelser',
-    labelSv: 'Historiska händelser', labelEn: 'Historical events',
-    descSv: 'Tidslinje över slag, kungaval, kristnande och andra vändpunkter — med årtal och källor.',
-    descEn: 'A timeline of battles, royal elections, Christianisation and other turning points — with dates and sources.',
+    labelSv: 'Tidslinje', labelEn: 'Timeline',
+    descSv: 'Händelser, klimatchocker och pestutbrott + introduktioner av arter/innovationer (hund, katt, häst) på samma tidsaxel — med proxy, osäkerhet och källor.',
+    descEn: 'Events, climate shocks and plague plus introductions of species/innovations on one time axis — with proxy, uncertainty and sources.',
     icon: CalendarClock, category: 'history',
   },
   {
