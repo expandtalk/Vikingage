@@ -99,14 +99,17 @@ export const NamedStonesSection: React.FC = () => {
         className="viking-card rounded-lg border border-border overflow-hidden hover:bg-card/80 transition-colors group flex flex-col"
       >
         {s.image_url && (
-          <div className="relative h-32 w-full overflow-hidden">
+          {/* Porträtt-format (aspect 3/4) + object-contain så höga stenar (Rök, Sparlösa,
+              Tjängvide…) syns i sin helhet utan beskärning. Mörk bakgrund bakom eventuell
+              letterbox. Landskaps-bilder får då lite marginal upp/ner — acceptabelt. */}
+          <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-900/40">
             <img
               src={s.image_url}
               alt={s.name}
               title={s.image_credit ? `${sv ? 'Foto' : 'Photo'}: ${s.image_credit}` : undefined}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
             />
             {s.image_credit && (
               <span className="absolute bottom-0.5 right-1.5 text-[8px] text-white/60 bg-black/30 px-1 rounded">
