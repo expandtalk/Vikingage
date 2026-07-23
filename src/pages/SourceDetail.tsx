@@ -139,7 +139,7 @@ const SourceDetail = () => {
                 {source.language && <Badge variant="outline" className="text-xs">{source.language}</Badge>}
                 {source.meter && <Badge variant="outline" className="text-xs">{source.meter}</Badge>}
               </div>
-              {source.description && <p className="text-muted-foreground text-lg max-w-3xl">{source.description}</p>}
+              {source.description && <p className="text-muted-foreground text-base leading-relaxed max-w-3xl whitespace-pre-line">{source.description}</p>}
               {(source.collection || source.manuscript) && (
                 <p className="text-sm text-muted-foreground/70 mt-2">
                   {[source.collection, source.manuscript].filter(Boolean).join(' · ')}
