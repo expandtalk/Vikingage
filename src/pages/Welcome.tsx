@@ -3,7 +3,6 @@ import React, { useState, Suspense, lazy } from 'react';
 import { Header } from '../components/Header';
 import { HeroSection } from '../components/welcome/HeroSection';
 import { ViewLauncherGrid } from '../components/welcome/ViewLauncherGrid';
-import { GlobalSearch } from '../components/search/GlobalSearch';
 import { PageMeta } from '../components/PageMeta';
 import { useQuery } from '@tanstack/react-query';
 import { loadDatabaseStats } from '@/hooks/useRunicData/statsLoader';
@@ -78,12 +77,14 @@ const Welcome = () => {
         onSkipIntro={handleSkipIntro}
       />
 
-      {/* Stor Google-lik sökruta, direkt före korten */}
-      <section className="container mx-auto px-4 pt-8">
-        <GlobalSearch variant="hero" />
-      </section>
-
       <ViewLauncherGrid dbStats={displayStats} />
+
+      {/* Podcasten näst sist — precis före footern */}
+      <section className="container mx-auto px-4 py-8">
+        <Suspense fallback={<div className="h-32 animate-pulse bg-white/10 rounded-lg" />}>
+          <PodcastPromotion />
+        </Suspense>
+      </section>
 
       <Suspense fallback={<div className="h-16 animate-pulse bg-white/10 rounded-lg mx-4" />}>
         <WelcomeFooter />

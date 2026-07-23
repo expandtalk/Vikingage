@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, LayoutGrid } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DbStats } from '@/hooks/useRunicData/types';
 import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
@@ -64,25 +64,24 @@ export const ViewLauncherGrid: React.FC<ViewLauncherGridProps> = ({ dbStats }) =
     else without.push(c);
   });
 
-  const Footer: React.FC<{ n?: number; onImage?: boolean }> = ({ n, onImage }) => (
-    <div className="mt-auto pt-2">
-      {typeof n === 'number' ? (
-        <span className={`block text-xl font-bold tabular-nums leading-none ${onImage ? 'text-white drop-shadow' : 'text-white'}`}>{fmt(n)}</span>
-      ) : (
-        <span className="text-gold text-[11px] inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {sv ? 'Öppna' : 'Open'} <ArrowRight className="h-3 w-3" />
-        </span>
-      )}
-    </div>
+  // Siffra/CTA nära texten (litet glapp). Rubriken är kortets största element.
+  const Footer: React.FC<{ n?: number }> = ({ n }) => (
+    typeof n === 'number' ? (
+      <span className="block text-2xl font-bold tabular-nums leading-none text-white mt-1.5">{fmt(n)}</span>
+    ) : (
+      <span className="text-gold text-xs inline-flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        {sv ? 'Öppna' : 'Open'} <ArrowRight className="h-3 w-3" />
+      </span>
+    )
   );
 
   const PlainCard: React.FC<{ c: LauncherCard; n?: number }> = ({ c, n }) => (
     <Link
       to={c.to}
-      className="group flex flex-col text-center bg-white/[0.07] backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/[0.12] hover:border-white/25 transition-colors p-2.5"
+      className="group flex flex-col text-center bg-white/[0.07] backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/[0.12] hover:border-white/25 transition-colors p-3"
     >
-      <span className="text-white font-semibold text-[13px] leading-tight">{sv ? c.sv : c.en}</span>
-      <span className="text-slate-400 text-[11px] mt-0.5 leading-snug">{sv ? c.dsv : c.den}</span>
+      <span className="text-white font-semibold text-base leading-tight">{sv ? c.sv : c.en}</span>
+      <span className="text-slate-400 text-xs mt-0.5 leading-snug">{sv ? c.dsv : c.den}</span>
       <Footer n={n} />
     </Link>
   );
@@ -90,32 +89,27 @@ export const ViewLauncherGrid: React.FC<ViewLauncherGridProps> = ({ dbStats }) =
   const ImageCard: React.FC<{ c: LauncherCard; n?: number }> = ({ c, n }) => (
     <Link
       to={c.to}
-      className="group relative flex flex-col overflow-hidden rounded-lg border border-white/10 hover:border-white/30 transition-colors min-h-[132px]"
+      className="group relative flex flex-col overflow-hidden rounded-lg border border-white/10 hover:border-white/30 transition-colors min-h-[150px]"
     >
       <img src={c.image} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
-      <div className="relative flex flex-col h-full text-center p-2.5">
-        <span className="text-white font-semibold text-[13px] leading-tight drop-shadow">{sv ? c.sv : c.en}</span>
-        <span className="text-slate-200 text-[11px] mt-0.5 leading-snug drop-shadow">{sv ? c.dsv : c.den}</span>
-        <Footer n={n} onImage />
+      <div className="relative flex flex-col text-center p-3">
+        <span className="text-white font-semibold text-lg leading-tight drop-shadow">{sv ? c.sv : c.en}</span>
+        <span className="text-slate-200 text-xs mt-0.5 leading-snug drop-shadow">{sv ? c.dsv : c.den}</span>
+        <Footer n={n} />
       </div>
     </Link>
   );
 
   return (
-    <section className="container mx-auto px-4 py-8">
-      <div className="mb-5">
-        <h2 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-          <LayoutGrid className="h-6 w-6 text-gold" />{sv ? 'Välj din lins' : 'Choose your lens'}
-        </h2>
-        <p className="text-slate-300 text-sm mt-1 max-w-2xl">
-          {sv
-            ? 'Varje kort öppnar en färdig vy in i materialet. Allt är källfört; osäkerheter redovisas.'
-            : 'Each card opens a ready-made view into the material. Everything is sourced; uncertainties are shown.'}
-        </p>
-      </div>
+    <section className="container mx-auto px-4 py-8 space-y-2.5">
+      {/* Foto-korten på en egen, jämn rad (lika många foton per rad). */}
+      {images.length > 0 && (
+        <div className="grid grid-cols-3 gap-2.5">
+          {images.map(({ c, n }) => <ImageCard key={c.to} c={c} n={n} />)}
+        </div>
+      )}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
-        {images.map(({ c, n }) => <ImageCard key={c.to} c={c} n={n} />)}
         {withNum.map(({ c, n }) => <PlainCard key={c.to} c={c} n={n} />)}
         {without.map((c) => <PlainCard key={c.to} c={c} />)}
       </div>

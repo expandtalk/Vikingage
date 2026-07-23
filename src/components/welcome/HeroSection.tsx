@@ -1,8 +1,7 @@
 
-import React, { Suspense, lazy } from 'react';
+import React from 'react';
 import type { DbStats } from '@/hooks/useRunicData/types';
-
-const PodcastPromotion = lazy(() => import('./PodcastPromotion').then(module => ({ default: module.PodcastPromotion })));
+import { GlobalSearch } from '../search/GlobalSearch';
 
 interface HeroSectionProps {
   dbStats: DbStats;
@@ -53,13 +52,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <p className="text-xl lg:text-2xl text-slate-200 mb-8 max-w-2xl mx-auto drop-shadow-md">
           {localizedText.heroDescription}
         </p>
-        
-        {/* Podcast Section */}
-        <div className="mt-8">
-          <Suspense fallback={<div className="h-32 animate-pulse bg-white/10 rounded-lg" />}>
-            <PodcastPromotion />
-          </Suspense>
-        </div>
+
+        {/* Google-lik sökruta direkt efter beskrivningen */}
+        <GlobalSearch variant="hero" />
       </div>
     </section>
   );
