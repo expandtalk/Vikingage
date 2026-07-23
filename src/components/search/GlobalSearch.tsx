@@ -139,6 +139,10 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
   const [theme, setTheme] = useState<DbTheme | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
+  // AI-svar (grounded RAG via edge-funktionen search-answer).
+  const [aiAnswer, setAiAnswer] = useState<string | null>(null);
+  const [aiSources, setAiSources] = useState<Hit[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -161,7 +165,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
           .then((res: any) => setThemes(res.data ?? []))
           .catch(() => {});
       }
-    } else { setQuery(''); setTheme(null); setGroups([]); }
+    } else { setQuery(''); setTheme(null); setGroups([]); setAiAnswer(null); setAiSources([]); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -209,6 +213,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
 
   // Fritext: EN rankad RPC (parametriserad — inga filteruttryck, fornnordiska tecken ok).
   useEffect(() => {
+    setAiAnswer(null); setAiSources([]); // nytt frågeord → släng gammalt AI-svar
     if (theme) return;
     const q = query.trim();
     if (q.length < 2) { setGroups([]); return; }
@@ -242,6 +247,24 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
 
   const go = useCallback((route: string) => { setOpen(false); navigate(route); }, [navigate]);
   const total = groups.reduce((n, g) => n + g.rows.length, 0);
+
+  // Grounded RAG-svar via edge-funktionen search-answer (källfört, inga påhitt).
+  const askAI = useCallback(async () => {
+    const q = query.trim();
+    if (q.length < 3) return;
+    setAiLoading(true); setAiAnswer(null); setAiSources([]);
+    try {
+      const { data, error } = await supabase.functions.invoke('search-answer', { body: { q, language: sv ? 'sv' : 'en' } });
+      if (error) throw error;
+      const d = data as { answer?: string; sources?: Hit[]; error?: string };
+      setAiAnswer(d.answer ?? d.error ?? (sv ? 'Inget svar.' : 'No answer.'));
+      setAiSources(d.sources ?? []);
+    } catch {
+      setAiAnswer(sv ? 'AI-svaret kunde inte hämtas just nu.' : 'Could not fetch the AI answer right now.');
+    } finally {
+      setAiLoading(false);
+    }
+  }, [query, sv]);
 
   return (
     <>
@@ -287,6 +310,55 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
           </div>
 
           <div className="max-h-[60vh] overflow-y-auto">
+            {/* AI-svar (grounded RAG) — knapp när man skrivit en fråga, sedan källfört svar */}
+            {!theme && query.trim().length >= 3 && (
+              <div className="border-b border-slate-800 px-4 py-3">
+                {!aiAnswer && !aiLoading && (
+                  <button
+                    onClick={askAI}
+                    className="flex items-center gap-2 text-sm text-amber-200 hover:text-amber-100"
+                  >
+                    <Sparkles className="h-4 w-4 text-amber-400" />
+                    {sv ? `Fråga AI: “${query.trim()}”` : `Ask AI: “${query.trim()}”`}
+                  </button>
+                )}
+                {aiLoading && (
+                  <div className="flex items-center gap-2 text-sm text-slate-400">
+                    <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
+                    {sv ? 'AI läser källorna…' : 'AI reading the sources…'}
+                  </div>
+                )}
+                {aiAnswer && (
+                  <div className="text-sm text-slate-200">
+                    <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+                      <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
+                    </div>
+                    <p className="whitespace-pre-wrap leading-relaxed">{aiAnswer}</p>
+                    {aiSources.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {aiSources.map((s, i) => {
+                          const meta = META[s.entity_type];
+                          if (!meta) return null;
+                          return (
+                            <button
+                              key={s.entity_id + i}
+                              onClick={() => go(meta.route(s))}
+                              className="rounded border border-slate-600 px-1.5 py-0.5 text-[11px] text-slate-300 hover:border-amber-500/50 hover:text-amber-100"
+                            >
+                              [{i + 1}] {s.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <p className="mt-1.5 text-[10px] text-slate-500">
+                      {sv ? 'AI-genererat ur källorna nedan — verifiera via länkarna.' : 'AI-generated from the sources below — verify via the links.'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Begreppslager: temachips (ur DB) — kvar även när man börjar skriva */}
             {!theme && themes.length > 0 && (
               <div className="p-4">
