@@ -1,9 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Compass, Sparkles, BookOpen, PenTool, Footprints, Crown,
-  Dna, Church, Waves, Castle, Tag, ArrowRight, LayoutGrid,
-} from 'lucide-react';
+import { ArrowRight, LayoutGrid } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DbStats } from '@/hooks/useRunicData/types';
 import { NORSE_GODS_EXPANDED } from '@/utils/godNameUtils';
@@ -17,34 +14,32 @@ const CULT_SITE_COUNT = RELIGIOUS_PLACES.filter((p) => p.deity !== 'christian').
 // Från den delade utflyktslistan så kortet aldrig hamnar ur synk.
 const EXCURSION_COUNT = EXCURSIONS.length;
 
-// En rik "välj din lins"-launcher på förstasidan. Återanvänder EXAKT samma kort-
-// design som ExploreViewCards ("Välj en färdig vy": ikon + titel + beskrivning +
-// Öppna-knapp). Additivt — ExploreViewCards-modalen och HeroStatsGrid rörs inte.
+// En rik "välj din lins"-launcher på förstasidan. Korten är transparenta i samma
+// stil som HeroStatsGrid högre upp på sidan: siffran är visuell ankare, ingen ikon.
+// Additivt — ExploreViewCards-modalen och HeroStatsGrid rörs inte.
 interface LauncherCard {
   to: string;
   sv: string;
   en: string;
   dsv: string;
   den: string;
-  icon: typeof Compass;
-  color: string;
   // Räknare hämtas ur den delade stats-källan; utelämnas där siffra saknas.
   count?: (s: DbStats) => number | undefined;
 }
 
 const CARDS: LauncherCard[] = [
-  { to: '/explore?focus=inscriptions', sv: 'Runstenar', en: 'Runestones', dsv: 'Alla runinskrifter på kartan.', den: 'All runic inscriptions on the map.', icon: Compass, color: '#ef4444', count: (s) => s.totalInscriptions },
-  { to: '/explore?focus=cultSites', sv: 'Kultplatser', en: 'Cult sites', dsv: 'Förkristna heliga källor och kultplatser.', den: 'Pre-Christian holy springs and cult sites.', icon: Sparkles, color: '#fbbf24', count: () => CULT_SITE_COUNT },
-  { to: '/explore?focus=gods', sv: 'Gudnamn', en: 'God names', dsv: 'Kultplatser per gud (Oden, Tor, Frö…).', den: 'Cult sites by deity (Odin, Thor, Freyr…).', icon: BookOpen, color: '#f59e0b', count: () => GOD_COUNT },
-  { to: '/carvers', sv: 'Ristare', en: 'Carvers', dsv: 'Runristare och deras signerade verk.', den: 'Rune carvers and their signed works.', icon: PenTool, color: '#f97316', count: (s) => s.totalCarvers },
-  { to: '/excursions', sv: 'Utflykter', en: 'Excursions', dsv: 'Kuraterade rundturer till platserna i fält.', den: 'Curated field trips to the sites.', icon: Footprints, color: '#22c55e', count: () => EXCURSION_COUNT },
-  { to: '/royal-chronicles', sv: 'Kungalängd', en: 'Royal chronicle', dsv: 'Nordiska kungar, dynastier och källor.', den: 'Nordic kings, dynasties and sources.', icon: Crown, color: '#d97706', count: (s) => s.totalRoyalChronicles },
-  { to: '/explore?focus=geneticEvents', sv: 'Genetik & aDNA', en: 'Genetics & aDNA', dsv: 'aDNA-platser, migrationer och djur-DNA i djuptid.', den: 'aDNA sites, migrations and animal DNA in deep time.', icon: Dna, color: '#a855f7', count: (s) => s.totalGeneticEvents },
-  { to: '/explore?focus=churches', sv: 'Kyrkor & stift', en: 'Churches & dioceses', dsv: 'Medeltidskyrkor, stift och ruiner.', den: 'Medieval churches, dioceses and ruins.', icon: Church, color: '#e11d48', count: (s) => s.layerCounts?.churches },
-  { to: '/explore?focus=rivers', sv: 'Vattenvägar', en: 'Waterways', dsv: 'Floder, handelsvägar och farleder.', den: 'Rivers, trade routes and sea-lanes.', icon: Waves, color: '#1e40af', count: (s) => s.totalRivers },
-  { to: '/explore?focus=eriksgatan', sv: 'Eriksgatan', en: 'Eriksgatan', dsv: 'Kungavalets riksrunda genom landskapen.', den: 'The royal election progress through the provinces.', icon: Crown, color: '#0891b2' },
-  { to: '/explore?focus=fortresses', sv: 'Fornborgar', en: 'Hillforts', dsv: 'Fornborgar med datering (kol-14, morfologi).', den: 'Hillforts with dating (14C, morphology).', icon: Castle, color: '#dc2626', count: (s) => s.totalFortresses },
-  { to: '/sv/ortnamn', sv: 'Ortnamn & hypoteser', en: 'Place names & hypotheses', dsv: 'Bygg egna avstånds-/räckviddstest.', den: 'Build your own distance/reach tests.', icon: Tag, color: '#65a30d' },
+  { to: '/explore?focus=inscriptions', sv: 'Runstenar', en: 'Runestones', dsv: 'Alla runinskrifter på kartan.', den: 'All runic inscriptions on the map.', count: (s) => s.totalInscriptions },
+  { to: '/explore?focus=cultSites', sv: 'Kultplatser', en: 'Cult sites', dsv: 'Förkristna heliga källor och kultplatser.', den: 'Pre-Christian holy springs and cult sites.', count: () => CULT_SITE_COUNT },
+  { to: '/explore?focus=gods', sv: 'Gudnamn', en: 'God names', dsv: 'Kultplatser per gud (Oden, Tor, Frö…).', den: 'Cult sites by deity (Odin, Thor, Freyr…).', count: () => GOD_COUNT },
+  { to: '/carvers', sv: 'Ristare', en: 'Carvers', dsv: 'Runristare och deras signerade verk.', den: 'Rune carvers and their signed works.', count: (s) => s.totalCarvers },
+  { to: '/excursions', sv: 'Utflykter', en: 'Excursions', dsv: 'Kuraterade rundturer till platserna i fält.', den: 'Curated field trips to the sites.', count: () => EXCURSION_COUNT },
+  { to: '/royal-chronicles', sv: 'Kungalängd', en: 'Royal chronicle', dsv: 'Nordiska kungar, dynastier och källor.', den: 'Nordic kings, dynasties and sources.', count: (s) => s.totalRoyalChronicles },
+  { to: '/explore?focus=geneticEvents', sv: 'Genetik & aDNA', en: 'Genetics & aDNA', dsv: 'aDNA-platser, migrationer och djur-DNA i djuptid.', den: 'aDNA sites, migrations and animal DNA in deep time.', count: (s) => s.totalGeneticEvents },
+  { to: '/explore?focus=churches', sv: 'Kyrkor & stift', en: 'Churches & dioceses', dsv: 'Medeltidskyrkor, stift och ruiner.', den: 'Medieval churches, dioceses and ruins.', count: (s) => s.layerCounts?.churches },
+  { to: '/explore?focus=rivers', sv: 'Vattenvägar', en: 'Waterways', dsv: 'Floder, handelsvägar och farleder.', den: 'Rivers, trade routes and sea-lanes.', count: (s) => s.totalRivers },
+  { to: '/explore?focus=eriksgatan', sv: 'Eriksgatan', en: 'Eriksgatan', dsv: 'Kungavalets riksrunda genom landskapen.', den: 'The royal election progress through the provinces.' },
+  { to: '/explore?focus=fortresses', sv: 'Fornborgar', en: 'Hillforts', dsv: 'Fornborgar med datering (kol-14, morfologi).', den: 'Hillforts with dating (14C, morphology).', count: (s) => s.totalFortresses },
+  { to: '/sv/ortnamn', sv: 'Ortnamn & hypoteser', en: 'Place names & hypotheses', dsv: 'Bygg egna avstånds-/räckviddstest.', den: 'Build your own distance/reach tests.' },
 ];
 
 interface ViewLauncherGridProps {
@@ -77,14 +72,11 @@ export const ViewLauncherGrid: React.FC<ViewLauncherGridProps> = ({ dbStats }) =
             <Link
               key={c.to}
               to={c.to}
-              className="group rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/25 transition-colors p-4 flex flex-col"
+              className="group text-left bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/15 hover:border-white/30 transition-colors p-4 flex flex-col"
             >
-              <div className="flex items-center justify-between mb-2">
-                <c.icon className="h-6 w-6" style={{ color: c.color }} />
-                {showCount && (
-                  <span className="text-white/90 font-bold text-sm tabular-nums">{fmt(raw)}</span>
-                )}
-              </div>
+              {showCount && (
+                <span className="text-2xl font-bold text-white tabular-nums leading-none mb-1.5">{fmt(raw)}</span>
+              )}
               <span className="text-white font-semibold text-sm">{sv ? c.sv : c.en}</span>
               <span className="text-slate-400 text-xs mt-1 flex-1">{sv ? c.dsv : c.den}</span>
               <span className="text-gold text-xs mt-2 inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
