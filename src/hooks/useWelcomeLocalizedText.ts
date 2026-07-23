@@ -7,7 +7,7 @@ export const useWelcomeLocalizedText = () => {
   const localizedTexts = {
     sv: {
       heroTitle: "Sök det Nordiska Arvet",
-      heroDescription: "Upptäck tusentals runstenar, vikingatida platser och fornnordisk historia genom vår interaktiva karta och AI-databas.",
+      heroDescription: "Upptäck tusentals runstenar, vikingatida platser och fornnordisk historia genom vår kunskapsgraf och AI-databas.",
       skipIntro: "Hoppa över introduktion",
       runicInscriptions: "Runinskrifter",
       coordinates: "Koordinater",
@@ -27,7 +27,7 @@ export const useWelcomeLocalizedText = () => {
     },
     en: {
       heroTitle: "Search the Nordic Heritage",
-      heroDescription: "Discover thousands of runestones, Viking Age sites and Old Norse history through our interactive map and AI database.",
+      heroDescription: "Discover thousands of runestones, Viking Age sites and Old Norse history through our knowledge graph and AI database.",
       skipIntro: "Skip introduction",
       runicInscriptions: "Runic Inscriptions",
       coordinates: "Coordinates",
