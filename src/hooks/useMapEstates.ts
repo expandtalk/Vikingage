@@ -94,11 +94,6 @@ export const useMapEstates = ({ map, enabledLegendItems, isMapReady, safelyAddLa
             <p class="text-xs text-gray-600">${esc(r.estate_type)}${r.first_attested ? ` · tidigast belagt ${r.first_attested}` : ''}</p>
             ${r.description ? `<p class="text-xs text-gray-500 mt-1">${esc(r.description)}</p>` : ''}
             ${rowsHtml ? `<div class="text-xs mt-1" style="color:#334155"><div style="font-weight:600;margin-top:4px">Innehav</div><ul style="padding-left:14px;margin:2px 0">${rowsHtml}</ul></div>` : ''}
-            <button onclick="window.setProximityProbe(${r.lat}, ${r.lng}, '${jsStr(r.name)}')"
-              style="margin-top:8px;width:100%;padding:5px 8px;border-radius:6px;border:1px solid #f59e0b;
-              background:rgba(245,158,11,0.15);color:#b45309;font-size:12px;font-weight:600;cursor:pointer">
-              🎯 Hypotestesta här (välj form &amp; radie)
-            </button>
           </div>
         `, { maxWidth: 340 });
         group.addLayer(marker);

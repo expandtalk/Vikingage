@@ -10,6 +10,7 @@ import { useMapBeaconSites } from './useMapBeaconSites';
 import { useMapHeritageSites } from './useMapHeritageSites';
 import { useMapChurches } from './map/useMapChurches';
 import { useMapProximityProbe } from './map/useMapProximityProbe';
+import { useReachProbeTriggers } from './map/useReachProbeTriggers';
 import { useMapSpeciesMarkers } from './map/useMapSpeciesMarkers';
 import { useMapElementMarkers } from './map/useMapElementMarkers';
 import { useMapRuler } from './map/useMapRuler';
@@ -187,6 +188,9 @@ export const useMapInitialization = ({
 
   // Omkrets-sond: cirkel + närliggande lager kring vald kyrka/fornborg.
   useMapProximityProbe({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Räckvidds-sonden tillgänglig ÖVERALLT: injicerar knapp i alla popuper + högerklick.
+  useReachProbeTriggers({ map: map.current });
 
   // Art-/innovationsintroduktioner (koordinatsatta), filtrerat på vald tidsepok.
   useMapSpeciesMarkers({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
