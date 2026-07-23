@@ -127,7 +127,9 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
   return groups;
 };
 
-export const GlobalSearch: React.FC = () => {
+// variant 'icon' = liten förstoringsglas-ikon (toppnav på övriga sidor);
+// 'hero' = stor Google-lik sökruta (startsidan, före korten). Samma dialog.
+export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant = 'icon' }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const sv = language === 'sv';
@@ -231,16 +233,30 @@ export const GlobalSearch: React.FC = () => {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={sv ? 'Sök' : 'Search'}
-        className="flex items-center gap-2 rounded-full border border-slate-600 bg-slate-800/60 px-3 py-1.5 text-sm text-slate-400 hover:border-amber-500/50 hover:text-slate-200 transition-colors"
-      >
-        <Search className="h-4 w-4" />
-        <span className="hidden lg:inline">{sv ? 'Sök allt…' : 'Search everything…'}</span>
-        <kbd className="hidden lg:inline ml-1 rounded border border-slate-600 bg-slate-900 px-1.5 text-[10px] text-slate-500">⌘K</kbd>
-      </button>
+      {variant === 'hero' ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={sv ? 'Sök' : 'Search'}
+          className="w-full max-w-xl mx-auto flex items-center gap-3 rounded-full bg-white border border-slate-200 shadow-lg hover:shadow-xl px-5 py-3.5 text-left transition-shadow"
+        >
+          <Search className="h-5 w-5 text-slate-400 shrink-0" />
+          <span className="flex-1 text-base text-slate-500 truncate">
+            {sv ? 'Sök allt — runsten, ort, socken, gud, kung, mynt…' : 'Search everything — runestone, place, parish, god, king, coin…'}
+          </span>
+          <kbd className="hidden sm:inline rounded border border-slate-300 bg-slate-100 px-1.5 text-[10px] text-slate-500">⌘K</kbd>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={sv ? 'Sök allt' : 'Search everything'}
+          title={sv ? 'Sök allt (⌘K)' : 'Search everything (⌘K)'}
+          className="flex items-center justify-center h-9 w-9 rounded-full border border-slate-600 bg-slate-800/60 text-slate-400 hover:border-amber-500/50 hover:text-slate-200 transition-colors"
+        >
+          <Search className="h-4 w-4" />
+        </button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="p-0 gap-0 overflow-hidden bg-slate-900 border-slate-700 max-w-2xl top-[12%] translate-y-0">
@@ -259,8 +275,8 @@ export const GlobalSearch: React.FC = () => {
           </div>
 
           <div className="max-h-[60vh] overflow-y-auto">
-            {/* Begreppslager: temachips (ur DB) när fältet är tomt */}
-            {!theme && query.trim().length < 2 && themes.length > 0 && (
+            {/* Begreppslager: temachips (ur DB) — kvar även när man börjar skriva */}
+            {!theme && themes.length > 0 && (
               <div className="p-4">
                 <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                   {sv ? 'Teman' : 'Themes'}

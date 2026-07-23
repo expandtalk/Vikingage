@@ -2,8 +2,8 @@
 import React, { useState, Suspense, lazy } from 'react';
 import { Header } from '../components/Header';
 import { HeroSection } from '../components/welcome/HeroSection';
-import { ExploreViewCards } from '../components/welcome/ExploreViewCards';
 import { ViewLauncherGrid } from '../components/welcome/ViewLauncherGrid';
+import { GlobalSearch } from '../components/search/GlobalSearch';
 import { PageMeta } from '../components/PageMeta';
 import { useQuery } from '@tanstack/react-query';
 import { loadDatabaseStats } from '@/hooks/useRunicData/statsLoader';
@@ -78,9 +78,12 @@ const Welcome = () => {
         onSkipIntro={handleSkipIntro}
       />
 
-      <ViewLauncherGrid dbStats={displayStats} />
+      {/* Stor Google-lik sökruta, direkt före korten */}
+      <section className="container mx-auto px-4 pt-8">
+        <GlobalSearch variant="hero" />
+      </section>
 
-      <ExploreViewCards dbStats={displayStats} />
+      <ViewLauncherGrid dbStats={displayStats} />
 
       <Suspense fallback={<div className="h-16 animate-pulse bg-white/10 rounded-lg mx-4" />}>
         <WelcomeFooter />

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
   LogIn,
@@ -13,6 +13,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Navigation, MobileNav } from './Navigation';
 import { GlobalSearch } from './search/GlobalSearch';
+import { BuildViewDialog } from './welcome/BuildViewDialog';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
@@ -29,6 +30,7 @@ export const Header = () => {
   const { isAdmin } = useUserRole();
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const isHome = useLocation().pathname === '/';
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -72,7 +74,9 @@ export const Header = () => {
           <Navigation />
 
           <div className="flex items-center space-x-3 shrink-0">
-            <GlobalSearch />
+            <BuildViewDialog />
+            {/* Liten förstoringsglas-ikon på övriga sidor; startsidan har den stora sökrutan före korten. */}
+            {!isHome && <GlobalSearch variant="icon" />}
             <LanguageSwitcher />
             <MobileNav />
             
