@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
-import { useProximityProbe, setProbeCounts } from '@/hooks/useProximityProbe';
+import { useProximityProbe, setProbeCounts, setProbeResult } from '@/hooks/useProximityProbe';
+import { probeShapeLatLngs } from '@/utils/probeGeometry';
 
 // Ritar omkrets-cirkel + närliggande lager kring vald punkt (kyrka/fornborg).
 // Data via features_near_point-RPC. Färgkod: ortnamn grön, kulturlager lila,
@@ -15,19 +16,6 @@ interface Props {
 
 const dot = (color: string) =>
   L.divIcon({ className: 'prox-dot', html: `<span style="display:block;width:9px;height:9px;border-radius:50%;background:${color};border:1px solid #fff;box-shadow:0 0 2px rgba(0,0,0,.6)"></span>`, iconSize: [9, 9], iconAnchor: [5, 5] });
-
-// Regelbunden polygon (fyrkant=4, hexagon=6) kring en punkt, radie i km. Lokal
-// ekvirektangulär approximation — exakt nog på dessa avstånd (tiotal km).
-const polygonVerts = (lat: number, lng: number, rKm: number, n: number, rotDeg: number): [number, number][] => {
-  const latR = rKm / 111.32;
-  const lngR = rKm / (111.32 * Math.cos((lat * Math.PI) / 180));
-  const out: [number, number][] = [];
-  for (let i = 0; i < n; i++) {
-    const a = ((rotDeg + (i * 360) / n) * Math.PI) / 180;
-    out.push([lat + latR * Math.cos(a), lng + lngR * Math.sin(a)]);
-  }
-  return out;
-};
 
 export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
   const { probe, radiusKm, shape } = useProximityProbe();
@@ -50,8 +38,7 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
       L.circle([probe.lat, probe.lng], { radius: radiusM, ...shapeStyle }).addTo(layer);
     } else {
       // Fyrkant: 4 hörn roterade 45° (platt topp). Hexagon: 6 hörn (spetsig topp).
-      const verts = polygonVerts(probe.lat, probe.lng, radiusKm, shape === 'square' ? 4 : 6, shape === 'square' ? 45 : 0);
-      L.polygon(verts, shapeStyle).addTo(layer);
+      L.polygon(probeShapeLatLngs(probe.lat, probe.lng, radiusKm, shape), shapeStyle).addTo(layer);
     }
     const shapeSv = shape === 'circle' ? 'cirkel' : shape === 'square' ? 'fyrkant' : 'hexagon';
     L.circleMarker([probe.lat, probe.lng], { radius: 6, color: '#78350f', weight: 2, fillColor: '#fbbf24', fillOpacity: 1 })
@@ -63,6 +50,11 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
       const { data, error } = await sb.rpc('features_in_shape', { p_lat: probe.lat, p_lng: probe.lng, radius_km: radiusKm, shape });
       if (error || myToken !== tokenRef.current || !map) return;
       setProbeCounts(data?.counts ?? null);
+      // Behåll objektlistorna för export (GeoJSON/CSV) — cappade till 1500/lager i RPC:n.
+      setProbeResult(data ? {
+        place_names: data.place_names, kulturlager: data.kulturlager,
+        runestones: data.runestones, fortresses: data.fortresses,
+      } : null);
       const add = (arr: any[], color: string, label: (r: any) => string) =>
         (arr || []).forEach((r) => {
           if (r.lat == null || r.lng == null) return;

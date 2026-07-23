@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Circle, Square, Hexagon, Save, Trash2 } from 'lucide-react';
+import { X, Circle, Square, Hexagon, Save, Trash2, Download } from 'lucide-react';
 import {
   useProximityProbe,
   setProbe,
@@ -12,19 +12,34 @@ import {
   type ProbeShape,
 } from '@/hooks/useProximityProbe';
 import { useHypothesisAreas } from '@/hooks/useHypothesisAreas';
+import { probeToGeoJSON, probeToCSV } from '@/utils/probeExport';
 
-// Flytande kontroll som visas när en räckvidds-sond är aktiv (klick på kyrka/fornborg).
-// Form (cirkel/fyrkant/hexagon), transport-preset (dagsresa) och fri radie.
-const SHAPES: { key: ProbeShape; label: string; Icon: typeof Circle }[] = [
-  { key: 'circle', label: 'Cirkel', Icon: Circle },
-  { key: 'square', label: 'Fyrkant', Icon: Square },
-  { key: 'hexagon', label: 'Hexagon', Icon: Hexagon },
+// Flytande kontroll som visas när en räckvidds-sond är aktiv (klick på objekt,
+// högerklick på kartan eller linjalen). Form (cirkel/fyrkant/hexagon), transport-
+// preset (dagsresa) och fri radie. Varje form är optimal under olika regler (title).
+const SHAPES: { key: ProbeShape; label: string; Icon: typeof Circle; rule: string }[] = [
+  { key: 'circle', label: 'Cirkel', Icon: Circle, rule: 'Jämn räckvidd åt alla håll (isotrop) — öppen terräng, gång/rodd utan hinder.' },
+  { key: 'square', label: 'Fyrkant', Icon: Square, rule: 'Sidor mot kardinalriktningarna (N/S/Ö/V) — räta strukturer: vägkors, rutindelning.' },
+  { key: 'hexagon', label: 'Hexagon', Icon: Hexagon, rule: 'Effektiv yttäckning utan glapp (Christaller k=7) — täck ett helt område med centralorter.' },
 ];
 
+// Nedladdning helt klient-side (Blob) — ingen server involverad.
+const downloadText = (filename: string, mime: string, text: string) => {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+};
+const slug = (s: string) => (s || 'omrade').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'omrade';
+
 export const ProximityControl: React.FC = () => {
-  const { probe, radiusKm, shape, modeKey, counts, note } = useProximityProbe();
+  const { probe, radiusKm, shape, modeKey, counts, result, note } = useProximityProbe();
   const { areas, save, remove, isLoggedIn } = useHypothesisAreas();
   if (!probe) return null;
+  const exportBase = `rackvidd-${slug(probe.label)}-${shape}-${radiusKm}km`;
+  const exportGeoJSON = () => downloadText(`${exportBase}.geojson`, 'application/geo+json', probeToGeoJSON(probe, shape, radiusKm, result));
+  const exportCSV = () => downloadText(`${exportBase}.csv`, 'text/csv', probeToCSV(result));
   const activeMode = TRANSPORT_MODES.find((m) => m.key === modeKey);
   const shapeSv = shape === 'circle' ? 'cirkeln' : shape === 'square' ? 'fyrkanten' : 'hexagonen';
   return (
@@ -38,10 +53,11 @@ export const ProximityControl: React.FC = () => {
 
       {/* Form */}
       <div className="flex gap-1 mb-2">
-        {SHAPES.map(({ key, label, Icon }) => (
+        {SHAPES.map(({ key, label, Icon, rule }) => (
           <button
             key={key}
             onClick={() => setProbeShape(key)}
+            title={rule}
             className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[11px] border transition-colors ${
               shape === key ? 'bg-amber-500/20 border-amber-500 text-amber-200' : 'border-slate-700 text-slate-300 hover:bg-slate-800'
             }`}
@@ -143,6 +159,24 @@ export const ProximityControl: React.FC = () => {
             <span className="text-slate-300">Ortnamn (registret)</span><span className="text-right font-semibold text-emerald-200">{counts.place_names_osm.toLocaleString()}</span>
             <span className="text-slate-300">Fornborgar</span><span className="text-right font-semibold text-orange-300">{counts.fortresses.toLocaleString()}</span>
           </div>
+          {/* Exportera resultatet — GeoJSON (QGIS) eller CSV (kalkylark). Klient-side. */}
+          <div className="flex gap-1 mt-2">
+            <button
+              onClick={exportGeoJSON}
+              title="Formens polygon + punkterna inuti — öppnas i QGIS"
+              className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[11px] border border-sky-600/60 text-sky-200 hover:bg-sky-500/15"
+            >
+              <Download className="h-3.5 w-3.5" />GeoJSON
+            </button>
+            <button
+              onClick={exportCSV}
+              title="Objektlistan inuti formen — för kalkylark"
+              className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[11px] border border-sky-600/60 text-sky-200 hover:bg-sky-500/15"
+            >
+              <Download className="h-3.5 w-3.5" />CSV
+            </button>
+          </div>
+          <div className="text-[10px] text-slate-500 mt-1">Listorna är cappade till 1500/lager; antalen ovan är fullständiga.</div>
         </div>
       )}
       <div className="mt-2 text-[10px] text-slate-500">Prickar: ortnamn (grön) · kulturlager (lila) · runstenar (röd) · fornborg (orange). Registrets ortnamn (OSM) räknas men ritas ej.</div>

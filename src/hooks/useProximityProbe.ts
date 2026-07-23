@@ -35,38 +35,53 @@ export interface ProbeCounts {
   fortresses: number;
   area_km2: number;
 }
-interface ProbeState { probe: Probe | null; radiusKm: number; shape: ProbeShape; modeKey: string | null; counts: ProbeCounts | null; note: string }
+// Fullständigt sond-resultat (objektlistorna INUTI formen) — behövs för export.
+// Speglar features_in_shape-svaret; listorna är cappade (1500/lager) medan counts är exakta.
+export interface ProbeResult {
+  place_names?: { name: string; lat: number; lng: number; category?: string }[];
+  kulturlager?: { name: string; type?: string; lat: number; lng: number }[];
+  runestones?: { signum: string; lat: number; lng: number }[];
+  fortresses?: { name: string; type?: string; lat: number; lng: number }[];
+}
+interface ProbeState { probe: Probe | null; radiusKm: number; shape: ProbeShape; modeKey: string | null; counts: ProbeCounts | null; result: ProbeResult | null; note: string }
 
-let state: ProbeState = { probe: null, radiusKm: 30, shape: 'circle', modeKey: null, counts: null, note: '' };
+let state: ProbeState = { probe: null, radiusKm: 30, shape: 'circle', modeKey: null, counts: null, result: null, note: '' };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
 
 export const setProbe = (lat: number, lng: number, label: string) => {
-  state = { ...state, probe: { lat, lng, label }, counts: null, note: '' };
+  state = { ...state, probe: { lat, lng, label }, counts: null, result: null, note: '' };
   emit();
 };
-export const clearProbe = () => { state = { ...state, probe: null, counts: null, note: '' }; emit(); };
+export const clearProbe = () => { state = { ...state, probe: null, counts: null, result: null, note: '' }; emit(); };
 // Fri hypotes-/anteckningstext knuten till området (name = probe.label, hypotes = note).
 export const setProbeNote = (note: string) => { state = { ...state, note }; emit(); };
 export const setProbeRadiusKm = (km: number) => {
-  state = { ...state, radiusKm: Math.max(1, Math.min(200, km)), modeKey: null, counts: null };
+  state = { ...state, radiusKm: Math.max(1, Math.min(200, km)), modeKey: null, counts: null, result: null };
   emit();
 };
-export const setProbeShape = (shape: ProbeShape) => { state = { ...state, shape, counts: null }; emit(); };
+export const setProbeShape = (shape: ProbeShape) => { state = { ...state, shape, counts: null, result: null }; emit(); };
 export const setProbeMode = (key: string) => {
   const m = TRANSPORT_MODES.find((t) => t.key === key);
-  if (m) { state = { ...state, radiusKm: m.radiusKm, modeKey: key, counts: null }; emit(); }
+  if (m) { state = { ...state, radiusKm: m.radiusKm, modeKey: key, counts: null, result: null }; emit(); }
 };
 export const setProbeCounts = (counts: ProbeCounts | null) => { state = { ...state, counts }; emit(); };
+// Fullständigt resultat (objektlistorna) — sätts av kartlagret efter RPC:n, används för export.
+export const setProbeResult = (result: ProbeResult | null) => { state = { ...state, result }; emit(); };
 
 export const useProximityProbe = () => useSyncExternalStore(subscribe, () => state);
 
-// Exponera för Leaflet-popup-knappar (HTML-strängar utanför React-trädet).
+// Exponera för Leaflet-popup-knappar (HTML-strängar/DOM utanför React-trädet).
 if (typeof window !== 'undefined') {
-  (window as any).setProximityProbe = (lat: number, lng: number, label: string) => setProbe(lat, lng, label);
+  const w = window as unknown as Record<string, unknown>;
+  // Kanonisk bro: popup-injektorn, kartklick och linjalen går alla genom setProbe.
+  // Håll __reachProbe stabilt — det kan refereras från genererad popup-HTML.
+  w.__reachProbe = (lat: number, lng: number, label: string) => setProbe(lat, lng, label);
+  // Bakåtkompatibla alias (äldre popup-HTML / bokmärken kan referera dessa).
+  w.setProximityProbe = w.__reachProbe;
   // Agnetas 9 km: sätt sond + hexagon + 9 km i ett svep (daglig maskvidd).
-  (window as any).analyzeAgneta9km = (lat: number, lng: number, label: string) => {
+  w.analyzeAgneta9km = (lat: number, lng: number, label: string) => {
     setProbe(lat, lng, label); setProbeShape('hexagon'); setProbeRadiusKm(9);
   };
 }
