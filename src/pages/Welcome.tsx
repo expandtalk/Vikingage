@@ -78,9 +78,9 @@ const Welcome = () => {
         onSkipIntro={handleSkipIntro}
       />
 
-      <ExploreViewCards dbStats={displayStats} />
-
       <ViewLauncherGrid dbStats={displayStats} />
+
+      <ExploreViewCards dbStats={displayStats} />
 
       <Suspense fallback={<div className="h-16 animate-pulse bg-white/10 rounded-lg mx-4" />}>
         <WelcomeFooter />

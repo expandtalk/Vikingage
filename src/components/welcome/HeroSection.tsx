@@ -1,6 +1,5 @@
 
 import React, { Suspense, lazy } from 'react';
-import { HeroStatsGrid } from './HeroStatsGrid';
 import type { DbStats } from '@/hooks/useRunicData/types';
 
 const PodcastPromotion = lazy(() => import('./PodcastPromotion').then(module => ({ default: module.PodcastPromotion })));
@@ -54,8 +53,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <p className="text-xl lg:text-2xl text-slate-200 mb-8 max-w-2xl mx-auto drop-shadow-md">
           {localizedText.heroDescription}
         </p>
-        
-        <HeroStatsGrid dbStats={dbStats} localizedText={localizedText} />
         
         {/* Podcast Section */}
         <div className="mt-8">
