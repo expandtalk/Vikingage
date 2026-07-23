@@ -78,7 +78,7 @@ const Welcome = () => {
         onSkipIntro={handleSkipIntro}
       />
 
-      <ExploreViewCards />
+      <ExploreViewCards dbStats={displayStats} />
 
       <ViewLauncherGrid dbStats={displayStats} />
 
