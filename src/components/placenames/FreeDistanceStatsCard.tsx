@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, FlaskConical } from 'lucide-react';
 import { useFreeDistanceStats } from '@/hooks/useFreeDistanceStats';
 import { useShapeReachStats } from '@/hooks/useShapeReachStats';
+import { useElementTestSeq, getElementTest } from '@/hooks/useElementTest';
 import { getElement } from '@/utils/placeNameElements';
 
 // Bygg ett eget test: välj namnled för test- och baslinjegrupp, och antingen
@@ -41,6 +42,13 @@ export const FreeDistanceStatsCard: React.FC<{ sv: boolean }> = ({ sv }) => {
   const [target, setTarget] = useState('church');
   const [shape, setShape] = useState('hexagon');
   const [radiusKm, setRadiusKm] = useState(15);
+
+  // "Analysera denna grupp" i ordlistan förfyller testgruppen härifrån.
+  const testSeq = useElementTestSeq();
+  useEffect(() => {
+    const els = getElementTest();
+    if (els.length) { setTest(els); setMode('distance'); }
+  }, [testSeq]);
 
   const { data: dist = [], isFetching: dFetch } = useFreeDistanceStats(test, baseline, target);
   const { data: reach = [], isFetching: rFetch } = useShapeReachStats(test, baseline, target, shape, radiusKm, mode === 'reach');
@@ -85,7 +93,7 @@ export const FreeDistanceStatsCard: React.FC<{ sv: boolean }> = ({ sv }) => {
   const tgtLabel = (TARGETS.find((t) => t.key === target) ?? TARGETS[0]);
 
   return (
-    <Card className="viking-card mb-6">
+    <Card className="viking-card mb-6" id="hypothesis-test-card">
       <CardHeader className="pb-2">
         <CardTitle className="text-foreground text-lg flex items-center gap-2">
           <FlaskConical className="h-5 w-5 text-gold" />
