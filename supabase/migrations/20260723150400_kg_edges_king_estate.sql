@@ -12,7 +12,7 @@ SELECT h.king_id,
          'fiscal_system', h.fiscal_system
        )),
        'estate_holdings',
-       COALESCE(h.confidence, 'uncertain')
+       COALESCE(h.confidence, 'possible')  -- 'uncertain' är ej tillåtet av relationship_confidence_check
 FROM estate_holdings h
 WHERE h.king_id IS NOT NULL
   AND EXISTS (SELECT 1 FROM entity_registry er WHERE er.id = h.king_id AND er.entity_type = 'king')
