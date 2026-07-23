@@ -27,11 +27,11 @@ export const BuildViewDialog: React.FC = () => {
   return (
     <Dialog>
       <DialogTrigger className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-gold px-3 py-1.5 text-slate-900 font-semibold text-sm hover:bg-amber-400 transition-colors">
-        <Compass className="h-4 w-4" /><span className="hidden md:inline">{sv ? 'Bygg din vy' : 'Build your view'}</span>
+        <Compass className="h-4 w-4" /><span className="hidden md:inline">{sv ? 'Bygg din karta' : 'Build your map'}</span>
       </DialogTrigger>
       <DialogContent className="max-w-3xl bg-slate-900 border-slate-700 max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2"><Layers className="h-5 w-5 text-gold" />{sv ? 'Bygg din vy' : 'Build your view'}</DialogTitle>
+          <DialogTitle className="text-white flex items-center gap-2"><Layers className="h-5 w-5 text-gold" />{sv ? 'Bygg din karta' : 'Build your map'}</DialogTitle>
           <DialogDescription className="text-slate-400">
             {sv ? 'Välj en färdig vy för att komma igång. I Utforska kan du sedan slå på/av lager i legenden och spara din vy.' : 'Pick a ready-made view. In Explore you can then toggle layers and save your view.'}
           </DialogDescription>
