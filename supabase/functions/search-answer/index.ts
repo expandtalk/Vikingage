@@ -1,8 +1,10 @@
-// search-answer — grounded RAG (steg 2). Embeddar frågan (gte-small) → hybrid-
-// retrieval (search_v2) → hydrerar bodies ur search_document → LLM (OpenRouter,
-// claude-sonnet-4-5) komponerar ett KÄLLFÖRT svar med [n]-citat. Svarar ENDAST
-// utifrån hämtade källor; hittar aldrig på (Verify-principen). Returnerar
-// { answer, sources } — sources driver klickbara verify-länkar i UI:t.
+// search-answer — grounded, GRAF-FÖRSTÄRKT RAG (steg 2+3). Flöde:
+//   1. embedda frågan (gte-small) → hybrid-retrieval (search_v2, lexikalt+semantiskt)
+//   2. GRAF-EXPANSION: för de starkaste träffarna, dra in relaterade entiteter via
+//      graph_neighborhood (carved_by, mentions_person, has_theme, located_in…) — så
+//      kunskapsgrafen deltar i svaret (multi-hop som Google inte kan).
+//   3. hydrera bodies → LLM (OpenRouter) komponerar KÄLLFÖRT svar med [n]-citat.
+// Svarar ENDAST utifrån hämtade källor; hittar aldrig på (Verify-principen).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -16,9 +18,8 @@ const buildCors = (origin: string | null) => ({
   'Vary': 'Origin',
 });
 
-// Skydda OpenRouter-kvoten: enkel in-memory rate limit per klient-IP.
 const RATE_LIMIT = 8;
-const RATE_WINDOW_MS = 60_000;
+const RATE_WINDOW_MS = 60000;
 const requestLog = new Map<string, number[]>();
 const isRateLimited = (id: string): boolean => {
   const now = Date.now();
@@ -31,8 +32,10 @@ const isRateLimited = (id: string): boolean => {
 // deno-lint-ignore no-explicit-any
 const session = new (globalThis as any).Supabase.ai.Session('gte-small');
 
-interface Hit { entity_type: string; entity_id: string; signum: string | null; label: string; sublabel: string | null; snippet: string | null }
-interface Doc { entity_type: string; entity_id: string; body_sv: string | null; body_en: string | null; body_simple: string | null }
+interface Item {
+  entity_type: string; entity_id: string; signum: string | null;
+  label: string; sublabel: string | null; snippet: string | null; via: string | null;
+}
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
@@ -61,31 +64,55 @@ Deno.serve(async (req) => {
       p_q: query, p_embedding: JSON.stringify(Array.from(emb)), p_limit: 12,
     });
     if (error) throw error;
-    const rows = (hits ?? []) as Hit[];
+    // deno-lint-ignore no-explicit-any
+    const rows = (hits ?? []) as any[];
     if (!rows.length) {
       return json({ answer: language === 'en' ? 'No sources found for that question.' : 'Inga källor hittades för den frågan.', sources: [] });
     }
 
-    // 2. Hydrera bodies för kontext.
+    // 2. Graf-expansion: relaterade entiteter för de 4 starkaste träffarna.
+    const items: Item[] = rows.map((h) => ({
+      entity_type: h.entity_type, entity_id: h.entity_id, signum: h.signum ?? null,
+      label: h.label, sublabel: h.sublabel ?? null, snippet: h.snippet ?? null, via: null,
+    }));
+    const seen = new Set(items.map((i) => `${i.entity_type}:${i.entity_id}`));
+    for (const s of rows.slice(0, 4)) {
+      try {
+        const { data: nb } = await supabase.rpc('graph_neighborhood', { p_id: s.entity_id });
+        // deno-lint-ignore no-explicit-any
+        for (const e of (nb ?? []) as any[]) {
+          const key = `${e.other_type}:${e.other_id}`;
+          if (seen.has(key) || items.length >= 18) continue;
+          seen.add(key);
+          items.push({
+            entity_type: e.other_type, entity_id: e.other_id, signum: null,
+            label: e.other_label, sublabel: null, snippet: null, via: `${e.predicate} → ${s.label}`,
+          });
+        }
+      } catch { /* grafen är best-effort — misslyckas den faller vi tillbaka på hybrid-träffarna */ }
+    }
+
+    // 3. Hydrera bodies för alla (frö-träffar + graf-grannar).
     const { data: docsData } = await supabase.from('search_document')
       .select('entity_type,entity_id,body_sv,body_en,body_simple')
-      .in('entity_id', rows.map((h) => h.entity_id));
-    const docs = (docsData ?? []) as Doc[];
-    const bodyOf = (h: Hit): string => {
+      .in('entity_id', items.map((h) => h.entity_id));
+    // deno-lint-ignore no-explicit-any
+    const docs = (docsData ?? []) as any[];
+    const bodyOf = (h: Item): string => {
       const d = docs.find((x) => x.entity_id === h.entity_id && x.entity_type === h.entity_type);
       const text = d ? [d.body_sv, d.body_en, d.body_simple].filter(Boolean).join(' ') : (h.snippet ?? '');
-      return text.slice(0, 600);
+      return (text ?? '').slice(0, 600);
     };
 
-    const sources = rows.map((h, i) => ({
-      n: i + 1, entity_type: h.entity_type, entity_id: h.entity_id, signum: h.signum, label: h.label, sublabel: h.sublabel,
+    const sources = items.map((h, i) => ({
+      n: i + 1, entity_type: h.entity_type, entity_id: h.entity_id, signum: h.signum, label: h.label, sublabel: h.sublabel, via: h.via,
     }));
-    const ctx = rows.map((h, i) =>
-      `[${i + 1}] (${h.entity_type}) ${h.label}${h.sublabel ? ` — ${h.sublabel}` : ''}\n${bodyOf(h)}`).join('\n\n');
+    const ctx = items.map((h, i) =>
+      `[${i + 1}] (${h.entity_type}) ${h.label}${h.sublabel ? ` — ${h.sublabel}` : ''}${h.via ? ` [relaterad: ${h.via}]` : ''}\n${bodyOf(h)}`).join('\n\n');
 
-    // 3. LLM-syntes — källförd, inga påståenden utöver källorna.
+    // 4. LLM-syntes — källförd, inga påståenden utöver källorna.
     const lang = language === 'en' ? 'engelska' : 'svenska';
-    const sys = `Du är en källkritisk historiker vid en runologisk forskningsplattform. Svara ENDAST utifrån KÄLLORNA nedan. Citera varje påstående med [n] som pekar på källans nummer. Hitta ALDRIG på fakta utöver källorna. Räcker inte källorna för att svara — säg det rakt ut. Redovisa osäkerhet. Svara på ${lang}, koncist (max ~150 ord), i löpande text med [n]-citat.`;
+    const sys = `Du är en källkritisk historiker vid en runologisk forskningsplattform. Svara ENDAST utifrån KÄLLORNA nedan. Citera varje påstående med [n] som pekar på källans nummer. Källor märkta [relaterad: ...] är hämtade via kunskapsgrafen — använd dem för att koppla samman entiteter (ristare, kungar, teman, platser). Hitta ALDRIG på fakta utöver källorna. Räcker inte källorna — säg det rakt ut. Redovisa osäkerhet. Svara på ${lang}, koncist (max ~150 ord), i löpande text med [n]-citat.`;
     const prompt = `FRÅGA: ${query}\n\n=== KÄLLOR ===\n${ctx}\n=== SLUT KÄLLOR ===\n\nSkriv ett källfört svar med [n]-citat.`;
 
     const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {

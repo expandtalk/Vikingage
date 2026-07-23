@@ -117,6 +117,7 @@ const App = () => (
                   <Route path="/themes/:slug" element={<ThemePage />} />
                   <Route path="/sources/text/:textId" element={<SourceDetail />} />
                   <Route path="/sources/:id" element={<SourceDetail />} />
+                  <Route path="/sources" element={<Navigate to="/texter" replace />} />
                   <Route path="/inscription/:signum" element={<InscriptionPage />} />
                   <Route path="/statistics" element={<Statistics />} />
                   <Route path="/sv/statistik" element={<Statistics />} />
