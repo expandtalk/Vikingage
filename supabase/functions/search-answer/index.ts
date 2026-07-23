@@ -97,9 +97,10 @@ Deno.serve(async (req) => {
         'X-Title': 'Viking Age Search',
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-sonnet-4-5',
+        // Modell: env SEARCH_ANSWER_MODEL, annars Kimi K3 (stark; ~samma pris som Sonnet).
+        model: Deno.env.get('SEARCH_ANSWER_MODEL') || 'moonshotai/kimi-k3',
         messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
-        temperature: 0.1, max_tokens: 700,
+        temperature: 0.1, max_tokens: 900,
       }),
     });
     if (!resp.ok) { console.error('OpenRouter', resp.status, await resp.text()); return json({ error: 'AI-tjänsten tillfälligt otillgänglig' }, 503); }
