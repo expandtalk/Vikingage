@@ -147,42 +147,23 @@ const createReligiousPlaceMarker = (
       'historical_record': '📖 Historisk källa',
       'cathedral': '⛪ Katedral',
     };
-    return `<span style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: ${colors.background}60; color: #ffffff !important; border: 1px solid ${colors.border}; margin: 2px;">
-      ${evidenceLabels[ev] || ev}
-    </span>`;
+    return `<span style="display:inline-flex;align-items:center;padding:1px 6px;border-radius:8px;font-size:10px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;">${evidenceLabels[ev] || ev}</span>`;
   }).join('');
 
   const marker = L.marker([place.coordinates.lat, place.coordinates.lng], { icon: customIcon })
     .bindPopup(`
-      <div style="background: rgba(30, 41, 59, 0.98) !important; color: white !important; padding: 16px; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.4); border: 3px solid ${colors.border}; backdrop-filter: blur(6px); min-width: 320px; max-width: 360px;">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-          <div style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid ${colors.border}; background: ${colors.background}; display: flex; align-items: center; justify-content: center; font-size: 18px;">
-            <span style="color: #ffffff;">${deityIcon}</span>
-          </div>
-          <div>
-            <h3 style="font-weight: bold; font-size: 18px; color: #ffffff !important; margin: 0;">${place.name}</h3>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.7) !important; margin: 2px 0 0 0;">${place.region}</p>
-          </div>
+      <div style="padding:2px 2px 4px;max-width:300px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:16px;line-height:1">${deityIcon}</span>
+          <h3 style="font-weight:700;font-size:14px;margin:0;color:#0f172a">${place.name}</h3>
         </div>
-        
-        <div style="margin-bottom: 12px;">
-          <p style="color: rgba(255,255,255,0.9) !important; font-size: 14px; line-height: 1.5; margin: 0;">${place.description}</p>
-        </div>
-        
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
-          ${evidenceTags}
-          ${isPaired ? '<span style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: rgba(147, 51, 234, 0.6); color: #ffffff !important; border: 1px solid #7c3aed; margin: 2px;">🔗 Gudapar</span>' : ''}
-          ${isMultiple ? '<span style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: rgba(245, 158, 11, 0.6); color: #ffffff !important; border: 1px solid #d97706; margin: 2px;">📍 Multipel plats</span>' : ''}
-        </div>
-        
-        <div style="margin-bottom: 12px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
-          <p style="font-size: 12px; color: rgba(255,255,255,0.8) !important; margin: 0;"><strong>Etablerad:</strong> ${establishedPeriodData?.name || place.establishedPeriod}</p>
-          <p style="font-size: 12px; color: rgba(255,255,255,0.8) !important; margin: 4px 0 0 0;"><strong>Aktiv under:</strong> ${activeInPeriods}</p>
-        </div>
-        
+        <p style="font-size:11px;color:#64748b;margin:2px 0 0">${place.region}${isPaired ? ' · 🔗 gudapar' : ''}${isMultiple ? ' · 📍 multipel' : ''}</p>
+        ${place.description ? `<p style="font-size:12px;color:#334155;line-height:1.45;margin:6px 0 0">${place.description}</p>` : ''}
+        ${evidenceTags ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${evidenceTags}</div>` : ''}
+        <p style="font-size:11px;color:#64748b;margin:6px 0 0"><strong>Datering:</strong> ${establishedPeriodData?.name || place.establishedPeriod}${activeInPeriods ? ` · aktiv ${activeInPeriods}` : ''}</p>
       </div>
     `, {
-      maxWidth: 380,
+      maxWidth: 320,
       className: 'religious-place-popup'
     });
 
