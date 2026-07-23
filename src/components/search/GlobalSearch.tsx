@@ -215,10 +215,22 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
     const t = setTimeout(async () => {
       setLoading(true);
       try {
+        // Hybrid (lexikalt search_v1 + semantiskt) via edge-funktionen search-hybrid.
+        // Fallback till rena search_v1 om edge:n fallerar → sök går aldrig sönder.
         // 120: regionsök (t.ex. "Gotland": 400+ inskrifter) tryckte annars ut
         // fornborgar/socknar ur topp-60; per-typ-taket i groupHits klipper sedan.
-        const res = await sb.rpc('search_v1', { p_q: q, p_limit: 120 });
-        setGroups(groupHits(res.data ?? []));
+        let hits: Hit[] | null = null;
+        try {
+          const { data, error } = await supabase.functions.invoke('search-hybrid', { body: { q, limit: 120 } });
+          if (!error && Array.isArray((data as { hits?: Hit[] } | null)?.hits)) {
+            hits = (data as { hits: Hit[] }).hits;
+          }
+        } catch { /* faller igenom till lexikalt */ }
+        if (!hits) {
+          const res = await sb.rpc('search_v1', { p_q: q, p_limit: 120 });
+          hits = res.data ?? [];
+        }
+        setGroups(groupHits(hits));
       } catch {
         setGroups([]);
       } finally {
