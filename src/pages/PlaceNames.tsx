@@ -18,6 +18,7 @@ import { FreeDistanceStatsCard } from '@/components/placenames/FreeDistanceStats
 import { ChurchDistanceCard } from '@/components/placenames/ChurchDistanceCard';
 import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
+import { setElementTest } from '@/hooks/useElementTest';
 import {
   PLACE_NAME_ELEMENTS,
   ELEMENT_CATEGORY_META,
@@ -616,8 +617,23 @@ const PlaceNames = () => {
           ))}
         </div>
 
-        <div className="flex items-center gap-3 mb-5 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3 mb-5 text-sm text-muted-foreground flex-wrap">
           <span>{sv ? 'Visar' : 'Showing'} <strong className="text-foreground">{filtered.length}</strong> {sv ? 'av' : 'of'} {places.length}</span>
+          {elementKey !== 'all' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setElementTest([elementKey]);
+                document.getElementById('hypothesis-test-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="h-7 text-xs border-gold/60 text-gold hover:bg-gold/10"
+              title={sv ? 'Kör hypotestestaren på detta namnled (avstånd/frekvens mot kontrollgruppen)' : 'Run the hypothesis tester on this element'}
+            >
+              <FlaskConical className="h-3 w-3 mr-1" />
+              {sv ? `Analysera "${elementLabel(elementKey)}"` : `Analyse "${elementLabel(elementKey)}"`}
+            </Button>
+          )}
           {(category !== 'all' || elementKey !== 'all' || query) && (
             <Button
               variant="ghost"
