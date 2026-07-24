@@ -248,3 +248,17 @@ Schemat är betydligt rikare än ett platt `runic_inscriptions`: ett normalisera
 1. **Källa för icke-språkliga attribueringsdrag:** Samnordisk runtextdatabas + Axelson + egen kurering (alla tre). Ger tillräckligt oberoende underlag för att cirkularitetsväggen ska hålla i DP2.
 2. **Bild för visuell pipeline:** använd **endast stenar vi har bildrättigheter för**. Det bekräftar att V1/V2 kör på ett begränsat delcorpus tills vidare, inte hela beståndet.
 3. **Osäkerhet i DP1 v1:** **konfidensklasser (hög/medel/låg) räcker** — inga numeriska fördelningar; probabilistiska datum skjuts till en senare fas (DP3).
+
+---
+
+## 13. Tillägg efter diskussion 2026-07-25
+
+Fyra förfiningar som växte fram i diskussion och som styr fortsättningen:
+
+1. **Runtyp som era-villkor — och inget "ungt golv".** Gräslunds kronologi täcker bara den sena ornerade traditionen (~980–1130) och får ALDRIG sätta ett undre golv på stenar utanför den. Den grova era-klockan är **futhark-typen**: äldre futhark (24 runor, ~150–700) vs yngre futhark (16, ~800+), samt långkvist/kortkvist/stavlös inom den yngre. Läggs till som ett `runetype`-villkor (Roll A, `inscription_runetype`) så motorn kan trycka en datering *bakåt*, inte bara snäva inom Gräslund. Rök/Sparlösa (~800) och äldre-futhark-inskrifter måste kunna dateras korrekt tidigt.
+
+2. **Ikonografi som mjukt Roll-B-villkor.** Skeppsavbildning utan segel kan indikera förseglet (seglet i Skandinavien ~700–800); på gotländska **bildstenar** ser man övergången (Lindqvists typologi). Modelleras som ett *lågkonfident, tolkande* villkor (frånvaro av segel ≠ bevis) — icke-språkligt, flaggat. Främst relevant för bildstenar (Oehrl-data finns). Ormslingan-som-fartyg är en *hypotes att testa*, aldrig en premiss.
+
+3. **Monument-kontinuum: hällristning → bildsten → runsten.** Runstenarna ses som en förlängning av hällristningstraditionen, med **bildstenarna som mellanled** och skriften som ett teknik-språng. Detta blir en era-dimension (`monument_tradition`) som spänner hela korpusen — inte tre isolerade kategorier. Ger en förklaringsram för spannet bortom vikingatid och binder ihop era-villkoret (runtyp) med ikonografin.
+
+4. **AI-datering av hela korpusen — alltid metodflaggad.** Motorn producerar redan ett *beräknat* datum per sten vars proveniens listar varje bidragande villkor (Gräslund = ett flaggat inslag, aldrig sammanblandat). En äkta *vision-AI*-uppskattning (V2) är begränsad av bild-/rättighetsgapet. Princip: **algoritmiskt datum för alla stenar nu; vision-AI-datum för den rättighetsklarerade bild-delmängden** — varje uppskattning bär metodflagga så den alltid kan särskiljas från Gräslunds/Runverkets expertbedömning. En interaktiv *"forskare laddar upp bild → analys"* är en DP3-nära produktriktning efter V1/V2.
