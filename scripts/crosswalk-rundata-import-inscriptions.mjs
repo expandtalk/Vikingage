@@ -8,7 +8,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 
 // Pilotlandskapen är redan importerade — hoppa dem (WHERE NOT EXISTS skulle ändå dedupa).
-const DONE = new Set(['Sm', 'Sö', 'Öl', 'G']);
+const DONE = new Set(); // tömd 2026-07-24: WHERE NOT EXISTS dedupar mot live-DB → processa ALLA prefix (alla länder).
 const SV_LANDSCAPE = {
   U: 'Uppland', 'Sö': 'Södermanland', 'Ög': 'Östergötland', Sm: 'Småland', 'Öl': 'Öland',
   G: 'Gotland', Vg: 'Västergötland', Bo: 'Bohuslän', Ha: 'Halland', 'Nä': 'Närke',
