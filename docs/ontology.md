@@ -61,7 +61,26 @@ Satellitdomäner (egna ontologifragment, ej fullt dokumenterade här): kungar/dy
 (`viking_cities`, `viking_fortresses`, `swedish_hillforts`, `viking_roads`, `trade_*`),
 kristna platser (`christian_sites`), gudom/kult (se §1c), **mynt/numismatik**
 (`coins` — nordiskt kungamynt, solidi, runmynt, islamiska dirhamer; se `/coins`),
-**källhänvisning & bildarkiv** (se §1d), onomastik/personnamn (se §1e).
+**källhänvisning & bildarkiv** (se §1d), onomastik/personnamn (se §1e),
+**vägmärken/stenar** (`heritage_sites` — lämningstyperna `milstolpe`, `gränsmärke`,
+`väghållningssten`, `bildsten`; ontologityper i `ontology_entity_types`, legendkategori
+"Stenar"; se §1f).
+
+### 1f. Vägmärken & gränsstenar (heritage_sites)
+
+Ur RAÄ/FMIS via K-samsök. Bulken (~15k) serveras spatialt (viewport-RPC), **ej** som
+KG-noder. Endast **kurerade, namngivna** stenar registreras i `entity_registry`:
+
+| Entitet | ontology-typ | Definition | CIDOC-CRM |
+|---|---|---|---|
+| **Milsten/milstolpe** | `milstolpe` | Avståndsmarkering längs landsväg (1649–1891). | E22 / E53 |
+| **Gränsmärke** | `gransmarke` | Råmärke mellan gård/socken/härad/rike; inkl. Landamäri. | E53 (boundary) |
+| **Väghållningssten** | `vaghallningssten` | Markerar markägarens väghållningsansvar. | E22 |
+
+**KG-kanter för kurerade stenar:** `located_in` (sten → landskap) och `has_theme`
+(Landamäri-stenarna → temat *Landamäri, riksgräns ~1050*). De 4 Landamäri-stenarna
+(Kinne, Vite, Vrangs rör, Brorshall) bär temat; Vita sten (Brännkyrka) är en lokal
+gräns och saknar därför temakoppling.
 
 ### 1d. Källhänvisning & bildarkiv (rundata-kedjan)
 
