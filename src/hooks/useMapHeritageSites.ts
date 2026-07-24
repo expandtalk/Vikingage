@@ -43,6 +43,9 @@ const TYPE_COLOR: Record<string, string> = {
   'kloster': '#c026d3',         // kloster-magenta
   'kapell': '#db2777',          // kapell-rosa
   'Källa med tradition': '#0ea5e9', // källa — vatten-blå
+  'milstolpe': '#b45309',       // milsten — brun/amber (vägmätning)
+  'väghållningssten': '#78716c',// väghållningssten — stengrå
+  'gränsmärke': '#7f1d1d',      // gränssten — mörkröd
 };
 const dotIconFor = (t: string) => {
   const c = TYPE_COLOR[t] || '#64748b';
@@ -60,7 +63,13 @@ const HERITAGE_TYPE_KEYS: Record<string, string> = {
   heritage_vardkase: 'vårdkase', heritage_dos: 'dös', heritage_ganggrift: 'gånggrift',
   heritage_bildsten: 'bildsten', heritage_skeppssattning: 'skeppssättning',
   heritage_kalla: 'Källa med tradition', heritage_labyrint: 'labyrint',
+  // "Stenar"-kategorin (egen parent 'heritage_stones'):
+  heritage_milstolpe: 'milstolpe', heritage_vaghallningssten: 'väghållningssten',
+  heritage_gransmarke: 'gränsmärke',
 };
+// Typ-nycklar som hör till "Stenar"-kategorin (parent 'heritage_stones') i st.f.
+// "Kulturlager" (parent 'heritage_sites'). heritage_bildsten flyttad hit i legenden.
+const STONE_KEYS = new Set(['heritage_milstolpe', 'heritage_vaghallningssten', 'heritage_gransmarke', 'heritage_bildsten']);
 
 export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
@@ -68,14 +77,18 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady }: Pro
 
   // Kartan drivs enbart av per-typ-kryssen. Föräldern (heritage_sites) fungerar
   // som huvudström: är den explicit av döljs/släcks hela kulturlagret.
-  const parentOn = enabledLegendItems.heritage_sites !== false;
+  // Två parent-master: "Kulturlager" (heritage_sites) och "Stenar" (heritage_stones).
+  // Varje typ gate:as av sin egen kategori-parent + sitt eget kryss.
+  const parentKultur = enabledLegendItems.heritage_sites !== false;
+  const parentStone = enabledLegendItems.heritage_stones !== false;
   const types = Object.entries(HERITAGE_TYPE_KEYS)
-    .filter(([k]) => enabledLegendItems[k] === true).map(([, v]) => v);
-  const typesKey = parentOn ? types.join(',') : 'OFF';
+    .filter(([k]) => enabledLegendItems[k] === true && (STONE_KEYS.has(k) ? parentStone : parentKultur))
+    .map(([, v]) => v);
+  const typesKey = types.join(',') || 'OFF';
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;
-    const enabled = parentOn && types.length > 0;
+    const enabled = types.length > 0;
 
     if (!layerRef.current) layerRef.current = L.layerGroup().addTo(map);
     const layer = layerRef.current;

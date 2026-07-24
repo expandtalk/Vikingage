@@ -146,7 +146,6 @@ export const generateBasicInscriptionItems = (
     { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: itemEnabled(enabledLegendItems, 'heritage_ganggrift') },
     { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: itemEnabled(enabledLegendItems, 'heritage_vardkase') },
     { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_dos') },
-    { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_bildsten') },
     { id: 'heritage_labyrint', label: '🌀 Labyrinter', color: '#0d9488', count: 493, enabled: itemEnabled(enabledLegendItems, 'heritage_labyrint') },
     // Ortnamn ligger under Kulturlager (Daniel), som egen underkategori med element-typ-barn
     // (sakral/makt/natur). Opt-in; kaskad tänder de tre typerna. usePlaceNameMarkers gate:ar
@@ -172,6 +171,26 @@ export const generateBasicInscriptionItems = (
     enabled: itemEnabled(enabledLegendItems, 'heritage_sites'),
     type: 'category',
     children: heritageChildren,
+  });
+
+  // "Stenar" — samlande kategori för sten-lämningar (milstenar/gränsstenar/väghållnings-
+  // stenar/bildstenar) ur heritage_sites, viewport-laddat via useMapHeritageSites. Egen
+  // parent 'heritage_stones' (skild från Kulturlager). AV som standard. Barnens id:n
+  // mappas till raa_type i HERITAGE_TYPE_KEYS (STONE_KEYS).
+  const stoneChildren = [
+    { id: 'heritage_milstolpe', label: '🪧 Milstenar', color: '#b45309', count: 5820, enabled: itemEnabled(enabledLegendItems, 'heritage_milstolpe') },
+    { id: 'heritage_vaghallningssten', label: 'Väghållningsstenar', color: '#78716c', count: 3934, enabled: itemEnabled(enabledLegendItems, 'heritage_vaghallningssten') },
+    { id: 'heritage_gransmarke', label: 'Gränsstenar', color: '#7f1d1d', count: 26, enabled: itemEnabled(enabledLegendItems, 'heritage_gransmarke') },
+    { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_bildsten') },
+  ];
+  items.push({
+    id: 'heritage_stones',
+    label: '🪨 Stenar',
+    color: '#78716c',
+    count: stoneChildren.reduce((s, c) => s + c.count, 0),
+    enabled: itemEnabled(enabledLegendItems, 'heritage_stones'),
+    type: 'category',
+    children: stoneChildren,
   });
 
   // Kyrko-typerna som fristående poster (grupperas in i Kyrka & kristendom nedan).
@@ -510,6 +529,13 @@ export const generateCountryBasedItems = (
     { id: 'ireland', country: 'Ireland', label: t('ireland'), color: '#22c55e', majorCountry: false },
     { id: 'scotland', country: 'Scotland', label: t('scotland'), color: '#a855f7', majorCountry: false },
     { id: 'faroe_islands', country: 'Faroe Islands', label: t('faroeIslands'), color: '#0ea5e9', majorCountry: false },
+    { id: 'isle_of_man', country: 'Isle of Man', label: t('isleOfMan'), color: '#e11d48', majorCountry: false },
+    { id: 'germany', country: 'Germany', label: t('germany'), color: '#eab308', majorCountry: false },
+    { id: 'netherlands', country: 'Netherlands', label: t('netherlands'), color: '#f97316', majorCountry: false },
+    { id: 'poland', country: 'Poland', label: t('poland'), color: '#be123c', majorCountry: false },
+    { id: 'france', country: 'France', label: t('france'), color: '#2563eb', majorCountry: false },
+    { id: 'italy', country: 'Italy', label: t('italy'), color: '#16a34a', majorCountry: false },
+    { id: 'latvia', country: 'Latvia', label: t('latvia'), color: '#7c3aed', majorCountry: false },
     { id: 'greenland', country: 'Greenland', label: t('greenland'), color: '#64748b', majorCountry: false }
   ];
 
