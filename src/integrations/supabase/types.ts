@@ -1899,6 +1899,7 @@ export type Database = {
           holder_kind: string
           holder_name: string | null
           id: string
+          jordnatur: string | null
           king_id: string | null
           note: string | null
           period_end: number | null
@@ -1921,6 +1922,7 @@ export type Database = {
           holder_kind: string
           holder_name?: string | null
           id?: string
+          jordnatur?: string | null
           king_id?: string | null
           note?: string | null
           period_end?: number | null
@@ -1943,6 +1945,7 @@ export type Database = {
           holder_kind?: string
           holder_name?: string | null
           id?: string
+          jordnatur?: string | null
           king_id?: string | null
           note?: string | null
           period_end?: number | null
@@ -1985,6 +1988,56 @@ export type Database = {
             columns: ["king_id"]
             isOneToOne: false
             referencedRelation: "historical_kings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estate_valuations: {
+        Row: {
+          cameral_units: string | null
+          confidence: string | null
+          created_at: string | null
+          estate_id: string
+          id: string
+          jordetal_notation: string | null
+          jordetal_penningland: number | null
+          note: string | null
+          source: string | null
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          cameral_units?: string | null
+          confidence?: string | null
+          created_at?: string | null
+          estate_id: string
+          id?: string
+          jordetal_notation?: string | null
+          jordetal_penningland?: number | null
+          note?: string | null
+          source?: string | null
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          cameral_units?: string | null
+          confidence?: string | null
+          created_at?: string | null
+          estate_id?: string
+          id?: string
+          jordetal_notation?: string | null
+          jordetal_penningland?: number | null
+          note?: string | null
+          source?: string | null
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estate_valuations_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
             referencedColumns: ["id"]
           },
         ]
@@ -7588,6 +7641,15 @@ export type Database = {
         | { Args: never; Returns: boolean }
         | { Args: { p_user_id: string }; Returns: boolean }
       is_admin_or_editor: { Args: never; Returns: boolean }
+      jordetal_to_penningland: {
+        Args: {
+          markland: number
+          oresland: number
+          ortugland: number
+          penningland: number
+        }
+        Returns: number
+      }
       log_security_event: {
         Args: {
           p_error_message?: string
