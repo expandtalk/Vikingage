@@ -60,16 +60,21 @@ export const MARKER_ICONS: Record<string, string> = {
   dot: '<circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/>',
 };
 
-// Kungaplatser (kungssäten/centralorter) — kurerad, dokumenterad lista. Guld på kartan.
-// SE: Gamla Uppsala, Uppsala, Valsgärde, Vendel, Helgö, Birka, Sigtuna, Adelsö/Hovgården,
-// Uppåkra. NO: Nidaros/Trondheim, Kaupang, Borre, Avaldsnes, Lade. DK: Lejre, Jelling,
-// Ribe, Hedeby, Tissø. (Kan senare promotas till DB-fält / central_places.)
+// FÖRSTARANGS CENTRALORTER — kurerad, dokumenterad lista → guldmarkör (rang; typen bärs
+// av ikonen). Omfattar kungasäten, storemporier, Hansastäder och Rus-/västmetropoler.
+// Kan senare promotas till DB-fält / central_places. (Historiskt namn på setet behållet.)
 export const ROYAL_SEATS = new Set<string>([
+  // SE kungasäten/maktcentra
   'gamla uppsala', 'uppsala', 'valsgärde', 'vendel', 'helgö', 'birka', 'sigtuna',
-  'hovgården', 'adelsö', 'uppåkra', 'nidaros', 'trondheim', 'kaupang', 'borre',
-  'avaldsnes', 'lade', 'lejre', 'jelling', 'ribe', 'hedeby', 'tissø',
-  // Maktcentra/kungagravar/dynastisäten (Daniel 2026-07-24)
-  'varnhem', 'bjälbo', 'skara',
+  'hovgården', 'adelsö', 'uppåkra', 'varnhem', 'bjälbo', 'skara', 'stegeborg', 'kalmar',
+  'lund', 'visby',
+  // NO
+  'nidaros', 'trondheim', 'kaupang', 'borre', 'avaldsnes', 'lade', 'bergen', 'oslo', 'tönsberg', 'tønsberg',
+  // DK
+  'lejre', 'jelling', 'ribe', 'hedeby', 'tissø', 'roskilde', 'københavn', 'köpenhamn', 'odense', 'aarhus',
+  // Emporier / Rus / väst (Aldeigjuborg=Staraja Ladoga, Holmgård=Novgorod, Könugård=Kiev, Jórvík=York)
+  'truso', 'wolin', 'staraja ladoga', 'staraya ladoga', 'novgorod', 'kiev', 'gnezdovo',
+  'dublin', 'york', 'jórvík',
 ]);
 
 // Monumentala runstenar som ska framhävas bland de täta run-prickarna: egen medaljong
