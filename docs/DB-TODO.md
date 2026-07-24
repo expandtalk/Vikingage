@@ -47,8 +47,10 @@ Sekvens (Daniel): 1) vägnätet först → 2) berika vägar med medeltidsbreven 
 - **Kurerade Dalarövägen-milstenar med årtal 1777** (10 st, Gyllenborg): `scripts/data/dalarovagen-milstenar.sql`.
 - Eriksgatan (viking_roads + useMapEriksgata) + Valdemarsleden = mönstret att återanvända.
 
+**✅ KLART forts.:**
+- **"Stenar"-legendkategori** (mergad main 2026-07-24) — parent `heritage_stones` med underlager Milstenar (5820) / Väghållningsstenar (3934) / Gränsstenar (26) / Bildstenar (192), renderade ur heritage_sites per raa_type via useMapHeritageSites viewport-RPC. Färg per typ, popup m. namn/år. (Ev. runstenar som underlager senare.)
+
 **🔴 KVAR:**
-- **"Stenar"-kategori i legenden (Daniel 2026-07-24)** — en samlande parent-kategori **Sten** med underlager per typ: **gränsstenar** (raa_type='gränsmärke'), **milstenar** ('milstolpe'), **väghållningsstenar**, + övriga sten-kategorier (bildsten, ev. runstenar). Rendera heritage_sites-lämningarna per raa_type som togglingsbara legend-lager med subtyp-färg. Frontend (legend-config + kartlager).
 - **Suntru asi / Rördalen (Landamäri #1)** — jaga Bengtssons trestenaröse på Ale/Vättle-häradsgränsen. Ej sökbart på namn i FMIS; kandidat-rösen finns (Bergum 57.823/12.129 m.fl.) men EJ verifierade → behöver RAÄ-nr ur Bengtsson (Fornvännen) el. Daniels bekräftelse. (Danabäck #2 likaså ej funnen.) Metod: `serviceOrganization=RAÄ AND text="…"`.
 - **Häradsyta / härad som geografisk polygon (Daniel 2026-07-24)** — härad = union av sockenpolygoner (kräver Geotorget "Socken och stad, vektor") → häradsytor på kartan + spatial häradstillhörighet ("vilket härad ligger X i"). Kopplar till rundatas her_SE-hierarki (4 090 + object_her_SE 4 980) + part_of_hundred-kanterna. Bäring på Landamäri-stenarna (häradsgränser) + maktgeografin/ledung.
 - **Subtyp + årtal via djup FMIS-hämtning** — klassa de ~6 134 oklassade + hämta årtal/regent/landshövding ur FMIS-beskrivningen per lämning (rdf-fetch, senare).
