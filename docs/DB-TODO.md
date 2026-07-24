@@ -24,7 +24,7 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18.
 1. **KG-navigatorns användarlager** — inga `/kyrkor`+`/churches`-routes, 0 destinationskort/vägvisare i `GlobalSearch`, ingen brainstorming-map. Spec: `2026-07-23-kg-navigator-design.md` (Plan 2+3). Se [[kg-navigator-project]].
 2. **Kameral värdering** — `estate_valuations` + `jordetal_to_penningland()` saknas. Spec KLAR: `2026-07-24-cameral-valuation-design.md` + plan behövs. Se [[transfer-mechanisms-model]].
 3. **`nearby_features(lat,lng,radius)` RPC** — saknas; blockerar utflykternas närliggande runstenar/artefakter.
-4. **rundata-rollout svans** — ~755 inskrifter kvar (6 434 vs ~7 189) + socken/härad på nya rader.
+4. ~~**rundata-rollout svans**~~ **KLART 2026-07-24** — Norge +1486, all-prefix-import (WHERE NOT EXISTS) = 0 nya → dumpen bevisat komplett i DB. `runic_inscriptions`=7920, alla länder, 0 dubblett-signum. (Kvar: socken/härad på de nya utländska raderna — lägre prio; svenska hierarkin klar.)
 5. **Strandförskjutning bortom Mälardalen** — bara 18 paleo-skivor; kräver SGU-raster + Python (se historik nedan).
 6. **Sockenpolygoner** — `parishes`/`hundreds`/`her_SE` saknar `geom`. Kräver Geotorget "Socken och stad, vektor" (externt).
 
