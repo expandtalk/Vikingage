@@ -21,4 +21,13 @@ describe('styleConstraint', () => {
     expect(styleConstraint('')).toBeNull();
     expect(styleConstraint('Frobnicate')).toBeNull();
   });
+  it('viktar Pr4/Pr5 högst och Rak lägst+bredast (Källström-kalibrering)', () => {
+    expect(styleConstraint('Pr4')!.confidence).toBe('high');
+    expect(styleConstraint('Pr5')!.confidence).toBe('high');
+    expect(styleConstraint('Pr3')!.confidence).toBe('medium');
+    expect(styleConstraint('RAK')!.confidence).toBe('low');
+    const rak = styleConstraint('RAK')!.interval;
+    const pr4 = styleConstraint('Pr4')!.interval;
+    expect(rak.to - rak.from).toBeGreaterThan(pr4.to - pr4.from);
+  });
 });

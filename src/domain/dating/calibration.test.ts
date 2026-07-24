@@ -19,7 +19,7 @@ describe('Gräslund-kalibrering', () => {
   });
 
   it('förfinar INOM fasen när ett smalare icke-motstridigt villkor läggs till', () => {
-    const s = styleConstraint('Pr3')!;                 // {1045,1075}
+    const s = styleConstraint('Pr3')!;                 // {1045,1085}
     const c = carverWindow({ floruitStart: 1050, floruitEnd: 1065 })!;
     const r = refineNode([s, c], 'all');
     expect(r.interval).toEqual({ from: 1050, to: 1065 });
@@ -29,8 +29,8 @@ describe('Gräslund-kalibrering', () => {
   });
 
   it('åsidosätter aldrig tyst Gräslund: motstridigt villkor flaggas', () => {
-    const s = styleConstraint('RAK')!;                 // {980,1015}
-    const c = carverWindow({ floruitStart: 1060, floruitEnd: 1090 })!;
+    const s = styleConstraint('RAK')!;                 // {980,1075} (brett, Källström-kalibrerat)
+    const c = carverWindow({ floruitStart: 1090, floruitEnd: 1120 })!; // helt utanför RAK-kuvertet
     const r = refineNode([s, c], 'all');
     expect(r.conflict).toBe(true);
   });
