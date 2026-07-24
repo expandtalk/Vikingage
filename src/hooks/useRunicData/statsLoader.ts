@@ -156,13 +156,14 @@ export const loadDatabaseStats = async (): Promise<DbStats> => {
     // Verkliga antal per kartlager (legenden visade tidigare hårdkodade/inaktuella tal;
     // kyrkorna saknades helt = 0). Head-count, billigt, körs parallellt.
     const head = (table: string) => supabase.from(table).select('*', { count: 'exact', head: true });
-    const [churchesRes, coinsRes, spoliaRes, speciesRes, heritageRes, estatesRes, adnaSitesRes] = await Promise.all([
+    const [churchesRes, coinsRes, spoliaRes, speciesRes, heritageRes, estatesRes, godsRes, adnaSitesRes] = await Promise.all([
       head('ecclesiastical_sites'),
       head('coins'),
       head('picture_stone_reuse'),
       head('species_introductions'),
       head('heritage_sites'),
       head('estates'),
+      head('gods'),
       supabase.from('genetic_individuals').select('site_id'),
     ]);
     const adnaSites = new Set(
@@ -190,6 +191,7 @@ export const loadDatabaseStats = async (): Promise<DbStats> => {
       totalHundreds: hundredsCount || 0,
       totalParishes: parishesCount || 0,
       totalFolkGroups: folkGroupsCount || 0,
+      totalGods: godsRes.count || 0,
       totalGeneticEvents: geneticIndividualsCount || 0,
       totalRoyalChronicles: totalRoyalChroniclesEntries,
       totalRivers: riversCount || 0,

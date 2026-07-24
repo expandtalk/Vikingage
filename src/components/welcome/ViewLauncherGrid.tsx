@@ -6,8 +6,6 @@ import type { DbStats } from '@/hooks/useRunicData/types';
 import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
 import { EXCURSIONS } from '@/data/excursions';
 
-// Antal namngivna fornnordiska gudar (inte namnvarianter) — kuraterad siffra.
-const NORSE_GOD_COUNT = 25;
 // Hedniska heliga källor/kultplatser (ej kristna).
 const CULT_SITE_COUNT = RELIGIOUS_PLACES.filter((p) => p.deity !== 'christian').length;
 // Från den delade utflyktslistan så kortet aldrig hamnar ur synk.
@@ -26,8 +24,8 @@ interface LauncherCard {
 }
 
 const CARDS: LauncherCard[] = [
-  { to: '/explore?focus=inscriptions', sv: 'Runinskrifter', en: 'Runic inscriptions', dsv: 'Alla runinskrifter (stenar, ben, mynt, träpinnar…) på kartan.', den: 'All runic inscriptions (stones, bone, coins, wooden sticks…) on the map.', count: (s) => s.totalInscriptions },
-  { to: '/explore?focus=gods', sv: 'Nordiska gudar', en: 'Norse gods', dsv: 'Kultplatser per gud (Oden, Tor, Frö…).', den: 'Cult sites by deity (Odin, Thor, Freyr…).', count: () => NORSE_GOD_COUNT },
+  { to: '/explore?focus=inscriptions', sv: 'Runstenar', en: 'Runestones', dsv: 'Runstenar (resta monument) på kartan.', den: 'Runestones (raised monuments) on the map.', count: (s) => s.totalRunestones },
+  { to: '/explore?focus=gods', sv: 'Nordiska gudar', en: 'Norse gods', dsv: 'Kultplatser per gud (Oden, Tor, Frö…).', den: 'Cult sites by deity (Odin, Thor, Freyr…).', count: (s) => s.totalGods },
   { to: '/explore?focus=fortresses', sv: 'Fornborgar', en: 'Hillforts', dsv: 'Fornborgar med datering (kol-14, morfologi).', den: 'Hillforts with dating (14C, morphology).', count: (s) => s.totalFortresses },
   { to: '/explore?focus=cultSites', sv: 'Kultplatser', en: 'Cult sites', dsv: 'Förkristna heliga källor och kultplatser.', den: 'Pre-Christian holy springs and cult sites.', count: () => CULT_SITE_COUNT },
   { to: '/carvers', sv: 'Ristare', en: 'Carvers', dsv: 'Runristare och deras signerade verk.', den: 'Rune carvers and their signed works.', count: (s) => s.totalCarvers },

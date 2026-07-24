@@ -2,6 +2,7 @@
 export interface DbStats {
   totalInscriptions: number;
   totalRunestones?: number; // kurerad delmängd av totalInscriptions (object_type = runsten); se count_runestones()
+  totalGods?: number; // antal gudar i gods-tabellen (alla, inkl. de utan bild)
   totalCoordinates: number;
   totalCarvers: number;
   totalArtefacts: number;
