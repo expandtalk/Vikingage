@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 // den kan sitta globalt i Header. Additivt — rör inte Explore-layouten.
 interface ViewCard { to: string; sv: string; en: string; dsv: string; den: string }
 const CARDS: ViewCard[] = [
-  { to: '/explore?focus=inscriptions', sv: 'Runstenar', en: 'Runestones', dsv: 'Alla runinskrifter på kartan.', den: 'All runic inscriptions on the map.' },
+  { to: '/explore?focus=inscriptions', sv: 'Runinskrifter', en: 'Runic inscriptions', dsv: 'Alla runinskrifter (stenar, ben, mynt, träpinnar…) på kartan.', den: 'All runic inscriptions (stones, bone, coins, wooden sticks…) on the map.' },
   { to: '/explore?focus=gods', sv: 'Kultplatser', en: 'Cult sites', dsv: 'Förkristna kultplatser per gud (Oden, Tor, Frö…).', den: 'Pre-Christian cult sites by deity.' },
   { to: '/explore?focus=geneticEvents', sv: 'Genetik & aDNA', en: 'Genetics & aDNA', dsv: 'aDNA-platser, migrationer och djur-DNA i djuptid.', den: 'aDNA sites, migrations and animal DNA in deep time.' },
   { to: '/explore?focus=churches', sv: 'Kyrkor & stift', en: 'Churches & dioceses', dsv: 'Medeltidskyrkor, stift och ruiner.', den: 'Medieval churches, dioceses and ruins.' },

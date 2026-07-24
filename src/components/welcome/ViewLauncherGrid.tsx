@@ -26,7 +26,7 @@ interface LauncherCard {
 }
 
 const CARDS: LauncherCard[] = [
-  { to: '/explore?focus=inscriptions', sv: 'Runstenar', en: 'Runestones', dsv: 'Alla runinskrifter på kartan.', den: 'All runic inscriptions on the map.', count: (s) => s.totalInscriptions },
+  { to: '/explore?focus=inscriptions', sv: 'Runinskrifter', en: 'Runic inscriptions', dsv: 'Alla runinskrifter (stenar, ben, mynt, träpinnar…) på kartan.', den: 'All runic inscriptions (stones, bone, coins, wooden sticks…) on the map.', count: (s) => s.totalInscriptions },
   { to: '/explore?focus=gods', sv: 'Nordiska gudar', en: 'Norse gods', dsv: 'Kultplatser per gud (Oden, Tor, Frö…).', den: 'Cult sites by deity (Odin, Thor, Freyr…).', count: () => NORSE_GOD_COUNT },
   { to: '/explore?focus=fortresses', sv: 'Fornborgar', en: 'Hillforts', dsv: 'Fornborgar med datering (kol-14, morfologi).', den: 'Hillforts with dating (14C, morphology).', count: (s) => s.totalFortresses },
   { to: '/explore?focus=cultSites', sv: 'Kultplatser', en: 'Cult sites', dsv: 'Förkristna heliga källor och kultplatser.', den: 'Pre-Christian holy springs and cult sites.', count: () => CULT_SITE_COUNT },
