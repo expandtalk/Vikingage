@@ -1,7 +1,7 @@
 # Forensisk runstensanalys — program-design
 
 **Datum:** 2026-07-24
-**Status:** Design (program-nivå) — väntar användargranskning innan DP1-spec
+**Status:** Godkänd (program-nivå, 2026-07-24) — DP1-implementationsplan påbörjas
 **Författare:** Daniel Larsson + Claude
 **Relaterat:** `2026-07-17-ortnamn-gis-pilot-design.md` (metoden återanvänds), `src/utils/placeNameElements.ts`, minnesnoterna hypothesis-tester / picture-stone-spolia / carver-enrichment-kallstrom
 
@@ -135,7 +135,7 @@ Modellen är ett **intervall-constraint-nät** (jfr Allens intervall-algebra):
 
 - **Noder** = inskrifter (och ristare, som bär ett aktivt fönster).
 - **Egenvillkor** per nod: initialt intervall = stilkuvert `[period_start, period_end]`.
-- **Hårda gränser**: händelseankare, terminus post/ante quem från kyrka/ting.
+- **Hårda gränser**: händelseankare, terminus post/ante quem från kyrka/ting. Utnyttja `dating_methods.gives_absolute` för att skilja hårda (absoluta) ankare från mjuka (relativa).
 - **Riktade kanter** ("A före B"): mästar→lärling, förebild→efterföljd.
 - **Samtidighetskanter**: samarbete/dubbelsignatur ⇒ ristarnas aktiva fönster måste överlappa; samverkans-stenen dateras av snittet.
 - **Ristarband**: alla stenar tillskrivna en ristare ärver hans aktiva fönster (≤ ~40 år; livslängd ≤ ~90).
@@ -171,26 +171,41 @@ Villkorsgrafen (§5) + `stone_features`-substratet (roll A + de icke-språkliga 
 Ortnamns-metoden på runorna: en run-språk-katalog (samma schema som `placeNameElements.ts`) + reproducerbar matchning mot translittereringen + kontroll-baslinje + **tidsaxel** (sekel/decennium) + 300-årsgrind (`refined_to − refined_from < 300`, på `non_linguistic`-datumet). Semantiska ordgrupper (makt/kult/släkt/lag/färd) som första seedade katalog; dialekt/lånord och ordformer som ytterligare katalogfiler.
 
 ### DP3 — Attribuering / digital tvilling
-Fingerprint-vektor per sten (roll-B-drag) + likhetsmått + klustring → "digitala tvillingar", hand-/verkstadshypoteser. Nedströms om att B-drag finns (text-härledda nu, visuella via pipelinen).
+Fingerprint-vektor per sten (roll-B-drag) + likhetsmått + klustring → "digitala tvillingar", hand-/verkstadshypoteser. `inscription_comparisons` (`similarity_score`, `findings`) finns redan som delhemvist. Nedströms om att B-drag finns (text-härledda nu, visuella via pipelinen).
 
 ### Tvärgående: visuell pipeline (§6)
 Byggs V1 → V2 → V3, oberoende av DP-ordningen, men V1 bör tidigareläggas eftersom den ger icke-språkliga dateringsdrag som stärker DP1 och DP2:s oberoende.
 
 ---
 
-## 8. Datagrund (delvis verifierad — bakgrundsaudit pågår)
+## 8. Datagrund (verifierad mot schema — live-DB-täckning kvarstår)
 
-**Bekräftat (kod/schema):**
-- `runic_inscriptions`: `period_start`, `period_end`, `dating_text`, `dating_confidence`, `style_group` (Gräslund-kod), `translitteration`. Koordinater finns.
-- Ristare: aktiv-period visas (`formatPeriod`), RPC:er `get_carver_statistics` / `get_carver_inscriptions`, carver↔inskrift-länk finns (`carverid`-filter).
-- `king_inscription_links` finns. `MeterBadge` klassificerar redan versmått (skaldiskt/eddiskt) per inskrift. Generisk `relationship`/`entity_registry`-KG finns (kan hålla mästar–lärling/förebild-kanter).
-- Bild-substrat: repo har `images/…`-mappar (u357, karlevistenen m.fl.); gren `feat/runestone-portrait-thumbs` (mergad) införde porträtt-tumnaglar.
+Schemat är betydligt rikare än ett platt `runic_inscriptions`: ett normaliserat vokabulär-lager, ett Rundata-lyft (`dating`/`readings`/`interpretations`/`imagelinks`), och en generisk kunskapsgraf (`entity_registry`/`relationship`/`rel_predicates`) där flera "tabeller" i själva verket är write-through-vyer.
 
-**Kräver bygge/kurering (preliminärt):** stentyps-/attribuerings-drag (ornamentik, komposition, kvalitet), mästar–lärling- & förebild-relationer, strukturerade händelse→inskrift-länkar, material, resenärsursprung, yrke→institution.
+**Starkt — har strukturell hemvist nu, kräver bara ifyllnad/kurering:**
+- **Datering (dubbelt lager).** Huvudtabell: `period_start/end`, `dating_text`, `dating_confidence`, `style_group`, plus `uncertainty_level`, `interpretation_confidence`, `paleographic_notes`. Dessutom en dedikerad `dating`-tabell (Rundata) med `parsed_period`, `parsing_confidence`, och — viktigt för navet — `dating_methods` med flaggan **`gives_absolute` + `resolution`** (skiljer absolut från relativ datering) samt `dating_source` (datering→källa).
+- **Runtyp (A2).** `rune_type`/`rune_variant` (fritext) + normaliserat `inscription_runetype` → `vocabulary('runetype')`.
+- **Ristare (A3).** `carvers.period_active_start/end` (floruit; gles — härleds i runtime idag). `carver_inscription` = vy över `relationship` med enum `attribution_type` (`signed`/`attributed`/`similar`/`signed on pair stone`) + `certainty`.
+- **Stil/ornamentik (B5).** Normaliserat `inscription_style` → `vocabulary` (`ornament_style`, `cross/kors`) + `meter`-fält. `style_group` som fritextspegel.
+- **Textsubstrat (B6) — komplett.** `transliteration` + `normalization` + `text_segments` (Json) + översättningar; `readings` + `interpretations` med TEI-fält. Rundata-format bekräftat (`·/+/:/×`-avgränsare, `¶` radbrytning, `§A/§B`, `( )` osäker, `[ ]` restituerat).
+- **Kontext (C7).** `parish_id`-FK (+ match-metod/score) och PostGIS-koordinater med `coord_confidence`.
+- **KG (R9).** `entity_registry`/`relationship`/`rel_predicates` fullt byggd — hemvist för mästar–lärling/förebild-kanter (nya predikat).
+- **Bild-bärare.** `inscription_media` (UUID-FK: `media_url`, `photographer`, `copyright_info`, `resolution`, `source_institution`) är hemvisten för visuell pipeline. `inscription_comparisons` (`similarity_score`, `findings`) finns redan — delhemvist för DP3.
+
+**Kräver ny struktur eller kurering:**
+- **Händelse↔inskrift (A4)** som förstklassig relation (Ingvarståget/englandståg) — `historical_events` finns men saknar inskriftslänk; måste materialiseras via `relationship` eller ny länktabell.
+- **Mästar–lärling/förebild-kanter (A3)** — modellen finns (R9) men inga predikat/rader; idag ligger stilattribueringar som *fritextnamn* i `carvers` ("Samma som gjort DR 155"). **DP1-datauppgift:** strukturera dessa till `relationship`-kanter.
+- **Finkorniga B5-drag** (skiljetecken-mönster, drakslinga-typ, layout, kvalitet, skaldeform, titlar) — bara implicit i transliterationstext/`paleographic_notes`; behöver egen dragtabell för att bli maskinläsbara fingerprints.
+- **Härad (C7)** — endast fritext `harad`; behöver `hundred_id`-FK mot `hundreds`.
+
+**Största datagapet:**
+1. **Bildtäckning.** Bäraren (`inscription_media`) finns, men *inget systematiskt per-sten-bildcorpus* — bara spridda exkursionsfoton + Wikimedia-plock för namngivna stenar. Porträtt-grenen löste bara beskärning (CSS), inte täckning. **Visuell V1/V2 saknar råmaterial** tills ett corpus byggs.
+2. **Strukturerade attribueringsdrag (B5).**
+3. **Ristar-fingerprintets gleshet** — floruit härleds i runtime, och en stor andel "ristare" är ostrukturerade stilattribueringar i namnsträng, inte kanter.
 
 **Frontlinje:** spårprofil (3D).
 
-**Kvarstår att verifiera mot live-DB innan DP1-spec:** täckningsgrad för `period_start/end`, fördelning som klarar <300-årsgrinden, andel ristar-länkade stenar, runtyp-taggningens existens, bildtäckning/upplösning. (Uppdateras när auditen och en live-DB-koll är klara.)
+**Kvarstår att mäta mot live-DB innan DP1-spec:** täckningsgrad `period_start/end`, fördelning som klarar <300-årsgrinden, andel med `attribution_type` + ifylld floruit, `inscription_runetype`-täckning, och `inscription_media`-täckning per sten.
 
 ---
 
@@ -227,8 +242,8 @@ Byggs V1 → V2 → V3, oberoende av DP-ordningen, men V1 bör tidigareläggas e
 
 ---
 
-## 12. Öppna frågor
+## 12. Beslutade frågor (2026-07-24)
 
-1. Källa för icke-språkliga attribueringsdrag (ornamentik/runform-taggning) — Samnordisk runtextdatabas, Axelson, egen kurering, eller den visuella pipelinen? Avgör hur snabbt cirkularitetsväggen kan hålla i DP2.
-2. Bildrättigheter/upplösning för visuell V1 — vilka bildkällor får användas och räcker upplösningen?
-3. Osäkerhetsrepresentation i DP1 v1: konfidensklasser (hög/medel/låg) räcker, eller behövs numeriska intervall direkt?
+1. **Källa för icke-språkliga attribueringsdrag:** Samnordisk runtextdatabas + Axelson + egen kurering (alla tre). Ger tillräckligt oberoende underlag för att cirkularitetsväggen ska hålla i DP2.
+2. **Bild för visuell pipeline:** använd **endast stenar vi har bildrättigheter för**. Det bekräftar att V1/V2 kör på ett begränsat delcorpus tills vidare, inte hela beståndet.
+3. **Osäkerhet i DP1 v1:** **konfidensklasser (hög/medel/låg) räcker** — inga numeriska fördelningar; probabilistiska datum skjuts till en senare fas (DP3).
