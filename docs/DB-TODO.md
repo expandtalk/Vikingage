@@ -39,6 +39,28 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18.
 - `spatial_ref_sys` RLS — risk accepterad, kräver Supabase-support.
 - Wikidata-ID + foton (Commons via SPARQL).
 
+### 🛣️ VÄGNÄT & MILSTOLPAR (spår startat 2026-07-24)
+Sekvens (Daniel): 1) vägnätet först → 2) berika vägar med medeltidsbreven (orter) → 3) LÅNGT senare berika breven med orter. Grunddok: `docs/vagar/vagar-bas.txt`.
+
+**✅ KLART:**
+- **Milstolpar/vägmärken importerade ur K-samsök/FMIS → `heritage_sites`** (verifierad koord): milstolpe **5 820**, väghållningssten **3 934**, gränsmärke **21**, vägmärke/oklassad **~6 134**. Subtyp där presentationen avslöjar den (~62 %), aldrig gissad. Script: `scripts/data/fetch-vagmarken.mjs` → `vagmarke-import.sql`.
+- **Kurerade Dalarövägen-milstenar med årtal 1777** (10 st, Gyllenborg): `scripts/data/dalarovagen-milstenar.sql`.
+- Eriksgatan (viking_roads + useMapEriksgata) + Valdemarsleden = mönstret att återanvända.
+
+**🔴 KVAR:**
+- **Milsten-kartlager** — rendera milstolpar/väghållningsstenar/gränsmärken (heritage_sites raa_type) som legend-lager + subtyp-färg. Frontend.
+- **Subtyp + årtal via djup FMIS-hämtning** — klassa de ~6 134 oklassade + hämta årtal/regent/landshövding ur FMIS-beskrivningen per lämning (rdf-fetch, senare).
+- **Biurman-rutter i `viking_roads`** — Ch1 (Strandvägen) har ortsekvens i vagar-bas.txt; Ch2–6 behöver fyllas ur boken (fysisk, ej digital på Doria). Utöka viking_roads m. source/period.
+- **Göta landsväg** som viking_roads-rutt + waypoints (medeltida, Sthlm→Götaland).
+- **Rullstensåsar som processionsvägar** (äldsta lagret; kopplar Rösaring).
+- Sedan: berika vägarna med medeltidsbreven (orter längs dem).
+
+### 🏛️ MEDELTIDSBREV & TIDIGMODERNA KÄLLOR (insamlat, ointegrerat — minne: gathered-sources-2026-07-24)
+- **SDHK-brev ~44 265** (`docs/STATENSHISTORISKAMUSEUM/sdhk_2411.csv`) — charter-datamodell + ingest saknas. Destination för transfer/estate/dynasti-modellen.
+- **Gustav Vasas brev/registratur** (`docs/stats_VASABREV.txt`, 2,2 MB) — ointegrerat.
+- **Gotland-berikning** (`docs/G0TLAND-BERIKA.txt`) — medeltidskyrkor/ödekyrkor.
+- **SHM-objekt** (534) + kontext (284) — ointegrerat.
+
 ### 🧹 DB-städning (låg prio)
 - Slå ihop `artefacts` (339) + `rundata_artefacts` (339). `staging_inscriptions` arkivera. Droppa 0-radstabeller `aliases_canonical`/`alts_canonical`/`folk_group_cities`. Ledungsområden (`ledungAreas.ts`) — ingen tabell, blockerad på sockenpolygoner.
 
