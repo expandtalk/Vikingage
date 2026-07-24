@@ -1421,19 +1421,9 @@ export const RELIGIOUS_PLACES: ReligiousPlace[] = [
   },
 
   // Viktiga missionsplatser
-  {
-    id: 'birka_mission',
-    name: 'Birka (Ansgars mission)',
-    coordinates: { lat: 59.3300, lng: 17.5500 },
-    deity: 'christian',
-    type: 'mission_site',
-    evidence: ['historical_record'],
-    description: 'Ansgars mission 830. Första kristna mission i Sverige.',
-    historicalPeriods: ['viking_age'],
-    establishedPeriod: 'viking_age',
-    region: 'Uppland',
-    sources: ['Birka - Wikipedia']
-  },
+  // (Birka/Ansgars mission 830 borttagen som egen kristen plats — dubblerade
+  //  handelsstaden Birka och gav två guldmarkörer; missionen är en händelse, ej
+  //  Birkas identitet. Kan senare läggas som historical_event vid Birka.)
   {
     id: 'husaby_baptism',
     name: 'Husaby (Olof Skötkonungs dop)',

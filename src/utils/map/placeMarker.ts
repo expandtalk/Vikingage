@@ -66,8 +66,10 @@ export const MARKER_ICONS: Record<string, string> = {
 export const ROYAL_SEATS = new Set<string>([
   // SE kungasäten/maktcentra
   'gamla uppsala', 'uppsala', 'valsgärde', 'vendel', 'helgö', 'birka', 'sigtuna',
-  'hovgården', 'adelsö', 'uppåkra', 'varnhem', 'bjälbo', 'skara', 'stegeborg', 'kalmar',
+  'hovgården', 'adelsö', 'uppåkra', 'varnhem', 'bjälbo', 'skara', 'stegeborg',
   'lund', 'visby',
+  // OBS: 'kalmar' borttaget — namnkollision med Kalmar sn i Uppland (Kalmar kyrka 1175);
+  // Kalmar slott + gamla bykyrkan (Erik av Pommerns dop) är de viktiga, ej domkyrkan (1600-tal).
   // NO
   'nidaros', 'trondheim', 'kaupang', 'borre', 'avaldsnes', 'lade', 'bergen', 'oslo', 'tönsberg', 'tønsberg',
   // DK
@@ -148,7 +150,8 @@ export const createPlaceMedallion = (o: MedallionOptions): L.DivIcon => {
     : '';
   return L.divIcon({
     html: `<div style="position:relative;">${disc}${label}${sub}</div>`,
-    className: `vp-medallion ${o.className ?? ''}`.trim(),
+    // vp-medallion-klasserna lyfts över vanliga markörer via z-index i index.css.
+    className: `vp-medallion ${o.royal ? 'vp-medallion--royal' : ''} ${o.className ?? ''}`.trim(),
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     popupAnchor: [0, -size / 2 - 2],

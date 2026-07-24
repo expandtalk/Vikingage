@@ -172,3 +172,10 @@
 [data-radix-switch-root][data-state="checked"] {
   background-color: rgb(37 99 235) !important; /* blue-600 */
 }
+
+/* Medaljong-markörer ska ligga ÖVER vanliga prickar/kluster (Leaflet sätter inline
+   z-index per markör efter latitud; !important vinner). Kungaplatser och
+   monumentstenar högst — de viktigaste ikonerna får aldrig döljas av mindre. */
+.leaflet-marker-icon.vp-medallion { z-index: 9000 !important; }
+.leaflet-marker-icon.vp-medallion--royal { z-index: 9500 !important; }
+.leaflet-marker-icon.monumental-stone { z-index: 9600 !important; }

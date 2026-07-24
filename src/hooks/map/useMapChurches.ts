@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import { useChurchYearRange } from '@/hooks/useChurchYearRange';
-import { createPlaceMedallion, isRoyalSeat, MARKER_COLORS } from '@/utils/map/placeMarker';
+import { createPlaceMedallion, MARKER_COLORS } from '@/utils/map/placeMarker';
 
 // Rikt kyrkolager ur ecclesiastical_sites: byggår, stift, socken/härad, ruinstatus + bild
 // (Wikimedia Commons via Wikidata P18). Viewport-laddat via ecclesiastical_in_bbox, zoom-gate ≥8.
@@ -96,9 +96,10 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
         // showUndated tänder dem. Daterade visas bara inom spannet.
         if (r.built_from == null) { if (!showUndated) return; }
         else if (r.built_from < yearFrom || r.built_from > yearTo) return;
-        // Domkyrkor & kyrkor på kungasäten (Skara, Lund…) framhävs som guldmedaljong
-        // med kors + etikett; övriga sockenkyrkor förblir små droppar (täthet).
-        const prominent = r.kind === 'cathedral' || isRoyalSeat(r.name);
+        // Endast domkyrkor framhävs som guldmedaljong med kors + etikett; övriga
+        // sockenkyrkor förblir små droppar (täthet). Namn-matchning mot kungasäten
+        // togs bort — gav falska guld (t.ex. Kalmar kyrka i Kalmar sn, Uppland).
+        const prominent = r.kind === 'cathedral';
         const icon = prominent
           ? createPlaceMedallion({ color: MARKER_COLORS.christian, icon: 'cross', label: r.name, royal: true, className: 'church-prominent' })
           : iconFor(r.kind, r.status);
