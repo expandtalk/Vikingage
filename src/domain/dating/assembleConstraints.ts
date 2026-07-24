@@ -43,7 +43,7 @@ export const assembleNode = (row: InscriptionRow): GraphNode => {
   });
   if (carver) constraints.push(carver);
 
-  if (typeof row.absoluteFrom === 'number' && typeof row.absoluteTo === 'number') {
+  if (typeof row.absoluteFrom === 'number' && typeof row.absoluteTo === 'number' && row.absoluteFrom <= row.absoluteTo) {
     constraints.push({
       kind: 'absolute',
       interval: { from: row.absoluteFrom, to: row.absoluteTo },

@@ -62,6 +62,7 @@ export const refineGraph = (
     const after = results.get(e.after);
     if (!before?.interval || !after?.interval) continue;
     const lifted = Math.min(Math.max(after.interval.from, before.interval.from), after.interval.to);
+    if (lifted <= after.interval.from) continue; // icke-bindande kant → ingen ändring, ingen proveniens
     after.interval = { from: lifted, to: after.interval.to };
     after.confidence = minConfidence(after.confidence, before.confidence);
     after.provenance = [

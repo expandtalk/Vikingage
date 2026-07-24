@@ -37,15 +37,25 @@ describe('refineNode', () => {
 });
 
 describe('refineGraph', () => {
-  it('propagerar en "före"-kant: lärlingen kan inte börja före mästaren', () => {
+  it('propagerar en "före"-kant: lärlingens undre gräns lyfts till mästarens', () => {
     const nodes = [
       { id: 'master', constraints: [style(980, 1015)] },
-      { id: 'apprentice', constraints: [style(980, 1070)] },
+      { id: 'apprentice', constraints: [style(950, 1070)] }, // börjar FÖRE mästaren
     ];
     const edges = [{ before: 'master', after: 'apprentice' }];
     const out = refineGraph(nodes, edges, 'all');
-    // lärlingens undre gräns lyfts till mästarens undre gräns
-    expect(out.get('apprentice')!.interval.from).toBeGreaterThanOrEqual(980);
+    expect(out.get('apprentice')!.interval.from).toBe(980); // lyft 950 → 980
     expect(out.get('apprentice')!.provenance.some((p) => p.source.includes('före'))).toBe(true);
+  });
+
+  it('en icke-bindande "före"-kant ändrar inget och lägger ingen proveniens', () => {
+    const nodes = [
+      { id: 'master', constraints: [style(980, 1015)] },
+      { id: 'apprentice', constraints: [style(1000, 1070)] }, // börjar redan EFTER mästaren
+    ];
+    const edges = [{ before: 'master', after: 'apprentice' }];
+    const out = refineGraph(nodes, edges, 'all');
+    expect(out.get('apprentice')!.interval).toEqual({ from: 1000, to: 1070 });
+    expect(out.get('apprentice')!.provenance.some((p) => p.source.includes('före'))).toBe(false);
   });
 });
