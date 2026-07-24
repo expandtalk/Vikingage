@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import { useChurchYearRange } from '@/hooks/useChurchYearRange';
+import { createPlaceMedallion, isRoyalSeat, MARKER_COLORS } from '@/utils/map/placeMarker';
 
 // Rikt kyrkolager ur ecclesiastical_sites: byggår, stift, socken/härad, ruinstatus + bild
 // (Wikimedia Commons via Wikidata P18). Viewport-laddat via ecclesiastical_in_bbox, zoom-gate ≥8.
@@ -95,7 +96,13 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
         // showUndated tänder dem. Daterade visas bara inom spannet.
         if (r.built_from == null) { if (!showUndated) return; }
         else if (r.built_from < yearFrom || r.built_from > yearTo) return;
-        L.marker([r.lat, r.lng], { icon: iconFor(r.kind, r.status) })
+        // Domkyrkor & kyrkor på kungasäten (Skara, Lund…) framhävs som guldmedaljong
+        // med kors + etikett; övriga sockenkyrkor förblir små droppar (täthet).
+        const prominent = r.kind === 'cathedral' || isRoyalSeat(r.name);
+        const icon = prominent
+          ? createPlaceMedallion({ color: MARKER_COLORS.christian, icon: 'cross', label: r.name, royal: true, className: 'church-prominent' })
+          : iconFor(r.kind, r.status);
+        L.marker([r.lat, r.lng], { icon })
           .bindPopup(popupHtml(r), { maxWidth: 320, className: 'church-popup' })
           .addTo(layer);
       });
