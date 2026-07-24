@@ -43,3 +43,15 @@ export function destinationFor(entityType: string, input: DestinationInput): Des
   if (!def) return null;
   return { labelSv: def.labelSv, labelEn: def.labelEn, icon: def.icon, route: def.route(input) };
 }
+
+// --- Graf-grannar → destinationer (ren, supabase-fri logik; IO ligger i useEntityNeighbors) ---
+
+export interface NeighborRow { direction: string; predicate: string; other_id: string; other_type: string; other_label: string }
+export interface NeighborDestination { predicate: string; other_type: string; label: string; destination: Destination }
+
+// En graf-granne -> en destination (grannens etikett + dess route). null om okänd typ.
+export function mapNeighbor(row: NeighborRow): NeighborDestination | null {
+  const dest = destinationFor(row.other_type, { entity_id: row.other_id, label: row.other_label });
+  if (!dest) return null;
+  return { predicate: row.predicate, other_type: row.other_type, label: row.other_label, destination: dest };
+}
