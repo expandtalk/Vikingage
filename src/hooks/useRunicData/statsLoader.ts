@@ -15,6 +15,15 @@ export const loadDatabaseStats = async (): Promise<DbStats> => {
       console.error('Error loading inscriptions count:', inscriptionsError);
     }
 
+    // Runstenar = kurerad delmängd (object_type anger runsten). Sanningskällan är
+    // DB-funktionen count_runestones() så definitionen aldrig divergerar; se
+    // migration 20260724200000. Skild från total runic_inscriptions ovan.
+    const { data: runestoneCount, error: runestoneError } = await supabase
+      .rpc('count_runestones');
+    if (runestoneError) {
+      console.error('Error loading runestone count:', runestoneError);
+    }
+
     // Get coordinates count
     const { count: coordinatesCount, error: coordinatesError } = await supabase
       .from('coordinates')
@@ -171,6 +180,7 @@ export const loadDatabaseStats = async (): Promise<DbStats> => {
         estates: estatesRes.count || 0,
       },
       totalInscriptions: inscriptionsCount || 0,
+      totalRunestones: (runestoneCount as number | null) || 0,
       totalCoordinates: coordinatesCount || 0,
       totalCarvers: carversCount || 0,
       totalArtefacts: artefactsCount || 0,

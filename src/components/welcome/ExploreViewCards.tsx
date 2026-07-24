@@ -23,7 +23,7 @@ interface ViewCard {
   count?: (s: DbStats) => number | undefined;
 }
 const CARDS: ViewCard[] = [
-  { to: '/explore?focus=inscriptions', sv: 'Runstenar', en: 'Runestones', dsv: 'Alla runinskrifter på kartan.', den: 'All runic inscriptions on the map.', count: (s) => s.totalInscriptions },
+  { to: '/explore?focus=inscriptions', sv: 'Runinskrifter', en: 'Runic inscriptions', dsv: 'Alla runinskrifter (stenar, ben, mynt, träpinnar…) på kartan.', den: 'All runic inscriptions (stones, bone, coins, wooden sticks…) on the map.', count: (s) => s.totalInscriptions },
   { to: '/explore?focus=gods', sv: 'Kultplatser', en: 'Cult sites', dsv: 'Förkristna kultplatser per gud (Oden, Tor, Frö…).', den: 'Pre-Christian cult sites by deity.', count: () => GOD_COUNT },
   { to: '/explore?focus=geneticEvents', sv: 'Genetik & aDNA', en: 'Genetics & aDNA', dsv: 'aDNA-platser, migrationer och djur-DNA i djuptid.', den: 'aDNA sites, migrations and animal DNA in deep time.', count: (s) => s.totalGeneticEvents },
   { to: '/explore?focus=churches', sv: 'Kyrkor & stift', en: 'Churches & dioceses', dsv: 'Medeltidskyrkor, stift och ruiner.', den: 'Medieval churches, dioceses and ruins.', count: (s) => s.layerCounts?.churches },

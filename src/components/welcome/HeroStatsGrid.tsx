@@ -16,6 +16,7 @@ const EXCURSION_COUNT = EXCURSIONS.length;
 interface HeroStatsGridProps {
   dbStats: DbStats;
   localizedText: {
+    runestones: string;
     runicInscriptions: string;
     coordinates: string;
     carvers: string;
@@ -68,6 +69,9 @@ export const HeroStatsGrid: React.FC<HeroStatsGridProps> = ({
   const goTo = (path: string) => () => navigate(path);
 
   const items: StatItem[] = [
+    // Runstenar = kurerad delmängd (stenmonument). Visas först — det talet forskare känner igen.
+    { label: localizedText.runestones, value: fmt(dbStats.totalRunestones || 0), onClick: goFocus('inscriptions') },
+    // Runinskrifter = hela korpusen (även ben, trä, mynt, puts…).
     { label: localizedText.runicInscriptions, value: fmt(dbStats.totalInscriptions), onClick: goFocus('inscriptions') },
     { label: localizedText.carvers, value: fmt(dbStats.totalCarvers || 0), onClick: goTo('/carvers') },
     { label: localizedText.artefacts, value: fmt(dbStats.totalArtefacts || 0), onClick: goTo('/artefacts') },
