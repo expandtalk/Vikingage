@@ -262,3 +262,27 @@ Fyra förfiningar som växte fram i diskussion och som styr fortsättningen:
 3. **Monument-kontinuum: hällristning → bildsten → runsten.** Runstenarna ses som en förlängning av hällristningstraditionen, med **bildstenarna som mellanled** och skriften som ett teknik-språng. Detta blir en era-dimension (`monument_tradition`) som spänner hela korpusen — inte tre isolerade kategorier. Ger en förklaringsram för spannet bortom vikingatid och binder ihop era-villkoret (runtyp) med ikonografin.
 
 4. **AI-datering av hela korpusen — alltid metodflaggad.** Motorn producerar redan ett *beräknat* datum per sten vars proveniens listar varje bidragande villkor (Gräslund = ett flaggat inslag, aldrig sammanblandat). En äkta *vision-AI*-uppskattning (V2) är begränsad av bild-/rättighetsgapet. Princip: **algoritmiskt datum för alla stenar nu; vision-AI-datum för den rättighetsklarerade bild-delmängden** — varje uppskattning bär metodflagga så den alltid kan särskiljas från Gräslunds/Runverkets expertbedömning. En interaktiv *"forskare laddar upp bild → analys"* är en DP3-nära produktriktning efter V1/V2.
+
+---
+
+## 14. Källström-kalibrering (2007) — metodjusteringar
+
+Jämförelse av ramverket mot Magnus Källströms *Mästare och minnesmärken* (kap. 3 s. 44–75, kap. 10 s. 292–298; full jämförelse i scratchpad). Källström är Runverkets ledande runolog; hans metod är referensen vi kalibrerar mot.
+
+**Validerat (ramverket formaliserar hans metod):** cirkularitetsväggen = hans stegvisa attribuering, språk sist ("en fördel för den som vill studera den språkliga variationen", s. 62); villkorsgrafens "före"-kanter = hans genealogiska åldersberäkningar (s. 69–72); ristarfönstret = hans premiss (Åsmund i 4 stilgrupper orimligt, s. 72); kontroll-baslinjen = hans krav på jämförelsematerial; fingerprint = Thompson/Stille-doktrinen att *kombinationen* avgör.
+
+**Krävda justeringar:**
+1. **Stildatering = mjukt, brett överlappande kuvert — inte hårt ankare.** Bara Pr 3–5 har säkra arkeologiska ankare; Rak/Kb är tvetydiga (förekommer tidigt *och* sent); genealogin visar att Tabell 4:s intervall är för snäva. → Vikta `graslundPhases`: **Pr4/Pr5 högst, Pr3 näst, Fp/Pr1/Pr2 lägre, Rak/Kb lägst + bredast**. "Hårt" reserveras för händelseankare/dendro/stratigrafi.
+2. **Ornamentik-cirkularitet.** Cirkularitetsväggen skyddar idag bara mot *språk*-cirkularitet. Samma ornamentdrag får inte *både* datera (Roll A stilgrupp) *och* attribuera (Roll B) utan spärr (Fuglesang-fallet, s. 59). Inför samma disciplin för ornamentik.
+3. **Namn ≠ identitet.** Ett ristarnamn = ofta flera personer (s. 59–60). Carver-modellen måste tillåta split/merge utan att tappa attribueringshistorik; attributionsosäkerheten måste rymma "kanske annan person med samma namn".
+4. **Två osäkerhetsskalor.** Dela `confidence` i **`reading_confidence`** (läsning/formel säker?) skild från **`attribution_confidence`** (hand säker?). En sten kan ha säker läsning men osäker hand.
+5. **Regional konservatism kan överrida stilkuvertet.** U 844 (Pr 4) är bevisligen äldre än U 845 (Pr 2) lokalt (s. 74). En stark genealogi-/parstens-"före"-kant måste kunna **överrida** stilgruppen, inte bara snitta. Inför `regional_conservatism` (Roll C) som sänker stilgruppens vikt i vissa bygder.
+6. **Stegvis attribueringsORDNING i DP3:** design+ornamentik → runformer+skiljetecken → ortografi+formulering sist. Ordningen är metod, inte bara filter.
+7. **Distinkta relationspredikat** (ersätter det hopslagna "mästar→lärling/förebild"): `helper_of`, `apprentice_of`, `successor_of`, `imitates`, plus `first_signer_dominates` (dubbelsignatur: förstnämnd tongivande för ornamentik/ortografi, s. 294). De bär olika tidslogik.
+
+**Nya `stone_features` att lägga till (utöver §4):**
+- *Roll B icke-språkligt:* `design` (runslingans makro-arrangemang, skilt från detalj-ornamentik), `stenfångst` (stenval + bearbetning), rundjurshuvudets form, skiljeteckens-typologi (kolon vs kryss/kors, inledande kryss, täthet), knut-/dubbelrunor.
+- *Roll B språkligt (matar DP2, ej datering):* æftiR-stavning (*aftiR/abtiR/oftiR*), /R/ vs r, /æi/-återgivning (*ai/i/ei*), åsrunans bruk, oetymologiskt /h/-inskott, runomkastningar (idiosynkratiska stavfel = stark identitetsmarkör), h-runan för [ɣ] (norrländsk markör).
+- *Roll A:* kortkvist/långkvist-blandning + specifika kortkvistformer (kortkvistsystemet ur bruk ~före 1000, s. 64).
+
+**Vad Källström skulle kritisera (att bevaka):** att kalla stilgrupp "hårt villkor" övertror dess kraft; mekanisk likhetssökning (DP3) missar troliga fall och blandar ristare om den inte förankras i signerade referensstenar först (Åhlén/Stille, s. 62); glesa lokalristare (1–2 stenar) bär inte statistik → n-trösklar krävs; V1/V2 är prematurt utan bildtäckning.
