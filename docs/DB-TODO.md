@@ -4,6 +4,48 @@ Arbetslista för databas-/dataarbetet. Skapad 2026-07-18.
 
 ---
 
+## ✅ VERIFIERAD REVISION 2026-07-24 (sanningskälla — stämd mot live-DB + kod)
+
+**Varning:** allt NEDANFÖR denna sektion är historik med opålitlig status — arbete applicerades ofta out-of-band och checkboxar uppdaterades inte. Denna sektion är verifierad mot faktisk DB (via pooler-psql) och kod 2026-07-24. Se [[psql-prod-migration-reference]].
+
+### ✅ Verifierat KLART (mycket var dokumenterat som öppet/blockerat)
+- **Ortnamn: `place_names` = 42 983 rader, ALLA med koordinater**, 8 275 element-taggade. (Geotorget-ortnamn var INTE blockerat — det är gjort.)
+- `parishes` 1 726, `hundreds` 468. `viking_names` 351 (var 113 — berikat).
+- `runic_inscriptions` 6 434 (5 971 m. koord) — rundata-rollout ~90% (dump ~7 189).
+- Royal chronicles: 212 kungar, 30 dynastier, 44 relationer.
+- Kyrkor/stift/ledarskap: `dioceses` 22, `church_diocese_history` 819, `ecclesiastical_leadership` 287 (planens rutor otickade men BYGGT).
+- `coins` 32, `cult_sites` 115, `viking_regions` 52 (DB-hook `useVikingRegionsDb`), `paleo_shorelines`.
+- RPC:er live: `distance_stats`, `graph_neighborhood`, `search_v2`, `get_paleo_shorelines_nearest`.
+- KG-materialisering (Plan 1): nav-kanter kung→dynasti/kungsgård, kyrka→socken→härad, gud→kultplats.
+- Överföringsmekanismer/morgongåva: vokabulär + transferor-FK + valideringstrigger. Se [[transfer-mechanisms-model]].
+- Legend-räknare av-hårdkodade (0 magiska tal i `legendItemGenerators.ts`).
+
+### 🔴 GENUINT INTE GJORT (verifierat frånvarande)
+1. **KG-navigatorns användarlager** — inga `/kyrkor`+`/churches`-routes, 0 destinationskort/vägvisare i `GlobalSearch`, ingen brainstorming-map. Spec: `2026-07-23-kg-navigator-design.md` (Plan 2+3). Se [[kg-navigator-project]].
+2. **Kameral värdering** — `estate_valuations` + `jordetal_to_penningland()` saknas. Spec KLAR: `2026-07-24-cameral-valuation-design.md` + plan behövs. Se [[transfer-mechanisms-model]].
+3. **`nearby_features(lat,lng,radius)` RPC** — saknas; blockerar utflykternas närliggande runstenar/artefakter.
+4. **rundata-rollout svans** — ~755 inskrifter kvar (6 434 vs ~7 189) + socken/härad på nya rader.
+5. **Strandförskjutning bortom Mälardalen** — bara 18 paleo-skivor; kräver SGU-raster + Python (se historik nedan).
+6. **Sockenpolygoner** — `parishes`/`hundreds`/`her_SE` saknar `geom`. Kräver Geotorget "Socken och stad, vektor" (externt).
+
+### 🟡 AVHÅRDKODNING — halvklart (DB-hook finns, TS lingrar / ej repointad)
+- **Utflykter:** DB-tabell 76 rader MEN `Excursions.tsx` läser fortfarande TS (`EXCURSIONS`/`excursions.ts`). Repointa → `from('excursions')`, ta bort TS-arrayen.
+- **Fynd:** `useArchaeologicalFindsDb` finns men `finds`=3/`archaeological_sites`=10 (TS `archaeologicalFinds.ts` kvar). Verifiera renderad källa (`ArchaeologicalSitesLayer`), migrera TS→DB.
+- **Heliga källor / hedniska kultplatser:** `offeringSprings.ts` + `religiousPlacesData.ts` kvar i kod (cult_sites=115 finns — verifiera täckning, ta bort TS).
+- **Vikingaregioner:** DB-hook finns (52 rader) — verifiera `vikingRegionData.ts` är orphan, ta bort.
+
+### 🔵 EXTERNT / EJ ÅTGÄRDBART SJÄLV
+- Geotorget "Socken och stad, vektor" → sockenpolygoner (ortnamn-delen KLAR).
+- `spatial_ref_sys` RLS — risk accepterad, kräver Supabase-support.
+- Wikidata-ID + foton (Commons via SPARQL).
+
+### 🧹 DB-städning (låg prio)
+- Slå ihop `artefacts` (339) + `rundata_artefacts` (339). `staging_inscriptions` arkivera. Droppa 0-radstabeller `aliases_canonical`/`alts_canonical`/`folk_group_cities`. Ledungsområden (`ledungAreas.ts`) — ingen tabell, blockerad på sockenpolygoner.
+
+---
+
+## 🗄️ HISTORIK (osäker status — se VERIFIERAD REVISION ovan; behåll för detaljer som koordinat-`// VERIFIERA`-listor)
+
 ## 🆕 SESSION 2026-07-22 — status & kvarvarande (aktuellast)
 
 **Deployat live (mergat till main via PR #11 + #12):**
