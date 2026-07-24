@@ -93,6 +93,9 @@ const App = () => (
                   <Route path="/sv/floder" element={<Navigate to="/explore?focus=rivers" replace />} />
                   <Route path="/gods" element={<Navigate to="/explore?focus=gods" replace />} />
                   <Route path="/sv/gudar" element={<Navigate to="/explore?focus=gods" replace />} />
+                  {/* Interim: dedikerade kyrk-routes tills riktig /kyrkor-sida byggs (följdplan) */}
+                  <Route path="/churches" element={<Navigate to="/explore?focus=churches" replace />} />
+                  <Route path="/kyrkor" element={<Navigate to="/explore?focus=churches" replace />} />
                   <Route path="/genetic-events" element={<Navigate to="/explore?focus=geneticEvents" replace />} />
                   <Route path="/sv/genetiska-handelser" element={<Navigate to="/explore?focus=geneticEvents" replace />} />
 

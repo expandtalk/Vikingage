@@ -9,6 +9,7 @@ import {
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEntityNeighbors } from '@/hooks/useEntityNeighbors';
 
 // Federerat global-sök (toppnav, Ctrl/Cmd+K) — P4-arkitekturen:
 // EN rankad server-RPC (search_v1: exakt signum + trigram + FTS, viktad RRF)
@@ -127,6 +128,35 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
   return groups;
 };
 
+// "Gå vidare"-sektion: visar en entitets kunskapsgraf-grannar som klickbara
+// destinationschips (kung → dynasti + kungsgårdar osv). Grannarna hämtas via
+// graph_neighborhood och mappas till destinationer i entityDestinations-configen.
+const GoFurther: React.FC<{ hit: Hit; onGo: (route: string) => void; sv: boolean }> = ({ hit, onGo, sv }) => {
+  const { data } = useEntityNeighbors(hit.entity_id);
+  if (!data.length) return null;
+  return (
+    <div className="border-t border-slate-800 px-4 py-3">
+      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+        {sv ? 'Gå vidare' : 'Explore further'}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {data.slice(0, 12).map((n, i) => {
+          const Icon = n.destination.icon;
+          return (
+            <button
+              key={`${n.other_type}-${i}`}
+              onClick={() => onGo(n.destination.route)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-600 px-3 py-1 text-sm text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
+            >
+              <Icon className="h-3.5 w-3.5 text-amber-400" /> {n.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 // variant 'icon' = liten förstoringsglas-ikon (toppnav på övriga sidor);
 // 'hero' = stor Google-lik sökruta (startsidan, före korten). Samma dialog.
 export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant = 'icon' }) => {
@@ -135,7 +165,6 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
   const sv = language === 'sv';
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [themes, setThemes] = useState<DbTheme[]>([]);
   const [theme, setTheme] = useState<DbTheme | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
@@ -143,6 +172,9 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
   const [aiAnswer, setAiAnswer] = useState<string | null>(null);
   const [aiSources, setAiSources] = useState<Hit[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiQuestion, setAiQuestion] = useState<string | null>(null);
+  // Starkaste träffen — driver "Gå vidare"-sektionen (dess graf-grannar).
+  const [topEntity, setTopEntity] = useState<Hit | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -159,14 +191,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 50);
-      // Tema-chips ur DB (sanningskällan), en gång per öppning.
-      if (!themes.length) {
-        sb.from('themes').select('id,slug,name,name_en,keywords,icon').order('name')
-          .then((res: any) => setThemes(res.data ?? []))
-          .catch(() => {});
-      }
-    } else { setQuery(''); setTheme(null); setGroups([]); setAiAnswer(null); setAiSources([]); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    } else { setQuery(''); setTheme(null); setGroups([]); setAiAnswer(null); setAiSources([]); setTopEntity(null); }
   }, [open]);
 
   // Tema-läge: grafkanter (has_theme) först, sedan nyckelordssök via search_v1.
@@ -213,7 +238,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
 
   // Fritext: EN rankad RPC (parametriserad — inga filteruttryck, fornnordiska tecken ok).
   useEffect(() => {
-    setAiAnswer(null); setAiSources([]); // nytt frågeord → släng gammalt AI-svar
+    setAiAnswer(null); setAiSources([]); setTopEntity(null); // nytt frågeord → släng gammalt AI-svar
     if (theme) return;
     const q = query.trim();
     if (q.length < 2) { setGroups([]); return; }
@@ -236,6 +261,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
           hits = res.data ?? [];
         }
         setGroups(groupHits(hits));
+        setTopEntity(hits[0] ?? null);
       } catch {
         setGroups([]);
       } finally {
@@ -359,30 +385,6 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
               </div>
             )}
 
-            {/* Begreppslager: temachips (ur DB) — kvar även när man börjar skriva */}
-            {!theme && themes.length > 0 && (
-              <div className="p-4">
-                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                  {sv ? 'Teman' : 'Themes'}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {themes.map((th) => {
-                    const TIcon = themeIcon(th);
-                    return (
-                      <button
-                        key={th.id}
-                        onClick={() => { setTheme(th); setQuery(''); }}
-                        className="flex items-center gap-1.5 rounded-full border border-slate-600 bg-slate-800/60 px-3 py-1.5 text-xs text-slate-300 hover:border-amber-500/50 hover:text-amber-100 transition-colors"
-                      >
-                        <TIcon className="h-3.5 w-3.5 text-amber-400" />
-                        {sv ? th.name : (th.name_en ?? th.name)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             {/* Aktivt tema: banner med rensa-knapp */}
             {theme && (() => {
               const TIcon = themeIcon(theme);
@@ -439,6 +441,8 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
                 </div>
               );
             })}
+
+            {topEntity && !theme && <GoFurther hit={topEntity} onGo={go} sv={sv} />}
 
             {query.trim().length >= 2 && groups.some((g) => g.type === 'inscription') && (
               <button
