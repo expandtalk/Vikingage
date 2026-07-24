@@ -76,6 +76,21 @@ const ExcursionDetail = () => {
     },
   });
 
+  // Runstenar inom 40 km via nearby_features-RPC (runic_inscriptions har point-koord som ej
+  // gick att bbox:a klient-sidigt — därav RPC:n).
+  const { data: nearbyRunestones } = useQuery({
+    queryKey: ['excursion-nearby-runestones', excursion?.coords.lat, excursion?.coords.lng],
+    enabled: !!excursion,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('nearby_features', {
+        p_lat: excursion!.coords.lat, p_lng: excursion!.coords.lng, p_radius_km: 40, p_limit: 200,
+      });
+      if (error) throw error;
+      return (data as { feature_type: string; feature_id: string; label: string; distance_km: number }[])
+        .filter((f) => f.feature_type === 'runestone').slice(0, 6);
+    },
+  });
+
   const { data: photoManifest } = useQuery({
     queryKey: ['excursion-photos-manifest'],
     enabled: !!excursion?.photoDir,
@@ -333,6 +348,20 @@ const ExcursionDetail = () => {
                   <li key={k.name} className="text-sm">
                     <div className="font-semibold text-foreground">{k.name}{(k.reign_start || k.reign_end) ? <span className="text-muted-foreground font-normal"> ({k.reign_start}–{k.reign_end})</span> : null}</div>
                     {k.description && <p className="text-sm text-muted-foreground mt-1">{k.description}</p>}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* Runstenar i närheten (via nearby_features-RPC) */}
+          {nearbyRunestones && nearbyRunestones.length > 0 && (
+            <Section icon={<Scroll className="h-5 w-5 text-gold" />} title={sv ? 'Runstenar i närheten' : 'Runestones nearby'}>
+              <ul className="space-y-1">
+                {nearbyRunestones.map((r) => (
+                  <li key={r.feature_id} className="text-sm flex justify-between gap-2">
+                    <Link to={`/inscription/${encodeURIComponent(r.label)}`} className="truncate text-gold hover:underline">{r.label}</Link>
+                    <span className="shrink-0 tabular-nums text-muted-foreground">{r.distance_km.toFixed(0)} km</span>
                   </li>
                 ))}
               </ul>
