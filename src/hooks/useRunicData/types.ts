@@ -1,6 +1,7 @@
 
 export interface DbStats {
   totalInscriptions: number;
+  totalRunestones?: number; // kurerad delmängd av totalInscriptions (object_type = runsten); se count_runestones()
   totalCoordinates: number;
   totalCarvers: number;
   totalArtefacts: number;
