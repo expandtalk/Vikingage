@@ -1,0 +1,65 @@
+GRÄNSMÄRKEN — referensmaterial (kurering av heritage_sites raa_type='gränsmärke')
+Insamlat 2026-07-24. Bakgrund: Magnus Erikssons landslag (1350-tal) reglerar hur gränser
+mellan socknar och byar sätts; naturliga formationer (stora stenar, berg, vattendrag) fick
+ofta utgöra gränslinjer. Ortnamn avslöjar ibland funktionen (t.ex. "gränsberget").
+
+===============================================================================
+1. VITA STEN / "Hwita sten" — lokalt gränsmärke, Brännkyrka (RAÄ 230)
+===============================================================================
+Fast fornlämning, fornlämningsregistret nr **230 i Brännkyrka**, skyddad enligt
+kulturmiljölagens 2 kap. Källa: https://stockholmskallan.stockholm.se/post/29813
+(Wahlman Park & Town Branding AB 2013; Länsstyrelsen i Stockholms län).
+
+- Gränsmärke mellan gårdarna **Enskede** och **Hammarbys** ägor; tillsammans med moränhöjden
+  ("gränsberget") på andra sidan vägen utgjorde gränsen. Vid moränhöjdens sydöstliga ände
+  mötte även **Skarpnäcks** gårds ägor. Stenen är troligen ett flyttblock från istiden.
+- Karta över Stora/Lilla Enskede ägor **1729**: utmärkt som "Stora Stenen i Kiärr Laggen".
+- Uppmätning av Hammarby gårds ägor **1792–93**: gränspunkten "Hwita sten" — "här sluta
+  Hammarby och Enskede ägor at gränsa mot hwarannan och Skarpnecks sätesgårds ägor widtaga".
+- Långt in på 1900-talet vitmålad; färgen försvann; **upprustad + målad 2012** (Skarpnäcks
+  Trädgårdsstadsförening) — lyser åter vit.
+- KURERING: definit lämning (RAÄ Brännkyrka 230) → koordinat kan hämtas ur FMIS/Fornsök.
+  Läggs som gränsmärke med historik + source_uri (stockholmskällan / RAÄ 230).
+
+===============================================================================
+2. LANDAMÄRI / "Gränsläggningen 1050" — de sex riksgränsstenarna (Sverige–Danmark)
+===============================================================================
+Redogörelse (ej avtalstext) för ett gränsavtal där kungarna utsåg 6 man vardera → 12 man
+bestämde SEX gränsmärken. Bevarad i 25+ handskrifter; äldst **KB B 59 (Cod.Holm. B 59)**,
+äldsta boken på svenska (skriven tidigast ca 1285; Äldre Västgötalagen från 1220-talet).
+Ordet "landamäri" = fornsv. plural av landamäre, "gränserna".
+
+KUNGAR: texten säger Emund Slemme (Uppsala) + Sven Tveskägg (Danmark) — men de var ej
+samtida. Trolig egentlig part: Emund Slemme (~1050–60) + Sven Estridsson (1047–74).
+Debatt i 100+ år om avtalet ingicks 1050, senare, eller aldrig (Schück 1914, Kraft 1934,
+Sawyer 1991 — Sawyer: texten tillkom på 1200-talet, dansk sida, för att hävda anspråk).
+
+DE SEX STENARNA (norr→söder ungefär; ALLA lägen forskningsmässigt OSÄKRA — inga säkra
+gränsstenar återfunna; curera med confidence='possible'/'contested', ALDRIG gissad koord):
+  1. På "Suntru" ås (suntrv asi) — trol. där ån Skuttran rundar berget Stamnared/Sällstorp
+     (Grimmared/Stamnared/Sällstorp sockengräns). Läge oklart, förslag spridda över mil.
+  2. I Danabäck (i danabæc) — bäck vid Danhult, Älvsered; trehäradsskäl Mark/Kind/Faurås.
+     Flera block föreslagna, oklart.
+  3. Kinne sten (kinnæ sten) — Kinnared, Halland; kandidat "Röde sten" vid Österån ELLER
+     block 250 m NV om vägen Kinnared–Södra Hestra (Karlsjö 1991). Osäkert.
+  4. I Vraksnäs (i uracs næsi) — Fylleån/Simlångsdalen; näs i f.d. sjön Stora Frillen.
+     Nära bronsåldersröset Vrangs rör. Osäkert.
+  5. Vite sten (Hvitæ sten) — där Skåne/Småland/Halland möts. Svennung 1969: block vid
+     Healt (nu skånskt), vitlav-beklätt, vid gamla landsvägen Helsingborg/Ängelholm–Markaryd.
+     Andra förslag: Vissefjärda sn; Vitastensfly (Vrå sn). Läge oklart. (hvitæ = adjektiv
+     "den vita"; därav "Vite sten".)
+  6. Brömse sten (brimsæ sten) — mellan Möre (Småland) och Blekinge, vid Brömsebäck/
+     Brömsebro. Kandidater: sten vid bron ELLER 3 m hög jordfast "Brömsen" vid Mellan-
+     Appleryd (Karlsjö). FMIS: kulturarvsdata.se/raa/fmi/html/10069800090001 ;
+     pub.raa.se/visa/objekt/lamning/ddfeed0b-fcc9-42a8-bbf3-c35f91cc3e1d
+     → placeringen visar att Blekinge räknades till Danmark.
+
+KONTEXT: 5 av 6 rör Hallands gräns; listan speglar intresse för Halland + att Skåne/Blekinge
+förs till Danmark. Jämför Västgötalagens gränslista (~100 märken, KB B 59, ~1345) +
+Hälsingelagens gränsmärkeslista (Sverige–Norge). Debatt om Landamäri speglar 1050-tal eller
+snarare 1200-talets Danmark/Sverige-historieskrivning (Utlanden/Blekinge-anspråk).
+
+KURERING: Brömse sten + Vita sten (Healt) har FMIS-kandidater → kan läggas med
+confidence='contested' + scholarly-not om debatten. Övriga fyra = dokumentera som "läge
+oklart" utan koordinat (INGEN gissning). Källor: Lindquist 1941, Hafström 1942, Sawyer 1991,
+Karlsjö 1991/1995, Kalén 1924, Weibull 1917 (se Wikipedia "Landamäri").
