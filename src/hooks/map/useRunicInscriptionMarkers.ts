@@ -2,6 +2,7 @@ import L from 'leaflet';
 import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import { createPlaceMedallion, isMonumentalStone } from '@/utils/map/placeMarker';
 
 interface RunicInscription {
   id?: string;
@@ -53,6 +54,17 @@ const getPeriodColor = (period?: string): string => {
 };
 
 const createRuneIcon = (inscription: RunicInscription): L.DivIcon => {
+  // Monumentstenar (Rök, Sparlösa, Karlevi…) framhävs bland de täta run-prickarna:
+  // egen medaljong med rune-ikon, större, rost-röd ring och etikett.
+  if (isMonumentalStone(inscription.signum, inscription.name)) {
+    return createPlaceMedallion({
+      color: '#a0342a',
+      icon: 'rune',
+      label: inscription.name || inscription.signum || 'Runsten',
+      size: 40,
+      className: 'monumental-stone',
+    });
+  }
   const color = getPeriodColor(inscription.period);
   const approximate = isApproximate(inscription);
 

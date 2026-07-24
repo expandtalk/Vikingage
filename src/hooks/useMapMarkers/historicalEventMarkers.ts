@@ -1,5 +1,12 @@
 import L from 'leaflet';
 import { HistoricalEventMarker, getEventTypeColor, getEventTypeIcon, getSignificanceSize } from '@/hooks/useHistoricalEventMarkers';
+import { createPlaceMedallion, markerColor } from '@/utils/map/placeMarker';
+
+// Händelsetyp → medaljong-ikon.
+const EVENT_ICON: Record<string, string> = {
+  raid: 'shield', settlement: 'house', political: 'scroll',
+  military: 'shield', religious: 'cross', trade: 'coin',
+};
 
 export const createHistoricalEventMarker = (
   event: HistoricalEventMarker,
@@ -10,36 +17,14 @@ export const createHistoricalEventMarker = (
   }
 
   const { lat, lng } = event.coordinates;
-  
-  // Create custom icon based on event type
-  const icon = getEventTypeIcon(event.event_type);
   const color = getEventTypeColor(event.event_type);
-  const size = getSignificanceSize(event.significance_level);
 
-  // Create custom HTML marker
-  const customIcon = L.divIcon({
-    html: `
-      <div style="
-        background-color: ${color};
-        color: white;
-        border-radius: 50%;
-        width: ${size}px;
-        height: ${size}px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: ${Math.max(8, size - 4)}px;
-        border: 2px solid white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        position: relative;
-      ">
-        ${icon}
-      </div>
-    `,
-    className: 'historical-event-marker',
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-    popupAnchor: [0, -size / 2]
+  // Gemensam medaljong: händelsetyp-ikon, dämpad ring, händelsenamnet under.
+  const customIcon = createPlaceMedallion({
+    color: markerColor('event'),
+    icon: EVENT_ICON[event.event_type] || 'scroll',
+    label: event.event_name,
+    className: `historical-event ${event.event_type}`,
   });
 
   const marker = L.marker([lat, lng], { icon: customIcon });
