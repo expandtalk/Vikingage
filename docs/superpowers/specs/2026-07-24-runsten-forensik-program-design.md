@@ -33,6 +33,7 @@ Dessa gäller varje delprojekt och all UI.
 4. **Kontroll-baslinje.** Ingen signalgrupp mäts isolerat; den jämförs mot en kontrollgrupp (jfr `by/sta/torp` på ortnamnssidan).
 5. **Reproducerbarhet.** Alla urvals-/matchningsregler är deklarativa och bestämda i förväg — samma regel i importskript och UI.
 6. **AI ger estimat, inte facit.** Maskinellt härledda drag är hypoteser med konfidens, alltid människo-verifierbara (visa bild + mät-overlay), och kalibrerade mot ett expertset innan de får mata datering.
+7. **Gräslund som kalibreringsreferens.** Systemet kalibreras *först* mot Gräslunds stilkronologi: en sten med enbart stildatering ska återge exakt Gräslund-intervallet, och fasen (RAK/Fp/Pr1–5) behålls alltid i proveniensen som ett synligt lager över varje klassificering. Förfiningar mäts som *avvikelse* från Gräslund-baslinjen; en förfining som *motsäger* fasen flaggas för granskning. Gräslund är nollmätningen — jfr kontroll-baslinjen.
 
 ---
 
@@ -168,7 +169,7 @@ Programmet är för stort för en spec. Det byggs som separata delprojekt ovanp�
 Villkorsgrafen (§5) + `stone_features`-substratet (roll A + de icke-språkliga B/C-drag som redan är härledbara) + en proveniens-modell. Levererar per-sten `refined_from/to/confidence/provenance` via en RPC. **Varför först:** den är ryggraden och lyfter *omedelbart* befintliga ytor — kartans tidslinje, carvers-sidan (ristarband), och intresseprofilernas period-filter — utan att kräva vare sig visuell pipeline eller språkmodell. MVP kan köras på enbart `stil ∩ ristarfönster ∩ händelseankare` och sen växa.
 
 ### DP2 — Diakron språkkartläggning
-Ortnamns-metoden på runorna: en run-språk-katalog (samma schema som `placeNameElements.ts`) + reproducerbar matchning mot translittereringen + kontroll-baslinje + **tidsaxel** (sekel/decennium) + 300-årsgrind (`refined_to − refined_from < 300`, på `non_linguistic`-datumet). Semantiska ordgrupper (makt/kult/släkt/lag/färd) som första seedade katalog; dialekt/lånord och ordformer som ytterligare katalogfiler.
+Ortnamns-metoden på runorna: en run-språk-katalog (samma schema som `placeNameElements.ts`) + reproducerbar matchning mot translittereringen + kontroll-baslinje + **tidsaxel med adaptiv upplösning** (sekel → decennium → **5-årssteg i den täta boom-perioden ~980–1130**, där datat bär det) + 300-årsgrind (`refined_to − refined_from < 300`, på `non_linguistic`-datumet). Semantiska ordgrupper (makt/kult/släkt/lag/färd) som första seedade katalog; dialekt/lånord och ordformer som ytterligare katalogfiler.
 
 ### DP3 — Attribuering / digital tvilling
 Fingerprint-vektor per sten (roll-B-drag) + likhetsmått + klustring → "digitala tvillingar", hand-/verkstadshypoteser. `inscription_comparisons` (`similarity_score`, `findings`) finns redan som delhemvist. Nedströms om att B-drag finns (text-härledda nu, visuella via pipelinen).
