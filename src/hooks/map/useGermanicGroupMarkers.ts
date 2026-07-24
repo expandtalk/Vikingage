@@ -3,6 +3,7 @@ import L from 'leaflet';
 import { GERMANIC_GROUPS } from '@/utils/germanicTimeline/groups';
 import { GERMANIC_TIME_PERIODS, GermanicTimelinePeriod } from '@/utils/germanicTimeline/timelineData';
 import { createGoogleMapsUrl, createStreetViewUrl } from '@/utils/coordinateData';
+import { createPlaceMedallion } from '@/utils/map/placeMarker';
 
 export const addGermanicGroupMarkers = (
   map: L.Map,
@@ -97,45 +98,20 @@ export const addGermanicGroupMarkers = (
         return;
       }
 
-      // Create custom icon based on group type
-      let iconColor = '#8B4513'; // Saddle brown default
-      let borderColor = '#654321';
-      
-      // Special colors for different group types
-      if (group.name.toLowerCase().includes('sami') || group.nameEn?.toLowerCase().includes('sami')) {
-        iconColor = '#4A90E2'; // Blue for Sami
-        borderColor = '#2E5C8A';
-      } else if (group.name.toLowerCase().includes('kven') || group.nameEn?.toLowerCase().includes('kven')) {
-        iconColor = '#50C878'; // Emerald for Kvens
-        borderColor = '#2E8B57';
-      } else if (group.name.toLowerCase().includes('goth')) {
-        iconColor = '#8B0000'; // Dark red for Goths
-        borderColor = '#5C0000';
-      } else if (group.name.toLowerCase().includes('vandal')) {
-        iconColor = '#800080'; // Purple for Vandals
-        borderColor = '#4B0082';
-      }
+      // Dämpad färg per grupptyp för medaljongringen.
+      const gn = `${group.name} ${group.nameEn || ''}`.toLowerCase();
+      let ringColor = '#7c6f5a'; // dov brun default
+      if (gn.includes('sami')) ringColor = '#4d6fa6';
+      else if (gn.includes('kven')) ringColor = '#5c8a5a';
+      else if (gn.includes('goth')) ringColor = '#a24b4b';
+      else if (gn.includes('vandal')) ringColor = '#7a6aa0';
 
-      const iconHtml = `<div style="
-        background: linear-gradient(135deg, ${iconColor}, ${borderColor});
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        border: 2px solid ${borderColor};
-        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 8px;
-        font-weight: bold;
-      ">⚔️</div>`;
-
-      const customIcon = L.divIcon({
-        html: iconHtml,
-        className: 'germanic-group-marker',
-        iconSize: [18, 18],
-        iconAnchor: [9, 9]
+      // Gemensam medaljong: sköld-ikon, namnet under.
+      const customIcon = createPlaceMedallion({
+        color: ringColor,
+        icon: 'shield',
+        label: group.name,
+        className: 'germanic-group',
       });
 
       const googleMapsUrl = createGoogleMapsUrl(group.lat, group.lng, group.name);

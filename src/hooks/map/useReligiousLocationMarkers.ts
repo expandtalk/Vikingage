@@ -3,6 +3,16 @@ import L from 'leaflet';
 import { RELIGIOUS_PLACES, ReligiousPlace, getPairedPlaces, getPlacesForTimePeriod } from '@/utils/religiousLocations/religiousPlacesData';
 import { HISTORICAL_PERIODS, getPeriodForYear } from '@/utils/religiousLocations/chronology';
 import { globalMarkerManager, getMarkerPriority } from '@/utils/markerPriority';
+import { createPlaceMedallion, MARKER_COLORS, isRoyalSeat, royalSeatIcon } from '@/utils/map/placeMarker';
+
+// Gemensam medaljong-markör: ikon-/underrad-nycklar per gud/typ (korset reserveras
+// för kristna platser; hedniska kultplatser får gud- eller typ-ikon).
+const deityIconKey = (deity: string): string =>
+  ({ thor: 'hammer', odin: 'eye', frey: 'grain', ull: 'bow', njord: 'wave', frigg: 'ring', christian: 'cross' } as Record<string, string>)[deity] || '';
+const typeIconKey = (type: string): string =>
+  ({ temple: 'pillar', sacred_grove: 'tree', offering_spring: 'droplet', royal_center: 'crown', cult_site: 'menhir', rock_carving: 'menhir' } as Record<string, string>)[type] || 'menhir';
+const deitySub = (deity: string): string =>
+  ({ thor: 'Tor', odin: 'Oden', frey: 'Frej', ull: 'Ull', njord: 'Njord', frigg: 'Frigg', christian: 'kristen' } as Record<string, string>)[deity] || '';
 
 const getDeityIcon = (deity: string): string => {
   switch (deity) {
@@ -72,63 +82,15 @@ const createReligiousPlaceMarker = (
   }
 
   const deityIcon = getDeityIcon(place.deity);
-  const typeIcon = getTypeIcon(place.type);
-  const colors = getDeityColor(place.deity);
-  
-  // Storlek baserat på betydelse och ålder
-  const getMarkerSize = () => {
-    if (place.establishedPeriod === 'neolithic') return { width: 150, height: 44, fontSize: 14 };
-    if (place.establishedPeriod === 'bronze_age') return { width: 145, height: 42, fontSize: 13 };
-    if (place.type === 'royal_center') return { width: 140, height: 42, fontSize: 13 };
-    if (place.type === 'temple') return { width: 130, height: 40, fontSize: 12 };
-    if (isPaired) return { width: 120, height: 38, fontSize: 11 };
-    return { width: 110, height: 36, fontSize: 11 };
-  };
-
-  const size = getMarkerSize();
-  
-  // Lägg till visuella indikatorer för ålder
-  let borderStyle = `3px solid ${colors.border}`;
-  if (place.establishedPeriod === 'neolithic' || place.establishedPeriod === 'bronze_age') {
-    borderStyle = `4px double ${colors.border}`; // Dubbel ram för äldre platser
-  }
-  if (isPaired) {
-    borderStyle = `3px double ${colors.border}`;
-  }
-  if (isMultiple) {
-    borderStyle = `3px dashed ${colors.border}`;
-  }
-
-  const customIcon = L.divIcon({
-    html: `<div style="
-      background: ${colors.background};
-      min-width: ${size.width}px;
-      height: ${size.height}px;
-      border-radius: ${size.height/2}px;
-      border: ${borderStyle};
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: ${size.fontSize}px;
-      font-weight: bold;
-      color: ${colors.text};
-      text-align: center;
-      padding: 0 12px;
-      white-space: nowrap;
-      gap: 6px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-      backdrop-filter: blur(3px);
-      z-index: 600;
-    ">
-      <span style="font-size: ${size.fontSize + 2}px;">${deityIcon}</span>
-      <span style="font-size: ${size.fontSize - 1}px;">${typeIcon}</span>
-      <span style="color: ${colors.text};">${place.name.split(' (')[0]}</span>
-    </div>`,
-    className: `religious-place-marker ${place.deity} ${place.establishedPeriod}`,
-    iconSize: [size.width, size.height],
-    iconAnchor: [size.width/2, size.height/2]
+  // Gemensam medaljong (ersätter den breda färgplattan). Ålder/parning visas i popupen.
+  const placeName = place.name.split(' (')[0];
+  const customIcon = createPlaceMedallion({
+    color: MARKER_COLORS[place.deity] || MARKER_COLORS[place.type] || MARKER_COLORS.default,
+    icon: royalSeatIcon(placeName) || deityIconKey(place.deity) || typeIconKey(place.type),
+    label: placeName,
+    sublabel: deitySub(place.deity) || undefined,
+    royal: place.type === 'royal_center' || isRoyalSeat(placeName), // kungaplats → guld
+    className: `religious-place ${place.deity} ${place.establishedPeriod}`,
   });
 
   // Förbättrad popup med periodinformation

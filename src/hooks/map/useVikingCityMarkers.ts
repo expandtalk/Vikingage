@@ -1,6 +1,13 @@
 
 import L from 'leaflet';
 import { filterCitiesByPeriod, getCategoryColor, getCategoryLabel } from '@/hooks/useVikingCities';
+import { createPlaceMedallion, markerColor, isRoyalSeat, royalSeatIcon } from '@/utils/map/placeMarker';
+
+// Stadskategori → medaljong-ikon.
+const CITY_ICON: Record<string, string> = {
+  religious_center: 'pillar', trading_post: 'scales', koping: 'scales',
+  established_city: 'church', gotlandic_center: 'church',
+};
 
 interface VikingCity {
   id: string;
@@ -69,31 +76,20 @@ export const addVikingCityMarkers = (
     }
 
     try {
-      const markerColor = getCategoryColor(city.category);
-      const iconSvg = getCityIcon(city.category);
-      
-      const customIcon = L.divIcon({
-        html: `<div style="
-          background: ${markerColor};
-          width: 14px;
-          height: 14px;
-          border-radius: 4px;
-          border: 1px solid white;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-        ">${iconSvg}</div>`,
-        className: 'viking-city-marker',
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
+      const catColor = getCategoryColor(city.category);
+      // Gemensam medaljong: kungasäten (Birka/Sigtuna/Nidaros…) → guld; annars dämpad kategorifärg.
+      const customIcon = createPlaceMedallion({
+        color: markerColor(city.category),
+        icon: royalSeatIcon(city.name) || CITY_ICON[city.category] || 'church',
+        label: city.name,
+        royal: isRoyalSeat(city.name),
+        className: `viking-city ${city.category}`,
       });
 
       const marker = L.marker([city.coordinates.lat, city.coordinates.lng], { icon: customIcon })
         .bindPopup(`
           <div class="p-3 max-w-sm">
-            <h3 class="font-bold text-base" style="color: ${markerColor};">${city.name}</h3>
+            <h3 class="font-bold text-base" style="color: ${catColor};">${city.name}</h3>
             <p class="text-sm text-gray-600">${city.description}</p>
             <span class="inline-block mt-2 px-2 py-1 text-xs rounded" style="background-color: ${markerColor}20; color: ${markerColor};">
               ${getCategoryLabel(city.category)}

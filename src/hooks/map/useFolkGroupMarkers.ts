@@ -2,6 +2,13 @@
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import { parseCoordinates } from '@/hooks/useRunicData/coordinateUtils';
+import { createPlaceMedallion } from '@/utils/map/placeMarker';
+
+// Dämpad färg per folkgruppskategori (medaljongens ring).
+const FOLK_COLOR: Record<string, string> = {
+  germanic: '#4d6fa6', celtic: '#5c8a5a', slavic: '#7a6aa0', finno_ugric: '#a9762f',
+  italic: '#a24b4b', thracian: '#9a7b3c', illyrian: '#a76d90',
+};
 
 interface FolkGroup {
   id: string;
@@ -93,73 +100,13 @@ export const addFolkGroupMarkers = async (
       
       const { lat, lng } = coordinatesObj;
 
-      // Create custom icon based on group category with enhanced styling
-      let iconColor = '#8B4513'; // Default brown
-      let borderColor = '#654321';
-      let emoji = '👥';
-      
-      switch (group.main_category) {
-        case 'germanic':
-          iconColor = '#4A90E2'; // Blue
-          borderColor = '#2E5C8A';
-          emoji = '⚔️';
-          break;
-        case 'celtic':
-          iconColor = '#50C878'; // Green
-          borderColor = '#2E8B57';
-          emoji = '🍀';
-          break;
-        case 'slavic':
-          iconColor = '#800080'; // Purple
-          borderColor = '#4B0082';
-          emoji = '🏰';
-          break;
-        case 'finno_ugric':
-          iconColor = '#FF6B35'; // Orange
-          borderColor = '#CC5529';
-          emoji = '🌲';
-          break;
-        case 'italic':
-          iconColor = '#DC143C'; // Crimson
-          borderColor = '#8B0000';
-          emoji = '🏛️';
-          break;
-        case 'thracian':
-          iconColor = '#FFD700'; // Gold
-          borderColor = '#B8860B';
-          emoji = '🛡️';
-          break;
-        case 'illyrian':
-          iconColor = '#FF69B4'; // Hot pink
-          borderColor = '#C71585';
-          emoji = '⛰️';
-          break;
-        default:
-          iconColor = '#8B4513'; // Brown
-          borderColor = '#654321';
-          emoji = '👥';
-      }
-
-      const iconHtml = `<div style="
-        background: linear-gradient(135deg, ${iconColor}, ${borderColor});
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        border: 2px solid ${borderColor};
-        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 10px;
-        font-weight: bold;
-      ">${emoji}</div>`;
-
-      const customIcon = L.divIcon({
-        html: iconHtml,
-        className: 'folk-group-marker',
-        iconSize: [22, 22],
-        iconAnchor: [11, 11]
+      const emoji = '👥'; // används fortf. i popup-rubriken nedan
+      // Gemensam medaljong: folk-ikon, dämpad kategorifärg, namnet under.
+      const customIcon = createPlaceMedallion({
+        color: FOLK_COLOR[group.main_category] || '#7c6f5a',
+        icon: 'people',
+        label: group.name,
+        className: `folk-group ${group.main_category}`,
       });
 
       const formatPeriod = (start: number, end: number) => {
