@@ -23,6 +23,7 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
   road_vinteragar: true,
   road_landmarks: true,
   heritage_sites: true, // förälder PÅ så per-typ-kryssen är åtkomliga (barnen driver kartan)
+  heritage_stones: true, // "Stenar"-kategorins förälder PÅ (barnen milstenar/gränsstenar… driver kartan)
   ecclesiastical_churches: true,
   germanic_timeline: true,
   folk_groups: true,
