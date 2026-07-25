@@ -3,6 +3,7 @@ import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import { parseCoordinates } from '@/hooks/useRunicData/coordinateUtils';
 import { createPlaceMedallion } from '@/utils/map/placeMarker';
+import { GERMANIC_TIME_PERIODS } from '@/utils/germanicTimeline/timelineData';
 
 // Dämpad färg per folkgruppskategori (medaljongens ring).
 const FOLK_COLOR: Record<string, string> = {
@@ -65,7 +66,12 @@ export const addFolkGroupMarkers = async (
   const folkGroups = await loadFolkGroups();
   console.log(`📊 Loaded ${folkGroups.length} folk groups from database`);
 
-  // Filter folk groups that have coordinates and are relevant for the time period
+  // Vald periods årsintervall (om känt) — så folkgrupper filtreras på tid i stället
+  // för att alltid visas (tidigare "return true" gjorde att t.ex. bronsåldersfolk
+  // dök upp i vikingalagret).
+  const period = GERMANIC_TIME_PERIODS.find(p => p.id === selectedTimePeriod);
+
+  // Filter folk groups that have coordinates and whose active period overlaps the selection
   const relevantGroups = folkGroups.filter(group => {
     // Check if group has valid coordinates
     if (!group.coordinates) {
@@ -79,8 +85,11 @@ export const addFolkGroupMarkers = async (
       return false;
     }
 
-    // For now, show all folk groups regardless of time period
-    // Later we can add time period filtering if needed
+    // Periodfilter: visa bara grupper vars aktiva period överlappar den valda.
+    // Fallback (okänd period eller saknad datering) → visa gruppen.
+    if (period && group.active_period_start != null && group.active_period_end != null) {
+      return group.active_period_start <= period.endYear && group.active_period_end >= period.startYear;
+    }
     return true;
   });
 

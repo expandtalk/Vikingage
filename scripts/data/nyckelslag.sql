@@ -1,0 +1,68 @@
+-- Nyckelslag → historical_events (event_type='military'), samma mönster som Neva.
+-- Spänner sägen→medeltid. Bjälbo/folkunga-slag (Sparrsätra, Herrevadsbro) och
+-- Östergötland-band (Bråvalla, Stångebro). geom är generad (sätts ej).
+-- Idempotent: hoppar över namn som redan finns.
+
+insert into historical_events
+  (year_start, year_end, event_name, event_name_en, event_type, significance_level,
+   region_affected, sources, description, description_en, lat, lng)
+select v.ys, v.ye, v.name, v.name_en, 'military', v.sig,
+       v.region::text[], v.src::text[], v.descr, v.descr_en, v.lat, v.lng
+from (values
+  (750, 750, 'Slaget på Bråvalla', 'Battle of Brávellir', 'medium',
+   '{"Östergötland"}', '{"Sögubrot","Saxo"}',
+   'Sägenomspunnet storslag (ca 750) vid Bråviken mellan Harald Hildetand och Sigurd Ring — enligt sagan Nordens största. Historiskt obelagt men centralt i den fornnordiska traditionen om övergången till en ny maktordning.',
+   'Legendary great battle (~750) by Bråviken between Harald Wartooth and Sigurd Ring; unverified but central to Norse tradition.',
+   58.6200, 16.3500),
+  (985, 985, 'Slaget vid Fýrisvellir', 'Battle of Fýrisvellir', 'high',
+   '{"Uppland"}', '{"Styrbjörns saga","runstenar (DR 279/295)"}',
+   'Erik Segersäll besegrade sin brorson Styrbjörn Starke på Fyrisvallarna vid Uppsala (ca 985). Nämns på skånska runstenar. Befäste sveaväldets kungamakt.',
+   'Erik the Victorious defeated his nephew Styrbjörn on the Fyris plains near Uppsala (~985); referenced on Scanian runestones.',
+   59.8200, 17.6400),
+  (1000, 1000, 'Slaget vid Svolder', 'Battle of Svolder', 'high',
+   '{"Östersjön"}', '{"Heimskringla"}',
+   'Sjöslag (år 1000) där en koalition (Sven Tveskägg, Olof Skötkonung, Erik jarl) besegrade Olav Tryggvason, som föll. Platsen omtvistad (Öresund/södra Östersjön). Delade upp Norge mellan segrarna.',
+   'Naval battle (1000) where a coalition defeated Olaf Tryggvason; location disputed.',
+   54.6000, 12.6000),
+  (1026, 1026, 'Slaget vid Helgeå', 'Battle of the Helgeå', 'high',
+   '{"Skåne"}', '{"Heimskringla"}',
+   'Knut den store slog en nordisk allians under Anund Jakob och Olav Haraldsson (ca 1026). Plats omtvistad (skånska Helge å el. uppländsk). Cementerade Knuts nordsjövälde.',
+   'Cnut the Great defeated a Nordic alliance under Anund Jacob and Olaf Haraldsson (~1026); location disputed.',
+   55.9500, 14.2800),
+  (1030, 1030, 'Slaget vid Stiklestad', 'Battle of Stiklestad', 'high',
+   '{"Norge"}', '{"Heimskringla"}',
+   'Olav Haraldsson föll 1030; blev därefter helgonförklarad (Olav den helige). Vändpunkt för Nordens kristnande och kungaideologi.',
+   'Olaf Haraldsson fell in 1030 and was canonised as St Olaf; a turning point for Nordic Christianisation.',
+   63.8000, 11.5700),
+  (1208, 1208, 'Slaget vid Lena', 'Battle of Lena', 'high',
+   '{"Västergötland"}', '{"Erikskrönikan","Västgötalagens kungalängd"}',
+   'Erik Knutsson (erikska ätten) besegrade kung Sverker den yngre vid Kungslena 1208, med norskt stöd. Del av den erikska–sverkerska tronstriden.',
+   'Erik Knutsson defeated King Sverker the Younger at Kungslena in 1208 amid the Erik–Sverker dynastic wars.',
+   58.1500, 13.6600),
+  (1210, 1210, 'Slaget vid Gestilren', 'Battle of Gestilren', 'medium',
+   '{"Västergötland"}', '{"Erikskrönikan"}',
+   'Sverker den yngre stupade 1210, vilket avgjorde tronstriden till erikska ättens fördel. Platsen omtvistad (Västergötland/Uppland).',
+   'Sverker the Younger fell in 1210, deciding the succession for the House of Erik; location disputed.',
+   58.2000, 13.5000),
+  (1247, 1247, 'Slaget vid Sparrsätra', 'Battle of Sparrsätra', 'high',
+   '{"Uppland"}', '{"Erikskrönikan"}',
+   'Kungamakten under Birger jarl krossade ett uppror av "folkungarna" (folkunga rote — det upproriska högfrälsepartiet, EJ Bjälboätten) vid Sparrsätra 1247. Efter segern infördes ökade skatter. Nyckelslag i Bjälboättens maktkonsolidering.',
+   'Royal power under Birger Jarl crushed a revolt by the "folkungar" faction at Sparrsätra in 1247; a key step in Bjälbo consolidation.',
+   59.6000, 17.0000),
+  (1251, 1251, 'Slaget vid Herrevadsbro', 'Battle of Herrevadsbro', 'high',
+   '{"Västmanland"}', '{"Erikskrönikan"}',
+   'Birger jarl lockade och nedgjorde de upproriska folkungarna vid Herrevadsbro (Kolbäck) 1251, varefter ledarna avrättades. Bröt slutgiltigt högfrälsets motstånd mot Bjälboättens kungamakt.',
+   'Birger Jarl defeated the rebellious folkungar at Herrevadsbro (Kolbäck) in 1251, breaking magnate resistance to Bjälbo rule.',
+   59.5700, 16.2500),
+  (1565, 1565, 'Slaget vid Axtorna', 'Battle of Axtorna', 'medium',
+   '{"Halland"}', '{"Nordiska sjuårskriget"}',
+   'Ett av Nordens största slag (20 000 man) 1565 under nordiska sjuårskriget; dansk seger trots svensk numerär övervikt. 4 000 stupade ligger i massgravar vid Köinge.',
+   'One of the largest Nordic battles (1565), a Danish victory in the Northern Seven Years War.',
+   56.9000, 12.9500),
+  (1598, 1598, 'Slaget vid Stångebro', 'Battle of Stångebro', 'high',
+   '{"Östergötland"}', '{"—"}',
+   'Hertig Karl (senare Karl IX) besegrade kung Sigismund vid Stångebro (Linköping) 1598 — samma strategiska broläge som vikingatidens Liunga ting. Avgjorde reformationsstriden och ledde till Sigismunds avsättning.',
+   'Duke Charles defeated King Sigismund at Stångebro (Linköping) in 1598 — the same strategic bridge site as the Viking-age Liunga assembly.',
+   58.4140, 15.6400)
+) as v(ys, ye, name, name_en, sig, region, src, descr, descr_en, lat, lng)
+where not exists (select 1 from historical_events he where he.event_name = v.name);

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useLegendData } from './map/useLegendData';
@@ -23,7 +23,10 @@ export const useMapMarkers = (
   historicalEvents: any[] = [],
   vikingCities: any[] = []
 ): UseMapMarkersReturn => {
-  const [markers, setMarkers] = useState<L.Marker[]>([]);
+  // OBS: ingen `markers`-state här. Tidigare fanns ett `setMarkers(markersRef.current)`
+  // som ingen konsumerade — det tvingade fram en re-render varje effekt-körning och
+  // bildade tillsammans med den instabila `historicalEvents`-depen (fresh []) en
+  // oändlig refetch/re-render-loop som frös kartan vid periodbyte. markersRef räcker.
   const markersRef = useRef<L.Marker[]>([]);
 
   const activeProfile = useActiveExploreProfile();
@@ -87,8 +90,6 @@ export const useMapMarkers = (
 
         markersRef.current = newMarkers;
         console.log(`=== TOTAL MARKERS ADDED: ${markersRef.current.length} ===`);
-        
-        setMarkers(markersRef.current);
       } catch (error) {
         console.error('Error adding markers:', error);
       }

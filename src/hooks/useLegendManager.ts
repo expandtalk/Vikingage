@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { generateBasicInscriptionItems } from './legend/legendItemGenerators';
 import { LEGEND_DEFAULTS } from './legend/itemEnabled';
+import { scopeLayersByPeriod } from './legend/layerPeriodScope';
 import { processLegendItems } from './legend/legendItemProcessor';
 import { filterInscriptionsByLegend } from './useLegendManager/inscriptionFilters';
 import { useFocusManager } from './useFocusManager';
@@ -24,6 +25,14 @@ export const useLegendManager = (
 
   // Fetch Christian sites data
   const { data: christianSites = [] } = useChristianSites();
+
+  // Period-scoping: för perioder äldre än vendeltid maskas icke-relevanta lager bort.
+  // Rå-staten (enabledLegendItems) bevaras för toggles/sparning; kartan, legenden och
+  // inskriftsfiltret drivs av den scope:ade versionen. Vendeltid/vikingatid = oförändrat.
+  const scopedEnabled = useMemo(
+    () => scopeLayersByPeriod(enabledLegendItems, selectedTimePeriod),
+    [enabledLegendItems, selectedTimePeriod]
+  );
 
   // "Kom ihåg min vy": spara/återställ legend-läget lokalt. När användaren INTE kommit
   // via en focus-vy (kort/deep-link) och har en sparad vy → återställ den ovanpå profilen.
@@ -62,36 +71,36 @@ export const useLegendManager = (
     // If there's an active search, show only search results on the map
     if (hasActiveSearch && searchResultInscriptions) {
       console.log(`🎯 Using search results for map display: ${searchResultInscriptions.length} inscriptions`);
-      const filtered = filterInscriptionsByLegend(searchResultInscriptions, enabledLegendItems, isVikingMode, selectedTimePeriod);
+      const filtered = filterInscriptionsByLegend(searchResultInscriptions, scopedEnabled, isVikingMode, selectedTimePeriod);
       console.log(`📊 Search results after legend filtering: ${filtered.length}`);
       return filtered;
     }
-    
+
     // Otherwise, show all inscriptions filtered by legend
-    const filtered = filterInscriptionsByLegend(inscriptions, enabledLegendItems, isVikingMode, selectedTimePeriod);
+    const filtered = filterInscriptionsByLegend(inscriptions, scopedEnabled, isVikingMode, selectedTimePeriod);
     
     console.log(`📊 Inscription filtering results (UPDATED):`);
     console.log(`  - Input inscriptions: ${inscriptions.length}`);
     console.log(`  - Filtered inscriptions: ${filtered.length}`);
     
     return filtered;
-  }, [inscriptions, enabledLegendItems, isVikingMode, selectedTimePeriod, hasActiveSearch, searchResultInscriptions]);
+  }, [inscriptions, scopedEnabled, isVikingMode, selectedTimePeriod, hasActiveSearch, searchResultInscriptions]);
 
   // Generate legend items with correct counts
   const legendItems = useMemo(() => {
     console.log(`🏷️ Generating legend items (UPDATED)...`);
     
     const rawItems = generateBasicInscriptionItems(
-      inscriptions, 
+      inscriptions,
       isVikingMode,
-      enabledLegendItems,
+      scopedEnabled,
       t,
       selectedTimePeriod,
       dbStats,
       christianSites
     );
-    
-    const processedItems = processLegendItems(rawItems, enabledLegendItems);
+
+    const processedItems = processLegendItems(rawItems, scopedEnabled);
     
     console.log(`📋 Legend items generated: ${processedItems.length}`);
     const runicItem = processedItems.find(item => item.id === 'runic_inscriptions');
@@ -105,7 +114,7 @@ export const useLegendManager = (
     }
     
     return processedItems;
-  }, [inscriptions, isVikingMode, selectedTimePeriod, enabledLegendItems, language]);
+  }, [inscriptions, isVikingMode, selectedTimePeriod, scopedEnabled, language]);
 
   // Handle legend toggle. En KATEGORI (post med barn) styr sina barn: kartlagren gate:ar
   // på barnens nycklar, så en kategori-toggle måste kaskadera — annars gömdes bara barnen
@@ -200,7 +209,9 @@ export const useLegendManager = (
   console.log(`  - Legend items: ${legendItems.length}`);
 
   return {
-    enabledLegendItems,
+    // Kartan/legenden får den period-scope:ade versionen; toggles/sparning arbetar
+    // mot rå-staten via setEnabledLegendItems i handlers ovan.
+    enabledLegendItems: scopedEnabled,
     legendItems,
     mapInscriptions,
     handleLegendToggle,

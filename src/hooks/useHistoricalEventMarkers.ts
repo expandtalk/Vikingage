@@ -27,14 +27,19 @@ export const useHistoricalEventMarkers = (
     queryFn: async (): Promise<HistoricalEventMarker[]> => {
       console.log('🏛️ Fetching historical events for map markers...');
       
-      // Define period ranges
+      // Period-intervall — nycklarna MÅSTE matcha GERMANIC_TIME_PERIODS-id:na, annars
+      // faller filtret bort (range=undefined) och alla rader returneras. Tidigare fanns
+      // felaktiga nycklar (iron_age/medieval) och saknade de fem äldsta perioderna.
       const periodRanges: { [key: string]: [number, number] } = {
-        'viking_age': [793, 1066],
-        'iron_age': [-500, 1050],
+        'paleolithic': [-45000, -10000],
+        'mesolithic': [-10000, -4000],
+        'neolithic': [-4000, -1700],
         'bronze_age': [-1700, -500],
-        'migration_period': [375, 568],
+        'pre_roman_iron': [-500, 1],
+        'roman_iron': [1, 400],
+        'migration_period': [400, 550],
         'vendel_period': [550, 793],
-        'medieval': [1050, 1520]
+        'viking_age': [793, 1066],
       };
 
       const range = periodRanges[selectedTimePeriod];

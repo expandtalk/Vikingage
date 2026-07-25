@@ -82,8 +82,12 @@ export const useMapData = ({
     return filterCitiesByPeriod(vikingCities, period);
   }, [vikingCities, selectedPeriod, selectedTimePeriod, isVikingMode]);
 
-  // Load historical events for the selected time period
-  const { data: historicalEvents = [], isLoading: eventsLoading } = useHistoricalEventMarkers(selectedTimePeriod, true);
+  // Load historical events for the selected time period.
+  // Stabil referens: react-querys `data` är undefined mellan hämtningar; ett `= []`-default
+  // skapar en NY array varje render → instabil dep i useMapMarkers → oändlig loop. useMemo
+  // ger samma [] så länge data är undefined.
+  const { data: historicalEventsData, isLoading: eventsLoading } = useHistoricalEventMarkers(selectedTimePeriod, true);
+  const historicalEvents = useMemo(() => historicalEventsData ?? [], [historicalEventsData]);
 
   return {
     inscriptionsWithCoords,

@@ -44,7 +44,9 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
 
   const shouldLoadVikingData = selectedTimePeriod === 'viking_age';
   const { fortresses: vikingFortresses, isLoading: fortressesLoading } = useVikingFortresses(shouldLoadVikingData);
-  const { data: vikingCities = [], isLoading: citiesLoading } = useVikingCities(shouldLoadVikingData);
+  const { data: vikingCitiesData, isLoading: citiesLoading } = useVikingCities(shouldLoadVikingData);
+  // Stabil referens (se useMapData) — undvik fresh [] varje render.
+  const vikingCities = useMemo(() => vikingCitiesData ?? [], [vikingCitiesData]);
 
   const {
     inscriptionsWithCoords,

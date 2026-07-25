@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Coins as CoinsIcon, MapPin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCoins, parseCoinCoord, type Coin } from '@/hooks/useCoins';
+import { MaktikonTimeline } from '@/components/coins/MaktikonTimeline';
 
 const CATEGORY_LABEL: Record<string, { sv: string; en: string }> = {
   nordic_royal: { sv: 'Nordisk kunglig myntning', en: 'Nordic royal coinage' },
@@ -116,6 +117,8 @@ const Coins = () => {
             <div className="mb-8">
               <CoinsMap coins={coins} />
             </div>
+
+            <MaktikonTimeline coins={coins} />
 
             {byCategory.map(({ key, coins: list }) => (
               <section key={key} className="mb-8">
