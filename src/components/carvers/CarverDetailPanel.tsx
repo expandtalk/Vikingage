@@ -216,6 +216,15 @@ export const CarverDetailPanel: React.FC<CarverDetailPanelProps> = ({
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 mt-4">
+            {/* Ristarens egna stenar på kartan direkt — det man vill se vid klick. */}
+            {(carver.carverInscriptions?.length ?? 0) > 0 && (
+              <div>
+                <div className="text-xs text-slate-300 mb-1 flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />{carver.name}s stenar ({carver.carverInscriptions!.length})
+                </div>
+                <CarverStonesMap inscriptions={carver.carverInscriptions ?? []} onStoneClick={onInscriptionClick} />
+              </div>
+            )}
             {/* Enhanced Carver Info */}
             <div className="bg-white/5 rounded-lg p-4 border border-white/10">
               <div className="space-y-3">

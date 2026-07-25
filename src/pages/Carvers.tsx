@@ -149,51 +149,33 @@ const Carvers = () => {
         }
       }}
     >
-      <CardHeader className="pb-3">
-        <CardTitle className="text-foreground text-lg flex items-center gap-2">
-          <User className="h-5 w-5 text-gold" />
-          {carver.name}
-        </CardTitle>
-        <div className="flex gap-2 flex-wrap">
-          <Badge variant="secondary" className="text-xs">
-            <Hash className="h-3 w-3 mr-1" />
-            {c.badgeStones(carver.inscriptionCount)}
+      {/* Kompakt kort: namn + antal + ev. period/region på en rad. Beskrivning & karta
+          ligger i detaljpanelen (klick) — listan ska vara snabb att skanna. */}
+      <CardHeader className="pb-2 pt-3">
+        <CardTitle className="text-foreground text-base flex items-center gap-2">
+          <User className="h-4 w-4 text-gold shrink-0" />
+          <span className="truncate">{carver.name}</span>
+          <Badge variant="secondary" className="ml-auto text-[11px] shrink-0">
+            <Hash className="h-3 w-3 mr-1" />{carver.inscriptionCount}
           </Badge>
-          {carver.signedCount > 0 && (
-            <Badge variant="default" className="text-xs bg-green-600">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              {c.badgeSigned(carver.signedCount)}
-            </Badge>
-          )}
-          {carver.uncertainCount > 0 && (
-            <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-500">
-              <AlertTriangle className="h-3 w-3 mr-1" />
-              {c.badgeUncertain(carver.uncertainCount)}
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {carver.description && (
-          <p className="text-sm text-muted-foreground italic">
-            "{carver.description}"
-          </p>
+        </CardTitle>
+        {(carver.signedCount > 0 || carver.uncertainCount > 0 || carver.region || carver.period_active_start || carver.period_active_end) && (
+          <div className="flex items-center gap-x-2 gap-y-1 flex-wrap text-[11px] text-muted-foreground">
+            {carver.signedCount > 0 && (
+              <span className="flex items-center gap-1 text-green-600"><CheckCircle className="h-3 w-3" />{carver.signedCount}</span>
+            )}
+            {carver.uncertainCount > 0 && (
+              <span className="flex items-center gap-1 text-yellow-600"><AlertTriangle className="h-3 w-3" />{carver.uncertainCount}</span>
+            )}
+            {(carver.period_active_start || carver.period_active_end) && (
+              <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatPeriod(carver.period_active_start, carver.period_active_end)}</span>
+            )}
+            {carver.region && (
+              <span className="flex items-center gap-1 truncate"><MapPin className="h-3 w-3" />{carver.region}</span>
+            )}
+          </div>
         )}
-        <div className="space-y-2">
-          {(carver.period_active_start || carver.period_active_end) && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>{formatPeriod(carver.period_active_start, carver.period_active_end)}</span>
-            </div>
-          )}
-          {carver.region && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span>{carver.region}{carver.country && `, ${carver.country}`}</span>
-            </div>
-          )}
-        </div>
-      </CardContent>
+      </CardHeader>
     </Card>
   );
 
