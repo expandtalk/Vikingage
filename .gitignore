@@ -30,3 +30,6 @@ dist-ssr
 .gstack/
 rundata.sql
 scripts/data/rundata-raw/
+
+# Lokala dokument, källor och stora binärer – hålls lokalt, ej på GitHub
+docs/
