@@ -194,7 +194,7 @@ export const useMapInitialization = ({
   useReachProbeTriggers({ map: map.current });
 
   // Art-/innovationsintroduktioner (koordinatsatta), filtrerat på vald tidsepok.
-  useMapSpeciesMarkers({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+  useMapSpeciesMarkers({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, selectedTimePeriod });
 
   // Ortnamnsled-spotlight (2c): visar OSM-orter med valt led (URL ?element=tor).
   useMapElementMarkers({ map: map.current, isMapReady: isMapReadyRef });

@@ -1,16 +1,18 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
-import { useTimeEpoch, epochRange } from '@/hooks/useTimeEpoch';
+import { overlapsPeriod } from '@/utils/germanicTimeline/periodRange';
 
 // Kartlager för art-/innovationsintroduktioner (species_introductions med koordinat),
-// filtrerat på vald tidsepok. Gate: legendknappen 'species_introductions' (=== true).
+// filtrerat på vald PERIOD (samma tidskontroll som folkgrupper/städer/eventlinje —
+// den tidigare separata epok-kontrollen är borttagen). Gate: 'species_introductions'.
 // Färg per proxy-typ (samma som tidslinjen). Endast koordinatsatta rader ritas.
 
 interface Props {
   map: L.Map | null;
   enabledLegendItems: { [key: string]: boolean };
   isMapReady: React.RefObject<boolean>;
+  selectedTimePeriod: string;
 }
 
 const PROXY_COLOR: Record<string, string> = {
@@ -22,10 +24,9 @@ const EVENT_COLOR: Record<string, string> = {
 };
 const esc = (s: unknown) => String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c] as string));
 
-export const useMapSpeciesMarkers = ({ map, enabledLegendItems, isMapReady }: Props) => {
+export const useMapSpeciesMarkers = ({ map, enabledLegendItems, isMapReady, selectedTimePeriod }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
   const enabled = enabledLegendItems.species_introductions === true;
-  const epochKey = useTimeEpoch();
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;
@@ -34,7 +35,6 @@ export const useMapSpeciesMarkers = ({ map, enabledLegendItems, isMapReady }: Pr
     layer.clearLayers();
     if (!enabled) return;
 
-    const { from, to } = epochRange(epochKey);
     let cancelled = false;
     (async () => {
       const { data, error } = await (supabase as any)
@@ -44,11 +44,8 @@ export const useMapSpeciesMarkers = ({ map, enabledLegendItems, isMapReady }: Pr
       if (error || cancelled || !map) return;
       (data as any[] || []).forEach((r) => {
         if (r.lat == null || r.lng == null) return;
-        // Epok-överlapp: postens intervall [date_from, date_to||date_from] snittar [from,to].
-        const df = r.date_from ?? null;
-        if (df == null) return;
-        const dt = r.date_to ?? df;
-        if (dt < from || df > to) return;
+        // Periodöverlapp: postens [date_from, date_to] snittar vald period.
+        if (!overlapsPeriod(selectedTimePeriod, r.date_from, r.date_to)) return;
         const color = PROXY_COLOR[r.proxy_type] ?? '#fbbf24';
         L.circleMarker([r.lat, r.lng], { radius: 6, color: '#1e293b', weight: 1.5, fillColor: color, fillOpacity: 0.9 })
           .bindPopup(
@@ -74,9 +71,7 @@ export const useMapSpeciesMarkers = ({ map, enabledLegendItems, isMapReady }: Pr
       if (cancelled || !map) return;
       (ev as any[] || []).forEach((e) => {
         if (e.lat == null || e.lng == null) return;
-        const ys = e.year_start ?? null; if (ys == null) return;
-        const ye = e.year_end ?? ys;
-        if (ye < from || ys > to) return;
+        if (!overlapsPeriod(selectedTimePeriod, e.year_start, e.year_end)) return;
         const color = EVENT_COLOR[e.event_type] ?? '#fbbf24';
         L.marker([e.lat, e.lng], {
           icon: L.divIcon({ className: 'evt-sq', html: `<div style="width:11px;height:11px;background:${color};border:1.5px solid #0f172a;transform:rotate(45deg)"></div>`, iconSize: [11, 11], iconAnchor: [6, 6] }),
@@ -90,7 +85,7 @@ export const useMapSpeciesMarkers = ({ map, enabledLegendItems, isMapReady }: Pr
       });
     })();
     return () => { cancelled = true; layer.clearLayers(); };
-  }, [map, enabled, isMapReady, epochKey]);
+  }, [map, enabled, isMapReady, selectedTimePeriod]);
 
   useEffect(() => () => {
     try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }
