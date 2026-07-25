@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { parseCoordinates } from '@/hooks/useRunicData/coordinateUtils';
+import { overlapsPeriod } from '@/utils/germanicTimeline/periodRange';
 
 interface VikingCity {
   id: string;
@@ -58,26 +59,12 @@ export const useVikingCities = (isEnabled: boolean = true) => {
   });
 };
 
-// Helper function to filter cities by time period
+// Filtrera städer på vald period via den delade GERMANIC_TIME_PERIODS-logiken.
+// Tidigare använde denna en egen 'early/high/late'-vokabulär som aldrig matchade
+// de faktiska period-id:na ('viking_age' m.fl.) → filtret var en no-op och t.ex.
+// Oslo (1000–1066) visades felaktigt redan i vendeltid.
 export const filterCitiesByPeriod = (cities: VikingCity[], selectedPeriod: string): VikingCity[] => {
-  if (selectedPeriod === 'all') return cities;
-  
-  // Map period codes to year ranges
-  const periodRanges: { [key: string]: [number, number] } = {
-    'early': [793, 850],
-    'high': [850, 1000], 
-    'late': [1000, 1066]
-  };
-  
-  const range = periodRanges[selectedPeriod];
-  if (!range) return cities;
-  
-  const [startYear, endYear] = range;
-  
-  return cities.filter(city => {
-    // City must have been active during at least part of the selected period
-    return city.period_start <= endYear && city.period_end >= startYear;
-  });
+  return cities.filter((city) => overlapsPeriod(selectedPeriod, city.period_start, city.period_end));
 };
 
 // Helper function to get category color - UPDATED to include religious centers
