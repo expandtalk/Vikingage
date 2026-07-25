@@ -23,6 +23,7 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
   'adna_sites',
   'species_introductions',     // arter & innovationer
   'coins',                     // mynt (periodfiltrerade per period_start/end) — solidi i folkvandringstid
+  'solidus_die_links',         // solidi + stämpellänk-linjer (Fischer)
 ]);
 
 // Lager som tänds som standard i äldre perioder så kartan inte blir tom.
@@ -34,7 +35,7 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
 export const EARLY_DEFAULT_ON = new Set<string>([
   'folk_groups',
   'heritage_sites', 'heritage_dos', 'heritage_ganggrift', 'heritage_skeppssattning', 'heritage_hallristning',
-  'coins',
+  'coins', 'solidus_die_links',
 ]);
 
 // Opt-out-lager (gate:ar `!== false`, dvs PÅ även när nyckeln saknas) måste tvingas
