@@ -24,12 +24,14 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
 ]);
 
 // Lager som tänds som standard i äldre perioder så kartan inte blir tom.
-// ENDAST folk_groups — det är det enda djuptidslager som filtrerar per objekt på
-// aktiv period (addFolkGroupMarkers). species_introductions/adna_sites saknar
-// tidsfilter och skulle annars visa ALLT oavsett period (t.ex. Kronan 1676 i
-// Paleolitikum). De tas in här först när de blivit periodfiltrerade.
+// Endast lager med per-objekt periodfilter får vara här (annars floodar de fel period):
+//  - folk_groups (addFolkGroupMarkers filtrerar på active_period)
+//  - heritage-megaliter (useMapHeritageSites TYPE_PERIOD utesluter typ ur p_types när
+//    perioden inte överlappar → dösar syns bara i neolitikum, inget i mesolitikum osv).
+// species_introductions/adna_sites är INTE här (adna periodfiltrerar men är opt-in-fokus).
 export const EARLY_DEFAULT_ON = new Set<string>([
   'folk_groups',
+  'heritage_sites', 'heritage_dos', 'heritage_ganggrift', 'heritage_skeppssattning',
 ]);
 
 // Opt-out-lager (gate:ar `!== false`, dvs PÅ även när nyckeln saknas) måste tvingas
