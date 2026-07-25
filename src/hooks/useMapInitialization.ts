@@ -212,7 +212,7 @@ export const useMapInitialization = ({
   useMapThingSites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
 
   // aDNA-platser (archaeological_sites + genetic_individuals) — gate: legendknappen.
-  useMapAncestrySites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+  useMapAncestrySites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, selectedTimePeriod });
 
   // Mina punkter (localStorage) — användarens egna ortnamn, alltid synliga.
   useMapCustomPoints({ map: map.current, isMapReady: isMapReadyRef });

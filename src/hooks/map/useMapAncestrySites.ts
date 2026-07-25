@@ -1,15 +1,18 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
+import { overlapsPeriod } from '@/utils/germanicTimeline/periodRange';
 
-// Kartlager för aDNA-platser (archaeological_sites med koordinat) + deras genetiska
-// individer (genetic_individuals). Gate: legendknappen 'adna_sites'. Popupen visar
-// prov-id, genetiskt kön, Y-/mt-haplogrupp, 14C och härkomst per individ.
+// Kartlager för aDNA-platser + deras genetiska individer (genetic_individuals).
+// Periodfiltrerat via individernas numeriska period_from/period_to (samma
+// overlapsPeriod som övriga lager) — en plats visas bara om den har minst en
+// individ vars datering överlappar vald period. Gate: legendknappen 'adna_sites'.
 
 interface Props {
   map: L.Map | null;
   enabledLegendItems: { [key: string]: boolean };
   isMapReady: React.RefObject<boolean>;
+  selectedTimePeriod: string;
 }
 
 const esc = (s: unknown) => String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c] as string));
@@ -28,7 +31,7 @@ const fmtIso = (o: unknown) => {
   catch { return ''; }
 };
 
-export const useMapAncestrySites = ({ map, enabledLegendItems, isMapReady }: Props) => {
+export const useMapAncestrySites = ({ map, enabledLegendItems, isMapReady, selectedTimePeriod }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
   const enabled = enabledLegendItems.adna_sites === true;
 
@@ -43,7 +46,7 @@ export const useMapAncestrySites = ({ map, enabledLegendItems, isMapReady }: Pro
     (async () => {
       const [sitesRes, indsRes] = await Promise.all([
         (supabase as any).from('archaeological_sites').select('id,name,period,dating,coordinates,description').not('coordinates', 'is', null),
-        (supabase as any).from('genetic_individuals').select('site_id,sample_id,genetic_sex,archaeological_sex,age,y_haplogroup,mt_haplogroup,radiocarbon,ancestry,isotopes,grave_goods,burial_context,museums_inventory'),
+        (supabase as any).from('genetic_individuals').select('site_id,sample_id,genetic_sex,archaeological_sex,age,y_haplogroup,mt_haplogroup,radiocarbon,ancestry,isotopes,grave_goods,burial_context,museums_inventory,period_from,period_to'),
       ]);
       if (cancelled || !map || sitesRes.error) return;
       const bySite = new Map<string, any[]>();
@@ -56,7 +59,9 @@ export const useMapAncestrySites = ({ map, enabledLegendItems, isMapReady }: Pro
         if (!m) return;
         const lng = parseFloat(m[1]); const lat = parseFloat(m[2]);
         if (!isFinite(lat) || !isFinite(lng)) return;
-        const inds = bySite.get(s.id) ?? [];
+        // Bara individer vars datering överlappar vald period; hoppa över platsen om ingen kvar.
+        const inds = (bySite.get(s.id) ?? []).filter((i) => overlapsPeriod(selectedTimePeriod, i.period_from, i.period_to));
+        if (inds.length === 0) return;
         const indHtml = inds.map((i) => {
           const anc = i.ancestry ? fmtPct(i.ancestry) : '';
           const iso = i.isotopes ? fmtIso(i.isotopes) : '';
@@ -88,7 +93,7 @@ export const useMapAncestrySites = ({ map, enabledLegendItems, isMapReady }: Pro
       });
     })();
     return () => { cancelled = true; layer.clearLayers(); };
-  }, [map, enabled, isMapReady]);
+  }, [map, enabled, isMapReady, selectedTimePeriod]);
 
   useEffect(() => () => {
     try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }
