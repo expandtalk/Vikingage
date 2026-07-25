@@ -28,7 +28,10 @@ UPDATE public.genetic_individuals SET
 WHERE sample_id = 'VARNHEM-Mechtild';
 
 -- Varnhem som kunglig nekropol (ej osteologiskt undersökta gravar noteras i platsbeskrivningen).
+-- Koordinat rättad till klosterkyrkan (Nominatim-verifierad) — låg ~400 m fel tidigare.
 UPDATE public.archaeological_sites SET
   description = 'Cistercienskt kloster, kunglig gravkyrka. Erikska ätten: Knut Eriksson (+1196), Erik Knutsson (+1216), Erik Eriksson "läspe och halte" (+1250). Stenkilsätten: Inge den äldre (+ ca 1100, flyttad hit). Bjälboätten (framför Heliga korsets altare): Birger jarl (+1266), hertig Erik (+1275) och drottning Mechtild (+1288) — deras grav öppnad 2002 och DNA-bekräftad.',
-  period = 'Vikingatid–medeltid'
+  period = 'Vikingatid–medeltid',
+  coordinates = point(13.6549, 58.3845),
+  geom = ST_SetSRID(ST_MakePoint(13.6549, 58.3845), 4326)
 WHERE name = 'Varnhem';

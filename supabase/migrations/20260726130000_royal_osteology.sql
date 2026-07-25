@@ -20,14 +20,14 @@ COMMENT ON COLUMN public.genetic_individuals.king_id IS 'Länk till regent i his
 -- 2) Gravplatser (arkeologiska platser). geom sätts explicit (ej genererad kolumn).
 INSERT INTO public.archaeological_sites (name, location, parish, county, country, coordinates, geom, period, burial_type, description)
 SELECT 'Riddarholmskyrkan', 'Riddarholmen, Stockholm', 'Stockholm', 'Stockholm', 'Sweden',
-       point(18.0648, 59.3247), ST_SetSRID(ST_MakePoint(18.0648, 59.3247), 4326),
+       point(18.0646, 59.3247), ST_SetSRID(ST_MakePoint(18.0646, 59.3247), 4326), -- Nominatim-verifierad
        'Medeltid–nutid', 'kyrkograv/kungagravar',
        'Kunglig gravkyrka på Riddarholmen. Korgravarna grävdes ut 1915 (bl.a. Karl Knutssons skelett).'
 WHERE NOT EXISTS (SELECT 1 FROM public.archaeological_sites WHERE name = 'Riddarholmskyrkan');
 
 INSERT INTO public.archaeological_sites (name, location, parish, county, country, coordinates, geom, period, burial_type, description)
 SELECT 'Uppsala domkyrka', 'Uppsala', 'Uppsala', 'Uppsala', 'Sweden',
-       point(17.6337, 59.8577), ST_SetSRID(ST_MakePoint(17.6337, 59.8577), 4326),
+       point(17.6336, 59.8582), ST_SetSRID(ST_MakePoint(17.6336, 59.8582), 4326), -- Nominatim-verifierad
        'Medeltid–nutid', 'kyrkograv/kungagravar',
        'Domkyrka med kungliga gravar, bl.a. Gustav Vasa (Vasakoret).'
 WHERE NOT EXISTS (SELECT 1 FROM public.archaeological_sites WHERE name = 'Uppsala domkyrka');
