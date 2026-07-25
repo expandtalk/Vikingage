@@ -1,8 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Link2, ScrollText, Users } from 'lucide-react';
+import { BookOpen, Link2, ScrollText, Users, Crown, Coins as CoinsIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useKingRelations } from '@/hooks/chronicles/useKingRelations';
+import { useCoins } from '@/hooks/useCoins';
+import { useRoyalDynasties } from '@/hooks/chronicles/useRoyalDynasties';
 import { KingSourceMentions } from './KingSourceMentions';
 import { KingInscriptionLinks } from './KingInscriptionLinks';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -40,9 +43,15 @@ export const KingDetailPanel: React.FC<KingDetailPanelProps> = ({ king, sourceMe
   const { language } = useLanguage();
   const sv = language !== 'en';
   const { data: relations } = useKingRelations(king.name);
+  const { data: dynasties } = useRoyalDynasties();
+  const { data: coins } = useCoins();
 
   const attest = (king.external_attestation ?? []).filter(Boolean);
   const rels = relations ?? [];
+  const dynasty = dynasties?.find((d) => d.id === king.dynasty_id) ?? null;
+  const kingCoins = (coins ?? []).filter((co) => co.issuer_king_id === king.id);
+  const dynPeriod = dynasty && (dynasty.period_start || dynasty.period_end)
+    ? `${dynasty.period_start ?? '?'}–${dynasty.period_end ?? ''}` : null;
 
   return (
     <Card className="bg-slate-800/70 backdrop-blur-md border-amber-500/30">
@@ -91,6 +100,21 @@ export const KingDetailPanel: React.FC<KingDetailPanelProps> = ({ king, sourceMe
           ))}
         </div>
 
+        {dynasty && (
+          <div className="rounded-md border border-amber-500/20 bg-amber-500/5 p-2">
+            <div className="text-slate-400 text-xs uppercase tracking-wide mb-0.5 flex items-center gap-1">
+              <Crown className="h-3 w-3" /> {sv ? 'Dynasti' : 'Dynasty'}
+            </div>
+            <div className="text-white font-medium">
+              {sv ? dynasty.name : (dynasty.name_en ?? dynasty.name)}
+              {(dynasty.region || dynPeriod) && (
+                <span className="text-xs font-normal text-slate-400"> · {[dynasty.region, dynPeriod].filter(Boolean).join(', ')}</span>
+              )}
+            </div>
+            {dynasty.description && <p className="text-slate-300 text-xs mt-1 leading-relaxed">{dynasty.description}</p>}
+          </div>
+        )}
+
         {king.sources && (
           <div className="flex items-start gap-2 text-slate-300">
             <BookOpen className="h-4 w-4 mt-0.5 text-slate-400 shrink-0" />
@@ -118,6 +142,43 @@ export const KingDetailPanel: React.FC<KingDetailPanelProps> = ({ king, sourceMe
                 );
               })}
             </ul>
+          </div>
+        )}
+
+        {kingCoins.length > 0 && (
+          <div>
+            <div className="text-slate-400 text-xs uppercase tracking-wide mb-1 flex items-center gap-1">
+              <CoinsIcon className="h-3 w-3" /> {sv ? 'Mynt & symboler' : 'Coins & symbols'} ({kingCoins.length})
+            </div>
+            <ul className="space-y-2">
+              {kingCoins.map((co) => (
+                <li key={co.id} className="flex gap-2">
+                  {co.image_url && (
+                    <img src={co.image_url} alt={co.name} loading="lazy"
+                      className="w-12 h-12 rounded object-contain border border-amber-500/30 bg-slate-900/60 shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-white">
+                      {(sv ? co.name : (co.name_en ?? co.name))}
+                      {co.denomination && <span className="text-slate-400"> · {co.denomination}</span>}
+                    </div>
+                    {(co.mint || co.metal) && (
+                      <div className="text-[11px] text-slate-400">{[co.mint, co.metal].filter(Boolean).join(' · ')}</div>
+                    )}
+                    {(co.obverse || co.reverse) && (
+                      <div className="text-[11px] text-slate-300 mt-0.5">
+                        {co.obverse && <span>{sv ? 'Åtsida' : 'Obverse'}: {co.obverse}</span>}
+                        {co.obverse && co.reverse && <span> · </span>}
+                        {co.reverse && <span>{sv ? 'Frånsida' : 'Reverse'}: {co.reverse}</span>}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <Link to="/sv/mynt" className="text-xs text-amber-300 hover:underline mt-1 inline-block">
+              {sv ? 'Se alla mynt →' : 'See all coins →'}
+            </Link>
           </div>
         )}
 
