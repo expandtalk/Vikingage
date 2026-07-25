@@ -97,12 +97,14 @@ export const addMapMarkers = async (
     markers.push(...germanicMarkers);
   }
 
-  // Add historical event markers if enabled
-  if (enabledLegendItems.historical_events !== false && historicalEvents.length > 0) {
-    console.log(`🏛️ Adding ${historicalEvents.length} historical event markers`);
+  // Historiska HÄNDELSER ritas INTE längre som kartnålar — de hör hemma på en
+  // eventlinje (tidslinje), inte som nålar ovanpå orterna (t.ex. "Birka överges"
+  // ska inte konkurrera med orten Birka). Kartan visar platser; händelser visas
+  // kronologiskt i eventlinjen. Gate kvar som opt-in (=== true) för ev. felsökning,
+  // men legend-posten är borttagen → nyckeln saknas → ritas aldrig som standard.
+  if (enabledLegendItems.historical_events === true && historicalEvents.length > 0) {
     const eventMarkers = addHistoricalEventMarkers(map, historicalEvents);
     markers.push(...eventMarkers);
-    console.log(`✅ Added ${eventMarkers.length} historical event markers`);
   }
 
   // Add Viking cities/centers if enabled

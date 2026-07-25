@@ -267,13 +267,9 @@ export const generateBasicInscriptionItems = (
     enabled: itemEnabled(enabledLegendItems, 'folk_groups')
   });
 
-  items.push({
-    id: 'historical_events',
-    label: 'Historiska händelser',
-    color: '#FF6B6B',
-    count: 37, // historical_events-tabellen (2026-07). Uppdatera vid re-import.
-    enabled: itemEnabled(enabledLegendItems, 'historical_events')
-  });
+  // Historiska händelser är INTE längre ett kartlager (nålar konkurrerade med orterna,
+  // t.ex. "Birka överges" ovanpå orten Birka). Händelser visas på eventlinjen i stället.
+  // Ingen legend-post → ingen karttoggle.
 
   // (Ortnamn ligger nu som underkategori under Kulturlager ovan — ingen fristående post här.)
 
@@ -456,7 +452,7 @@ export const generateBasicInscriptionItems = (
     // OBS: place_names (Ortnamn) ligger MEDVETET utanför cat_geo — den lyfts till egen
     // topp-nivå-post så den alltid går att stänga av med ETT klick (Daniel: namnelementen
     // svämmar över och "gick inte att stänga av" när de låg nästlade i en kategori).
-    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['historical_events', 'species_introductions', 'picture_stone_reuse', 'coins', 'thing_sites', 'adna_sites', 'paleo_shoreline']),
+    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['species_introductions', 'picture_stone_reuse', 'coins', 'thing_sites', 'adna_sites', 'paleo_shoreline']),
   ];
   const grouped = ordered.filter(Boolean) as LegendItem[];
   // Allt ogrupperat (t.ex. kristna centra) läggs sist, oförändrat.
