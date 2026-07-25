@@ -35,7 +35,7 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
 export const EARLY_DEFAULT_ON = new Set<string>([
   'folk_groups',
   'heritage_sites', 'heritage_dos', 'heritage_ganggrift', 'heritage_skeppssattning', 'heritage_hallristning',
-  'coins', 'solidus_die_links',
+  'coins', 'solidus_die_links', 'species_introductions',
 ]);
 
 // Opt-out-lager (gate:ar `!== false`, dvs PÅ även när nyckeln saknas) måste tvingas
