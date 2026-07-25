@@ -23,6 +23,13 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
   'species_introductions',     // arter & innovationer
 ]);
 
+// Lager som ska vara PÅ som standard i äldre perioder, så kartan inte blir tom.
+// Djuptidens huvudinnehåll på kartan: folkgrupper (opt-out men force-off i basePresets),
+// arter/innovationer och aDNA-platser. Utan detta döljs runstenar men inget tänds i stället.
+export const EARLY_DEFAULT_ON = new Set<string>([
+  'folk_groups', 'species_introductions', 'adna_sites',
+]);
+
 // Opt-out-lager (gate:ar `!== false`, dvs PÅ även när nyckeln saknas) måste tvingas
 // av explicit i äldre perioder — annars ritas de trots att de inte står i staten.
 const FORCE_OFF_OPT_OUT = [
@@ -48,6 +55,8 @@ export const scopeLayersByPeriod = (
   for (const k of Object.keys(enabled)) {
     scoped[k] = EARLY_ALLOWED_LAYERS.has(k) ? enabled[k] : false;
   }
+  // Tänd djuptidens kärninnehåll så kartan visar något (annars: runstenar dolda, inget kvar).
+  for (const k of EARLY_DEFAULT_ON) scoped[k] = true;
   for (const k of FORCE_OFF_OPT_OUT) {
     if (!EARLY_ALLOWED_LAYERS.has(k)) scoped[k] = false;
   }
