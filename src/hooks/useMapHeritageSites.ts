@@ -23,6 +23,7 @@ interface Props {
 const TYPE_PERIOD: Record<string, [number, number]> = {
   'dös': [-3900, -3300],            // tidigneolitikum (TRB)
   'gånggrift': [-3350, -2800],      // mellanneolitikum (TRB)
+  'hällristning': [-1700, -500],    // bronsålder (sydskandinavisk hällkonst)
   'skeppssättning': [-1000, 1050],  // sen bronsålder–vikingatid
   'bildsten': [400, 1100],          // vendel–vikingatid (gotländska bildstenar)
 };
@@ -48,6 +49,7 @@ const clusterIcon = (count: number) => {
 // Färg per lämningstyp så kartan går att läsa. Fallback grå för okända typer.
 const TYPE_COLOR: Record<string, string> = {
   'vårdkase': '#f59e0b',        // eld-orange
+  'hällristning': '#ea580c',    // hällkonst — ockra/rost
   'dös': '#7c3aed',             // megalit-lila
   'gånggrift': '#9333ea',       // megalit-lila (ljusare)
   'bildsten': '#0891b2',        // gotländsk cyan
@@ -74,6 +76,7 @@ const dotIconFor = (t: string) => {
 const HERITAGE_TYPE_KEYS: Record<string, string> = {
   heritage_kyrka: 'kyrka', heritage_kapell: 'kapell', heritage_kloster: 'kloster',
   heritage_vardkase: 'vårdkase', heritage_dos: 'dös', heritage_ganggrift: 'gånggrift',
+  heritage_hallristning: 'hällristning',
   heritage_bildsten: 'bildsten', heritage_skeppssattning: 'skeppssättning',
   heritage_kalla: 'Källa med tradition', heritage_labyrint: 'labyrint',
   // "Stenar"-kategorin (egen parent 'heritage_stones'):
