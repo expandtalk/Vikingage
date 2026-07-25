@@ -14,6 +14,20 @@ interface Props {
 
 const esc = (s: unknown) => String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c] as string));
 
+// Läsbara etiketter för ancestry-komponenter (jsonb → t.ex. "British-Irish 100%").
+const ANC_LABEL: Record<string, string> = {
+  british_irish: 'British-Irish', uralic: 'Uralisk', eastern_baltic: 'Öst-baltisk',
+  southern_european: 'Sydeuropeisk', scandinavian: 'Skandinavisk', continental: 'Kontinental',
+};
+const fmtPct = (o: unknown) => {
+  try { return Object.entries(o as Record<string, unknown>).map(([k, v]) => `${ANC_LABEL[k] ?? k} ${v}%`).join(', '); }
+  catch { return ''; }
+};
+const fmtIso = (o: unknown) => {
+  try { return Object.entries(o as Record<string, unknown>).map(([k, v]) => `${k}: ${v}`).join(', '); }
+  catch { return ''; }
+};
+
 export const useMapAncestrySites = ({ map, enabledLegendItems, isMapReady }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
   const enabled = enabledLegendItems.adna_sites === true;
@@ -29,7 +43,7 @@ export const useMapAncestrySites = ({ map, enabledLegendItems, isMapReady }: Pro
     (async () => {
       const [sitesRes, indsRes] = await Promise.all([
         (supabase as any).from('archaeological_sites').select('id,name,period,dating,coordinates,description').not('coordinates', 'is', null),
-        (supabase as any).from('genetic_individuals').select('site_id,sample_id,genetic_sex,y_haplogroup,mt_haplogroup,radiocarbon,ancestry'),
+        (supabase as any).from('genetic_individuals').select('site_id,sample_id,genetic_sex,archaeological_sex,age,y_haplogroup,mt_haplogroup,radiocarbon,ancestry,isotopes,grave_goods,burial_context,museums_inventory'),
       ]);
       if (cancelled || !map || sitesRes.error) return;
       const bySite = new Map<string, any[]>();
@@ -43,14 +57,23 @@ export const useMapAncestrySites = ({ map, enabledLegendItems, isMapReady }: Pro
         const lng = parseFloat(m[1]); const lat = parseFloat(m[2]);
         if (!isFinite(lat) || !isFinite(lng)) return;
         const inds = bySite.get(s.id) ?? [];
-        const indHtml = inds.map((i) =>
-          `<li style="margin-bottom:4px">
-             <strong>${esc(i.sample_id)}</strong> ${i.genetic_sex ? `(${esc(i.genetic_sex)})` : ''}
+        const indHtml = inds.map((i) => {
+          const anc = i.ancestry ? fmtPct(i.ancestry) : '';
+          const iso = i.isotopes ? fmtIso(i.isotopes) : '';
+          const goods = Array.isArray(i.grave_goods) && i.grave_goods.length ? i.grave_goods.join(', ') : '';
+          const sex = i.genetic_sex === 'XY' ? '♂' : i.genetic_sex === 'XX' ? '♀' : esc(i.genetic_sex);
+          return `<li style="margin-bottom:6px">
+             <strong>${esc(i.sample_id)}</strong> <span style="color:#64748b">${sex}${i.age ? ` · ${esc(i.age)}` : ''}</span>
              ${i.y_haplogroup ? `<div style="font-size:10px"><span style="color:#3b82f6">♂ faderslinje (Y)</span>: ${esc(i.y_haplogroup)}</div>` : ''}
              ${i.mt_haplogroup ? `<div style="font-size:10px"><span style="color:#db2777">♀ moderslinje (mt)</span>: ${esc(i.mt_haplogroup)}</div>` : ''}
+             ${anc ? `<div style="font-size:10px"><span style="color:#7c3aed">Härkomst</span>: ${esc(anc)}</div>` : ''}
+             ${iso ? `<div style="font-size:10px;color:#0891b2">Isotoper: ${esc(iso)}</div>` : ''}
              ${i.radiocarbon ? `<div style="font-size:10px;color:#64748b">14C ${esc(i.radiocarbon)}</div>` : ''}
-             ${i.ancestry ? `<div style="font-size:10px;color:#64748b">${esc(i.ancestry)}</div>` : ''}
-           </li>`).join('');
+             ${goods ? `<div style="font-size:10px;color:#64748b">Gravgåvor: ${esc(goods)}</div>` : ''}
+             ${i.burial_context ? `<div style="font-size:10px;color:#475569;font-style:italic;margin-top:1px">${esc(i.burial_context)}</div>` : ''}
+             ${i.museums_inventory ? `<div style="font-size:9px;color:#94a3b8">${esc(i.museums_inventory)}</div>` : ''}
+           </li>`;
+        }).join('');
         L.marker([lat, lng], {
           icon: L.divIcon({ className: 'adna', html: `<div style="width:14px;height:14px;border-radius:50%;background:#a855f7;border:2px solid #f8fafc"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] }),
         }).bindPopup(
