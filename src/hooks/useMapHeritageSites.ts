@@ -73,6 +73,40 @@ const dotIconFor = (t: string) => {
   });
 };
 
+// Namnet är ofta en skräpdubblett ("Hällristning, Hällristning") → deduplicera; faller
+// tillbaka på typ + socken när namnet inte tillför något.
+const cleanTitle = (name: string | null, raaType: string, parish: string | null) => {
+  const parts = [...new Set(String(name || '').split(',').map((s) => s.trim()).filter(Boolean))];
+  let t = parts.join(', ');
+  if (!t || t.toLowerCase() === (raaType || '').toLowerCase()) t = raaType || 'Lämning';
+  return parish ? `${t}, ${parish} sn` : t;
+};
+
+// Rik popup: titel, typ, plats, koordinater, ev. period/beskrivning + länk till Fornsök
+// (source_uri = kulturarvsdata.se/raa/lamning/<uuid>, det unika RAÄ-id:t → klickbart).
+interface HeritageRow {
+  raa_type: string; name: string | null; period: string | null; description: string | null;
+  landscape: string | null; municipality: string | null; parish: string | null;
+  lat: number; lng: number; source_uri: string | null;
+}
+const heritagePopup = (r: HeritageRow) => {
+  const color = TYPE_COLOR[r.raa_type] || '#64748b';
+  const geo = [r.landscape, r.municipality, r.parish].filter(Boolean).join(' · ');
+  const coord = r.lat != null && r.lng != null ? `${Number(r.lat).toFixed(5)}, ${Number(r.lng).toFixed(5)}` : '';
+  const per = r.period ? ` · ${r.period}` : '';
+  const desc = r.description
+    ? `<div style="font-size:11px;color:#475569;margin-top:4px">${String(r.description).slice(0, 260)}</div>` : '';
+  const link = r.source_uri
+    ? `<div style="margin-top:6px"><a href="https://${r.source_uri}" target="_blank" rel="noopener" style="font-size:11px;color:#2563eb;text-decoration:underline">Visa i Fornsök ↗</a></div>` : '';
+  return `<div style="min-width:190px">
+      <strong>${cleanTitle(r.name, r.raa_type, r.parish)}</strong>
+      <div style="color:${color};font-size:12px;margin-top:2px">${r.raa_type}${per}</div>
+      ${geo ? `<div style="font-size:11px;color:#334155;margin-top:3px">📍 ${geo}</div>` : ''}
+      ${coord ? `<div style="font-size:11px;color:#64748b;font-variant-numeric:tabular-nums">${coord}</div>` : ''}
+      ${desc}${link}
+    </div>`;
+};
+
 // Legendnyckel → raa_type. Per-typ-kryssen i "Kulturlager"-kategorin styr vilka
 // typer som hämtas (sites_in_bbox tar p_types). Bak-kompat: 'heritage_sites'=true → alla.
 const HERITAGE_TYPE_KEYS: Record<string, string> = {
@@ -134,14 +168,19 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
 
       if (z >= ZOOM_INDIVIDUAL) {
         (data as any[]).forEach((r) => {
-          const yr = r.period ? ` · ${r.period}` : '';
-          const desc = r.description ? `<br/><span style="font-size:11px;color:#475569">${String(r.description).slice(0, 260)}</span>` : '';
           L.marker([r.lat, r.lng], { icon: dotIconFor(r.raa_type) })
-            .bindPopup(`<strong>${r.name ?? r.raa_type}</strong><br/><span style="color:${TYPE_COLOR[r.raa_type] || '#64748b'}">${r.raa_type}${yr}</span>${desc}`)
+            .bindPopup(heritagePopup(r as HeritageRow))
             .addTo(layer);
         });
       } else {
         (data as any[]).forEach((c) => {
+          // Cell med EN lämning → rita riktig ikon + popup (ingen meningslös "1"-bubbla).
+          if (Number(c.cnt) === 1 && c.id) {
+            L.marker([c.lat, c.lng], { icon: dotIconFor(c.raa_type) })
+              .bindPopup(heritagePopup(c as HeritageRow))
+              .addTo(layer);
+            return;
+          }
           const m = L.marker([c.lat, c.lng], { icon: clusterIcon(Number(c.cnt)) });
           m.on('click', () => map.setView([c.lat, c.lng], Math.min(z + 3, 13)));
           m.addTo(layer);
