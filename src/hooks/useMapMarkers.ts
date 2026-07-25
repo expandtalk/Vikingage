@@ -42,6 +42,10 @@ export const useMapMarkers = (
 
   useEffect(() => {
     if (!map) return;
+    // Avbryts-flagga: skyddar mot async-race vid periodbyte. Om den här renderingen
+    // hinner ersättas (t.ex. vikingatid → Paleolitikum) medan addMapMarkers ännu
+    // await:ar, ska dess sent anlända markörer tas bort i stället för att bli kvar.
+    let cancelled = false;
 
     console.log('=== MAP MARKERS DEBUG (COORDINATE FIX) ===');
     console.log('useMapMarkers: Updating markers with enabled items:', enabledLegendItems);
@@ -88,6 +92,7 @@ export const useMapMarkers = (
           inscriptionEmphasis.opacity
         );
 
+        if (cancelled) { safeRemoveMarkers(newMarkers); return; }
         markersRef.current = newMarkers;
         console.log(`=== TOTAL MARKERS ADDED: ${markersRef.current.length} ===`);
       } catch (error) {
@@ -98,6 +103,7 @@ export const useMapMarkers = (
     addMarkersAsync();
 
     return () => {
+      cancelled = true;
       // ✅ SÄKER cleanup med race condition-skydd
       if (markersRef.current && markersRef.current.length > 0) {
         markersRef.current.forEach((marker) => {
