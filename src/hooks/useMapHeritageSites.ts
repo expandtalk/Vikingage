@@ -24,6 +24,7 @@ const TYPE_PERIOD: Record<string, [number, number]> = {
   'dös': [-3900, -3300],            // tidigneolitikum (TRB)
   'gånggrift': [-3350, -2800],      // mellanneolitikum (TRB)
   'hällristning': [-1700, -500],    // bronsålder (sydskandinavisk hällkonst)
+  'trindyxa': [-5000, -2300],       // senmesolitikum–neolitikum (trindyxor, in i gånggriftstid)
   'skeppssättning': [-1000, 1050],  // sen bronsålder–vikingatid
   'bildsten': [400, 1100],          // vendel–vikingatid (gotländska bildstenar)
 };
@@ -50,6 +51,7 @@ const clusterIcon = (count: number) => {
 const TYPE_COLOR: Record<string, string> = {
   'vårdkase': '#f59e0b',        // eld-orange
   'hällristning': '#ea580c',    // hällkonst — ockra/rost
+  'trindyxa': '#a8a29e',        // neolitisk stenyxa — sten-grå
   'dös': '#7c3aed',             // megalit-lila
   'gånggrift': '#9333ea',       // megalit-lila (ljusare)
   'bildsten': '#0891b2',        // gotländsk cyan
@@ -76,7 +78,7 @@ const dotIconFor = (t: string) => {
 const HERITAGE_TYPE_KEYS: Record<string, string> = {
   heritage_kyrka: 'kyrka', heritage_kapell: 'kapell', heritage_kloster: 'kloster',
   heritage_vardkase: 'vårdkase', heritage_dos: 'dös', heritage_ganggrift: 'gånggrift',
-  heritage_hallristning: 'hällristning',
+  heritage_hallristning: 'hällristning', heritage_trindyxa: 'trindyxa',
   heritage_bildsten: 'bildsten', heritage_skeppssattning: 'skeppssättning',
   heritage_kalla: 'Källa med tradition', heritage_labyrint: 'labyrint',
   // "Stenar"-kategorin (egen parent 'heritage_stones'):

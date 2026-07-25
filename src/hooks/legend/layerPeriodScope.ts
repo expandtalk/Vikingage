@@ -19,6 +19,7 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
   'heritage_ganggrift',
   'heritage_skeppssattning',
   'heritage_hallristning',
+  'heritage_trindyxa',
   'paleo_shoreline',
   'adna_sites',
   'species_introductions',     // arter & innovationer
@@ -34,7 +35,7 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
 // species_introductions/adna_sites är INTE här (adna periodfiltrerar men är opt-in-fokus).
 export const EARLY_DEFAULT_ON = new Set<string>([
   'folk_groups',
-  'heritage_sites', 'heritage_dos', 'heritage_ganggrift', 'heritage_skeppssattning', 'heritage_hallristning',
+  'heritage_sites', 'heritage_dos', 'heritage_ganggrift', 'heritage_skeppssattning', 'heritage_hallristning', 'heritage_trindyxa',
   'coins', 'solidus_die_links', 'species_introductions',
 ]);
 
