@@ -45,6 +45,10 @@ interface AnalysisRequest {
   location?: string;
   objectType?: string;
   signum?: string;
+  // Fingerprint-läge (fritext-beskrivning + valfri bild, multimodalt):
+  kind?: 'runestone' | 'fornborg';
+  description?: string;
+  imageBase64?: string; // data:image/...;base64,… (skickas som bild till modellen)
 }
 
 serve(async (req) => {
@@ -89,8 +93,10 @@ serve(async (req) => {
       contextUsed = true;
     } else if (input.transliteration && input.transliteration.trim()) {
       prompt = buildFreetextPrompt(input);
+    } else if (input.description && input.description.trim()) {
+      prompt = buildFingerprintPrompt(input); // fritext + ev. bild → forensisk fingerprint
     } else {
-      return new Response(JSON.stringify({ error: 'signum eller transliteration krävs' }),
+      return new Response(JSON.stringify({ error: 'signum, transliteration eller description krävs' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
@@ -104,7 +110,8 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'anthropic/claude-sonnet-4-5',
-        messages: [{ role: 'user', content: prompt }],
+        // Multimodalt när en bild finns (fingerprint-läge): text + image_url.
+        messages: [{ role: 'user', content: buildMessageContent(prompt, input.imageBase64) }],
         temperature: 0.1,
         max_tokens: 2048,
       }),
@@ -282,6 +289,70 @@ Svara i exakt detta JSON-format (inga andra ord, bara JSON):
   "caveats": ["osäkerheter, contested-relationer, motsägelser"]
 }
 Var konservativ vid osäkerhet.`;
+}
+
+// Multimodalt meddelande: text + valfri bild (OpenRouter/Claude image_url-format).
+function buildMessageContent(prompt: string, imageBase64?: string): unknown {
+  if (!imageBase64 || !imageBase64.startsWith('data:image')) return prompt;
+  return [
+    { type: 'text', text: prompt },
+    { type: 'image_url', image_url: { url: imageBase64 } },
+  ];
+}
+
+// Forensisk "fingerprint" ur en fritext-beskrivning (+ ev. bild). Två profiler:
+// runsten (Gräslund-stil/ristare/ornamentik/språk) och fornborg (typologi/murtyp/
+// datering/funktion). INGEN mock: modellen instrueras hedga vid osäkerhet.
+function buildFingerprintPrompt(input: AnalysisRequest): string {
+  const desc = (input.description ?? '').slice(0, 2000);
+  const hasImg = !!input.imageBase64;
+  const imgNote = hasImg
+    ? 'En BILD medföljer — väg in ornamentik/murverk/form/skick i bedömningen.'
+    : 'Ingen bild medföljer — bedöm enbart utifrån beskrivningen och var tydlig med osäkerheten.';
+
+  if (input.kind === 'fornborg') {
+    return `
+Du är expert på skandinaviska fornborgar (Olausson m.fl.). Gör en forensisk "fingerprint" av denna fornborg.
+${imgNote}
+
+BESKRIVNING: "${desc}"
+
+Bedöm: (1) typologi/morfologi (höjdläge, planform, terränganpassning), (2) murtyp & portar & fasindelning,
+(3) trolig datering (bronsålder / förromersk / romersk / folkvandringstid / vendel / vikingatid) med grund,
+(4) funktion (tillflykt / bygdeborg / kontrollpunkt / kultplats), (5) osäkerheter.
+
+Svara i EXAKT detta JSON-format (bara JSON, inga andra ord):
+{
+  "summary": "1–2 meningars sammanfattning på svenska",
+  "dating": { "period": "period", "yearRange": {"start": år, "end": år}, "basis": "vad dateringen vilar på" },
+  "confidence": 0.0-1.0,
+  "typology": "typologisk klass / byggnadstradition",
+  "features": ["diagnostiskt drag 1", "drag 2"],
+  "interpretation": "funktion/tolkning",
+  "caveats": ["osäkerhet 1", "osäkerhet 2"]
+}`;
+  }
+
+  // default: runsten
+  return `
+Du är expert på runologi, Gräslunds stilkronologi och ornamentik. Gör en forensisk "fingerprint" av denna runsten.
+${imgNote}
+
+BESKRIVNING: "${desc}"
+
+Bedöm: (1) datering via Gräslund-stil (RAK/Fp/Pr1–Pr5) om ornamentik framgår, (2) ristartradition/ev. attribuering,
+(3) ornamentik (djurhuvud, korstyp, runbandsslingor), (4) språkliga drag om text finns, (5) osäkerheter.
+
+Svara i EXAKT detta JSON-format (bara JSON, inga andra ord):
+{
+  "summary": "1–2 meningars sammanfattning på svenska",
+  "dating": { "period": "period", "yearRange": {"start": år, "end": år}, "basis": "t.ex. Gräslund-stil Pr3" },
+  "confidence": 0.0-1.0,
+  "typology": "stilgrupp / ornamentklass",
+  "features": ["diagnostiskt drag 1", "drag 2"],
+  "interpretation": "ristartradition / attribuering",
+  "caveats": ["osäkerhet 1", "osäkerhet 2"]
+}`;
 }
 
 function buildFreetextPrompt(input: AnalysisRequest): string {
