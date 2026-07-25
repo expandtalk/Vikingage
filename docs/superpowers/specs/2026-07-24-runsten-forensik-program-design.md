@@ -159,6 +159,8 @@ En fristående kapacitet som fyller roll-B (icke-språkliga) drag ur bilder och 
 
 Degraderingsrisker som pipelinen måste hantera/flagga: vittring, lav, modern rödfärg (1900-talsrekonstruktion), återanvända/skadade stenar (spolia).
 
+**Bildkälla (identifierad 2026-07-25):** RAÄ **Arkivsök / söktjänsten Runor**. RAÄ:s öppna data är CC0, och icke-upphovsrättsskyddat material är märkt **Public Domain / No Copyright** — fritt att använda, sprida och modifiera (inkl. AI-analys). Södermanlands-samlingen ensam: 576 folioark, flera tusen bilder (1600-tal→). *Reservation:* Runor aggregerar flera institutioner → licens varierar per bild; **licensfältet per objekt är auktoriteten** (PD/CC0 behåll · CC-BY attribuera · restriktivt hoppa över). Metodfilter: bara *foton* (ej teckningar/etsningar) till V1/V2; föredra omålade "objektiva" bilder; fler-datum-serier = robusthetsdata; historiska foton kan visa förlorade tillstånd (proveniensflagga). Ingesten specas separat (`2026-07-25-raa-bildcorpus-ingest-design.md`).
+
 ---
 
 ## 7. Dekomponering i delprojekt
@@ -200,7 +202,7 @@ Schemat är betydligt rikare än ett platt `runic_inscriptions`: ett normalisera
 - **Härad (C7)** — endast fritext `harad`; behöver `hundred_id`-FK mot `hundreds`.
 
 **Största datagapet:**
-1. **Bildtäckning.** Bäraren (`inscription_media`) finns, men *inget systematiskt per-sten-bildcorpus* — bara spridda exkursionsfoton + Wikimedia-plock för namngivna stenar. Porträtt-grenen löste bara beskärning (CSS), inte täckning. **Visuell V1/V2 saknar råmaterial** tills ett corpus byggs.
+1. **Bildtäckning.** Bäraren (`inscription_media`) finns, men *inget systematiskt per-sten-bildcorpus* — bara spridda exkursionsfoton + Wikimedia-plock för namngivna stenar. Porträtt-grenen löste bara beskärning (CSS), inte täckning. **Visuell V1/V2 saknar råmaterial** tills ett corpus byggs. → **Källa identifierad (2026-07-25):** RAÄ Arkivsök/Runor (PD/CC0), Sö-pilot 576 folioark; licens-filtrerad ingest specad i `2026-07-25-raa-bildcorpus-ingest-design.md`. Gapet är därmed på väg att stängas.
 2. **Strukturerade attribueringsdrag (B5).**
 3. **Ristar-fingerprintets gleshet** — floruit härleds i runtime, och en stor andel "ristare" är ostrukturerade stilattribueringar i namnsträng, inte kanter.
 
