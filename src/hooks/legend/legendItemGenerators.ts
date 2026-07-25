@@ -330,6 +330,15 @@ export const generateBasicInscriptionItems = (
     enabled: itemEnabled(enabledLegendItems, 'coins')
   });
 
+  // Tingsplatser (thing_sites) — förhistoriska/medeltida ting, färg per tingstyp. AV som standard.
+  items.push({
+    id: 'thing_sites',
+    label: '⚖️ Tingsplatser',
+    color: '#b45309',
+    count: dbStats?.layerCounts?.thingSites ?? 31,
+    enabled: itemEnabled(enabledLegendItems, 'thing_sites')
+  });
+
   // aDNA-platser (arkeologiska platser med genetiska individer). AV som standard.
   items.push({
     id: 'adna_sites',
@@ -447,7 +456,7 @@ export const generateBasicInscriptionItems = (
     // OBS: place_names (Ortnamn) ligger MEDVETET utanför cat_geo — den lyfts till egen
     // topp-nivå-post så den alltid går att stänga av med ETT klick (Daniel: namnelementen
     // svämmar över och "gick inte att stänga av" när de låg nästlade i en kategori).
-    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['historical_events', 'species_introductions', 'picture_stone_reuse', 'coins', 'adna_sites', 'paleo_shoreline']),
+    group('cat_geo', '📍 Platser & geodata', '#65a30d', ['historical_events', 'species_introductions', 'picture_stone_reuse', 'coins', 'thing_sites', 'adna_sites', 'paleo_shoreline']),
   ];
   const grouped = ordered.filter(Boolean) as LegendItem[];
   // Allt ogrupperat (t.ex. kristna centra) läggs sist, oförändrat.

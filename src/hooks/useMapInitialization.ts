@@ -8,6 +8,7 @@ import { useMapValdemarsRoute } from './useMapValdemarsRoute';
 import { useMapEriksgata } from './useMapEriksgata';
 import { useMapBeaconSites } from './useMapBeaconSites';
 import { useMapHeritageSites } from './useMapHeritageSites';
+import { useMapThingSites } from './useMapThingSites';
 import { useMapChurches } from './map/useMapChurches';
 import { useMapProximityProbe } from './map/useMapProximityProbe';
 import { useReachProbeTriggers } from './map/useReachProbeTriggers';
@@ -206,6 +207,9 @@ export const useMapInitialization = ({
 
   // Mynt/fynd (coins) på fyndplats-koordinat — färg per metall, gate: legendknappen.
   useMapCoins({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+
+  // Tingsplatser (thing_sites, Wildte 1926 m.fl.) — färg per tingstyp, gate: legendknappen.
+  useMapThingSites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
 
   // aDNA-platser (archaeological_sites + genetic_individuals) — gate: legendknappen.
   useMapAncestrySites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
