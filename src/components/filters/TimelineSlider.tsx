@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { GERMANIC_TIME_PERIODS, getGroupsByPeriod } from '@/utils/germanicTimeline/timelineData';
-import { SliderControl } from './timeline/SliderControl';
 import { VikingEvents } from './timeline/VikingEvents';
 import { TimelineInfo } from './timeline/TimelineInfo';
 import { TimelinePeriodSelector } from './timeline/TimelinePeriodSelector';
@@ -198,17 +197,8 @@ export const TimelineSlider: React.FC<TimelineSliderProps> = ({
         language={language}
       />
 
-      {/* Always visible: Compact slider */}
-      <SliderControl
-        sliderValues={sliderValues}
-        onSliderChange={handleSliderChange}
-        selectedPeriod={selectedPeriod}
-        formatYear={formatYear}
-        sliderValueToYear={sliderValueToYear}
-        vikingEvents={VIKING_EVENTS}
-        showEventMarkers={selectedPeriod === 'viking_age'}
-        yearToSliderValue={yearToSliderValue}
-      />
+      {/* Skjutreglaget borttaget (Daniel): det fungerade inte och gjorde modulen
+          otydlig. Perioden väljs med knappar (TimelinePeriodSelector) ovan. */}
 
       {/* Expandable content */}
       {isExpanded && (
