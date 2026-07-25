@@ -146,6 +146,10 @@ export const generateBasicInscriptionItems = (
     { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: itemEnabled(enabledLegendItems, 'heritage_ganggrift') },
     { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: itemEnabled(enabledLegendItems, 'heritage_vardkase') },
     { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_dos') },
+    { id: 'heritage_stenkammargrav', label: '⛰️ Stenkammargravar', color: '#7e22ce', count: 160, enabled: itemEnabled(enabledLegendItems, 'heritage_stenkammargrav') },
+    { id: 'heritage_gravfalt', label: 'Gravfält', color: '#78350f', count: 3524, enabled: itemEnabled(enabledLegendItems, 'heritage_gravfalt') },
+    { id: 'heritage_stensattning', label: 'Stensättningar', color: '#57534e', count: 5276, enabled: itemEnabled(enabledLegendItems, 'heritage_stensattning') },
+    { id: 'heritage_domarring', label: 'Domarringar / stenkretsar', color: '#6d28d9', count: 117, enabled: itemEnabled(enabledLegendItems, 'heritage_domarring') },
     { id: 'heritage_hallristning', label: '🪨 Hällristningar', color: '#ea580c', count: 3022, enabled: itemEnabled(enabledLegendItems, 'heritage_hallristning') },
     { id: 'heritage_trindyxa', label: 'Trindyxor (neolitiska)', color: '#a8a29e', count: 2, enabled: itemEnabled(enabledLegendItems, 'heritage_trindyxa') },
     { id: 'heritage_labyrint', label: '🌀 Labyrinter', color: '#0d9488', count: 493, enabled: itemEnabled(enabledLegendItems, 'heritage_labyrint') },
@@ -184,6 +188,7 @@ export const generateBasicInscriptionItems = (
     { id: 'heritage_vaghallningssten', label: 'Väghållningsstenar', color: '#78716c', count: 3934, enabled: itemEnabled(enabledLegendItems, 'heritage_vaghallningssten') },
     { id: 'heritage_gransmarke', label: 'Gränsstenar', color: '#7f1d1d', count: 26, enabled: itemEnabled(enabledLegendItems, 'heritage_gransmarke') },
     { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_bildsten') },
+    { id: 'heritage_vagmarke', label: '🛣️ Vägmärken', color: '#1d4ed8', count: 6133, enabled: itemEnabled(enabledLegendItems, 'heritage_vagmarke') },
   ];
   items.push({
     id: 'heritage_stones',
@@ -199,6 +204,7 @@ export const generateBasicInscriptionItems = (
   items.push({ id: 'heritage_kyrka', label: 'Sockenkyrkor (RAÄ)', color: '#e11d48', count: 4223, enabled: itemEnabled(enabledLegendItems, 'heritage_kyrka') });
   items.push({ id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: itemEnabled(enabledLegendItems, 'heritage_kapell') });
   items.push({ id: 'heritage_kloster', label: 'Kloster (RAÄ)', color: '#c026d3', count: 94, enabled: itemEnabled(enabledLegendItems, 'heritage_kloster') });
+  items.push({ id: 'heritage_kyrkoruin', label: '✝️ Kyrkoruiner', color: '#9f1239', count: 38, enabled: itemEnabled(enabledLegendItems, 'heritage_kyrkoruin') });
 
   // 7. RESTEN - kultplatser och andra objekt - dynamisk räkning
   const religiousChildren = [
@@ -439,6 +445,7 @@ export const generateBasicInscriptionItems = (
   const churchChildren = [
     byId.get('ecclesiastical_churches'),
     byId.get('heritage_kyrka'), byId.get('heritage_kapell'), byId.get('heritage_kloster'),
+    byId.get('heritage_kyrkoruin'),
     ...christianChurchKids,
   ].filter(Boolean) as LegendItem[];
   churchChildren.forEach((c) => used.add(c.id));

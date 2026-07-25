@@ -54,22 +54,64 @@ const TYPE_COLOR: Record<string, string> = {
   'trindyxa': '#a8a29e',        // neolitisk stenyxa — sten-grå
   'dös': '#7c3aed',             // megalit-lila
   'gånggrift': '#9333ea',       // megalit-lila (ljusare)
+  'stenkammargrav': '#7e22ce',  // megalit-familjen
   'bildsten': '#0891b2',        // gotländsk cyan
   'skeppssättning': '#0d9488',  // teal
+  'gravfält': '#78350f',        // gravmylla — mörkbrun
+  'stensättning': '#57534e',    // sten — varmgrå
+  'domarring': '#6d28d9',       // stenkrets — lila
+  'rest sten': '#44403c',       // bautasten — mörk sten
   'kyrka': '#e11d48',           // kyrk-rött
+  'kyrkoruin': '#9f1239',       // kyrkoruin — mörkare rödvin
   'kloster': '#c026d3',         // kloster-magenta
+  'klosterruin': '#86198f',     // klosterruin — mörkare magenta
   'kapell': '#db2777',          // kapell-rosa
   'Källa med tradition': '#0ea5e9', // källa — vatten-blå
   'milstolpe': '#b45309',       // milsten — brun/amber (vägmätning)
   'väghållningssten': '#78716c',// väghållningssten — stengrå
   'gränsmärke': '#7f1d1d',      // gränssten — mörkröd
+  'vägmärke': '#1d4ed8',        // vägmärke — vägblå
 };
+
+// Vit SVG-symbol per lämningskategori (24×24). Kyrkor=kors, vägmärken=skylt,
+// gravfält=högar, sten/domarring=ring, skepp=båt, rest sten=bautasten, megalit=dolmen.
+const GLYPH: Record<string, string> = {
+  cross:  '<path d="M10.5 4h3v4.5H18v3h-4.5V20h-3v-8.5H6v-3h4.5z" fill="#fff"/>',
+  sign:   '<path d="M11 3h2v2h5.2l2 2.5-2 2.5H13v11h-2v-11H5.8l-2-2.5 2-2.5H11z" fill="#fff"/>',
+  mounds: '<path d="M2 17c1.4-3 4.4-3 5.8 0M9.1 17c1.4-3 4.4-3 5.8 0M16.2 17c1.4-3 4.4-3 5.8 0" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+  ring:   '<circle cx="12" cy="12" r="6.5" stroke="#fff" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="1.6" fill="#fff"/>',
+  ship:   '<path d="M3 12h18l-3.2 5.5H6.2z" fill="#fff"/><path d="M12 3v8.5" stroke="#fff" stroke-width="2"/>',
+  menhir: '<rect x="9" y="4" width="6" height="16" rx="2.6" fill="#fff"/>',
+  dolmen: '<rect x="3.5" y="5.5" width="17" height="4" rx="1.5" fill="#fff"/><path d="M6 20V10M12 20V10M18 20V10" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+};
+const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
+  kyrka: 'cross', kapell: 'cross', kloster: 'cross', kyrkoruin: 'cross', klosterruin: 'cross',
+  'vägmärke': 'sign', milstolpe: 'sign', 'väghållningssten': 'sign', 'gränsmärke': 'sign',
+  'gravfält': 'mounds',
+  'stensättning': 'ring', domarring: 'ring',
+  'skeppssättning': 'ship',
+  'rest sten': 'menhir', bildsten: 'menhir',
+  'stenkammargrav': 'dolmen', 'dös': 'dolmen', 'gånggrift': 'dolmen',
+};
+
+// Fallback-nål (liten färgad droppe) för typer utan egen symbol.
 const dotIconFor = (t: string) => {
   const c = TYPE_COLOR[t] || '#64748b';
   return L.divIcon({
     html: `<div style="width:12px;height:12px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
       background:${c};border:1.5px solid #1e293b;box-shadow:0 1px 2px rgba(0,0,0,0.4);"></div>`,
     className: 'heritage-dot', iconSize: [12, 12], iconAnchor: [6, 11], popupAnchor: [0, -10],
+  });
+};
+// Symbolikon: färgad disk + vit glyph per typ. Faller tillbaka på droppen för övriga.
+const iconFor = (t: string) => {
+  const gk = TYPE_GLYPH[t];
+  if (!gk) return dotIconFor(t);
+  const c = TYPE_COLOR[t] || '#64748b';
+  return L.divIcon({
+    html: `<div style="width:22px;height:22px;border-radius:50%;background:${c};border:1.6px solid #f8fafc;box-shadow:0 1px 3px rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">${GLYPH[gk]}</svg></div>`,
+    className: 'heritage-glyph', iconSize: [22, 22], iconAnchor: [11, 11], popupAnchor: [0, -12],
   });
 };
 
@@ -111,17 +153,22 @@ const heritagePopup = (r: HeritageRow) => {
 // typer som hämtas (sites_in_bbox tar p_types). Bak-kompat: 'heritage_sites'=true → alla.
 const HERITAGE_TYPE_KEYS: Record<string, string> = {
   heritage_kyrka: 'kyrka', heritage_kapell: 'kapell', heritage_kloster: 'kloster',
+  heritage_kyrkoruin: 'kyrkoruin', heritage_klosterruin: 'klosterruin',
   heritage_vardkase: 'vårdkase', heritage_dos: 'dös', heritage_ganggrift: 'gånggrift',
   heritage_hallristning: 'hällristning', heritage_trindyxa: 'trindyxa',
   heritage_bildsten: 'bildsten', heritage_skeppssattning: 'skeppssättning',
   heritage_kalla: 'Källa med tradition', heritage_labyrint: 'labyrint',
+  // Gravtyper/monument (FMIS-ingest, Kulturlager):
+  heritage_gravfalt: 'gravfält', heritage_stensattning: 'stensättning',
+  heritage_domarring: 'domarring', heritage_stenkammargrav: 'stenkammargrav',
+  heritage_reststen: 'rest sten',
   // "Stenar"-kategorin (egen parent 'heritage_stones'):
   heritage_milstolpe: 'milstolpe', heritage_vaghallningssten: 'väghållningssten',
-  heritage_gransmarke: 'gränsmärke',
+  heritage_gransmarke: 'gränsmärke', heritage_vagmarke: 'vägmärke',
 };
 // Typ-nycklar som hör till "Stenar"-kategorin (parent 'heritage_stones') i st.f.
 // "Kulturlager" (parent 'heritage_sites'). heritage_bildsten flyttad hit i legenden.
-const STONE_KEYS = new Set(['heritage_milstolpe', 'heritage_vaghallningssten', 'heritage_gransmarke', 'heritage_bildsten']);
+const STONE_KEYS = new Set(['heritage_milstolpe', 'heritage_vaghallningssten', 'heritage_gransmarke', 'heritage_bildsten', 'heritage_vagmarke']);
 
 export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selectedTimePeriod }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
@@ -168,7 +215,7 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
 
       if (z >= ZOOM_INDIVIDUAL) {
         (data as any[]).forEach((r) => {
-          L.marker([r.lat, r.lng], { icon: dotIconFor(r.raa_type) })
+          L.marker([r.lat, r.lng], { icon: iconFor(r.raa_type) })
             .bindPopup(heritagePopup(r as HeritageRow))
             .addTo(layer);
         });
@@ -176,7 +223,7 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
         (data as any[]).forEach((c) => {
           // Cell med EN lämning → rita riktig ikon + popup (ingen meningslös "1"-bubbla).
           if (Number(c.cnt) === 1 && c.id) {
-            L.marker([c.lat, c.lng], { icon: dotIconFor(c.raa_type) })
+            L.marker([c.lat, c.lng], { icon: iconFor(c.raa_type) })
               .bindPopup(heritagePopup(c as HeritageRow))
               .addTo(layer);
             return;
