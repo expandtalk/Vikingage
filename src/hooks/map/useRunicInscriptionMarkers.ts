@@ -146,6 +146,24 @@ export const addRunicInscriptionMarkers = (
     disableClusteringAtZoom: 11,     // enskilda runstenar vid zoom ≥11, kluster under
     spiderfyOnMaxZoom: true,
     showCoverageOnHover: false,
+    // Egen lugn kluster-ikon i st.f. markerclusters default (small=grön/medium=gul/
+    // LARGE=ORANGE) — med ~8000 inskrifter blev nästan alla kluster stora → orange sjö.
+    // Neutral sten-grå bubbla med rune-tecken; storlek skalar med antal.
+    iconCreateFunction: (cluster: { getChildCount: () => number }) => {
+      const n = cluster.getChildCount();
+      const size = n < 100 ? 34 : n < 1000 ? 40 : 46;
+      return L.divIcon({
+        html: `<div style="width:${size}px;height:${size}px;border-radius:50%;`
+          + `background:radial-gradient(circle at 40% 32%, #64748b 0%, #334155 70%, #1e293b 100%);`
+          + `border:2px solid #e2e8f0;box-shadow:0 2px 6px rgba(0,0,0,.45);`
+          + `display:flex;flex-direction:column;align-items:center;justify-content:center;`
+          + `color:#f8fafc;font-weight:700;line-height:1;">`
+          + `<span style="font-size:11px">ᛘ</span><span style="font-size:${n < 1000 ? 12 : 11}px">${n}</span></div>`,
+        className: 'rune-cluster',
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+      });
+    },
   });
 
   inscriptions.forEach((inscription) => {
