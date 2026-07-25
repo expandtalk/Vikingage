@@ -4,6 +4,7 @@ import { StatsSection } from './StatsSection';
 import { FiltersStatusSection } from './FiltersStatusSection';
 import { ExplorerPanels } from './ExplorerPanels';
 import { TimelineModule } from '../modules/TimelineModule';
+import { EventTimeline } from './EventTimeline';
 import { GodCardsGrid } from '../gods/GodCardsGrid';
 import { CultSitesView } from '../gods/CultSitesView';
 import { PanelLayoutSelector } from '../panels/PanelLayoutSelector';
@@ -444,6 +445,10 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
           />
         </div>
       )}
+
+      {/* Eventlinjen: händelser kronologiskt (ej kartnålar). Klick → panorera kartan
+          till centralorten. Filtreras på vald period; döljer sig om inga händelser. */}
+      <EventTimeline selectedTimePeriod={selectedTimePeriod} mapNavigate={mapNavigate} />
 
     </div>
   );
