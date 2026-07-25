@@ -36,6 +36,12 @@ const slug = (s: string) => (s || 'omrade').toLowerCase().replace(/[^a-z0-9]+/g,
 export const ProximityControl: React.FC = () => {
   const { probe, radiusKm, shape, modeKey, counts, result, note } = useProximityProbe();
   const { areas, save, remove, isLoggedIn } = useHypothesisAreas();
+  const [open, setOpen] = React.useState<Set<string>>(new Set());
+  const toggle = (k: string) => setOpen((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n; });
+  // Klick på ett listat objekt → flyg dit + öppna popup (satt av useMapProximityProbe).
+  const focus = (lat?: number, lng?: number) => {
+    if (lat != null && lng != null) (window as unknown as { __focusProbeFeature?: (a: number, b: number) => void }).__focusProbeFeature?.(lat, lng);
+  };
   if (!probe) return null;
   const exportBase = `rackvidd-${slug(probe.label)}-${shape}-${radiusKm}km`;
   const exportGeoJSON = () => downloadText(`${exportBase}.geojson`, 'application/geo+json', probeToGeoJSON(probe, shape, radiusKm, result));
@@ -151,13 +157,51 @@ export const ProximityControl: React.FC = () => {
       {/* Antal INUTI formen (punkt-i-polygon) — det analytiska värdet */}
       {counts && (
         <div className="mt-2 pt-2 border-t border-slate-700/60">
-          <div className="text-[10px] text-slate-400 mb-1">Inuti {shapeSv} ({counts.area_km2.toLocaleString()} km²):</div>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px]">
-            <span className="text-slate-300">Runstenar</span><span className="text-right font-semibold text-red-300">{counts.runestones.toLocaleString()}</span>
-            <span className="text-slate-300">Kulturlager</span><span className="text-right font-semibold text-purple-300">{counts.kulturlager.toLocaleString()}</span>
-            <span className="text-slate-300">Ortnamn (kurerade)</span><span className="text-right font-semibold text-emerald-300">{counts.place_names_curated.toLocaleString()}</span>
-            <span className="text-slate-300">Ortnamn (registret)</span><span className="text-right font-semibold text-emerald-200">{counts.place_names_osm.toLocaleString()}</span>
-            <span className="text-slate-300">Fornborgar</span><span className="text-right font-semibold text-orange-300">{counts.fortresses.toLocaleString()}</span>
+          <div className="text-[10px] text-slate-400 mb-1">Inuti {shapeSv} ({counts.area_km2.toLocaleString()} km²) — klicka för att lista &amp; visa på kartan:</div>
+          <div className="space-y-0.5 text-[11px]">
+            {([
+              { k: 'runestones', label: 'Runstenar', color: 'text-red-300', count: counts.runestones, items: result?.runestones, name: (r: any) => r.signum },
+              { k: 'kulturlager', label: 'Kulturlager', color: 'text-purple-300', count: counts.kulturlager, items: result?.kulturlager, name: (r: any) => `${r.name}${r.type ? ' · ' + r.type : ''}` },
+              { k: 'place_curated', label: 'Ortnamn (kurerade)', color: 'text-emerald-300', count: counts.place_names_curated, items: result?.place_names, name: (r: any) => `${r.name}${r.category ? ' · ' + r.category : ''}` },
+              { k: 'fortresses', label: 'Fornborgar', color: 'text-orange-300', count: counts.fortresses, items: result?.fortresses, name: (r: any) => `${r.name}${r.type ? ' · ' + r.type : ''}` },
+            ] as const).map((c) => {
+              const has = (c.items?.length ?? 0) > 0;
+              const isOpen = open.has(c.k);
+              return (
+                <div key={c.k}>
+                  <button
+                    onClick={() => has && toggle(c.k)}
+                    aria-expanded={isOpen}
+                    className={`w-full flex items-center justify-between py-0.5 rounded ${has ? 'hover:bg-slate-800 cursor-pointer' : 'cursor-default opacity-70'}`}
+                  >
+                    <span className="text-slate-300 flex items-center gap-1">
+                      <span className="w-2 text-slate-500">{has ? (isOpen ? '▾' : '▸') : ''}</span>{c.label}
+                    </span>
+                    <span className={`font-semibold ${c.color}`}>{c.count.toLocaleString()}</span>
+                  </button>
+                  {isOpen && has && (
+                    <div className="max-h-40 overflow-y-auto ml-1 pl-2 pr-1 py-1 space-y-0.5 border-l border-slate-700">
+                      {c.items!.slice(0, 300).map((r: any, i: number) => (
+                        <button
+                          key={i}
+                          onClick={() => focus(r.lat, r.lng)}
+                          className="block w-full text-left truncate text-slate-400 hover:text-amber-200 hover:underline"
+                          title="Visa på kartan"
+                        >
+                          {c.name(r)}
+                        </button>
+                      ))}
+                      {c.items!.length > 300 && <div className="text-slate-600">… {(c.items!.length - 300).toLocaleString()} till (se export)</div>}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {/* Registrets ortnamn (OSM) räknas men ritas ej → bara antal, ej klickbart */}
+            <div className="flex items-center justify-between py-0.5 opacity-70">
+              <span className="text-slate-300 flex items-center gap-1"><span className="w-2" />Ortnamn (registret)</span>
+              <span className="font-semibold text-emerald-200">{counts.place_names_osm.toLocaleString()}</span>
+            </div>
           </div>
           {/* Exportera resultatet — GeoJSON (QGIS) eller CSV (kalkylark). Klient-side. */}
           <div className="flex gap-1 mt-2">

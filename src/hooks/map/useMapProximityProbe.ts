@@ -17,9 +17,12 @@ interface Props {
 const dot = (color: string) =>
   L.divIcon({ className: 'prox-dot', html: `<span style="display:block;width:9px;height:9px;border-radius:50%;background:${color};border:1px solid #fff;box-shadow:0 0 2px rgba(0,0,0,.6)"></span>`, iconSize: [9, 9], iconAnchor: [5, 5] });
 
+const coordKey = (lat: number, lng: number) => `${lat.toFixed(5)},${lng.toFixed(5)}`;
+
 export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
   const { probe, radiusKm, shape } = useProximityProbe();
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const markersRef = useRef<Map<string, L.Marker>>(new Map());
   const tokenRef = useRef(0);
 
   useEffect(() => {
@@ -27,6 +30,14 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
     if (!layerRef.current) layerRef.current = L.layerGroup().addTo(map);
     const layer = layerRef.current;
     layer.clearLayers();
+    markersRef.current.clear();
+    // Låt panelen (ProximityControl) fokusera ett listat objekt: flyg dit + öppna popup.
+    (window as unknown as { __focusProbeFeature?: (lat: number, lng: number) => void }).__focusProbeFeature = (lat, lng) => {
+      if (!map || lat == null || lng == null) return;
+      map.flyTo([lat, lng], Math.max(map.getZoom(), 13), { duration: 0.6 });
+      const m = markersRef.current.get(coordKey(lat, lng));
+      if (m) map.once('moveend', () => m.openPopup());
+    };
     if (!probe) return;
 
     const myToken = ++tokenRef.current;
@@ -58,7 +69,8 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
       const add = (arr: any[], color: string, label: (r: any) => string) =>
         (arr || []).forEach((r) => {
           if (r.lat == null || r.lng == null) return;
-          L.marker([r.lat, r.lng], { icon: dot(color) }).bindPopup(label(r)).addTo(layer);
+          const m = L.marker([r.lat, r.lng], { icon: dot(color) }).bindPopup(label(r)).addTo(layer);
+          markersRef.current.set(coordKey(r.lat, r.lng), m); // för klick-till-karta från panelen
         });
       add(data?.place_names, '#22c55e', (r) => `<strong>${r.name}</strong><br/>Ortnamn`);
       add(data?.kulturlager, '#a855f7', (r) => `<strong>${r.name}</strong><br/>${r.type ?? 'Kulturlager'}`);
