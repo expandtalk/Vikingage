@@ -97,6 +97,13 @@ export const KNOWN_LAYER_KEYS = [
   "beacon_sites",
   "paleo_shoreline",
   "ecclesiastical_churches",
+  // Historiska Lantmäteri-kartor (overlay-rastrar, opt-in) — se historicalMapLayers.ts
+  "historical_maps",
+  "histmap_haradsekonomiska",
+  "histmap_generalstab",
+  "histmap_karta10k",
+  "histmap_topo",
+  "histmap_relief",
 ] as const;
 
 export type KnownLayerKey = (typeof KNOWN_LAYER_KEYS)[number];

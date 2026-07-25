@@ -5,6 +5,7 @@ import { getFindsInPeriod, ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFi
 import { getDeityPlaces, getChristianCenters, getChristianCentersByType } from '@/utils/religiousLocations/religiousPlacesData';
 import { generateChristianSitesLegendItems } from './christianSitesLegend';
 import { itemEnabled } from './itemEnabled';
+import { HISTORICAL_MAP_LAYERS } from '@/config/historicalMapLayers';
 import { computeHaradDensity } from '@/hooks/map/runeDensity';
 import { ChristianSite } from '@/hooks/useChristianSites';
 import { LegendItem, RunicInscription } from './types';
@@ -199,6 +200,18 @@ export const generateBasicInscriptionItems = (
   items.push({ id: 'heritage_kyrka', label: 'Sockenkyrkor (RAÄ)', color: '#e11d48', count: 4223, enabled: itemEnabled(enabledLegendItems, 'heritage_kyrka') });
   items.push({ id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: itemEnabled(enabledLegendItems, 'heritage_kapell') });
   items.push({ id: 'heritage_kloster', label: 'Kloster (RAÄ)', color: '#c026d3', count: 94, enabled: itemEnabled(enabledLegendItems, 'heritage_kloster') });
+
+  // Historiska Lantmäteri-kartor (overlay-rastrar, opt-in) — togglebara, opacitets-styrda.
+  // Tiles serveras statiskt från FTP; lagren visar inget förrän tiles laddats upp.
+  const histMapChildren = HISTORICAL_MAP_LAYERS.map((c) => ({
+    id: c.key, label: c.labelSv, color: '#94a3b8', count: 0,
+    enabled: itemEnabled(enabledLegendItems, c.key),
+  }));
+  items.push({
+    id: 'historical_maps', label: '🗺️ Historiska kartor', color: '#94a3b8',
+    count: histMapChildren.length, enabled: itemEnabled(enabledLegendItems, 'historical_maps'),
+    type: 'category', children: histMapChildren,
+  });
 
   // 7. RESTEN - kultplatser och andra objekt - dynamisk räkning
   const religiousChildren = [
@@ -464,6 +477,7 @@ export const generateBasicInscriptionItems = (
     // topp-nivå-post så den alltid går att stänga av med ETT klick (Daniel: namnelementen
     // svämmar över och "gick inte att stänga av" när de låg nästlade i en kategori).
     group('cat_geo', '📍 Platser & geodata', '#65a30d', ['species_introductions', 'picture_stone_reuse', 'coins', 'solidus_die_links', 'thing_sites', 'adna_sites', 'paleo_shoreline']),
+    keep('historical_maps'),
   ];
   const grouped = ordered.filter(Boolean) as LegendItem[];
   // Allt ogrupperat (t.ex. kristna centra) läggs sist, oförändrat.
