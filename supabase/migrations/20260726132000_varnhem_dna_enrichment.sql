@@ -21,7 +21,7 @@ WHERE sample_id = 'VARNHEM-HertigErik';
 
 UPDATE public.genetic_individuals SET
   age = 'vuxen kvinna',
-  period_from = 1220, period_to = 1288,
+  period_from = NULL, period_to = 1288,  -- ingen födelseuppgift i källan → null (ej gissa)
   pathology = 'mtDNA visar att hon inte delar mödernelinje med de två männen — obesläktad med far och son i graven (som väntat för en ingift hustru).',
   burial_context = 'Birger Jarls andra hustru (gift 1261), änka efter danske kungen Abel av Holstein. DNA bekräftar att hon inte var mor till Erik i graven. Död 1288. Porträttstenen visar en kvinna och två män.',
   source = 'Gravöppning 2002; osteologi + DNA (Uppsala univ. 2007). Varnhems klosterkyrka.'
