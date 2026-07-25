@@ -62,6 +62,12 @@ export const setProbe = (lat: number, lng: number, label: string) => {
   emit();
 };
 export const clearProbe = () => { state = { ...state, probe: null, counts: null, result: null, note: '' }; emit(); };
+// Flytta sonden (dra i center-markören) — behåll namn/hypotes/form/radie, räkna om.
+export const moveProbe = (lat: number, lng: number) => {
+  if (!state.probe) return;
+  state = { ...state, probe: { ...state.probe, lat, lng }, counts: null, result: null };
+  emit();
+};
 // Fri hypotes-/anteckningstext knuten till området (name = probe.label, hypotes = note).
 export const setProbeNote = (note: string) => { state = { ...state, note }; emit(); };
 export const setProbeRadiusKm = (km: number) => {

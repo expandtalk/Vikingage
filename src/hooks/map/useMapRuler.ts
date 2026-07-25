@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { useRuler, addRulerPoint, rulerKm } from '@/hooks/useRuler';
+import { useRuler, addRulerPoint, updateRulerPoint, rulerKm } from '@/hooks/useRuler';
 import { setProbe, setProbeRadiusKm } from '@/hooks/useProximityProbe';
 
 // Ritar linjalens punkter + linje + avstånd, och fångar kartklick när linjalen är aktiv.
@@ -38,7 +38,14 @@ export const useMapRuler = ({ map, isMapReady }: Props) => {
     const layer = layerRef.current;
     layer.clearLayers();
     if (!active || pts.length === 0) return;
-    pts.forEach((p) => L.circleMarker([p.lat, p.lng], { radius: 5, color: '#1e293b', weight: 2, fillColor: '#f59e0b', fillOpacity: 1 }).addTo(layer));
+    // Draggbara mätpunkter — justera sträckan utan att rensa och klicka om.
+    const ptIcon = L.divIcon({ className: 'ruler-pt', html: '<span style="display:block;width:13px;height:13px;border-radius:50%;background:#f59e0b;border:2px solid #1e293b;box-shadow:0 0 3px rgba(0,0,0,.6);cursor:grab"></span>', iconSize: [13, 13], iconAnchor: [7, 7] });
+    pts.forEach((p, i) => {
+      const m = L.marker([p.lat, p.lng], { draggable: true, icon: ptIcon, zIndexOffset: 1000 })
+        .bindTooltip('Dra för att justera', { direction: 'top' })
+        .addTo(layer);
+      m.on('dragend', () => { const ll = m.getLatLng(); updateRulerPoint(i, ll.lat, ll.lng); });
+    });
     if (pts.length === 2) {
       const km = rulerKm(pts[0], pts[1]);
       const toProbe = (e: L.LeafletMouseEvent) => { L.DomEvent.stop(e); lineToProbe(pts[0], pts[1], km); };

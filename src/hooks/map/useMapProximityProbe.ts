@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
-import { useProximityProbe, setProbeCounts, setProbeResult } from '@/hooks/useProximityProbe';
+import { useProximityProbe, setProbeCounts, setProbeResult, moveProbe } from '@/hooks/useProximityProbe';
 import { probeShapeLatLngs } from '@/utils/probeGeometry';
 
 // Ritar omkrets-cirkel + närliggande lager kring vald punkt (kyrka/fornborg).
@@ -52,10 +52,17 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
       L.polygon(probeShapeLatLngs(probe.lat, probe.lng, radiusKm, shape), shapeStyle).addTo(layer);
     }
     const shapeSv = shape === 'circle' ? 'cirkel' : shape === 'square' ? 'fyrkant' : 'hexagon';
-    L.circleMarker([probe.lat, probe.lng], { radius: 6, color: '#78350f', weight: 2, fillColor: '#fbbf24', fillOpacity: 1 })
-      .bindTooltip(`${probe.label} — ${shapeSv}, radie ${radiusKm} km (⌀ ${radiusKm * 2} km)`, { permanent: false }).addTo(layer);
+    // Draggbar center-markör — flytta hela sonden; antal räknas om vid släpp.
+    const centerIcon = L.divIcon({ className: 'probe-center', html: '<span style="display:block;width:15px;height:15px;border-radius:50%;background:#fbbf24;border:2px solid #78350f;box-shadow:0 0 4px rgba(0,0,0,.6);cursor:grab"></span>', iconSize: [15, 15], iconAnchor: [7, 7] });
+    L.marker([probe.lat, probe.lng], { draggable: true, icon: centerIcon, zIndexOffset: 1000 })
+      .bindTooltip(`${probe.label} — ${shapeSv}, radie ${radiusKm} km (⌀ ${radiusKm * 2} km) · dra för att flytta`, { permanent: false })
+      .on('dragend', (e) => { const ll = (e.target as L.Marker).getLatLng(); moveProbe(ll.lat, ll.lng); })
+      .addTo(layer);
 
-    map.setView([probe.lat, probe.lng], Math.max(map.getZoom(), 10));
+    // Centrera bara om punkten hamnar utanför vyn — annars hoppar kartan när man drar sonden.
+    if (!map.getBounds().contains([probe.lat, probe.lng])) {
+      map.setView([probe.lat, probe.lng], Math.max(map.getZoom(), 10));
+    }
 
     (async () => {
       const { data, error } = await sb.rpc('features_in_shape', { p_lat: probe.lat, p_lng: probe.lng, radius_km: radiusKm, shape });
