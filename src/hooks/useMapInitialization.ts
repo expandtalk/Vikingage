@@ -178,6 +178,7 @@ export const useMapInitialization = ({
     map: map.current,
     enabledLegendItems,
     isMapReady: isMapReadyRef,
+    selectedTimePeriod,
   });
 
   // Rikt kyrkolager (ecclesiastical_sites: byggår/stift/socken/härad/ruin + Commons-bild).

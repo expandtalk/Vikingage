@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
+import { overlapsPeriod } from '@/utils/germanicTimeline/periodRange';
 
 // VIEWPORT-servering (proof-of-concept för Steg 1). Till skillnad från övriga
 // kartlager laddar detta INTE allt — det frågar sites_in_bbox / sites_bbox_clusters
@@ -12,7 +13,19 @@ interface Props {
   map: L.Map | null;
   enabledLegendItems: { [key: string]: boolean };
   isMapReady: React.RefObject<boolean>;
+  selectedTimePeriod: string;
 }
+
+// Typokronologi per lämningstyp (etablerad datering, ej mock) → [från, till] i år.
+// Används för att UTESLUTA en typ ur förfrågan när vald period inte överlappar —
+// så t.ex. dösar (tidigneolitiska) aldrig efterfrågas i paleolitikum/vikingatid.
+// Typer som saknas här har ingen periodgräns (visas alltid när de tänds).
+const TYPE_PERIOD: Record<string, [number, number]> = {
+  'dös': [-3900, -3300],            // tidigneolitikum (TRB)
+  'gånggrift': [-3350, -2800],      // mellanneolitikum (TRB)
+  'skeppssättning': [-1000, 1050],  // sen bronsålder–vikingatid
+  'bildsten': [400, 1100],          // vendel–vikingatid (gotländska bildstenar)
+};
 
 const sb = supabase as unknown as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: any; error: any }> };
 const ZOOM_INDIVIDUAL = 11;
@@ -71,7 +84,7 @@ const HERITAGE_TYPE_KEYS: Record<string, string> = {
 // "Kulturlager" (parent 'heritage_sites'). heritage_bildsten flyttad hit i legenden.
 const STONE_KEYS = new Set(['heritage_milstolpe', 'heritage_vaghallningssten', 'heritage_gransmarke', 'heritage_bildsten']);
 
-export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady }: Props) => {
+export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selectedTimePeriod }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
   const tokenRef = useRef(0);
 
@@ -83,7 +96,9 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady }: Pro
   const parentStone = enabledLegendItems.heritage_stones !== false;
   const types = Object.entries(HERITAGE_TYPE_KEYS)
     .filter(([k]) => enabledLegendItems[k] === true && (STONE_KEYS.has(k) ? parentStone : parentKultur))
-    .map(([, v]) => v);
+    .map(([, v]) => v)
+    // Periodfilter: uteslut typer vars typokronologi inte överlappar vald period.
+    .filter((v) => { const p = TYPE_PERIOD[v]; return !p || overlapsPeriod(selectedTimePeriod, p[0], p[1]); });
   const typesKey = types.join(',') || 'OFF';
 
   useEffect(() => {
