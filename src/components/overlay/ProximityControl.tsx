@@ -23,6 +23,14 @@ const SHAPES: { key: ProbeShape; label: string; Icon: typeof Circle; rule: strin
   { key: 'hexagon', label: 'Hexagon', Icon: Hexagon, rule: 'Effektiv yttäckning utan glapp (Christaller k=7) — täck ett helt område med centralorter.' },
 ];
 
+// Svenska etiketter för ortnamnens element_category (annars visas råa slugs).
+const PN_CAT_LABEL: Record<string, string> = {
+  sakralt: 'Sakralt / gudar', bebyggelse: 'Bebyggelse', centralort: 'Centralort',
+  ting_ratt: 'Ting / rätt', vang: 'Vång / åker', vang_excl: 'Vång (excl.)',
+  val_ospec: 'Val (ospec.)', kust_hamn: 'Kust / hamn', natur: 'Natur',
+};
+const pnLabel = (c?: string | null) => (c ? PN_CAT_LABEL[c] ?? c : 'övrigt');
+
 // Nedladdning helt klient-side (Blob) — ingen server involverad.
 const downloadText = (filename: string, mime: string, text: string) => {
   const blob = new Blob([text], { type: mime });
@@ -38,6 +46,9 @@ export const ProximityControl: React.FC = () => {
   const { areas, save, remove, isLoggedIn } = useHypothesisAreas();
   const [open, setOpen] = React.useState<Set<string>>(new Set());
   const toggle = (k: string) => setOpen((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n; });
+  // Ortnamnsfilter: markerade element_category (tom mängd = visa alla).
+  const [pnCats, setPnCats] = React.useState<Set<string>>(new Set());
+  const togglePnCat = (c: string) => setPnCats((prev) => { const n = new Set(prev); n.has(c) ? n.delete(c) : n.add(c); return n; });
   // Klick på ett listat objekt → flyg dit + öppna popup (satt av useMapProximityProbe).
   const focus = (lat?: number, lng?: number) => {
     if (lat != null && lng != null) (window as unknown as { __focusProbeFeature?: (a: number, b: number) => void }).__focusProbeFeature?.(lat, lng);
@@ -77,6 +88,10 @@ export const ProximityControl: React.FC = () => {
       </div>
     );
   };
+  // Ortnamn: filtrera på vald element_category (tom mängd = alla). Objekten bär category.
+  const pnAll = (result?.place_names ?? []) as any[];
+  const pnFiltered = pnCats.size ? pnAll.filter((r) => pnCats.has(r.category ?? '_')) : pnAll;
+  const pnPresent = Array.from(new Set(pnAll.map((r) => r.category ?? '_')));
   if (!probe) return null;
   const exportBase = `rackvidd-${slug(probe.label)}-${shape}-${radiusKm}km`;
   const exportGeoJSON = () => downloadText(`${exportBase}.geojson`, 'application/geo+json', probeToGeoJSON(probe, shape, radiusKm, result));
@@ -200,8 +215,30 @@ export const ProximityControl: React.FC = () => {
               { k: 'coins', label: 'Mynt', color: 'text-amber-300', count: counts.coins ?? 0, items: result?.coins, name: (r: any) => `${r.name}${r.type ? ' · ' + r.type : ''}` },
               { k: 'things', label: 'Tingsplatser', color: 'text-sky-300', count: counts.thing_sites ?? 0, items: result?.thing_sites, name: (r: any) => `${r.name}${r.type ? ' · ' + r.type : ''}` },
               { k: 'fortresses', label: 'Fornborgar', color: 'text-orange-300', count: counts.fortresses, items: result?.fortresses, name: (r: any) => `${r.name}${r.type ? ' · ' + r.type : ''}` },
-              { k: 'place_curated', label: 'Ortnamn (kurerade)', color: 'text-emerald-300', count: counts.place_names_curated, items: result?.place_names, name: (r: any) => `${r.name}${r.category ? ' · ' + r.category : ''}` },
+              { k: 'place_curated', label: pnCats.size ? `Ortnamn (${pnFiltered.length}/${counts.place_names_curated})` : 'Ortnamn (kurerade)', color: 'text-emerald-300', count: pnCats.size ? pnFiltered.length : counts.place_names_curated, items: pnFiltered, name: (r: any) => `${r.name} · ${pnLabel(r.category)}` },
             ].map(renderCat)}
+
+            {/* Ortnamnsfilter per kategori (makt/gudar/sakralt/natur…). Objekten bär element_category. */}
+            {pnAll.length > 0 && (
+              <div className="pl-3 pt-0.5 flex flex-wrap gap-1">
+                {pnPresent.sort().map((cat) => {
+                  const on = pnCats.has(cat);
+                  const n = pnAll.filter((r) => (r.category ?? '_') === cat).length;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => togglePnCat(cat)}
+                      className={`px-1.5 py-0.5 rounded text-[10px] border transition-colors ${on ? 'bg-emerald-500/20 border-emerald-500 text-emerald-200' : 'border-slate-700 text-slate-400 hover:bg-slate-800'}`}
+                    >
+                      {pnLabel(cat === '_' ? null : cat)} {n}
+                    </button>
+                  );
+                })}
+                {pnCats.size > 0 && (
+                  <button onClick={() => setPnCats(new Set())} className="px-1.5 py-0.5 rounded text-[10px] text-slate-500 hover:text-slate-300 underline">rensa</button>
+                )}
+              </div>
+            )}
 
             {/* Kulturlagret uppdelat per lämningstyp (hällristningar/gravfält/…) — exakta antal ur by_type */}
             <div className="flex items-center justify-between py-0.5 pt-1 border-t border-slate-700/40">
