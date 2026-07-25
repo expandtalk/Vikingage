@@ -23,11 +23,13 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
   'species_introductions',     // arter & innovationer
 ]);
 
-// Lager som ska vara PÅ som standard i äldre perioder, så kartan inte blir tom.
-// Djuptidens huvudinnehåll på kartan: folkgrupper (opt-out men force-off i basePresets),
-// arter/innovationer och aDNA-platser. Utan detta döljs runstenar men inget tänds i stället.
+// Lager som tänds som standard i äldre perioder så kartan inte blir tom.
+// ENDAST folk_groups — det är det enda djuptidslager som filtrerar per objekt på
+// aktiv period (addFolkGroupMarkers). species_introductions/adna_sites saknar
+// tidsfilter och skulle annars visa ALLT oavsett period (t.ex. Kronan 1676 i
+// Paleolitikum). De tas in här först när de blivit periodfiltrerade.
 export const EARLY_DEFAULT_ON = new Set<string>([
-  'folk_groups', 'species_introductions', 'adna_sites',
+  'folk_groups',
 ]);
 
 // Opt-out-lager (gate:ar `!== false`, dvs PÅ även när nyckeln saknas) måste tvingas
