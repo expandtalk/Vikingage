@@ -22,6 +22,7 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
   'paleo_shoreline',
   'adna_sites',
   'species_introductions',     // arter & innovationer
+  'coins',                     // mynt (periodfiltrerade per period_start/end) — solidi i folkvandringstid
 ]);
 
 // Lager som tänds som standard i äldre perioder så kartan inte blir tom.
@@ -33,6 +34,7 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
 export const EARLY_DEFAULT_ON = new Set<string>([
   'folk_groups',
   'heritage_sites', 'heritage_dos', 'heritage_ganggrift', 'heritage_skeppssattning', 'heritage_hallristning',
+  'coins',
 ]);
 
 // Opt-out-lager (gate:ar `!== false`, dvs PÅ även när nyckeln saknas) måste tvingas

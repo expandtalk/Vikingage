@@ -207,7 +207,7 @@ export const useMapInitialization = ({
   useMapPictureStones({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
 
   // Mynt/fynd (coins) på fyndplats-koordinat — färg per metall, gate: legendknappen.
-  useMapCoins({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+  useMapCoins({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, selectedTimePeriod });
 
   // Tingsplatser (thing_sites, Wildte 1926 m.fl.) — färg per tingstyp, gate: legendknappen.
   useMapThingSites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });

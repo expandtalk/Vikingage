@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
+import { overlapsPeriod } from '@/utils/germanicTimeline/periodRange';
 
 // Kartlager för mynt/fynd (coins med find_place-koordinat). Gate: legendknappen 'coins'.
+// Periodfiltrerat på mynten egna period_start/end → solidi i folkvandringstid,
+// Sigtuna-pengar i vikingatid osv. (samma overlapsPeriod som övriga lager).
 // Punkt = fyndplats (t.ex. Vedby borg, Öland-skatter, Gotland). Färg per metall.
 // Popupen visar utfärdare + myntort/ursprung så Öland–Gotland–kontinent-mönstret syns.
 
@@ -10,6 +13,7 @@ interface Props {
   map: L.Map | null;
   enabledLegendItems: { [key: string]: boolean };
   isMapReady: React.RefObject<boolean>;
+  selectedTimePeriod: string;
 }
 
 const METAL_COLOR: Record<string, string> = {
@@ -20,7 +24,7 @@ const METAL_COLOR: Record<string, string> = {
 const esc = (s: unknown) => String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c] as string));
 const yr = (y: number | null) => (y == null ? '' : y < 0 ? `${-y} f.Kr.` : `${y} e.Kr.`);
 
-export const useMapCoins = ({ map, enabledLegendItems, isMapReady }: Props) => {
+export const useMapCoins = ({ map, enabledLegendItems, isMapReady, selectedTimePeriod }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
   const enabled = enabledLegendItems.coins === true;
 
@@ -44,6 +48,7 @@ export const useMapCoins = ({ map, enabledLegendItems, isMapReady }: Props) => {
         if (!m) return;
         const lng = parseFloat(m[1]); const lat = parseFloat(m[2]);
         if (!isFinite(lat) || !isFinite(lng)) return;
+        if (!overlapsPeriod(selectedTimePeriod, r.period_start, r.period_end)) return;
         const color = METAL_COLOR[String(r.metal ?? '').toLowerCase()] ?? '#cbd5e1';
         const period = r.period_start != null ? `${yr(r.period_start)}${r.period_end != null && r.period_end !== r.period_start ? '–' + yr(r.period_end) : ''}` : '';
         L.circleMarker([lat, lng], { radius: 6, color: '#0f172a', weight: 1.5, fillColor: color, fillOpacity: 0.95 })
@@ -67,7 +72,7 @@ export const useMapCoins = ({ map, enabledLegendItems, isMapReady }: Props) => {
       });
     })();
     return () => { cancelled = true; layer.clearLayers(); };
-  }, [map, enabled, isMapReady]);
+  }, [map, enabled, isMapReady, selectedTimePeriod]);
 
   useEffect(() => () => {
     try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }
