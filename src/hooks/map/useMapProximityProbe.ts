@@ -65,6 +65,7 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
       setProbeResult(data ? {
         place_names: data.place_names, kulturlager: data.kulturlager,
         runestones: data.runestones, fortresses: data.fortresses,
+        cult_sites: data.cult_sites, coins: data.coins, thing_sites: data.thing_sites,
       } : null);
       const add = (arr: any[], color: string, label: (r: any) => string) =>
         (arr || []).forEach((r) => {
@@ -76,6 +77,9 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
       add(data?.kulturlager, '#a855f7', (r) => `<strong>${r.name}</strong><br/>${r.type ?? 'Kulturlager'}`);
       add(data?.runestones, '#ef4444', (r) => `<strong>${r.signum}</strong><br/>Runsten`);
       add(data?.fortresses, '#f97316', (r) => `<strong>${r.name}</strong><br/>${r.type ?? 'Fornborg'}`);
+      add(data?.cult_sites, '#eab308', (r) => `<strong>${r.name}</strong><br/>Kultplats${r.type ? ' · ' + r.type : ''}`);
+      add(data?.coins, '#f59e0b', (r) => `<strong>${r.name}</strong><br/>Mynt${r.type ? ' · ' + r.type : ''}`);
+      add(data?.thing_sites, '#38bdf8', (r) => `<strong>${r.name}</strong><br/>Tingsplats${r.type ? ' · ' + r.type : ''}`);
     })();
 
     return () => { layer.clearLayers(); };
