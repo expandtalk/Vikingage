@@ -23,7 +23,8 @@ interface Props {
 const TYPE_PERIOD: Record<string, [number, number]> = {
   'dös': [-3900, -3300],            // tidigneolitikum (TRB)
   'gånggrift': [-3350, -2800],      // mellanneolitikum (TRB)
-  'hällristning': [-1700, -500],    // bronsålder (sydskandinavisk hällkonst)
+  'hällristning': [-1600, -500],    // bronsålder (sydskand. figurativ hällkonst); start −1600
+                                    // så den INTE nuddar neolitikums slut (−1700) → syns ej i neolitikum
   'trindyxa': [-5000, -2300],       // senmesolitikum–neolitikum (trindyxor, in i gånggriftstid)
   'skeppssättning': [-1000, 1050],  // sen bronsålder–vikingatid
   'bildsten': [400, 1100],          // vendel–vikingatid (gotländska bildstenar)
