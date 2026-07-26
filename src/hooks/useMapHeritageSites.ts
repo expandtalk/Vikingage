@@ -32,15 +32,23 @@ const TYPE_PERIOD: Record<string, [number, number]> = {
 const sb = supabase as unknown as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: any; error: any }> };
 const ZOOM_INDIVIDUAL = 11;
 
-const clusterIcon = (count: number) => {
-  const size = count < 10 ? 30 : count < 100 ? 38 : count < 1000 ? 46 : 54;
+// Kluster: kategorifärgad disk + typens vita glyph + antals-badge (ljus pillet, läslig
+// på både mörka diskar och karttiles). Färg = familj, ikon = typ, badge = antal i cellen.
+const clusterIcon = (count: number, raaType: string) => {
+  const size = count < 10 ? 34 : count < 100 ? 40 : count < 1000 ? 48 : 56;
+  const c = catColor(raaType);
+  const gk = TYPE_GLYPH[raaType];
+  const gsz = Math.round(size * 0.5);
+  const glyph = gk ? `<svg viewBox="0 0 24 24" width="${gsz}" height="${gsz}" aria-hidden="true">${GLYPH[gk]}</svg>` : '';
   return L.divIcon({
-    html: `<div style="
-      width:${size}px;height:${size}px;border-radius:50%;
-      background:radial-gradient(circle at 40% 35%, #fed7aa 0%, #f59e0b 55%, #b45309 100%);
-      border:2px solid #7c2d12;box-shadow:0 2px 6px rgba(0,0,0,0.4);
-      display:flex;align-items:center;justify-content:center;
-      color:#3b1a05;font-weight:700;font-size:${count<1000?'12':'11'}px;">${count}</div>`,
+    html: `<div style="position:relative;width:${size}px;height:${size}px">
+      <div style="width:${size}px;height:${size}px;border-radius:50%;background:${c};
+        border:2px solid #f8fafc;box-shadow:0 2px 6px rgba(0,0,0,0.4);
+        display:flex;align-items:center;justify-content:center">${glyph}</div>
+      <span style="position:absolute;top:-4px;right:-6px;min-width:18px;height:18px;padding:0 4px;
+        border-radius:9px;background:#f8fafc;color:#1c1917;border:1.5px solid #1c1917;font-weight:700;
+        font-size:10px;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;line-height:1">${count}</span>
+    </div>`,
     className: 'heritage-cluster',
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -98,6 +106,9 @@ const GLYPH: Record<string, string> = {
   anchor: '<circle cx="12" cy="5" r="2" stroke="#fff" stroke-width="1.6" fill="none"/><path d="M12 7v12M7 11H5c0 4.5 3.4 7 7 7s7-2.5 7-7h-2M8.5 10.5h7" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round"/>',
   spark:  '<path d="M12 3l1.7 6.3L20 11l-6.3 1.7L12 19l-1.7-6.3L4 11l6.3-1.7z" fill="#fff"/>',
   piles:  '<path d="M5 20V7M9 20V5M13 20V6M17 20V8M21 20V6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>',
+  drop:   '<path d="M12 3C9 8 6.5 11 6.5 14.5a5.5 5.5 0 0 0 11 0C17.5 11 15 8 12 3z" fill="#fff"/>',
+  flame:  '<path d="M13 3c.5 3.5 3.5 5 3.5 8.5a4.5 4.5 0 0 1-9 0c0-2 .8-3.2 1.8-4.2.1 1.2.8 2.2 1.9 2.2 1.4 0 1.3-2.4-.2-6.5z" fill="#fff"/>',
+  spiral: '<path d="M12 12a1.7 1.7 0 1 1 1.9 1.7 3.6 3.6 0 0 1-5-3.4 5.6 5.6 0 0 1 9.4-3.6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>',
 };
 const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
   kyrka: 'cross', kapell: 'cross', kloster: 'cross', kyrkoruin: 'cross', klosterruin: 'cross',
@@ -111,11 +122,28 @@ const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
   'fartygslämning': 'anchor', 'vrak med tradition': 'anchor',
   'spärranläggning': 'piles',
   'jätte-/trollplats': 'spark', 'offerplats': 'spark', 'plats med tradition': 'spark', 'grotta med tradition': 'spark',
+  'Källa med tradition': 'drop', 'vårdkase': 'flame', 'hällristning': 'spiral',
 };
+
+// KATEGORIFÄRG (familj) — diskens färg. Ikonen (TYPE_GLYPH) skiljer typ inom familjen.
+// Dämpad palett; orange bara för vårdkasar (signaleld). Okända typer → neutral skiffer.
+const CATEGORY_COLOR: Record<string, string> = {
+  kyrka: '#1c1917', kapell: '#1c1917', kloster: '#1c1917', kyrkoruin: '#1c1917', klosterruin: '#1c1917',
+  'sten med tradition': '#7c3aed', 'plats med tradition': '#7c3aed', 'vårdträd': '#7c3aed',
+  'grotta med tradition': '#7c3aed', 'jätte-/trollplats': '#7c3aed', 'offerplats': '#7c3aed',
+  'gravfält': '#78350f', 'stensättning': '#78350f', 'domarring': '#78350f', 'skeppssättning': '#78350f',
+  'rest sten': '#78350f', 'dös': '#78350f', 'gånggrift': '#78350f', 'stenkammargrav': '#78350f',
+  'fartygslämning': '#0369a1', 'vrak med tradition': '#0369a1', 'spärranläggning': '#0369a1',
+  'milstolpe': '#92600e', 'vägmärke': '#92600e', 'gränsmärke': '#92600e', 'väghållningssten': '#92600e', 'bildsten': '#92600e',
+  'Källa med tradition': '#0ea5e9',
+  'vårdkase': '#f59e0b',
+  'hällristning': '#9a3412',
+};
+const catColor = (t: string) => CATEGORY_COLOR[t] || TYPE_COLOR[t] || '#475569';
 
 // Fallback-nål (liten färgad droppe) för typer utan egen symbol.
 const dotIconFor = (t: string) => {
-  const c = TYPE_COLOR[t] || '#64748b';
+  const c = catColor(t);
   return L.divIcon({
     html: `<div style="width:12px;height:12px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
       background:${c};border:1.5px solid #1e293b;box-shadow:0 1px 2px rgba(0,0,0,0.4);"></div>`,
@@ -126,7 +154,7 @@ const dotIconFor = (t: string) => {
 const iconFor = (t: string) => {
   const gk = TYPE_GLYPH[t];
   if (!gk) return dotIconFor(t);
-  const c = TYPE_COLOR[t] || '#64748b';
+  const c = catColor(t);
   return L.divIcon({
     html: `<div style="width:22px;height:22px;border-radius:50%;background:${c};border:1.6px solid #f8fafc;box-shadow:0 1px 3px rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">${GLYPH[gk]}</svg></div>`,
@@ -151,7 +179,7 @@ interface HeritageRow {
   lat: number; lng: number; source_uri: string | null;
 }
 const heritagePopup = (r: HeritageRow) => {
-  const color = TYPE_COLOR[r.raa_type] || '#64748b';
+  const color = catColor(r.raa_type);
   const geo = [r.landscape, r.municipality, r.parish].filter(Boolean).join(' · ');
   const coord = r.lat != null && r.lng != null ? `${Number(r.lat).toFixed(5)}, ${Number(r.lng).toFixed(5)}` : '';
   const per = r.period ? ` · ${r.period}` : '';
@@ -262,7 +290,7 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
               .addTo(layer);
             return;
           }
-          const m = L.marker([c.lat, c.lng], { icon: clusterIcon(Number(c.cnt)) });
+          const m = L.marker([c.lat, c.lng], { icon: clusterIcon(Number(c.cnt), c.raa_type) });
           m.on('click', () => map.setView([c.lat, c.lng], Math.min(z + 3, 13)));
           m.addTo(layer);
         });
