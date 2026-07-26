@@ -19,7 +19,7 @@ const DEFAULT_ENABLED: Record<string, boolean> = {
   road_rullstensas: true, road_halvagar: true, road_vinteragar: true, road_landmarks: true,
   cat_defense: true, viking_fortresses: true, viking_cities: true, stake_barriers: false,
   cat_folk: true, folk_groups: true, viking_regions: false, cat_geo: true, place_names: false,
-  historical_events: true, species_introductions: false, picture_stone_reuse: false,
+  species_introductions: false, picture_stone_reuse: false,
   coins: false, adna_sites: false, paleo_shoreline: false,
   // GIS-analyslager tillagt (runstenstäthet per härad) — medvetet AV som standard.
   runestone_density: false,
@@ -33,6 +33,18 @@ const DEFAULT_ENABLED: Record<string, boolean> = {
   estates_borg: true,
   estates_handelsplats: true,
   estates_ovrigt: true,
+  // FMIS-gravtyper + folktradition + marinarkeologi (Kulturlager-barn) — alla opt-in (AV).
+  heritage_gravfalt: false, heritage_stensattning: false, heritage_domarring: false,
+  heritage_stenkammargrav: false, heritage_hallristning: false, heritage_trindyxa: false,
+  heritage_skeppsgrav: false, heritage_kyrkoruin: false, heritage_vagmarke: false,
+  heritage_folklore: false, heritage_sagensten: false, heritage_vardtrad: false,
+  heritage_grotta: false, heritage_jattetroll: false, heritage_offerplats: false,
+  heritage_platstradition: false, heritage_marine: false, heritage_vrak: false,
+  heritage_vraktradition: false, heritage_sparr: false,
+  // Historiska kartöverlägg + tingsplatser + solidus die-länkar — alla opt-in (AV).
+  historical_maps: false, histmap_generalstab: false, histmap_haradsekonomiska: false,
+  histmap_karta10k: false, histmap_relief: false, histmap_topo: false,
+  thing_sites: false, solidus_die_links: false,
 };
 
 const buildMap = () => {
