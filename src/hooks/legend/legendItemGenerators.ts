@@ -144,6 +144,7 @@ export const generateBasicInscriptionItems = (
   const heritageChildren = [
     { id: 'heritage_kalla', label: 'Källor (traditionella)', color: '#0ea5e9', count: 2098, enabled: itemEnabled(enabledLegendItems, 'heritage_kalla') },
     { id: 'heritage_skeppssattning', label: 'Skeppssättningar', color: '#0d9488', count: 865, enabled: itemEnabled(enabledLegendItems, 'heritage_skeppssattning') },
+    { id: 'heritage_skeppsgrav', label: '⚓ Skeppsgravar & båtgravfält', color: '#78350f', count: 6, enabled: itemEnabled(enabledLegendItems, 'heritage_skeppsgrav') },
     { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: itemEnabled(enabledLegendItems, 'heritage_ganggrift') },
     { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: itemEnabled(enabledLegendItems, 'heritage_vardkase') },
     { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_dos') },

@@ -27,6 +27,7 @@ const TYPE_PERIOD: Record<string, [number, number]> = {
                                     // så den INTE nuddar neolitikums slut (−1700) → syns ej i neolitikum
   'trindyxa': [-5000, -2300],       // senmesolitikum–neolitikum (trindyxor, in i gånggriftstid)
   'skeppssättning': [-1000, 1050],  // sen bronsålder–vikingatid
+  'skeppsgrav': [550, 1050],        // vendel–vikingatid (daterade skepps-/båtgravar)
   'bildsten': [400, 1100],          // vendel–vikingatid (gotländska bildstenar)
 };
 
@@ -71,6 +72,7 @@ const TYPE_COLOR: Record<string, string> = {
   'stenkammargrav': '#7e22ce',  // megalit-familjen
   'bildsten': '#0891b2',        // gotländsk cyan
   'skeppssättning': '#0d9488',  // teal
+  'skeppsgrav': '#78350f',      // gravmylla — mörkbrun (grav-familjen)
   'gravfält': '#78350f',        // gravmylla — mörkbrun
   'stensättning': '#57534e',    // sten — varmgrå
   'domarring': '#6d28d9',       // stenkrets — lila
@@ -122,6 +124,7 @@ const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
   'gravfält': 'mounds',
   'stensättning': 'ring', domarring: 'ring',
   'skeppssättning': 'ship',
+  'skeppsgrav': 'anchor',
   'rest sten': 'menhir', bildsten: 'menhir', 'sten med tradition': 'menhir',
   'stenkammargrav': 'dolmen', 'dös': 'dolmen', 'gånggrift': 'dolmen',
   'vårdträd': 'tree',
@@ -138,7 +141,7 @@ const CATEGORY_COLOR: Record<string, string> = {
   'sten med tradition': '#7c3aed', 'plats med tradition': '#7c3aed', 'vårdträd': '#7c3aed',
   'grotta med tradition': '#7c3aed', 'jätte-/trollplats': '#7c3aed', 'offerplats': '#7c3aed',
   'gravfält': '#78350f', 'stensättning': '#78350f', 'domarring': '#78350f', 'skeppssättning': '#78350f',
-  'rest sten': '#78350f', 'dös': '#78350f', 'gånggrift': '#78350f', 'stenkammargrav': '#78350f',
+  'rest sten': '#78350f', 'dös': '#78350f', 'gånggrift': '#78350f', 'stenkammargrav': '#78350f', 'skeppsgrav': '#78350f',
   'fartygslämning': '#0369a1', 'vrak med tradition': '#0369a1', 'spärranläggning': '#0369a1',
   'milstolpe': '#92600e', 'vägmärke': '#92600e', 'gränsmärke': '#92600e', 'väghållningssten': '#92600e', 'bildsten': '#92600e',
   'Källa med tradition': '#0ea5e9',
@@ -210,6 +213,7 @@ const HERITAGE_TYPE_KEYS: Record<string, string> = {
   heritage_vardkase: 'vårdkase', heritage_dos: 'dös', heritage_ganggrift: 'gånggrift',
   heritage_hallristning: 'hällristning', heritage_trindyxa: 'trindyxa',
   heritage_bildsten: 'bildsten', heritage_skeppssattning: 'skeppssättning',
+  heritage_skeppsgrav: 'skeppsgrav',
   heritage_kalla: 'Källa med tradition', heritage_labyrint: 'labyrint',
   // Gravtyper/monument (FMIS-ingest, Kulturlager):
   heritage_gravfalt: 'gravfält', heritage_stensattning: 'stensättning',
