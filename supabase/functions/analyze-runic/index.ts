@@ -320,8 +320,13 @@ BESKRIVNING: "${desc}"
 
 Väg in: (1) PLATS (kyrka/kloster/kor — de förnämsta platserna = högst status), (2) KROPPSLÄNGD & osteologi
 (ålder/kön/patologi), (3) GRAVUTFORMNING (tumba, gravhäll, kista, material), (4) SYMBOLER & föremål
-(ring, vapen/heraldik, dräkt, insignier), (5) DATERING. Föreslå trolig person/rang OM underlaget räcker —
-annars range av kandidater. Var TYDLIG med osäkerheten; identifiering utan jämförande DNA är sällan säker.
+(ring, vapen/heraldik, dräkt, insignier), (5) DATERING.
+GRADERA STATUS/RANG och väg in kända statusmarkörer om de nämns: vapengåvor och deras placering/orientering
+(t.ex. svärd nedåtvänt kan vara en medveten markör), HÄSTBEGRAVNING (hög status — alla ägde inte häst),
+GULD- och SILVERFÖREMÅL, MYNT i graven (statusgåva/vägfärd/lycka), samt gravläge relativt altare/kor.
+Ange en statusnivå (t.ex. yppersta elit / elit / välbärgad / vanlig) med motivering.
+Föreslå trolig person/rang OM underlaget räcker — annars range av kandidater. Var TYDLIG med osäkerheten;
+identifiering utan jämförande DNA är sällan säker, och gravskicks-tolkningar är kontextberoende.
 
 Svara i EXAKT detta JSON-format (bara JSON, inga andra ord):
 {
