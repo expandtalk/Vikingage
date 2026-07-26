@@ -33,3 +33,13 @@ scripts/data/rundata-raw/
 
 # Lokala dokument, källor och stora binärer – hålls lokalt, ej på GitHub
 docs/
+
+# Lokala forsknings-/arbetsfiler och temp – hålls lokalt (ledande / = endast repo-roten,
+# så public/images/ påverkas ALDRIG)
+/images/
+/exports/
+/navertavla/
+/start.bat
+_tmp-*
+~$*
+.claude/worktrees/
