@@ -1,13 +1,13 @@
 
 import { useState } from 'react';
-import { detectHomeRegion } from '@/utils/homeRegion';
 
 type ViewMode = 'cards' | 'table';
 
 export const useRoyalChroniclesState = () => {
-  // Kortvy som standard (Daniel) + besökarens egen kungakrönika först: svensk visitor → Sweden,
-  // dansk → Denmark, norsk → Norway, övriga → Sweden (fallback i detectHomeRegion).
-  const [selectedRegion, setSelectedRegion] = useState<string>(() => detectHomeRegion());
+  // Visa ALLA regioner som standard (Daniel 2026-07-26) — hemregion-default (detectHomeRegion)
+  // dolde alla icke-svenska härskare (Danmark/Norge/Kievrus/England ≈ 114 av 213) och gav
+  // intrycket att kungar försvunnit. Användaren kan fortfarande filtrera per region i UI:t.
+  const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [selectedRulerType, setSelectedRulerType] = useState<string>('all');
   const [selectedGender, setSelectedGender] = useState<string>('all');
   const [selectedKing, setSelectedKing] = useState<string | null>(null);
