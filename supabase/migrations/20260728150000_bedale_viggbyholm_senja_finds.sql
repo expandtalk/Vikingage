@@ -25,8 +25,10 @@ SELECT
 WHERE NOT EXISTS (SELECT 1 FROM public.coins WHERE name = 'Bedale-skatten');
 
 -- ============================================================================
--- 2) Viggbyholmsskatten / Vikby (coins, category='hoard', metal='silver')
---    Viggbyholm, Täby, Uppland. Arkeologerna 2020.
+-- 2) Vikby-skatten (coins, category='hoard', metal='silver')
+--    Vikby-gården vid Viggbyholm, Täby, Uppland. Arkeologerna 2019–2022.
+--    NAMN: "Vikby-skatten" — SKILD från den äldre, separata Viggbyholmsskatten
+--    (samma trakt, annat fynd). Namnet valt för att undvika förväxling.
 --    OBS: INGEN koordinat lagras — exakt fyndplats ska ej röjas (fyndplatsskydd).
 --    coordinates lämnas NULL → posten ritas ALDRIG som nål (useMapCoins hoppar
 --    över rader utan koordinat). Finns kvar som sökbar post i coins/explore.
@@ -35,15 +37,15 @@ INSERT INTO public.coins
   (name, name_en, category, metal, period_start, period_end,
    find_place, significance, description, description_en, sources)
 SELECT
-  'Viggbyholmsskatten (Vikby)',
-  'The Viggbyholm (Vikby) hoard',
+  'Vikby-skatten',
+  'The Vikby hoard',
   'hoard', 'silver', 960, 1000,
-  'Viggbyholm (den vikingatida gården Vikby), Täby, Uppland (utgrävning Arkeologerna 2020). Exakt fyndplats anges ej — visas därför inte som punkt på kartan.',
-  'Silverskatt gömd i ett keramikkärl under trägolvet i ett hus på den vikingatida gården Vikby. Åtta torque-formade halsringar av hög kvalitet — utomordentligt välbevarade, närmast nytillverkade i skick — samt två armringar, en ring, två pärlor och tolv mynthängen. Mynten speglar vidsträckta handelskontakter: präglingar från England, Böhmen och Bayern jämte fem arabiska dirhamer. Ett mynt är extremt sällsynt: präglat i Rouen i Normandie (900-tal), en typ som dessförinnan bara var känd genom teckningar i en 1700-talsbok (myntbestämning J.C. Moesgaard, Stockholms universitet). Boplatsen bebos från folkvandringstid/vendeltid (~400–550) in i vikingatid och tidig medeltid.',
-  'Depåfynd nedlagt under vikingatidens slutskede (ca 900-talets senare del) i keramikkärl under ett hus i Viggbyholm, Täby. Innehöll åtta halsringar, två armringar, en fingerring, två pärlor och tolv mynthängen (bl.a. engelska, böhmiska, bayerska och fem arabiska dirhamer samt ett mycket sällsynt Rouen-mynt). Påträffat vid Arkeologernas undersökning av en järnålders- och vikingatida gård 2019–2022.',
-  'A silver hoard deposited in the late Viking Age (later 10th century) in a ceramic pot beneath a house floor at Viggbyholm, Täby. It contained eight neck-rings, two arm-rings, a finger-ring, two beads and twelve coin-pendants (including English, Bohemian, Bavarian and five Arabic dirhams, plus a very rare Rouen coin). Recovered during the Arkeologerna excavation of an Iron Age and Viking-Age farmstead, 2019–2022.',
+  'Vikby (vikingatida gård vid Viggbyholm), Täby, Uppland — nedgrävt i keramikkärl under ett trägolv i ett hus (utgrävning Arkeologerna 2019–2022). Att skilja från den äldre Viggbyholmsskatten i samma trakt. Exakt fyndplats anges ej — visas därför inte som punkt på kartan.',
+  'Silverskatt gömd i ett keramikkärl under trägolvet i ett hus på den vikingatida gården Vikby (föregångaren till det senare Viggbyholm; ej att förväxla med den tidigare kända Viggbyholmsskatten). Åtta torque-formade halsringar av hög kvalitet — utomordentligt välbevarade, närmast nytillverkade i skick — samt två armringar, en ring, två pärlor och tolv mynthängen. Mynten speglar vidsträckta handelskontakter: präglingar från England, Böhmen och Bayern jämte fem arabiska dirhamer. Ett mynt är extremt sällsynt: präglat i Rouen i Normandie (900-tal), en typ som dessförinnan bara var känd genom teckningar i en 1700-talsbok (myntbestämning J.C. Moesgaard, Stockholms universitet). Boplatsen bebos från folkvandringstid/vendeltid (~400–550) in i vikingatid och tidig medeltid.',
+  'Depåfynd nedlagt under vikingatidens slutskede (ca 900-talets senare del) i keramikkärl under ett hus på Vikby-gården vid Viggbyholm, Täby. Innehöll åtta halsringar, två armringar, en fingerring, två pärlor och tolv mynthängen (bl.a. engelska, böhmiska, bayerska och fem arabiska dirhamer samt ett mycket sällsynt Rouen-mynt). Påträffat vid Arkeologernas undersökning av en järnålders- och vikingatida gård 2019–2022.',
+  'A silver hoard deposited in the late Viking Age (later 10th century) in a ceramic pot beneath a house floor at the Vikby farm near Viggbyholm, Täby (not to be confused with the earlier, separate Viggbyholm hoard). It contained eight neck-rings, two arm-rings, a finger-ring, two beads and twelve coin-pendants (including English, Bohemian, Bavarian and five Arabic dirhams, plus a very rare Rouen coin). Recovered during the Arkeologerna excavation of an Iron Age and Viking-Age farmstead, 2019–2022.',
   'Arkeologerna (Statens historiska museer), "Viking silver treasure uncovered in Täby, Stockholm" 2021; utgrävning Viggbyholm 2019–2022 (Maria Lingström, John Hamilton, Magnus Lindberg); myntbestämning J.C. Moesgaard, Stockholms universitet.'
-WHERE NOT EXISTS (SELECT 1 FROM public.coins WHERE name = 'Viggbyholmsskatten (Vikby)');
+WHERE NOT EXISTS (SELECT 1 FROM public.coins WHERE name = 'Vikby-skatten');
 
 -- ============================================================================
 -- 3) Båtgraven vid Sand, Senja (heritage_sites, raa_type='skeppsgrav') — #7
