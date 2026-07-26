@@ -296,7 +296,9 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
             return;
           }
           const m = L.marker([c.lat, c.lng], { icon: clusterIcon(Number(c.cnt), c.raa_type) });
-          m.on('click', () => map.setView([c.lat, c.lng], Math.min(z + 3, 13)));
+          // Ett klick ska ÖPPNA klustret: zooma alltid till minst ZOOM_INDIVIDUAL (11),
+          // där lagret byter till enskilda markörer. Annars kunde man klicka i evighet.
+          m.on('click', () => map.setView([c.lat, c.lng], Math.min(Math.max(z + 3, ZOOM_INDIVIDUAL), 14)));
           m.addTo(layer);
         });
       }
