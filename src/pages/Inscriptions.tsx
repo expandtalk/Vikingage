@@ -6,6 +6,7 @@ import { PageMeta } from '../components/PageMeta';
 import { RunicExplorerSimple } from '../components/RunicExplorerSimple';
 import { NamedStonesSection } from '../components/inscriptions/NamedStonesSection';
 import { DatingCategoriesSection } from '../components/inscriptions/DatingCategoriesSection';
+import { FingerprintDialog } from '../components/forensics/FingerprintDialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Inscriptions = () => {
@@ -29,10 +30,19 @@ const Inscriptions = () => {
             <span>{language === 'sv' ? 'Runinskrifter' : 'Runic Inscriptions'}</span>
           </h1>
           <p className="text-slate-300 text-lg">
-            {language === 'sv' 
+            {language === 'sv'
               ? 'Utforska och analysera runinskrifter från vikingatiden med avancerade sök- och filterverktyg.'
               : 'Explore and analyze runic inscriptions from the Viking Age with advanced search and filter tools.'}
           </p>
+          {/* Forensiskt fingerprint-verktyg: beskrivning (+ bild) → datering/ristartradition/ornamentik. */}
+          <div className="mt-4">
+            <FingerprintDialog kind="runestone" />
+            <p className="text-slate-400 text-sm mt-1 max-w-2xl">
+              {language === 'sv'
+                ? 'Skicka en beskrivning (och valfritt en bild) av en runsten → forensisk fingerprint: datering (Gräslund-stil), ristartradition och ornamentik. Forskningsstöd — kontrollera mot källor.'
+                : 'Submit a description (and optionally an image) of a runestone → a forensic fingerprint: dating (Gräslund style), carver tradition and ornament. A research aid — verify against sources.'}
+            </p>
+          </div>
         </div>
         {/* Nivå 1: namngivna stenar som ingång (landskaps-grupperade) */}
         <NamedStonesSection />

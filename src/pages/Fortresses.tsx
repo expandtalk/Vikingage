@@ -13,6 +13,7 @@ import { useVikingFortresses } from '../hooks/useVikingFortresses';
 import { useVikingCities, getCategoryColor, getCategoryLabel } from '../hooks/useVikingCities';
 import { useSwedishHillforts } from '../hooks/useSwedishHillforts';
 import { FortressesCitiesMap } from '../components/fortresses/FortressesCitiesMap';
+import { FingerprintDialog } from '../components/forensics/FingerprintDialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Fortresses = () => {
@@ -221,6 +222,15 @@ const Fortresses = () => {
           <p className="text-muted-foreground text-lg">
             {t('fortressesCitiesDescription')}
           </p>
+          {/* Forensiskt fingerprint-verktyg för fornborgar: beskrivning (+ bild) → typologi/datering/funktion. */}
+          <div className="mt-4">
+            <FingerprintDialog kind="fornborg" />
+            <p className="text-muted-foreground text-sm mt-1 max-w-2xl">
+              {language === 'sv'
+                ? 'Skicka en beskrivning (och valfritt en bild) av en fornborg → forensisk fingerprint: typologi, byggnadstradition, trolig datering och funktion. Forskningsstöd — kontrollera mot källor.'
+                : 'Submit a description (and optionally an image) of a hillfort → a forensic fingerprint: typology, construction tradition, likely dating and function. A research aid — verify against sources.'}
+            </p>
+          </div>
         </div>
 
         {/* Hybrid Layout: Map on top */}
