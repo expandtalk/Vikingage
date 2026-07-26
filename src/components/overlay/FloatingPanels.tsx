@@ -10,6 +10,7 @@ import { CustomPointsControl } from './CustomPointsControl';
 import { ElementSpotlightControl } from './ElementSpotlightControl';
 import { RulerControl } from './RulerControl';
 import { ChurchYearControl } from './ChurchYearControl';
+import { ClusterLegendControl } from './ClusterLegendControl';
 import { LegendItem } from '@/types/common';
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -96,6 +97,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
       {churchesOn && <ChurchYearControl />}
       <ElementSpotlightControl />
       <RulerControl />
+      <ClusterLegendControl />
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
       {onToggleLegend && !showLegend && (
         <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">
