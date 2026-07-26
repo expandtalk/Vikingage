@@ -27,6 +27,7 @@ const Excursions = lazy(() => import("./pages/Excursions"));
 const Coins = lazy(() => import("./pages/Coins"));
 const Kungstavla = lazy(() => import("./pages/Kungstavla"));
 const ExcursionDetail = lazy(() => import("./pages/ExcursionDetail"));
+const KalmarWall = lazy(() => import("./pages/KalmarWall"));
 const SourceDetail = lazy(() => import("./pages/SourceDetail"));
 const SourceLibrary = lazy(() => import("./pages/SourceLibrary"));
 const ThemePage = lazy(() => import("./pages/ThemePage"));
@@ -114,6 +115,9 @@ const App = () => (
                   <Route path="/excursions" element={<Excursions />} />
                   <Route path="/sv/utflykter" element={<Excursions />} />
                   <Route path="/excursions/:id" element={<ExcursionDetail />} />
+                  <Route path="/sv/kalmar-stadsmur" element={<KalmarWall />} />
+                  <Route path="/en/kalmar-city-wall" element={<KalmarWall />} />
+                  <Route path="/kalmar-stadsmur" element={<KalmarWall />} />
                   <Route path="/texts" element={<SourceLibrary />} />
                   <Route path="/texter" element={<SourceLibrary />} />
                   <Route path="/tema/:slug" element={<ThemePage />} />
