@@ -5,7 +5,7 @@ import { Fingerprint, Loader2, Upload, X } from 'lucide-react';
 import { fingerprintObject, fileToDataUrl, type FingerprintResult } from '@/services/fingerprintService';
 
 interface Props {
-  kind: 'runestone' | 'fornborg';
+  kind: 'runestone' | 'fornborg' | 'grave';
   className?: string;
 }
 
@@ -19,6 +19,11 @@ const LABEL: Record<Props['kind'], { title: string; placeholder: string; hint: s
     title: 'Fornborg-fingerprint',
     placeholder: 'Beskriv fornborgen: höjdläge, planform, murtyp, portar, fasindelning, terräng, ev. fynd…',
     hint: 'Typologi, byggnadstradition, trolig datering och funktion.',
+  },
+  grave: {
+    title: 'Grav-fingerprint',
+    placeholder: 'Beskriv graven: kyrka/plats (kor, framför altare…), kroppslängd, ålder/kön, gravutformning (tumba, gravhäll, kista), symboler & föremål (ring, vapen/heraldik, dräkt), datering…',
+    hint: 'Trolig identitet/status utifrån plats, längd, gravutformning och symboler.',
   },
 };
 

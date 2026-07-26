@@ -46,7 +46,7 @@ interface AnalysisRequest {
   objectType?: string;
   signum?: string;
   // Fingerprint-läge (fritext-beskrivning + valfri bild, multimodalt):
-  kind?: 'runestone' | 'fornborg';
+  kind?: 'runestone' | 'fornborg' | 'grave';
   description?: string;
   imageBase64?: string; // data:image/...;base64,… (skickas som bild till modellen)
 }
@@ -309,6 +309,31 @@ function buildFingerprintPrompt(input: AnalysisRequest): string {
   const imgNote = hasImg
     ? 'En BILD medföljer — väg in ornamentik/murverk/form/skick i bedömningen.'
     : 'Ingen bild medföljer — bedöm enbart utifrån beskrivningen och var tydlig med osäkerheten.';
+
+  if (input.kind === 'grave') {
+    return `
+Du är expert på medeltida/historiska gravar och gravidentifiering (osteologi + gravskick + heraldik).
+Gör en forensisk "fingerprint" av denna grav och föreslå trolig identitet/status.
+${imgNote}
+
+BESKRIVNING: "${desc}"
+
+Väg in: (1) PLATS (kyrka/kloster/kor — de förnämsta platserna = högst status), (2) KROPPSLÄNGD & osteologi
+(ålder/kön/patologi), (3) GRAVUTFORMNING (tumba, gravhäll, kista, material), (4) SYMBOLER & föremål
+(ring, vapen/heraldik, dräkt, insignier), (5) DATERING. Föreslå trolig person/rang OM underlaget räcker —
+annars range av kandidater. Var TYDLIG med osäkerheten; identifiering utan jämförande DNA är sällan säker.
+
+Svara i EXAKT detta JSON-format (bara JSON, inga andra ord):
+{
+  "summary": "1–2 meningars sammanfattning på svenska",
+  "dating": { "period": "period", "yearRange": {"start": år, "end": år}, "basis": "vad dateringen vilar på" },
+  "confidence": 0.0-1.0,
+  "typology": "gravtyp / social rang",
+  "features": ["diagnostiskt drag 1", "drag 2"],
+  "interpretation": "trolig identitet/status (eller kandidater) + varför",
+  "caveats": ["osäkerhet 1", "osäkerhet 2"]
+}`;
+  }
 
   if (input.kind === 'fornborg') {
     return `

@@ -14,7 +14,7 @@ export interface FingerprintResult {
 }
 
 export const fingerprintObject = async (opts: {
-  kind: 'runestone' | 'fornborg';
+  kind: 'runestone' | 'fornborg' | 'grave';
   description: string;
   imageBase64?: string;
 }): Promise<FingerprintResult> => {
