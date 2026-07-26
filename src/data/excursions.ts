@@ -37,6 +37,8 @@ export interface Excursion {
   fortressRegion?: string;
   /** Extra intressepunkter att markera på detaljkartan (t.ex. flera lämningar inom samma utflykt). */
   points?: { name: string; lat: number; lng: number; note?: string }[];
+  /** feature_slug i location_hypotheses — tänder lägeshypotes-lagret (monument vs kandidatplatser). */
+  hypothesesSlug?: string;
 }
 
 // Ordning som grupperna visas i på sidan.
@@ -275,7 +277,10 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
     region: 'Lagga, Knivsta, Uppland',
     group: 'Uppland & Mälardalen',
     period: 'Medeltid (ca 1200–1500)',
-    coords: { lat: 59.686, lng: 17.856 },
+    // Monumentet (skyddshuset, RAÄ Lagga 59:1). Den ursprungliga kungavalsplatsen
+    // är omtvistad — kandidatpunkterna ligger i location_hypotheses (hypothesesSlug).
+    coords: { lat: 59.79774, lng: 17.78080 },
+    hypothesesSlug: 'mora-stenar',
     sv: 'Platsen där Sveriges medeltida kungar valdes. På Mora äng, på gränsen mellan folklanden Tiundaland och Attundaland, låg Mora sten — den stora häll som den valde kungen lyftes upp på för att svära sin kungaed inför valförsamlingen. För varje val höggs sedan en mindre minnessten som lades på hällen, ett slags dokument över valet; det är dessa som kallas Mora stenar. Den förste kände är Magnus Ladulås (vald 1275), den siste Kristian I (1457). Därefter försvann Mora sten — enligt sägnen gömd av Sten Sture den yngre ~1515 för att hindra ett danskt kungaval; Gustav Vasa och Johan III lär förgäves ha letat efter den. Åtta minnesstenar finns kvar i ett litet stenhus (uppfört 1770 på Gustav III:s initiativ), däribland den berömda "Tre kronor"-stenen — ett av de tidigaste beläggen för tre kronor som Sveriges rikssymbol. Sveriges motsvarighet till skotternas Stone of Scone. Den rättsliga grunden ges i Äldre Västgötalagen ("svear äga taga konung och likaså vräka"), Upplandslagen och Magnus Erikssons landslag. Regentlängden går att läsa i den målade frisen inne i huset, inte på de vittrade stenarna.',
     en: 'The site where medieval Swedish kings were elected. On the Mora meadow, at the border of the old lands of Tiundaland and Attundaland, lay the Mora stone — the great slab onto which the chosen king was lifted to swear his royal oath before the assembly. For each election a smaller memorial stone was then carved and placed on the slab, a record of the election; these are the Mora stones. The first known is Magnus Ladulås (elected 1275), the last Christian I (1457). The Mora stone then vanished — by tradition hidden by Sten Sture the Younger c. 1515 to prevent a Danish royal election; Gustav Vasa and John III are said to have searched for it in vain. Eight memorial stones remain in a small stone house (built 1770 on Gustav III\'s initiative), including the famous "Three Crowns" stone — one of the earliest attestations of the three crowns as Sweden\'s national emblem. Sweden\'s counterpart to the Scots\' Stone of Scone. The legal basis is set out in the Older Westrogothic Law ("the Swedes have the right to take a king and likewise to depose"), the Law of Uppland and Magnus Eriksson\'s Law of the Realm.',
     relatedSources: ['Äldre Västgötalagen', 'Upplandslagen', 'Magnus Erikssons landslag'],
