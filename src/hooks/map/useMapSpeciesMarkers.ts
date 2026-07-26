@@ -39,7 +39,7 @@ export const useMapSpeciesMarkers = ({ map, enabledLegendItems, isMapReady, sele
     (async () => {
       const { data, error } = await (supabase as any)
         .from('species_introductions')
-        .select('id,entity,proxy_type,lat,lng,date_text,date_from,date_to,confidence,source,region')
+        .select('id,entity,proxy_type,lat,lng,date_text,date_from,date_to,confidence,source,region,geo_precision')
         .not('lat', 'is', null);
       if (error || cancelled || !map) return;
       (data as any[] || []).forEach((r) => {
@@ -47,12 +47,19 @@ export const useMapSpeciesMarkers = ({ map, enabledLegendItems, isMapReady, sele
         // Periodöverlapp: postens [date_from, date_to] snittar vald period.
         if (!overlapsPeriod(selectedTimePeriod, r.date_from, r.date_to)) return;
         const color = PROXY_COLOR[r.proxy_type] ?? '#fbbf24';
-        L.circleMarker([r.lat, r.lng], { radius: 6, color: '#1e293b', weight: 1.5, fillColor: color, fillOpacity: 0.9 })
+        // Regionala rader (geo_precision='regional') är INTE punkter — rita som dämpad,
+        // streckad halo så de inte läses som exakt fyndplats. Övriga = solid prick.
+        const regional = r.geo_precision === 'regional';
+        const style = regional
+          ? { radius: 11, color, weight: 1.5, dashArray: '3', fillColor: color, fillOpacity: 0.15 }
+          : { radius: 6, color: '#1e293b', weight: 1.5, fillColor: color, fillOpacity: 0.9 };
+        L.circleMarker([r.lat, r.lng], style)
           .bindPopup(
             `<div style="min-width:190px">
                <strong>${esc(r.entity)}</strong>
                <div style="font-size:12px;color:#475569;margin-top:2px">${esc(r.date_text)}</div>
                ${r.region ? `<div style="font-size:11px;color:#64748b">${esc(r.region)}</div>` : ''}
+               ${regional ? `<div style="font-size:10px;color:#b45309;margin-top:3px">≈ regionalt läge (ej exakt fyndplats)</div>` : ''}
                <div style="font-size:11px;margin-top:4px">
                  <span style="color:${color};font-weight:600">${esc(r.proxy_type)}</span> · ${esc(r.confidence)}
                </div>

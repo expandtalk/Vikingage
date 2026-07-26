@@ -161,7 +161,9 @@ export const addFolkGroupMarkers = async (
               `<p class="text-xs text-gray-500 mt-2"><strong>Historisk betydelse:</strong> ${group.historical_significance}</p>` : ''}
             
             <div class="mt-3 pt-2 border-t border-gray-200">
-              <p class="text-xs text-gray-500">Koordinater: ${lat.toFixed(4)}, ${lng.toFixed(4)}</p>
+              <p class="text-xs text-gray-500">${(group as any).geo_precision === 'regional'
+                ? `≈ Representativ punkt för utbredningsområde (ej exakt läge)`
+                : `Koordinater: ${lat.toFixed(4)}, ${lng.toFixed(4)}`}</p>
             </div>
           </div>
         `);
