@@ -26,6 +26,24 @@ const ATTR_LABEL: Record<string, { sv: string; en: string }> = {
   'signed on pair stone': { sv: 'signerad på parsten', en: 'signed on pair stone' },
 };
 
+// Lägeshypoteser: monument (känt) i guld, kandidatplatser i blått efter konfidens,
+// referens/övrigt i grått. lost/utan koordinat visas bara i listan ("läge ej fastställt").
+const HYP_STYLE = (kind: string, conf: string | null): { r: number; fill: string; stroke: string } => {
+  if (kind === 'monument') return { r: 9, fill: '#eab308', stroke: '#78350f' };
+  if (kind === 'candidate') return conf === 'medium'
+    ? { r: 8, fill: '#0ea5e9', stroke: '#0c4a6e' }
+    : { r: 6, fill: '#60a5fa', stroke: '#1e3a8a' };
+  return { r: 5, fill: '#94a3b8', stroke: '#334155' };
+};
+const HYP_ORDER: Record<string, number> = { monument: 0, candidate: 1, lost: 2, reference: 3 };
+const CONF_ORDER: Record<string, number> = { confirmed: 0, high: 1, medium: 2, low: 3, speculative: 4, unknown: 5 };
+const HYP_KIND_LABEL: Record<string, { sv: string; en: string }> = {
+  monument: { sv: 'Monument (känt läge)', en: 'Monument (known)' },
+  candidate: { sv: 'Kandidatplats', en: 'Candidate site' },
+  lost: { sv: 'Ursprunglig plats', en: 'Original site' },
+  reference: { sv: 'Referensfynd', en: 'Reference find' },
+};
+
 const ExcursionDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { language } = useLanguage();
@@ -76,6 +94,24 @@ const ExcursionDetail = () => {
     },
   });
 
+  // Lägeshypoteser (monument vs ursprunglig plats vs kandidatpunkter) — location_hypotheses.
+  // Bara för utflykter med hypothesesSlug (Mora stenar först). Källbelagt, koord bara där verifierad.
+  const { data: hypotheses } = useQuery({
+    queryKey: ['excursion-hypotheses', excursion?.hypothesesSlug],
+    enabled: !!excursion?.hypothesesSlug,
+    queryFn: async () => {
+      const { data, error } = await (supabase as unknown as { from: (t: string) => any })
+        .from('location_hypotheses')
+        .select('kind, label, lat, lng, confidence, rationale, source')
+        .eq('feature_slug', excursion!.hypothesesSlug);
+      if (error) throw error;
+      return data as {
+        kind: string; label: string; lat: number | null; lng: number | null;
+        confidence: string | null; rationale: string | null; source: string | null;
+      }[];
+    },
+  });
+
   // Runstenar inom 40 km via nearby_features-RPC (runic_inscriptions har point-koord som ej
   // gick att bbox:a klient-sidigt — därav RPC:n).
   const { data: nearbyRunestones } = useQuery({
@@ -99,9 +135,40 @@ const ExcursionDetail = () => {
       return r.ok ? (await r.json() as Record<string, string[]>) : {};
     },
   });
-  const photos = excursion?.photoDir && photoManifest?.[excursion.photoDir]
-    ? photoManifest[excursion.photoDir].map((f) => `/excursion-photos/${excursion.photoDir}/${f}`)
+  // RAÄ/Wikimedia-foton ur inscription_media (CC0/PD/CC-BY) för utflykter med signum —
+  // t.ex. Karlevistenen (Öl 1) har 9 foton i DB som annars aldrig visades på sidan.
+  const { data: inscriptionMedia } = useQuery({
+    queryKey: ['excursion-media', excursion?.signum],
+    enabled: !!excursion?.signum,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('inscription_media')
+        .select('media_url, copyright_info, photographer, source_institution, inscription:inscription_id!inner(signum)')
+        .eq('inscription.signum', excursion!.signum!)
+        .eq('media_type', 'image');
+      if (error) throw error;
+      return (data as unknown as { media_url: string; copyright_info: string | null; photographer: string | null; source_institution: string | null }[])
+        .filter((m) => m.media_url);
+    },
+  });
+
+  const manifestPhotos = excursion?.photoDir && photoManifest?.[excursion.photoDir]
+    ? photoManifest[excursion.photoDir].map((f) => ({ src: `/excursion-photos/${excursion.photoDir}/${f}`, credit: undefined as string | undefined }))
     : [];
+  const mediaCredit = (m: { photographer: string | null; source_institution: string | null; copyright_info: string | null }): string | undefined => {
+    const parts = [m.photographer, m.source_institution].filter(Boolean);
+    const lic = m.copyright_info?.includes('publicdomain') ? 'PD' : m.copyright_info?.includes('by') ? 'CC BY' : undefined;
+    const label = [parts.join(', '), lic].filter(Boolean).join(' · ');
+    return label || undefined;
+  };
+  // Slå ihop + deduplicera på filnamn (lokala manifest-fotot finns ofta även i DB).
+  const seen = new Set(manifestPhotos.map((p) => p.src.split('/').pop()));
+  const photos = [
+    ...manifestPhotos,
+    ...(inscriptionMedia ?? [])
+      .filter((m) => !seen.has(m.media_url.split('/').pop()?.split('?')[0]))
+      .map((m) => ({ src: m.media_url, credit: mediaCredit(m) })),
+  ];
 
   const nearby = excursion
     ? nearestWithin(excursion.coords, EXCURSIONS.filter((e) => e.id !== excursion.id), (e) => e.coords, 45, 5)
@@ -198,6 +265,25 @@ const ExcursionDetail = () => {
     return () => { cancelled = true; map.remove(); mapRef.current = null; };
   }, [excursion]);
 
+  // Lägeshypotes-lagret: kandidatpunkter + referensfynd (monumentet är redan huvudpinnen).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !hypotheses?.length) return;
+    const group = L.featureGroup();
+    const pts: [number, number][] = [[excursion!.coords.lat, excursion!.coords.lng]];
+    hypotheses.forEach((h) => {
+      if (h.lat == null || h.lng == null || h.kind === 'monument') return; // monumentet = basmarkören
+      const s = HYP_STYLE(h.kind, h.confidence);
+      pts.push([h.lat, h.lng]);
+      L.circleMarker([h.lat, h.lng], { radius: s.r, color: s.stroke, weight: 2, fillColor: s.fill, fillOpacity: 0.9, dashArray: '3,3' })
+        .bindPopup(`<strong>${h.label}</strong>${h.confidence ? `<br/><em>${sv ? 'konfidens' : 'confidence'}: ${h.confidence}</em>` : ''}${h.rationale ? `<br/>${h.rationale}` : ''}${h.source ? `<br/><small>${h.source}</small>` : ''}`)
+        .addTo(group);
+    });
+    group.addTo(map);
+    if (pts.length > 1) { try { map.fitBounds(L.latLngBounds(pts), { padding: [50, 50], maxZoom: 15 }); } catch { /* noop */ } }
+    return () => { try { map.removeLayer(group); } catch { /* noop */ } };
+  }, [hypotheses, excursion, sv]);
+
   if (!excursion) {
     return (
       <div className="min-h-screen viking-bg">
@@ -265,15 +351,49 @@ const ExcursionDetail = () => {
               </div>
             </aside>
           )}
+          {hypotheses && hypotheses.length > 0 && (
+            <aside className="lg:col-span-1">
+              <div className="viking-card rounded-lg border border-border p-4">
+                <h2 className="text-lg font-semibold text-foreground mb-1">{sv ? 'Var låg platsen?' : 'Where was the site?'}</h2>
+                <p className="text-xs text-muted-foreground mb-3">{sv
+                  ? 'Monumentet (skyddshuset, guld) har känt läge. Den ursprungliga kungavalsplatsen är omtvistad — nedan de dokumenterade hypoteserna. Blått = kandidatplats (mörkare = starkare stöd), grått = referensfynd. Koordinat anges bara där den är verifierad.'
+                  : 'The monument (shelter, gold) has a known location. The original election site is disputed — the documented hypotheses are listed below. Blue = candidate (darker = stronger support), grey = reference find. Coordinates are given only where verified.'}</p>
+                <ul className="space-y-2.5">
+                  {[...hypotheses]
+                    .sort((a, b) => (HYP_ORDER[a.kind] ?? 9) - (HYP_ORDER[b.kind] ?? 9)
+                      || (CONF_ORDER[a.confidence ?? 'unknown'] ?? 9) - (CONF_ORDER[b.confidence ?? 'unknown'] ?? 9))
+                    .map((h, i) => {
+                      const s = HYP_STYLE(h.kind, h.confidence);
+                      return (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <span className="mt-1 inline-block h-3 w-3 shrink-0 rounded-full border" style={{ backgroundColor: h.kind === 'lost' ? 'transparent' : s.fill, borderColor: s.stroke }} aria-hidden="true" />
+                          <div>
+                            <div className="text-foreground leading-snug">{h.label}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {(HYP_KIND_LABEL[h.kind]?.[sv ? 'sv' : 'en']) ?? h.kind}
+                              {h.confidence ? ` · ${h.confidence}` : ''}
+                              {' · '}
+                              {h.lat != null ? (sv ? 'geokodad' : 'geocoded') : (sv ? 'läge ej fastställt' : 'location unresolved')}
+                            </div>
+                            {h.source && <div className="text-[11px] text-muted-foreground/70 mt-0.5">{h.source}</div>}
+                          </div>
+                        </li>
+                      );
+                    })}
+                </ul>
+              </div>
+            </aside>
+          )}
         </div>
 
         {photos.length > 0 && (
           <section className="mb-6">
             <h2 className="text-lg font-semibold text-foreground mb-3">{sv ? 'Bilder från platsen' : 'Photos from the site'}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {photos.map((src, i) => (
-                <a key={src} href={src} target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden border border-border bg-card">
-                  <img src={src} alt={`${excursion.name} — ${sv ? 'foto' : 'photo'} ${i + 1}`} loading="lazy" className="w-full h-40 object-cover hover:opacity-90 transition-opacity" />
+              {photos.map((p, i) => (
+                <a key={p.src} href={p.src} target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden border border-border bg-card">
+                  <img src={p.src} alt={`${excursion.name} — ${sv ? 'foto' : 'photo'} ${i + 1}`} loading="lazy" className="w-full h-40 object-cover hover:opacity-90 transition-opacity" />
+                  {p.credit && <div className="px-1.5 py-1 text-[10px] leading-tight text-muted-foreground/80 truncate" title={p.credit}>{p.credit}</div>}
                 </a>
               ))}
             </div>

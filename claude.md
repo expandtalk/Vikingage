@@ -205,6 +205,18 @@ npm run build
 npm run lint
 ```
 
+## Deploy (VIKTIGT — fråga inte om detta igen)
+vikingage.se driftas på ett **FTP-webbhotell** (cPanel-stil `public_html`), **INTE Vercel**.
+
+Deploy = bygg lokalt och ladda upp **hela `dist/`-katalogen** via FTP till `public_html`:
+```bash
+npm run build   # → dist/
+# ladda sedan upp HELA dist/ via FTP till public_html (Daniel gör detta)
+```
+- `git push` uppdaterar **bara GitHub-repot** — det deployar INTE sajten.
+- Databasändringar (Supabase prod) blir live **direkt**, oberoende av frontend-deploy.
+- Stora statiska kartresurser ligger under `public_html/map/` och `public_html/earth/` på webbhotellet (ej i git-repot).
+
 ## Databasanslutning
 
 Supabase-projektet är konfigurerat med:

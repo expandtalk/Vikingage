@@ -21,7 +21,7 @@ const parsePoint = (c: unknown): [number, number] | null => {
 
 // Utpekade fyndpunkter som alltid visas i Eriksgata-vyn (Daniel).
 const FEATURED: { ll: [number, number]; name: string }[] = [
-  { ll: [59.6817, 17.3406], name: 'Mora stenar (kungavalsplats)' },
+  { ll: [59.79774, 17.78080], name: 'Mora stenar (kungavalsplats)' },
   { ll: [58.2956, 14.7756], name: 'Rökstenen (Ög 136)' },
 ];
 

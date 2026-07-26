@@ -49,6 +49,13 @@ const COUNTRIES: Opt[] = [
   { value: 'Ireland', sv: 'Irland', en: 'Ireland' },
   { value: 'Scotland', sv: 'Skottland', en: 'Scotland' },
   { value: 'Faroe Islands', sv: 'Färöarna', en: 'Faroe Islands' },
+  { value: 'Isle of Man', sv: 'Isle of Man', en: 'Isle of Man' },
+  { value: 'Germany', sv: 'Tyskland', en: 'Germany' },
+  { value: 'Netherlands', sv: 'Nederländerna', en: 'Netherlands' },
+  { value: 'Poland', sv: 'Polen', en: 'Poland' },
+  { value: 'France', sv: 'Frankrike', en: 'France' },
+  { value: 'Italy', sv: 'Italien', en: 'Italy' },
+  { value: 'Latvia', sv: 'Lettland', en: 'Latvia' },
   { value: 'Greenland', sv: 'Grönland', en: 'Greenland' },
 ];
 
