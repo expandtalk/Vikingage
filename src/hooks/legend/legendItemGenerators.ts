@@ -147,6 +147,10 @@ export const generateBasicInscriptionItems = (
     { id: 'heritage_ganggrift', label: 'Gånggrifter', color: '#9333ea', count: 426, enabled: itemEnabled(enabledLegendItems, 'heritage_ganggrift') },
     { id: 'heritage_vardkase', label: 'Vårdkasar', color: '#f59e0b', count: 211, enabled: itemEnabled(enabledLegendItems, 'heritage_vardkase') },
     { id: 'heritage_dos', label: 'Dösar', color: '#7c3aed', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_dos') },
+    { id: 'heritage_stenkammargrav', label: '⛰️ Stenkammargravar', color: '#7e22ce', count: 160, enabled: itemEnabled(enabledLegendItems, 'heritage_stenkammargrav') },
+    { id: 'heritage_gravfalt', label: 'Gravfält', color: '#78350f', count: 3524, enabled: itemEnabled(enabledLegendItems, 'heritage_gravfalt') },
+    { id: 'heritage_stensattning', label: 'Stensättningar', color: '#57534e', count: 5276, enabled: itemEnabled(enabledLegendItems, 'heritage_stensattning') },
+    { id: 'heritage_domarring', label: 'Domarringar / stenkretsar', color: '#6d28d9', count: 117, enabled: itemEnabled(enabledLegendItems, 'heritage_domarring') },
     { id: 'heritage_hallristning', label: '🪨 Hällristningar', color: '#ea580c', count: 3022, enabled: itemEnabled(enabledLegendItems, 'heritage_hallristning') },
     { id: 'heritage_trindyxa', label: 'Trindyxor (neolitiska)', color: '#a8a29e', count: 2, enabled: itemEnabled(enabledLegendItems, 'heritage_trindyxa') },
     { id: 'heritage_labyrint', label: '🌀 Labyrinter', color: '#0d9488', count: 493, enabled: itemEnabled(enabledLegendItems, 'heritage_labyrint') },
@@ -185,6 +189,7 @@ export const generateBasicInscriptionItems = (
     { id: 'heritage_vaghallningssten', label: 'Väghållningsstenar', color: '#78716c', count: 3934, enabled: itemEnabled(enabledLegendItems, 'heritage_vaghallningssten') },
     { id: 'heritage_gransmarke', label: 'Gränsstenar', color: '#7f1d1d', count: 26, enabled: itemEnabled(enabledLegendItems, 'heritage_gransmarke') },
     { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_bildsten') },
+    { id: 'heritage_vagmarke', label: '🛣️ Vägmärken', color: '#1d4ed8', count: 6133, enabled: itemEnabled(enabledLegendItems, 'heritage_vagmarke') },
   ];
   items.push({
     id: 'heritage_stones',
@@ -196,10 +201,44 @@ export const generateBasicInscriptionItems = (
     children: stoneChildren,
   });
 
+  // "Folktradition & sägen" — naturföremål/platser med folktradition ur heritage_sites
+  // (RAÄ "Naturföremål/-bildning med tradition"). Egen parent 'heritage_folklore'. Namngivna
+  // sägenstenar (Odins/Dackes sten), vårdträd, grottor, jätte-/trollplatser, offerplatser.
+  // Skilt från "Källor (traditionella)" = heliga vattenkällor (ligger kvar i Kulturlager).
+  const folkloreChildren = [
+    { id: 'heritage_sagensten', label: '🪨 Sägenstenar (namngivna)', color: '#a16207', count: 150, enabled: itemEnabled(enabledLegendItems, 'heritage_sagensten') },
+    { id: 'heritage_platstradition', label: 'Platser med tradition', color: '#ca8a04', count: 176, enabled: itemEnabled(enabledLegendItems, 'heritage_platstradition') },
+    { id: 'heritage_grotta', label: '🕳️ Grottor med tradition', color: '#4338ca', count: 21, enabled: itemEnabled(enabledLegendItems, 'heritage_grotta') },
+    { id: 'heritage_jattetroll', label: '👹 Jätte- & trollplatser', color: '#a21caf', count: 11, enabled: itemEnabled(enabledLegendItems, 'heritage_jattetroll') },
+    { id: 'heritage_vardtrad', label: '🌳 Vårdträd', color: '#15803d', count: 7, enabled: itemEnabled(enabledLegendItems, 'heritage_vardtrad') },
+    { id: 'heritage_offerplats', label: 'Offerplatser', color: '#b91c1c', count: 5, enabled: itemEnabled(enabledLegendItems, 'heritage_offerplats') },
+  ];
+  items.push({
+    id: 'heritage_folklore', label: '🧚 Folktradition & sägen', color: '#ca8a04',
+    count: folkloreChildren.reduce((s, c) => s + c.count, 0),
+    enabled: itemEnabled(enabledLegendItems, 'heritage_folklore'),
+    type: 'category', children: folkloreChildren,
+  });
+
+  // "Marinarkeologi" — vrak/fartygslämningar ur heritage_sites (RAÄ "Fartygs-/båtlämning").
+  // Egen parent 'heritage_marine'. 'vrak med tradition' = namngivet/historik i beskrivningen.
+  const marineChildren = [
+    { id: 'heritage_vrak', label: '⚓ Vrak / fartygslämningar', color: '#0369a1', count: 151, enabled: itemEnabled(enabledLegendItems, 'heritage_vrak') },
+    { id: 'heritage_vraktradition', label: '⚓ Vrak med tradition/namn', color: '#0e7490', count: 33, enabled: itemEnabled(enabledLegendItems, 'heritage_vraktradition') },
+    { id: 'heritage_sparr', label: '⛓️ Spärranläggningar (pålspärrar)', color: '#831843', count: 63, enabled: itemEnabled(enabledLegendItems, 'heritage_sparr') },
+  ];
+  items.push({
+    id: 'heritage_marine', label: '⚓ Marinarkeologi', color: '#0369a1',
+    count: marineChildren.reduce((s, c) => s + c.count, 0),
+    enabled: itemEnabled(enabledLegendItems, 'heritage_marine'),
+    type: 'category', children: marineChildren,
+  });
+
   // Kyrko-typerna som fristående poster (grupperas in i Kyrka & kristendom nedan).
   items.push({ id: 'heritage_kyrka', label: 'Sockenkyrkor (RAÄ)', color: '#e11d48', count: 4223, enabled: itemEnabled(enabledLegendItems, 'heritage_kyrka') });
   items.push({ id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: itemEnabled(enabledLegendItems, 'heritage_kapell') });
   items.push({ id: 'heritage_kloster', label: 'Kloster (RAÄ)', color: '#c026d3', count: 94, enabled: itemEnabled(enabledLegendItems, 'heritage_kloster') });
+  items.push({ id: 'heritage_kyrkoruin', label: '✝️ Kyrkoruiner', color: '#9f1239', count: 38, enabled: itemEnabled(enabledLegendItems, 'heritage_kyrkoruin') });
 
   // Historiska Lantmäteri-kartor (overlay-rastrar, opt-in) — togglebara, opacitets-styrda.
   // Tiles serveras statiskt från FTP; lagren visar inget förrän tiles laddats upp.
@@ -452,6 +491,7 @@ export const generateBasicInscriptionItems = (
   const churchChildren = [
     byId.get('ecclesiastical_churches'),
     byId.get('heritage_kyrka'), byId.get('heritage_kapell'), byId.get('heritage_kloster'),
+    byId.get('heritage_kyrkoruin'),
     ...christianChurchKids,
   ].filter(Boolean) as LegendItem[];
   churchChildren.forEach((c) => used.add(c.id));
@@ -469,6 +509,8 @@ export const generateBasicInscriptionItems = (
     group('cat_runic', 'ᛘ ' + t('runestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions', 'runestone_density']),
     catChurch,
     keep('heritage_sites'),
+    keep('heritage_folklore'),
+    keep('heritage_marine'),
     keep('religious_places'),
     keep('water_routes'), // Vägar ligger nu som undergrupp inuti water_routes
     group('cat_defense', '🏰 ' + t('fortresses'), '#dc2626', ['viking_fortresses', 'viking_cities', 'stake_barriers']),

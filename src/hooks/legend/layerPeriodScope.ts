@@ -25,6 +25,10 @@ export const EARLY_ALLOWED_LAYERS = new Set<string>([
   'species_introductions',     // arter & innovationer
   'coins',                     // mynt (periodfiltrerade per period_start/end) — solidi i folkvandringstid
   'solidus_die_links',         // solidi + stämpellänk-linjer (Fischer)
+  // Folktradition & marint (opt-in, tillåts i alla perioder så toggeln funkar även i 'all'/djuptid):
+  'heritage_folklore', 'heritage_sagensten', 'heritage_vardtrad', 'heritage_grotta',
+  'heritage_jattetroll', 'heritage_offerplats', 'heritage_platstradition',
+  'heritage_marine', 'heritage_vrak', 'heritage_vraktradition', 'heritage_sparr',
 ]);
 
 // Lager som tänds som standard i äldre perioder så kartan inte blir tom.

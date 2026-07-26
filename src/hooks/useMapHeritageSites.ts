@@ -54,16 +54,66 @@ const TYPE_COLOR: Record<string, string> = {
   'trindyxa': '#a8a29e',        // neolitisk stenyxa — sten-grå
   'dös': '#7c3aed',             // megalit-lila
   'gånggrift': '#9333ea',       // megalit-lila (ljusare)
+  'stenkammargrav': '#7e22ce',  // megalit-familjen
   'bildsten': '#0891b2',        // gotländsk cyan
   'skeppssättning': '#0d9488',  // teal
+  'gravfält': '#78350f',        // gravmylla — mörkbrun
+  'stensättning': '#57534e',    // sten — varmgrå
+  'domarring': '#6d28d9',       // stenkrets — lila
+  'rest sten': '#44403c',       // bautasten — mörk sten
   'kyrka': '#e11d48',           // kyrk-rött
+  'kyrkoruin': '#9f1239',       // kyrkoruin — mörkare rödvin
   'kloster': '#c026d3',         // kloster-magenta
+  'klosterruin': '#86198f',     // klosterruin — mörkare magenta
   'kapell': '#db2777',          // kapell-rosa
   'Källa med tradition': '#0ea5e9', // källa — vatten-blå
   'milstolpe': '#b45309',       // milsten — brun/amber (vägmätning)
   'väghållningssten': '#78716c',// väghållningssten — stengrå
   'gränsmärke': '#7f1d1d',      // gränssten — mörkröd
+  'vägmärke': '#1d4ed8',        // vägmärke — vägblå
+  // Folktradition & sägen
+  'sten med tradition': '#a16207',   // sägensten — amber-brun
+  'plats med tradition': '#ca8a04',  // sägenplats — guld
+  'vårdträd': '#15803d',             // heligt träd — grön
+  'grotta med tradition': '#4338ca', // grotta/håla — indigo
+  'jätte-/trollplats': '#a21caf',    // övernaturligt — magenta
+  'offerplats': '#b91c1c',           // offer — blodröd
+  // Marinarkeologi
+  'fartygslämning': '#0369a1',       // vrak — havsblå
+  'vrak med tradition': '#0e7490',   // vrak m. sägen — teal
+  'spärranläggning': '#831843',      // pålspärr/farledsspärr — vinröd (försvar)
 };
+
+// Vit SVG-symbol per lämningskategori (24×24). Kyrkor=kors, vägmärken=skylt,
+// gravfält=högar, sten/domarring=ring, skepp=båt, rest sten=bautasten, megalit=dolmen.
+const GLYPH: Record<string, string> = {
+  cross:  '<path d="M10.5 4h3v4.5H18v3h-4.5V20h-3v-8.5H6v-3h4.5z" fill="#fff"/>',
+  sign:   '<path d="M11 3h2v2h5.2l2 2.5-2 2.5H13v11h-2v-11H5.8l-2-2.5 2-2.5H11z" fill="#fff"/>',
+  mounds: '<path d="M2 17c1.4-3 4.4-3 5.8 0M9.1 17c1.4-3 4.4-3 5.8 0M16.2 17c1.4-3 4.4-3 5.8 0" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+  ring:   '<circle cx="12" cy="12" r="6.5" stroke="#fff" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="1.6" fill="#fff"/>',
+  ship:   '<path d="M3 12h18l-3.2 5.5H6.2z" fill="#fff"/><path d="M12 3v8.5" stroke="#fff" stroke-width="2"/>',
+  menhir: '<rect x="9" y="4" width="6" height="16" rx="2.6" fill="#fff"/>',
+  dolmen: '<rect x="3.5" y="5.5" width="17" height="4" rx="1.5" fill="#fff"/><path d="M6 20V10M12 20V10M18 20V10" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+  tree:   '<path d="M12 3c-2.8 0-5 2.2-5 5 0 1.9 1.1 3.6 2.7 4.4L8.5 21h7l-1.2-8.6C15.9 11.6 17 9.9 17 8c0-2.8-2.2-5-5-5z" fill="#fff"/>',
+  anchor: '<circle cx="12" cy="5" r="2" stroke="#fff" stroke-width="1.6" fill="none"/><path d="M12 7v12M7 11H5c0 4.5 3.4 7 7 7s7-2.5 7-7h-2M8.5 10.5h7" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round"/>',
+  spark:  '<path d="M12 3l1.7 6.3L20 11l-6.3 1.7L12 19l-1.7-6.3L4 11l6.3-1.7z" fill="#fff"/>',
+  piles:  '<path d="M5 20V7M9 20V5M13 20V6M17 20V8M21 20V6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>',
+};
+const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
+  kyrka: 'cross', kapell: 'cross', kloster: 'cross', kyrkoruin: 'cross', klosterruin: 'cross',
+  'vägmärke': 'sign', milstolpe: 'sign', 'väghållningssten': 'sign', 'gränsmärke': 'sign',
+  'gravfält': 'mounds',
+  'stensättning': 'ring', domarring: 'ring',
+  'skeppssättning': 'ship',
+  'rest sten': 'menhir', bildsten: 'menhir', 'sten med tradition': 'menhir',
+  'stenkammargrav': 'dolmen', 'dös': 'dolmen', 'gånggrift': 'dolmen',
+  'vårdträd': 'tree',
+  'fartygslämning': 'anchor', 'vrak med tradition': 'anchor',
+  'spärranläggning': 'piles',
+  'jätte-/trollplats': 'spark', 'offerplats': 'spark', 'plats med tradition': 'spark', 'grotta med tradition': 'spark',
+};
+
+// Fallback-nål (liten färgad droppe) för typer utan egen symbol.
 const dotIconFor = (t: string) => {
   const c = TYPE_COLOR[t] || '#64748b';
   return L.divIcon({
@@ -72,22 +122,82 @@ const dotIconFor = (t: string) => {
     className: 'heritage-dot', iconSize: [12, 12], iconAnchor: [6, 11], popupAnchor: [0, -10],
   });
 };
+// Symbolikon: färgad disk + vit glyph per typ. Faller tillbaka på droppen för övriga.
+const iconFor = (t: string) => {
+  const gk = TYPE_GLYPH[t];
+  if (!gk) return dotIconFor(t);
+  const c = TYPE_COLOR[t] || '#64748b';
+  return L.divIcon({
+    html: `<div style="width:22px;height:22px;border-radius:50%;background:${c};border:1.6px solid #f8fafc;box-shadow:0 1px 3px rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">${GLYPH[gk]}</svg></div>`,
+    className: 'heritage-glyph', iconSize: [22, 22], iconAnchor: [11, 11], popupAnchor: [0, -12],
+  });
+};
+
+// Namnet är ofta en skräpdubblett ("Hällristning, Hällristning") → deduplicera; faller
+// tillbaka på typ + socken när namnet inte tillför något.
+const cleanTitle = (name: string | null, raaType: string, parish: string | null) => {
+  const parts = [...new Set(String(name || '').split(',').map((s) => s.trim()).filter(Boolean))];
+  let t = parts.join(', ');
+  if (!t || t.toLowerCase() === (raaType || '').toLowerCase()) t = raaType || 'Lämning';
+  return parish ? `${t}, ${parish} sn` : t;
+};
+
+// Rik popup: titel, typ, plats, koordinater, ev. period/beskrivning + länk till Fornsök
+// (source_uri = kulturarvsdata.se/raa/lamning/<uuid>, det unika RAÄ-id:t → klickbart).
+interface HeritageRow {
+  raa_type: string; name: string | null; period: string | null; description: string | null;
+  landscape: string | null; municipality: string | null; parish: string | null;
+  lat: number; lng: number; source_uri: string | null;
+}
+const heritagePopup = (r: HeritageRow) => {
+  const color = TYPE_COLOR[r.raa_type] || '#64748b';
+  const geo = [r.landscape, r.municipality, r.parish].filter(Boolean).join(' · ');
+  const coord = r.lat != null && r.lng != null ? `${Number(r.lat).toFixed(5)}, ${Number(r.lng).toFixed(5)}` : '';
+  const per = r.period ? ` · ${r.period}` : '';
+  const desc = r.description
+    ? `<div style="font-size:11px;color:#475569;margin-top:4px">${String(r.description).slice(0, 260)}</div>` : '';
+  const link = r.source_uri
+    ? `<div style="margin-top:6px"><a href="https://${r.source_uri}" target="_blank" rel="noopener" style="font-size:11px;color:#2563eb;text-decoration:underline">Visa i Fornsök ↗</a></div>` : '';
+  return `<div style="min-width:190px">
+      <strong>${cleanTitle(r.name, r.raa_type, r.parish)}</strong>
+      <div style="color:${color};font-size:12px;margin-top:2px">${r.raa_type}${per}</div>
+      ${geo ? `<div style="font-size:11px;color:#334155;margin-top:3px">📍 ${geo}</div>` : ''}
+      ${coord ? `<div style="font-size:11px;color:#64748b;font-variant-numeric:tabular-nums">${coord}</div>` : ''}
+      ${desc}${link}
+    </div>`;
+};
 
 // Legendnyckel → raa_type. Per-typ-kryssen i "Kulturlager"-kategorin styr vilka
 // typer som hämtas (sites_in_bbox tar p_types). Bak-kompat: 'heritage_sites'=true → alla.
 const HERITAGE_TYPE_KEYS: Record<string, string> = {
   heritage_kyrka: 'kyrka', heritage_kapell: 'kapell', heritage_kloster: 'kloster',
+  heritage_kyrkoruin: 'kyrkoruin', heritage_klosterruin: 'klosterruin',
   heritage_vardkase: 'vårdkase', heritage_dos: 'dös', heritage_ganggrift: 'gånggrift',
   heritage_hallristning: 'hällristning', heritage_trindyxa: 'trindyxa',
   heritage_bildsten: 'bildsten', heritage_skeppssattning: 'skeppssättning',
   heritage_kalla: 'Källa med tradition', heritage_labyrint: 'labyrint',
+  // Gravtyper/monument (FMIS-ingest, Kulturlager):
+  heritage_gravfalt: 'gravfält', heritage_stensattning: 'stensättning',
+  heritage_domarring: 'domarring', heritage_stenkammargrav: 'stenkammargrav',
+  heritage_reststen: 'rest sten',
   // "Stenar"-kategorin (egen parent 'heritage_stones'):
   heritage_milstolpe: 'milstolpe', heritage_vaghallningssten: 'väghållningssten',
-  heritage_gransmarke: 'gränsmärke',
+  heritage_gransmarke: 'gränsmärke', heritage_vagmarke: 'vägmärke',
+  // Folktradition & sägen (egen parent 'heritage_folklore'):
+  heritage_sagensten: 'sten med tradition', heritage_vardtrad: 'vårdträd',
+  heritage_grotta: 'grotta med tradition', heritage_jattetroll: 'jätte-/trollplats',
+  heritage_offerplats: 'offerplats', heritage_platstradition: 'plats med tradition',
+  // Marinarkeologi (egen parent 'heritage_marine'):
+  heritage_vrak: 'fartygslämning', heritage_vraktradition: 'vrak med tradition',
+  heritage_sparr: 'spärranläggning',
 };
 // Typ-nycklar som hör till "Stenar"-kategorin (parent 'heritage_stones') i st.f.
 // "Kulturlager" (parent 'heritage_sites'). heritage_bildsten flyttad hit i legenden.
-const STONE_KEYS = new Set(['heritage_milstolpe', 'heritage_vaghallningssten', 'heritage_gransmarke', 'heritage_bildsten']);
+const STONE_KEYS = new Set(['heritage_milstolpe', 'heritage_vaghallningssten', 'heritage_gransmarke', 'heritage_bildsten', 'heritage_vagmarke']);
+// Folktradition-typer (egen parent 'heritage_folklore') och marina (parent 'heritage_marine').
+const FOLKLORE_KEYS = new Set(['heritage_sagensten', 'heritage_vardtrad', 'heritage_grotta', 'heritage_jattetroll', 'heritage_offerplats', 'heritage_platstradition']);
+const MARINE_KEYS = new Set(['heritage_vrak', 'heritage_vraktradition', 'heritage_sparr']);
 
 export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selectedTimePeriod }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
@@ -99,8 +209,13 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
   // Varje typ gate:as av sin egen kategori-parent + sitt eget kryss.
   const parentKultur = enabledLegendItems.heritage_sites !== false;
   const parentStone = enabledLegendItems.heritage_stones !== false;
+  const parentFolklore = enabledLegendItems.heritage_folklore !== false;
+  const parentMarine = enabledLegendItems.heritage_marine !== false;
+  const parentOn = (k: string) => STONE_KEYS.has(k) ? parentStone
+    : FOLKLORE_KEYS.has(k) ? parentFolklore
+    : MARINE_KEYS.has(k) ? parentMarine : parentKultur;
   const types = Object.entries(HERITAGE_TYPE_KEYS)
-    .filter(([k]) => enabledLegendItems[k] === true && (STONE_KEYS.has(k) ? parentStone : parentKultur))
+    .filter(([k]) => enabledLegendItems[k] === true && parentOn(k))
     .map(([, v]) => v)
     // Periodfilter: uteslut typer vars typokronologi inte överlappar vald period.
     .filter((v) => { const p = TYPE_PERIOD[v]; return !p || overlapsPeriod(selectedTimePeriod, p[0], p[1]); });
@@ -134,14 +249,19 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
 
       if (z >= ZOOM_INDIVIDUAL) {
         (data as any[]).forEach((r) => {
-          const yr = r.period ? ` · ${r.period}` : '';
-          const desc = r.description ? `<br/><span style="font-size:11px;color:#475569">${String(r.description).slice(0, 260)}</span>` : '';
-          L.marker([r.lat, r.lng], { icon: dotIconFor(r.raa_type) })
-            .bindPopup(`<strong>${r.name ?? r.raa_type}</strong><br/><span style="color:${TYPE_COLOR[r.raa_type] || '#64748b'}">${r.raa_type}${yr}</span>${desc}`)
+          L.marker([r.lat, r.lng], { icon: iconFor(r.raa_type) })
+            .bindPopup(heritagePopup(r as HeritageRow))
             .addTo(layer);
         });
       } else {
         (data as any[]).forEach((c) => {
+          // Cell med EN lämning → rita riktig ikon + popup (ingen meningslös "1"-bubbla).
+          if (Number(c.cnt) === 1 && c.id) {
+            L.marker([c.lat, c.lng], { icon: iconFor(c.raa_type) })
+              .bindPopup(heritagePopup(c as HeritageRow))
+              .addTo(layer);
+            return;
+          }
           const m = L.marker([c.lat, c.lng], { icon: clusterIcon(Number(c.cnt)) });
           m.on('click', () => map.setView([c.lat, c.lng], Math.min(z + 3, 13)));
           m.addTo(layer);
