@@ -1,11 +1,12 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Link2, ScrollText, Users, Crown, Coins as CoinsIcon } from 'lucide-react';
+import { BookOpen, Link2, ScrollText, Users, Crown, Coins as CoinsIcon, Bone, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useKingRelations } from '@/hooks/chronicles/useKingRelations';
 import { useCoins } from '@/hooks/useCoins';
 import { useRoyalDynasties } from '@/hooks/chronicles/useRoyalDynasties';
+import { useKingOsteology } from '@/hooks/chronicles/useKingOsteology';
 import { KingSourceMentions } from './KingSourceMentions';
 import { KingInscriptionLinks } from './KingInscriptionLinks';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -45,6 +46,7 @@ export const KingDetailPanel: React.FC<KingDetailPanelProps> = ({ king, sourceMe
   const { data: relations } = useKingRelations(king.name);
   const { data: dynasties } = useRoyalDynasties();
   const { data: coins } = useCoins();
+  const { data: osteo } = useKingOsteology(king.id);
 
   const attest = (king.external_attestation ?? []).filter(Boolean);
   const rels = relations ?? [];
@@ -179,6 +181,35 @@ export const KingDetailPanel: React.FC<KingDetailPanelProps> = ({ king, sourceMe
             <Link to="/sv/mynt" className="text-xs text-amber-300 hover:underline mt-1 inline-block">
               {sv ? 'Se alla mynt →' : 'See all coins →'}
             </Link>
+          </div>
+        )}
+
+        {osteo && osteo.length > 0 && (
+          <div>
+            <div className="text-slate-400 text-xs uppercase tracking-wide mb-1 flex items-center gap-1">
+              <Bone className="h-3 w-3" /> {sv ? 'Osteologi & grav' : 'Osteology & grave'}
+            </div>
+            <div className="space-y-2">
+              {osteo.map((o) => (
+                <div key={o.id} className="rounded-md border border-slate-600/40 bg-slate-900/40 p-2 text-[13px]">
+                  {o.site_name && (
+                    <div className="flex items-center gap-1 text-slate-200 font-medium">
+                      <MapPin className="h-3.5 w-3.5 text-amber-400" />{o.site_name}
+                      {o.grave_number && <span className="text-slate-400 font-normal"> · {o.grave_number}</span>}
+                    </div>
+                  )}
+                  <div className="text-slate-300 mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5">
+                    {o.stature_cm != null && <span><span className="text-slate-500">{sv ? 'Längd' : 'Height'}:</span> {o.stature_cm} cm</span>}
+                    {o.age && <span><span className="text-slate-500">{sv ? 'Ålder' : 'Age'}:</span> {o.age}</span>}
+                    {o.archaeological_sex && <span><span className="text-slate-500">{sv ? 'Kön' : 'Sex'}:</span> {o.archaeological_sex === 'male' ? (sv ? 'man' : 'male') : o.archaeological_sex === 'female' ? (sv ? 'kvinna' : 'female') : o.archaeological_sex}</span>}
+                  </div>
+                  {o.pathology && <div className="text-slate-300 mt-1"><span className="text-slate-500">{sv ? 'Patologi' : 'Pathology'}:</span> {o.pathology}</div>}
+                  {o.dental_status && <div className="text-slate-300 mt-1"><span className="text-slate-500">{sv ? 'Tandstatus' : 'Dental'}:</span> {o.dental_status}</div>}
+                  {o.burial_context && <div className="text-slate-400 mt-1 text-[12px] leading-relaxed">{o.burial_context}</div>}
+                  {o.source && <div className="text-slate-500 mt-1 text-[11px] italic">{o.source}</div>}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
