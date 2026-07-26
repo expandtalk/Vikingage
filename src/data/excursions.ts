@@ -286,6 +286,21 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
     relatedSources: ['Äldre Västgötalagen', 'Upplandslagen', 'Magnus Erikssons landslag'],
   },
   {
+    id: 'danmarksby',
+    name: 'Kammargravfältet vid Danmarksby',
+    region: 'Danmarks socken, Uppsala',
+    group: 'Uppland & Mälardalen',
+    period: 'Folkvandringstid (ca 400–540 e.Kr.)',
+    // Gravfältet (RAÄ 100) vid Danmarks kyrka längs E4. Ungefärlig ankarpunkt (kyrkan).
+    coords: { lat: 59.8329, lng: 17.7449 },
+    sv: 'Ett folkvandringstida gravfält med sällsynta obrända kammargravar, utgrävt 1969–75 vid motorvägsbygget. Här vilade sveaaristokrater från 400-talet — de flesta gravar plundrade redan under järnåldern, men kvar finns praktfulla agraffknappar (tidens manschettknappar) med silverbleck och brännförgyllning, bärnstenspärlor, sydländskt dricksglas och en kam med härmade runtecken. Gravfältet låg vid Långhundraledens strand (idag Sävjaån), en havsvik som landhöjningen sedan dränerat. Knappt 3 km söderut, vid Söderby mot skogen Lunsen, offrades Söderbyskatten med sina tio guldbrakteater när folkvandringstiden slutade i köld och missväxt kring 536–540. Ligger bara ~5 km från Mora stenar — en naturlig del av samma utflykt.',
+    en: 'A Migration Period cemetery with rare unburnt chamber graves, excavated 1969–75 during motorway construction. Here lay Svea aristocrats of the 5th century — most graves plundered already in the Iron Age, but what remains includes splendid clasp-buttons (the era\'s cufflinks) with silver foil and fire-gilding, amber beads, southern drinking glass and a comb with imitated rune-signs. The cemetery lay on the shore of the Långhundraleden inlet (today the Sävja river), a sea-bay since drained by land uplift. Barely 3 km south, at Söderby by the Lunsen forest, the Söderby hoard of ten gold bracteates was offered as the Migration Period ended in cold and crop failure around AD 536–540. Just ~5 km from the Mora stones — a natural part of the same excursion.',
+    points: [
+      { name: 'Söderbyskatten (fyndplats, ca)', lat: 59.80772, lng: 17.75641, note: 'Tio guldbrakteater, offrade i kärr ~540 e.Kr. Funna 1876.' },
+      { name: 'Mora stenar', lat: 59.79774, lng: 17.78080, note: 'Medeltida kungavalsplats, ~5 km söderut.' },
+    ],
+  },
+  {
     id: 'oland_hillforts',
     photoDir: 'ismantorp-borg-oland',
     thumbFile: 'thumb-2.jpg',

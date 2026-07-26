@@ -135,9 +135,40 @@ const ExcursionDetail = () => {
       return r.ok ? (await r.json() as Record<string, string[]>) : {};
     },
   });
-  const photos = excursion?.photoDir && photoManifest?.[excursion.photoDir]
-    ? photoManifest[excursion.photoDir].map((f) => `/excursion-photos/${excursion.photoDir}/${f}`)
+  // RAÄ/Wikimedia-foton ur inscription_media (CC0/PD/CC-BY) för utflykter med signum —
+  // t.ex. Karlevistenen (Öl 1) har 9 foton i DB som annars aldrig visades på sidan.
+  const { data: inscriptionMedia } = useQuery({
+    queryKey: ['excursion-media', excursion?.signum],
+    enabled: !!excursion?.signum,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('inscription_media')
+        .select('media_url, copyright_info, photographer, source_institution, inscription:inscription_id!inner(signum)')
+        .eq('inscription.signum', excursion!.signum!)
+        .eq('media_type', 'image');
+      if (error) throw error;
+      return (data as unknown as { media_url: string; copyright_info: string | null; photographer: string | null; source_institution: string | null }[])
+        .filter((m) => m.media_url);
+    },
+  });
+
+  const manifestPhotos = excursion?.photoDir && photoManifest?.[excursion.photoDir]
+    ? photoManifest[excursion.photoDir].map((f) => ({ src: `/excursion-photos/${excursion.photoDir}/${f}`, credit: undefined as string | undefined }))
     : [];
+  const mediaCredit = (m: { photographer: string | null; source_institution: string | null; copyright_info: string | null }): string | undefined => {
+    const parts = [m.photographer, m.source_institution].filter(Boolean);
+    const lic = m.copyright_info?.includes('publicdomain') ? 'PD' : m.copyright_info?.includes('by') ? 'CC BY' : undefined;
+    const label = [parts.join(', '), lic].filter(Boolean).join(' · ');
+    return label || undefined;
+  };
+  // Slå ihop + deduplicera på filnamn (lokala manifest-fotot finns ofta även i DB).
+  const seen = new Set(manifestPhotos.map((p) => p.src.split('/').pop()));
+  const photos = [
+    ...manifestPhotos,
+    ...(inscriptionMedia ?? [])
+      .filter((m) => !seen.has(m.media_url.split('/').pop()?.split('?')[0]))
+      .map((m) => ({ src: m.media_url, credit: mediaCredit(m) })),
+  ];
 
   const nearby = excursion
     ? nearestWithin(excursion.coords, EXCURSIONS.filter((e) => e.id !== excursion.id), (e) => e.coords, 45, 5)
@@ -359,9 +390,10 @@ const ExcursionDetail = () => {
           <section className="mb-6">
             <h2 className="text-lg font-semibold text-foreground mb-3">{sv ? 'Bilder från platsen' : 'Photos from the site'}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {photos.map((src, i) => (
-                <a key={src} href={src} target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden border border-border bg-card">
-                  <img src={src} alt={`${excursion.name} — ${sv ? 'foto' : 'photo'} ${i + 1}`} loading="lazy" className="w-full h-40 object-cover hover:opacity-90 transition-opacity" />
+              {photos.map((p, i) => (
+                <a key={p.src} href={p.src} target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden border border-border bg-card">
+                  <img src={p.src} alt={`${excursion.name} — ${sv ? 'foto' : 'photo'} ${i + 1}`} loading="lazy" className="w-full h-40 object-cover hover:opacity-90 transition-opacity" />
+                  {p.credit && <div className="px-1.5 py-1 text-[10px] leading-tight text-muted-foreground/80 truncate" title={p.credit}>{p.credit}</div>}
                 </a>
               ))}
             </div>
