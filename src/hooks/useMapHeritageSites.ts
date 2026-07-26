@@ -32,22 +32,27 @@ const TYPE_PERIOD: Record<string, [number, number]> = {
 const sb = supabase as unknown as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: any; error: any }> };
 const ZOOM_INDIVIDUAL = 11;
 
-// Kluster: kategorifärgad disk + typens vita glyph + antals-badge (ljus pillet, läslig
-// på både mörka diskar och karttiles). Färg = familj, ikon = typ, badge = antal i cellen.
+// Kluster: kategorifärgad disk (familj) + STOR läsbar antalssiffra centrerad. Typens glyph
+// blir en liten hörn-badge. Sifferfärg efter diskens ljushet (WCAG-kontrast, ej gissning).
 const clusterIcon = (count: number, raaType: string) => {
-  const size = count < 10 ? 34 : count < 100 ? 40 : count < 1000 ? 48 : 56;
+  const size = count < 10 ? 34 : count < 100 ? 42 : count < 1000 ? 50 : 58;
   const c = catColor(raaType);
+  const r = parseInt(c.slice(1, 3), 16), g = parseInt(c.slice(3, 5), 16), b = parseInt(c.slice(5, 7), 16);
+  const light = (0.299 * r + 0.587 * g + 0.114 * b) > 150;
+  const txt = light ? '#1c1917' : '#ffffff';
+  const shadow = light ? 'none' : '0 1px 2px rgba(0,0,0,0.65)';
+  const fs = count < 100 ? 17 : count < 1000 ? 15 : 13;
   const gk = TYPE_GLYPH[raaType];
-  const gsz = Math.round(size * 0.5);
-  const glyph = gk ? `<svg viewBox="0 0 24 24" width="${gsz}" height="${gsz}" aria-hidden="true">${GLYPH[gk]}</svg>` : '';
+  const badge = gk ? `<span style="position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;border-radius:50%;background:#1c1917;border:1.5px solid #f8fafc;display:flex;align-items:center;justify-content:center">
+      <svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true">${GLYPH[gk]}</svg></span>` : '';
   return L.divIcon({
     html: `<div style="position:relative;width:${size}px;height:${size}px">
       <div style="width:${size}px;height:${size}px;border-radius:50%;background:${c};
-        border:2px solid #f8fafc;box-shadow:0 2px 6px rgba(0,0,0,0.4);
-        display:flex;align-items:center;justify-content:center">${glyph}</div>
-      <span style="position:absolute;top:-4px;right:-6px;min-width:18px;height:18px;padding:0 4px;
-        border-radius:9px;background:#f8fafc;color:#1c1917;border:1.5px solid #1c1917;font-weight:700;
-        font-size:10px;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;line-height:1">${count}</span>
+        border:2px solid #f8fafc;box-shadow:0 2px 6px rgba(0,0,0,0.45);
+        display:flex;align-items:center;justify-content:center;
+        color:${txt};font-weight:800;font-size:${fs}px;font-variant-numeric:tabular-nums;
+        text-shadow:${shadow};line-height:1">${count}</div>
+      ${badge}
     </div>`,
     className: 'heritage-cluster',
     iconSize: [size, size],
