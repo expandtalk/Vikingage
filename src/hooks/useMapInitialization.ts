@@ -11,6 +11,7 @@ import { useMapHeritageSites } from './useMapHeritageSites';
 import { useMapThingSites } from './useMapThingSites';
 import { useMapChurches } from './map/useMapChurches';
 import { useMapProximityProbe } from './map/useMapProximityProbe';
+import { useMapHistoricalOverlays } from './map/useMapHistoricalOverlays';
 import { useReachProbeTriggers } from './map/useReachProbeTriggers';
 import { useMapSpeciesMarkers } from './map/useMapSpeciesMarkers';
 import { useMapElementMarkers } from './map/useMapElementMarkers';
@@ -184,6 +185,13 @@ export const useMapInitialization = ({
 
   // Rikt kyrkolager (ecclesiastical_sites: byggår/stift/socken/härad/ruin + Commons-bild).
   useMapChurches({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+  });
+
+  // Historiska Lantmäteri-kartor som opt-in overlay-rastrar (tiles från FTP).
+  useMapHistoricalOverlays({
     map: map.current,
     enabledLegendItems,
     isMapReady: isMapReadyRef,
