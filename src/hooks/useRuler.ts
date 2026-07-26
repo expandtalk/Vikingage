@@ -14,6 +14,12 @@ export const addRulerPoint = (lat: number, lng: number) => {
   state = { ...state, pts }; emit();
 };
 export const clearRuler = () => { state = { ...state, pts: [] }; emit(); };
+// Flytta en befintlig mätpunkt (dra i markören på kartan).
+export const updateRulerPoint = (i: number, lat: number, lng: number) => {
+  if (i < 0 || i >= state.pts.length) return;
+  const pts = state.pts.slice(); pts[i] = { lat, lng };
+  state = { ...state, pts }; emit();
+};
 export const useRuler = () => useSyncExternalStore(subscribe, () => state);
 
 // Haversine, km.

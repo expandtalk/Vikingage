@@ -23,6 +23,14 @@ const SHAPES: { key: ProbeShape; label: string; Icon: typeof Circle; rule: strin
   { key: 'hexagon', label: 'Hexagon', Icon: Hexagon, rule: 'Effektiv yttäckning utan glapp (Christaller k=7) — täck ett helt område med centralorter.' },
 ];
 
+// Svenska etiketter för ortnamnens element_category (annars visas råa slugs).
+const PN_CAT_LABEL: Record<string, string> = {
+  sakralt: 'Sakralt / gudar', bebyggelse: 'Bebyggelse', centralort: 'Centralort',
+  ting_ratt: 'Ting / rätt', vang: 'Vång / åker', vang_excl: 'Vång (excl.)',
+  val_ospec: 'Val (ospec.)', kust_hamn: 'Kust / hamn', natur: 'Natur',
+};
+const pnLabel = (c?: string | null) => (c ? PN_CAT_LABEL[c] ?? c : 'övrigt');
+
 // Nedladdning helt klient-side (Blob) — ingen server involverad.
 const downloadText = (filename: string, mime: string, text: string) => {
   const blob = new Blob([text], { type: mime });
@@ -36,6 +44,54 @@ const slug = (s: string) => (s || 'omrade').toLowerCase().replace(/[^a-z0-9]+/g,
 export const ProximityControl: React.FC = () => {
   const { probe, radiusKm, shape, modeKey, counts, result, note } = useProximityProbe();
   const { areas, save, remove, isLoggedIn } = useHypothesisAreas();
+  const [open, setOpen] = React.useState<Set<string>>(new Set());
+  const toggle = (k: string) => setOpen((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n; });
+  // Ortnamnsfilter: markerade element_category (tom mängd = visa alla).
+  const [pnCats, setPnCats] = React.useState<Set<string>>(new Set());
+  const togglePnCat = (c: string) => setPnCats((prev) => { const n = new Set(prev); n.has(c) ? n.delete(c) : n.add(c); return n; });
+  // Klick på ett listat objekt → flyg dit + öppna popup (satt av useMapProximityProbe).
+  const focus = (lat?: number, lng?: number) => {
+    if (lat != null && lng != null) (window as unknown as { __focusProbeFeature?: (a: number, b: number) => void }).__focusProbeFeature?.(lat, lng);
+  };
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  // En expanderbar kategori-rad: klick fäller ut objektlistan, klick på objekt fokuserar kartan.
+  const renderCat = (c: { k: string; label: string; color: string; count: number; items?: any[]; name: (r: any) => string; indent?: boolean }) => {
+    const has = (c.items?.length ?? 0) > 0;
+    const isOpen = open.has(c.k);
+    return (
+      <div key={c.k}>
+        <button
+          onClick={() => has && toggle(c.k)}
+          aria-expanded={isOpen}
+          className={`w-full flex items-center justify-between py-0.5 rounded ${has ? 'hover:bg-slate-800 cursor-pointer' : 'cursor-default opacity-70'}`}
+        >
+          <span className={`text-slate-300 flex items-center gap-1 ${c.indent ? 'pl-3' : ''}`}>
+            <span className="w-2 text-slate-500">{has ? (isOpen ? '▾' : '▸') : ''}</span>{c.label}
+          </span>
+          <span className={`font-semibold ${c.color}`}>{c.count.toLocaleString()}</span>
+        </button>
+        {isOpen && has && (
+          <div className="max-h-40 overflow-y-auto ml-1 pl-2 pr-1 py-1 space-y-0.5 border-l border-slate-700">
+            {c.items!.slice(0, 300).map((r: any, i: number) => (
+              <button
+                key={i}
+                onClick={() => focus(r.lat, r.lng)}
+                className="block w-full text-left truncate text-slate-400 hover:text-amber-200 hover:underline"
+                title="Visa på kartan"
+              >
+                {c.name(r)}
+              </button>
+            ))}
+            {c.items!.length > 300 && <div className="text-slate-600">… {(c.items!.length - 300).toLocaleString()} till (se export)</div>}
+          </div>
+        )}
+      </div>
+    );
+  };
+  // Ortnamn: filtrera på vald element_category (tom mängd = alla). Objekten bär category.
+  const pnAll = (result?.place_names ?? []) as any[];
+  const pnFiltered = pnCats.size ? pnAll.filter((r) => pnCats.has(r.category ?? '_')) : pnAll;
+  const pnPresent = Array.from(new Set(pnAll.map((r) => r.category ?? '_')));
   if (!probe) return null;
   const exportBase = `rackvidd-${slug(probe.label)}-${shape}-${radiusKm}km`;
   const exportGeoJSON = () => downloadText(`${exportBase}.geojson`, 'application/geo+json', probeToGeoJSON(probe, shape, radiusKm, result));
@@ -151,13 +207,57 @@ export const ProximityControl: React.FC = () => {
       {/* Antal INUTI formen (punkt-i-polygon) — det analytiska värdet */}
       {counts && (
         <div className="mt-2 pt-2 border-t border-slate-700/60">
-          <div className="text-[10px] text-slate-400 mb-1">Inuti {shapeSv} ({counts.area_km2.toLocaleString()} km²):</div>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px]">
-            <span className="text-slate-300">Runstenar</span><span className="text-right font-semibold text-red-300">{counts.runestones.toLocaleString()}</span>
-            <span className="text-slate-300">Kulturlager</span><span className="text-right font-semibold text-purple-300">{counts.kulturlager.toLocaleString()}</span>
-            <span className="text-slate-300">Ortnamn (kurerade)</span><span className="text-right font-semibold text-emerald-300">{counts.place_names_curated.toLocaleString()}</span>
-            <span className="text-slate-300">Ortnamn (registret)</span><span className="text-right font-semibold text-emerald-200">{counts.place_names_osm.toLocaleString()}</span>
-            <span className="text-slate-300">Fornborgar</span><span className="text-right font-semibold text-orange-300">{counts.fortresses.toLocaleString()}</span>
+          <div className="text-[10px] text-slate-400 mb-1">Inuti {shapeSv} ({counts.area_km2.toLocaleString()} km²) — klicka för att lista &amp; visa på kartan:</div>
+          <div className="space-y-0.5 text-[11px]">
+            {[
+              { k: 'runestones', label: 'Runstenar', color: 'text-red-300', count: counts.runestones, items: result?.runestones, name: (r: any) => r.signum },
+              { k: 'cult', label: 'Kultplatser (gudar)', color: 'text-yellow-300', count: counts.cult_sites ?? 0, items: result?.cult_sites, name: (r: any) => `${r.name}${r.type ? ' · ' + r.type : ''}` },
+              { k: 'coins', label: 'Mynt', color: 'text-amber-300', count: counts.coins ?? 0, items: result?.coins, name: (r: any) => `${r.name}${r.type ? ' · ' + r.type : ''}` },
+              { k: 'things', label: 'Tingsplatser', color: 'text-sky-300', count: counts.thing_sites ?? 0, items: result?.thing_sites, name: (r: any) => `${r.name}${r.type ? ' · ' + r.type : ''}` },
+              { k: 'fortresses', label: 'Fornborgar', color: 'text-orange-300', count: counts.fortresses, items: result?.fortresses, name: (r: any) => `${r.name}${r.type ? ' · ' + r.type : ''}` },
+              { k: 'place_curated', label: pnCats.size ? `Ortnamn (${pnFiltered.length}/${counts.place_names_curated})` : 'Ortnamn (kurerade)', color: 'text-emerald-300', count: pnCats.size ? pnFiltered.length : counts.place_names_curated, items: pnFiltered, name: (r: any) => `${r.name} · ${pnLabel(r.category)}` },
+            ].map(renderCat)}
+
+            {/* Ortnamnsfilter per kategori (makt/gudar/sakralt/natur…). Objekten bär element_category. */}
+            {pnAll.length > 0 && (
+              <div className="pl-3 pt-0.5 flex flex-wrap gap-1">
+                {pnPresent.sort().map((cat) => {
+                  const on = pnCats.has(cat);
+                  const n = pnAll.filter((r) => (r.category ?? '_') === cat).length;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => togglePnCat(cat)}
+                      className={`px-1.5 py-0.5 rounded text-[10px] border transition-colors ${on ? 'bg-emerald-500/20 border-emerald-500 text-emerald-200' : 'border-slate-700 text-slate-400 hover:bg-slate-800'}`}
+                    >
+                      {pnLabel(cat === '_' ? null : cat)} {n}
+                    </button>
+                  );
+                })}
+                {pnCats.size > 0 && (
+                  <button onClick={() => setPnCats(new Set())} className="px-1.5 py-0.5 rounded text-[10px] text-slate-500 hover:text-slate-300 underline">rensa</button>
+                )}
+              </div>
+            )}
+
+            {/* Kulturlagret uppdelat per lämningstyp (hällristningar/gravfält/…) — exakta antal ur by_type */}
+            <div className="flex items-center justify-between py-0.5 pt-1 border-t border-slate-700/40">
+              <span className="text-slate-400 flex items-center gap-1"><span className="w-2" />Kulturlager (alla typer)</span>
+              <span className="font-semibold text-purple-300">{counts.kulturlager.toLocaleString()}</span>
+            </div>
+            {Object.entries(counts.kulturlager_by_type ?? {})
+              .sort((a, b) => b[1] - a[1])
+              .map(([type, n]) => renderCat({
+                k: 'h_' + type, label: cap(type), color: 'text-purple-200', count: n,
+                items: (result?.kulturlager ?? []).filter((r: any) => r.type === type),
+                name: (r: any) => r.name, indent: true,
+              }))}
+
+            {/* Registrets ortnamn (OSM) räknas men ritas ej → bara antal, ej klickbart */}
+            <div className="flex items-center justify-between py-0.5 opacity-70 pt-1 border-t border-slate-700/40">
+              <span className="text-slate-300 flex items-center gap-1"><span className="w-2" />Ortnamn (registret)</span>
+              <span className="font-semibold text-emerald-200">{counts.place_names_osm.toLocaleString()}</span>
+            </div>
           </div>
           {/* Exportera resultatet — GeoJSON (QGIS) eller CSV (kalkylark). Klient-side. */}
           <div className="flex gap-1 mt-2">

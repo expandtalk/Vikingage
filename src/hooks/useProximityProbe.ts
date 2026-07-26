@@ -31,8 +31,12 @@ export interface ProbeCounts {
   place_names_curated: number;
   place_names_osm: number;
   kulturlager: number;
+  kulturlager_by_type?: Record<string, number>; // exakt antal per raa_type (hällristning/gravfält/…)
   runestones: number;
   fortresses: number;
+  cult_sites?: number;
+  coins?: number;
+  thing_sites?: number;
   area_km2: number;
 }
 // Fullständigt sond-resultat (objektlistorna INUTI formen) — behövs för export.
@@ -42,6 +46,9 @@ export interface ProbeResult {
   kulturlager?: { name: string; type?: string; lat: number; lng: number }[];
   runestones?: { signum: string; lat: number; lng: number }[];
   fortresses?: { name: string; type?: string; lat: number; lng: number }[];
+  cult_sites?: { name: string; type?: string; lat: number; lng: number }[];
+  coins?: { name: string; type?: string; lat: number; lng: number }[];
+  thing_sites?: { name: string; type?: string; lat: number; lng: number }[];
 }
 interface ProbeState { probe: Probe | null; radiusKm: number; shape: ProbeShape; modeKey: string | null; counts: ProbeCounts | null; result: ProbeResult | null; note: string }
 
@@ -55,6 +62,12 @@ export const setProbe = (lat: number, lng: number, label: string) => {
   emit();
 };
 export const clearProbe = () => { state = { ...state, probe: null, counts: null, result: null, note: '' }; emit(); };
+// Flytta sonden (dra i center-markören) — behåll namn/hypotes/form/radie, räkna om.
+export const moveProbe = (lat: number, lng: number) => {
+  if (!state.probe) return;
+  state = { ...state, probe: { ...state.probe, lat, lng }, counts: null, result: null };
+  emit();
+};
 // Fri hypotes-/anteckningstext knuten till området (name = probe.label, hypotes = note).
 export const setProbeNote = (note: string) => { state = { ...state, note }; emit(); };
 export const setProbeRadiusKm = (km: number) => {

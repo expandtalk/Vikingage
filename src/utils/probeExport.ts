@@ -13,6 +13,9 @@ const rowsFromResult = (result: ProbeResult | null): Row[] => {
   (result.kulturlager ?? []).forEach((r) => out.push({ layer: 'kulturlager', name: r.name, type: r.type ?? '', lat: r.lat, lng: r.lng }));
   (result.runestones ?? []).forEach((r) => out.push({ layer: 'runsten', name: r.signum, type: 'runsten', lat: r.lat, lng: r.lng }));
   (result.fortresses ?? []).forEach((r) => out.push({ layer: 'fornborg', name: r.name, type: r.type ?? '', lat: r.lat, lng: r.lng }));
+  (result.cult_sites ?? []).forEach((r) => out.push({ layer: 'kultplats', name: r.name, type: r.type ?? '', lat: r.lat, lng: r.lng }));
+  (result.coins ?? []).forEach((r) => out.push({ layer: 'mynt', name: r.name, type: r.type ?? '', lat: r.lat, lng: r.lng }));
+  (result.thing_sites ?? []).forEach((r) => out.push({ layer: 'tingsplats', name: r.name, type: r.type ?? '', lat: r.lat, lng: r.lng }));
   return out.filter((r) => r.lat != null && r.lng != null);
 };
 
