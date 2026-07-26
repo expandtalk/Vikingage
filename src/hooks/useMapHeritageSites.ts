@@ -71,6 +71,17 @@ const TYPE_COLOR: Record<string, string> = {
   'väghållningssten': '#78716c',// väghållningssten — stengrå
   'gränsmärke': '#7f1d1d',      // gränssten — mörkröd
   'vägmärke': '#1d4ed8',        // vägmärke — vägblå
+  // Folktradition & sägen
+  'sten med tradition': '#a16207',   // sägensten — amber-brun
+  'plats med tradition': '#ca8a04',  // sägenplats — guld
+  'vårdträd': '#15803d',             // heligt träd — grön
+  'grotta med tradition': '#4338ca', // grotta/håla — indigo
+  'jätte-/trollplats': '#a21caf',    // övernaturligt — magenta
+  'offerplats': '#b91c1c',           // offer — blodröd
+  // Marinarkeologi
+  'fartygslämning': '#0369a1',       // vrak — havsblå
+  'vrak med tradition': '#0e7490',   // vrak m. sägen — teal
+  'spärranläggning': '#831843',      // pålspärr/farledsspärr — vinröd (försvar)
 };
 
 // Vit SVG-symbol per lämningskategori (24×24). Kyrkor=kors, vägmärken=skylt,
@@ -83,6 +94,10 @@ const GLYPH: Record<string, string> = {
   ship:   '<path d="M3 12h18l-3.2 5.5H6.2z" fill="#fff"/><path d="M12 3v8.5" stroke="#fff" stroke-width="2"/>',
   menhir: '<rect x="9" y="4" width="6" height="16" rx="2.6" fill="#fff"/>',
   dolmen: '<rect x="3.5" y="5.5" width="17" height="4" rx="1.5" fill="#fff"/><path d="M6 20V10M12 20V10M18 20V10" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+  tree:   '<path d="M12 3c-2.8 0-5 2.2-5 5 0 1.9 1.1 3.6 2.7 4.4L8.5 21h7l-1.2-8.6C15.9 11.6 17 9.9 17 8c0-2.8-2.2-5-5-5z" fill="#fff"/>',
+  anchor: '<circle cx="12" cy="5" r="2" stroke="#fff" stroke-width="1.6" fill="none"/><path d="M12 7v12M7 11H5c0 4.5 3.4 7 7 7s7-2.5 7-7h-2M8.5 10.5h7" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round"/>',
+  spark:  '<path d="M12 3l1.7 6.3L20 11l-6.3 1.7L12 19l-1.7-6.3L4 11l6.3-1.7z" fill="#fff"/>',
+  piles:  '<path d="M5 20V7M9 20V5M13 20V6M17 20V8M21 20V6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>',
 };
 const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
   kyrka: 'cross', kapell: 'cross', kloster: 'cross', kyrkoruin: 'cross', klosterruin: 'cross',
@@ -90,8 +105,12 @@ const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
   'gravfält': 'mounds',
   'stensättning': 'ring', domarring: 'ring',
   'skeppssättning': 'ship',
-  'rest sten': 'menhir', bildsten: 'menhir',
+  'rest sten': 'menhir', bildsten: 'menhir', 'sten med tradition': 'menhir',
   'stenkammargrav': 'dolmen', 'dös': 'dolmen', 'gånggrift': 'dolmen',
+  'vårdträd': 'tree',
+  'fartygslämning': 'anchor', 'vrak med tradition': 'anchor',
+  'spärranläggning': 'piles',
+  'jätte-/trollplats': 'spark', 'offerplats': 'spark', 'plats med tradition': 'spark', 'grotta med tradition': 'spark',
 };
 
 // Fallback-nål (liten färgad droppe) för typer utan egen symbol.
@@ -165,10 +184,20 @@ const HERITAGE_TYPE_KEYS: Record<string, string> = {
   // "Stenar"-kategorin (egen parent 'heritage_stones'):
   heritage_milstolpe: 'milstolpe', heritage_vaghallningssten: 'väghållningssten',
   heritage_gransmarke: 'gränsmärke', heritage_vagmarke: 'vägmärke',
+  // Folktradition & sägen (egen parent 'heritage_folklore'):
+  heritage_sagensten: 'sten med tradition', heritage_vardtrad: 'vårdträd',
+  heritage_grotta: 'grotta med tradition', heritage_jattetroll: 'jätte-/trollplats',
+  heritage_offerplats: 'offerplats', heritage_platstradition: 'plats med tradition',
+  // Marinarkeologi (egen parent 'heritage_marine'):
+  heritage_vrak: 'fartygslämning', heritage_vraktradition: 'vrak med tradition',
+  heritage_sparr: 'spärranläggning',
 };
 // Typ-nycklar som hör till "Stenar"-kategorin (parent 'heritage_stones') i st.f.
 // "Kulturlager" (parent 'heritage_sites'). heritage_bildsten flyttad hit i legenden.
 const STONE_KEYS = new Set(['heritage_milstolpe', 'heritage_vaghallningssten', 'heritage_gransmarke', 'heritage_bildsten', 'heritage_vagmarke']);
+// Folktradition-typer (egen parent 'heritage_folklore') och marina (parent 'heritage_marine').
+const FOLKLORE_KEYS = new Set(['heritage_sagensten', 'heritage_vardtrad', 'heritage_grotta', 'heritage_jattetroll', 'heritage_offerplats', 'heritage_platstradition']);
+const MARINE_KEYS = new Set(['heritage_vrak', 'heritage_vraktradition', 'heritage_sparr']);
 
 export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selectedTimePeriod }: Props) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
@@ -180,8 +209,13 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
   // Varje typ gate:as av sin egen kategori-parent + sitt eget kryss.
   const parentKultur = enabledLegendItems.heritage_sites !== false;
   const parentStone = enabledLegendItems.heritage_stones !== false;
+  const parentFolklore = enabledLegendItems.heritage_folklore !== false;
+  const parentMarine = enabledLegendItems.heritage_marine !== false;
+  const parentOn = (k: string) => STONE_KEYS.has(k) ? parentStone
+    : FOLKLORE_KEYS.has(k) ? parentFolklore
+    : MARINE_KEYS.has(k) ? parentMarine : parentKultur;
   const types = Object.entries(HERITAGE_TYPE_KEYS)
-    .filter(([k]) => enabledLegendItems[k] === true && (STONE_KEYS.has(k) ? parentStone : parentKultur))
+    .filter(([k]) => enabledLegendItems[k] === true && parentOn(k))
     .map(([, v]) => v)
     // Periodfilter: uteslut typer vars typokronologi inte överlappar vald period.
     .filter((v) => { const p = TYPE_PERIOD[v]; return !p || overlapsPeriod(selectedTimePeriod, p[0], p[1]); });
