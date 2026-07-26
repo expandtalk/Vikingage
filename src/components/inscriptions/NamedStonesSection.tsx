@@ -31,6 +31,9 @@ const sb = supabase as unknown as { rpc: (fn: string) => any };
 const COUNTRY_SV: Record<string, string> = {
   Sweden: 'Sverige', Denmark: 'Danmark', Norway: 'Norge', Iceland: 'Island',
   Germany: 'Tyskland', Ukraine: 'Ukraina', England: 'England', Scotland: 'Skottland',
+  Ireland: 'Irland', Finland: 'Finland', Russia: 'Ryssland', 'Isle of Man': 'Isle of Man',
+  Netherlands: 'Nederländerna', Poland: 'Polen', France: 'Frankrike', Italy: 'Italien',
+  Latvia: 'Lettland', 'Faroe Islands': 'Färöarna',
 };
 
 // Ikoniska stenar överst (Daniel). Rökstenen, Sparlösastenen, Jarlabanke först, sedan
@@ -39,7 +42,8 @@ const FEATURED_SIGNUMS = ['Ög 136', 'Vg 119', 'U 164', 'Öl 1', 'Sö 101'];
 // Rök, Sparlösa, Jarlabanke (Täby), Karlevi, Sigurdsristningen
 // Ordning för utländska grupper (efter alla svenska landskap).
 const FOREIGN_ORDER = ['Norway', 'Denmark', 'England', 'Scotland', 'Ireland', 'Isle of Man',
-  'Germany', 'Latvia', 'Ukraine', 'Russia', 'Turkey', 'Greece', 'Iceland', 'Greenland'];
+  'Faroe Islands', 'Germany', 'Netherlands', 'Poland', 'France', 'Italy', 'Latvia', 'Finland',
+  'Ukraine', 'Russia', 'Turkey', 'Greece', 'Iceland', 'Greenland'];
 
 const COLLAPSED_COUNT = 8;
 

@@ -17,6 +17,14 @@ export default defineConfig(({ mode }) => ({
   },
   // Strip console/debugger from production builds only — keeps them in dev.
   esbuild: mode === "production" ? { drop: ["console", "debugger"] } : {},
+  build: {
+    // The app is already route-split via lazy() in App.tsx. The remaining large
+    // chunks (index/Admin/RunicExplorerSimple) are inherently heavy — React core,
+    // the admin panel, the map engine — and gzip to ~110–225 kB. Splitting them
+    // further with manualChunks reintroduces the forwardRef ordering crash noted
+    // below, so we raise the advisory limit instead of chasing the warning.
+    chunkSizeWarningLimit: 800,
+  },
   // NOTE: custom manualChunks removed. Splitting `react` into its own chunk
   // apart from the libraries that call `React.forwardRef` at module scope
   // (radix, lucide, react-leaflet, …) produced a production-only crash
