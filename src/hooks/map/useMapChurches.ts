@@ -26,11 +26,13 @@ const colorFor = (kind: string, status: string | null) => {
   return '#e11d48';                                         // sockenkyrka = rött
 };
 
+// Ren rund prick (centrerad) — den tidigare roterade droppen (rotate(-45deg)) tippade av
+// mot punkten och såg ut som en lös röd prick i vissa lägen. Cirkel = stabilt i alla zoom.
 const iconFor = (kind: string, status: string | null) => L.divIcon({
-  html: `<div style="width:13px;height:13px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
-    background:${colorFor(kind, status)};border:1.5px solid #1e293b;box-shadow:0 1px 2px rgba(0,0,0,0.4);
+  html: `<div style="width:12px;height:12px;border-radius:50%;
+    background:${colorFor(kind, status)};border:1.5px solid #1e293b;box-shadow:0 1px 2px rgba(0,0,0,0.45);
     ${status === 'ruin' ? 'opacity:.75;border-style:dashed;' : ''}"></div>`,
-  className: 'church-dot', iconSize: [13, 13], iconAnchor: [6, 12], popupAnchor: [0, -11],
+  className: 'church-dot', iconSize: [12, 12], iconAnchor: [6, 6], popupAnchor: [0, -7],
 });
 
 const esc = (s: string) => String(s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c] as string));
