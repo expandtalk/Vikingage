@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, AlertTriangle, FlaskConical, Info, Compass } from 'lucide-react';
 import { useCentralPlaces, type CentralPlaceName, type CentralPlaceGroup } from '@/hooks/useCentralPlaces';
+import { supabase } from '@/integrations/supabase/client';
 
 // Centralortsprojektet Ångermanland — delbar forskningssida. Läser central_places
 // + central_place_names live. Medvetet tydlig med vad som saknas (koordinater/
@@ -76,7 +77,7 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
         // Centralorten har ALLTID sitt namn synligt (klustrets huvud).
         L.circleMarker([g.lat, g.lng], { radius: 8, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.25 })
           .bindTooltip(g.name, { permanent: true, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
-          .bindPopup(`<b>${g.name}</b><br/><span style="font-size:11px">Centralort</span>`).addTo(layer);
+          .bindPopup(`<b>${g.name}</b><br/><span style="font-size:11px">Centralort${g.confidence ? ` · ${g.confidence}` : ''}</span>${g.source ? `<br/><span style="font-size:10px;color:#94a3b8">Källa: ${g.source}</span>` : ''}<br/><span style="font-size:10px;color:#94a3b8">Data: central_places</span>`).addTo(layer);
       }
       g.names.forEach((n) => {
         if (n.lat == null || n.lng == null) return;
@@ -112,6 +113,12 @@ const Angermanland = () => {
   const [on, setOn] = useState<Record<string, boolean>>({});
   const toggle = (k: string) => setOn((s) => ({ ...s, [k]: s[k] === false ? true : false }));
   const TOGGLES: [string, string, string][] = [['central', 'Centralort', '#f59e0b'], ['power', 'Makt', '#3b82f6'], ['sacral', 'Sakralt', '#c084fc']];
+  // Sambandsstyrka (config-driven, beräknad av ledparsern) — visas MED förbehåll, aldrig naken.
+  const [enrich, setEnrich] = useState<Record<string, number | string | null> | null>(null);
+  useEffect(() => {
+    (supabase.from('ortnamn_enrichment_results') as any).select('*').eq('region', 'Ångermanland').maybeSingle()
+      .then(({ data }: { data: Record<string, number | string | null> | null }) => setEnrich(data));
+  }, []);
 
   const tierNames = (names: CentralPlaceName[], tier: string) =>
     names.filter((n) => n.evidence_tier === tier).sort((a, b) => a.name.localeCompare(b.name, 'sv'));
@@ -162,7 +169,36 @@ const Angermanland = () => {
                 })}
               </div>
               <AngMap groups={groups} on={on} />
-              <p className="text-xs text-muted-foreground mt-2 opacity-75">Fylld ring = kärna (starkast belägg), tunn = utvidgad hypotes. Klicka en punkt för tolkning + belägg-år.</p>
+              <p className="text-xs text-muted-foreground mt-2 opacity-75"><strong>Data:</strong> <code>central_places</code> + <code>central_place_names</code> (Agnetas forskning, SWEREF99 TM → WGS84; verifierad mot Länsstyrelsen/RAÄ <em>Y 24</em>). <strong>Färg</strong> = kategori (lila = sakralt, blått = makt, guld = centralort). <strong>Fylld ring</strong> = kärna (starkast belägg), tunn = utvidgad hypotes. Klicka en punkt för källa, tolkning + belägg-år.</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* SAMBANDSSTYRKA — trafikljus med obligatoriska förbehåll (aldrig naken siffra) */}
+        {enrich && (
+          <Card className="viking-card mb-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2 text-gold"><FlaskConical className="h-5 w-5" /> Sambandsstyrka (preliminär)</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground space-y-2">
+              {(() => {
+                const ratio = Number(enrich.ratio), n = Number(enrich.cult_n), cE = Number(enrich.cult_enrichment);
+                const weak = n < 10;
+                const light = weak ? { c: '#94a3b8', t: 'För få (n<10) — tolka försiktigt' }
+                  : ratio >= 2 ? { c: '#22c55e', t: 'Tätare än väntat' }
+                  : ratio >= 1.2 ? { c: '#eab308', t: 'Svagt' } : { c: '#ef4444', t: 'Typiskt/glesare' };
+                return (
+                  <div className="flex items-start gap-3">
+                    <span style={{ width: 16, height: 16, borderRadius: 9999, background: light.c, marginTop: 3, flex: '0 0 auto', boxShadow: `0 0 6px ${light.c}` }} />
+                    <div>
+                      <div className="text-foreground"><strong>{cE.toFixed(1)}×</strong> — kult-namnen ligger ~{cE.toFixed(1)} gånger tätare kring centralorterna än genomsnittsnamnet (kvot {ratio.toFixed(1)} mot neutrala namn). <span style={{ color: light.c }}>{light.t}.</span></div>
+                      <div className="text-xs mt-1 opacity-80">n = {n} kult-namn · radie {enrich.radius_km} km · led som räknas: {enrich.included_elements}</div>
+                    </div>
+                  </div>
+                );
+              })()}
+              <p className="text-xs"><strong className="text-amber-300">Förbehåll:</strong> {enrich.caveat}</p>
+              <p className="text-xs"><strong className="text-foreground">Beslut:</strong> {enrich.owner_note}. Ändrar forskaren vilka led som räknas (<code>ortnamn_element_config</code>) och parsern körs om, uppdateras siffran här.</p>
             </CardContent>
           </Card>
         )}

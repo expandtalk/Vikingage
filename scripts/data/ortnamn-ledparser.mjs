@@ -72,6 +72,21 @@ for (const reg of regions) {
   const per={}; pn.forEach(p=>parseCult(p.name).forEach(k=>{(per[k]=per[k]||[]).push(p.name);}));
   console.log('  Parsade kult-led:', Object.entries(per).map(([k,v])=>`${k}:${v.length}`).join(' '));
   Object.entries(per).forEach(([k,v])=>console.log(`     ${k}: ${v.slice(0,8).join(', ')}${v.length>8?'…':''}`));
+  // Lagra sambandsstyrkan (config-driven) så kartan kan visa den MED förbehåll. Enda beräkningspunkt.
+  {
+    const cultEnr = parC.p/pNear, neutEnr = parN.p/pNear, ratio = neutEnr>0 ? cultEnr/neutEnr : null;
+    await c.query(
+      `insert into ortnamn_enrichment_results
+         (region, radius_km, baseline_n, near_pct, cult_n, cult_enrichment, neutral_enrichment, ratio, included_elements, owner_note, caveat, computed_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,now())
+       on conflict (region) do update set radius_km=$2, baseline_n=$3, near_pct=$4, cult_n=$5,
+         cult_enrichment=$6, neutral_enrichment=$7, ratio=$8, included_elements=$9, owner_note=$10, caveat=$11, computed_at=now()`,
+      [reg.name, R, total, +pNear.toFixed(4), parC.n, +cultEnr.toFixed(2), +neutEnr.toFixed(2),
+       ratio!=null?+ratio.toFixed(2):null, CULT_ON.map(e=>e.key).join(', '),
+       reg.name==='Ångermanland' ? 'Ledbeslut: Agneta (Ångermanland)' : 'Ledbeslut: Daniel (Öland)',
+       'Regional samlokalisering (öst-/sydsverige) förklarar en del; n är litet; styrkan beror på vilka led som räknas (ortnamn_element_config).']);
+    console.log(`  → skrev anriknings-resultat (kvot ${ratio?.toFixed(2)}) till ortnamn_enrichment_results.`);
+  }
   if (APPLY && reg.name===WRITE_REGION) {
     let w=0;
     for (const p of pn) { const keys=parseCult(p.name); if(keys.length){ const r=await c.query(`update place_names set element_keys=$1, element_category=$2, updated_at=now() where id=$3 and (element_keys is null or array_length(element_keys,1) is null)`,[keys,_cat[keys[0]]||'sacral',p.id]); w+=r.rowCount; } }
