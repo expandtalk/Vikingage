@@ -119,6 +119,12 @@ const Angermanland = () => {
     (supabase.from('ortnamn_enrichment_results') as any).select('*').eq('region', 'Ångermanland').maybeSingle()
       .then(({ data }: { data: Record<string, number | string | null> | null }) => setEnrich(data));
   }, []);
+  // Agnetas SOL-diff (förberedd, obeslutad — hon äger besluten).
+  const [solDiff, setSolDiff] = useState<Record<string, string>[]>([]);
+  useEffect(() => {
+    (supabase.from('ortnamn_sol_comparison') as any).select('*').like('owner', 'Agneta%')
+      .then(({ data }: { data: Record<string, string>[] }) => setSolDiff(data ?? []));
+  }, []);
 
   const tierNames = (names: CentralPlaceName[], tier: string) =>
     names.filter((n) => n.evidence_tier === tier).sort((a, b) => a.name.localeCompare(b.name, 'sv'));
@@ -197,8 +203,40 @@ const Angermanland = () => {
                   </div>
                 );
               })()}
+              {enrich.ratio_core != null && (
+                <p className="text-xs"><strong className="text-foreground">Robusthet:</strong> med alla led {Number(enrich.ratio).toFixed(1)}×, med bara de säkra leden (tor/frö/sal) {Number(enrich.ratio_core).toFixed(1)}× (n={String(enrich.cult_core_n)}). {Number(enrich.ratio_core) >= Number(enrich.ratio) * 0.7
+                  ? <span className="text-emerald-300">Signalen håller — den rider inte på de omtvistade leden (härn/ross).</span>
+                  : <span className="text-amber-300">Signalen försvagas utan de omtvistade leden — tolka försiktigt.</span>}</p>
+              )}
+              {enrich.per_element && typeof enrich.per_element === 'object' && (
+                <div className="text-xs"><strong className="text-foreground">Per led:</strong> {Object.entries(enrich.per_element as Record<string, number>).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}:${v}${['härn', 'ross', 'hov', 'vang'].includes(k) ? '*' : ''}`).join(' · ')} <span className="opacity-70">(* = omtvistad etymologi)</span></div>
+              )}
               <p className="text-xs"><strong className="text-amber-300">Förbehåll:</strong> {enrich.caveat}</p>
-              <p className="text-xs"><strong className="text-foreground">Beslut:</strong> {enrich.owner_note}. Ändrar forskaren vilka led som räknas (<code>ortnamn_element_config</code>) och parsern körs om, uppdateras siffran här.</p>
+              <p className="text-xs"><strong className="text-foreground">Beslut:</strong> {enrich.owner_note}. Ändrar forskaren vilka led som räknas och analysen körs om, uppdateras siffran här.</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* ATT GRANSKA MOT SOL — forskarens arbetslista (hon äger besluten, SOL är referens) */}
+        {solDiff.length > 0 && (
+          <Card className="viking-card mb-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2 text-gold"><Info className="h-5 w-5" /> Att granska mot Svenskt ortnamnslexikon ({solDiff.filter((d) => d.diff === 'ja').length})</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground space-y-2">
+              <p className="text-xs opacity-80">Din läsning står bredvid SOL 2003. SOL är en referens — <strong>du bestämmer</strong>. Inget ändras utan att du väljer det.</p>
+              {solDiff.map((d) => {
+                const col = d.diff === 'ja' ? '#ef4444' : (d.diff || '').includes('saknar') ? '#eab308' : '#22c55e';
+                const label = d.diff === 'ja' ? 'granska' : (d.diff || '').includes('saknar') ? 'SOL saknar uppslag' : 'SOL håller med';
+                return (
+                  <div key={d.name} className="border-l-2 pl-3 py-1" style={{ borderColor: col }}>
+                    <div className="text-foreground font-medium">{d.name} <span style={{ color: col }} className="text-xs">· {label}</span></div>
+                    <div className="text-xs mt-0.5"><strong>Din läsning:</strong> {d.our_reading}</div>
+                    <div className="text-xs"><strong>SOL:</strong> {d.sol_reading}</div>
+                  </div>
+                );
+              })}
+              <p className="text-[11px] opacity-70">Vid granskning: korrigera din studie enligt SOL, eller behåll din läsning och dokumentera varför (en avvikelse är ett giltigt utfall — SOL har inte alltid rätt).</p>
             </CardContent>
           </Card>
         )}
