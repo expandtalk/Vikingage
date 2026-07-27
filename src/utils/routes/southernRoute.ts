@@ -4,7 +4,7 @@ import { RoutePoint } from './types';
 // Southern route: Utlängan → Kalmar, längs kusten (aldrig över öppet vatten
 // eller land). Korrigerad 2026-07-18 (Daniel): den gamla "direkt över vatten
 // mot Kalmar" ströks — rutten hugger Blekinge/Smålandskusten via Torhamns udde,
-// Kristianopel, Bröms, Bergkvara och Ljungbyåns mynning.
+// Aveskär (medeltida namnet; Kristianopel grundades först 1600), Bröms, Bergkvara och Ljungbyåns mynning.
 // OBS: mellanliggande koordinater är kustnära approximationer — verifiera per punkt.
 export const southernRoutePoints: RoutePoint[] = [
   // === Startpunkt ===
@@ -27,10 +27,10 @@ export const southernRoutePoints: RoutePoint[] = [
     section: 'Blekinge östkust'
   },
   {
-    id: 'kristianopel',
-    name: 'Kristianopel',
-    coordinates: { lat: 56.2536, lng: 16.0520 }, // i vattnet öster om Kristianopels udde
-    description: 'Kristianopel - skyddat läge, sannolikt god hamnstad',
+    id: 'aveskar',
+    name: 'Aveskär (senare Kristianopel)',
+    coordinates: { lat: 56.2536, lng: 16.0520 }, // Avaskär, medeltida hamnstad
+    description: 'Aveskär (Avaskär) - medeltida hamnstad och skyddat läge. Platsen fick namnet Kristianopel först vid stadsgrundningen 1600 — anakronism för denna ~1300-tals led.',
     section: 'Blekinge östkust',
     isMajorWaypoint: true
   },

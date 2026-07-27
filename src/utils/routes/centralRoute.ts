@@ -7,7 +7,9 @@ import { RoutePoint } from './types';
 //  - Loftahammar-punkten flyttad ut utanför orten (~57.90N).
 //  - Den gamla "arkösund"-punkten på 58.68/17.11 var i själva verket OXELÖSUND
 //    och är nu korrekt namngiven; äkta Arkösund (~58.48/16.96) lagd vid Slätbakens mynning.
-//  - Drag flyttad till Skäggenäskanalen vid Revsudden (56.83/16.46) - drag/kanal, inte inne i sundet.
+//  - Kalmarsund (Daniel 2026-07-28): Grimskär (lotsbyte) + Skäggenäs (skeppsbygge) inlagda; Drag
+//    KORRIGERAD till kanalen vid Revsudden (56.775/16.468, var felaktigt 56.83/16.46); fararleden gick
+//    in norr om Borgholm och Köpingsvik. Aveskär (ej Kristianopel — grundat 1600) i södra rutten.
 //  - Kalmarsund: följer kusten upp mot Ölands norra udde (ingen genväg tvärs över Öland).
 //  - Slätbaken-slingan omordnad så linjerna inte korsar varandra: in i viken till
 //    Söderköping (Stegeborg vaktar inloppet) → tillbaka ut → norrut mot Arkösund → Oxelösund.
@@ -16,25 +18,35 @@ import { RoutePoint } from './types';
 export const centralRoutePoints: RoutePoint[] = [
   // === Ut ur Kalmar norrut i Kalmarsund, längs kusten ===
   {
-    id: 'kalmar_exit_north',
-    name: 'Kalmar ut nord',
-    coordinates: { lat: 56.7200, lng: 16.4000 },
-    description: 'Ut från Kalmar norrut längs kusten i Kalmarsund',
-    section: 'Kalmarsund'
+    id: 'grimskar',
+    name: 'Grimskär (lotsbyte)',
+    coordinates: { lat: 56.6580, lng: 16.3920 }, // ön Grimskär strax utanför Kalmar
+    description: 'Grimskär strax utanför Kalmar - lotsbyte här innan färden norrut i Kalmarsund.',
+    section: 'Kalmarsund',
+    isLotstation: true,
+    isMajorWaypoint: true
+  },
+  {
+    id: 'skaggenas',
+    name: 'Skäggenäs (skeppsbygge)',
+    coordinates: { lat: 56.7900, lng: 16.4950 }, // Skäggenäshalvön N om Kalmar
+    description: 'Skäggenäs - halvön med känt skeppsbyggeri; passeras på väg mot Revsudden.',
+    section: 'Kalmarsund',
+    isMajorWaypoint: true
   },
   {
     id: 'drag',
-    name: 'Drag (Skäggenäskanalen, Revsudden)',
-    coordinates: { lat: 56.8300, lng: 16.4600 }, // draget/kanalen vid Revsudden N om Kalmar
-    description: 'Drag - draget/kanalen vid Revsudden (Skäggenäs). Enda överlandsstället (ed/drag) på hela leden; övrigt gick alltid på vatten.',
+    name: 'Drag (kanalen vid Revsudden)',
+    coordinates: { lat: 56.7750, lng: 16.4680 }, // KORRIGERAD: kanalen/draget vid Revsudden (var felaktigt 56.83/16.46)
+    description: 'Drag - kanalen/draget tvärs Revsudden-udden (Skäggenäs), finns kvar än idag. Enda överlandsstället (ed/drag) på hela leden; övrigt gick alltid på vatten.',
     section: 'Kalmarsund',
     isMajorWaypoint: true
   },
   {
     id: 'kopingsvik',
     name: 'Köpingsvik',
-    coordinates: { lat: 56.8722, lng: 16.7175 }, // Öland, väster om Borgholm
-    description: 'Köpingsvik på Ölands sida - vikingatida handels- och maktcentrum',
+    coordinates: { lat: 56.8722, lng: 16.7175 }, // Öland, N om Borgholm
+    description: 'Köpingsvik på Ölands sida - vikingatida handels- och maktcentrum. Fararleden gick in norr om Borgholm och Köpingsvik och fortsatte sedan norrut.',
     section: 'Kalmarsund',
     isMajorWaypoint: true
   },
