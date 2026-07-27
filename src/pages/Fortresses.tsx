@@ -345,6 +345,10 @@ const Fortresses = () => {
                       <Castle className="h-4 w-4" />
                       {hillfort.name || L.namelessHillfort}
                     </CardTitle>
+                    <a href={`/fortresses/${hillfort.id}`} onClick={(e) => e.stopPropagation()}
+                       className="text-xs text-gold hover:underline w-fit">
+                      {sv ? 'Detaljvy — karta, geologi, fakta →' : 'Detail view — map, geology, facts →'}
+                    </a>
                     <div className="flex gap-2 flex-wrap">
                       <button
                         type="button"

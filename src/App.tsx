@@ -17,6 +17,7 @@ const Explore = lazy(() => import("./pages/Explore"));
 const Inscriptions = lazy(() => import("./pages/Inscriptions"));
 const Artefacts = lazy(() => import("./pages/Artefacts"));
 const Fortresses = lazy(() => import("./pages/Fortresses"));
+const FortressDetail = lazy(() => import("./pages/FortressDetail"));
 const Carvers = lazy(() => import("./pages/Carvers"));
 const RoyalChronicles = lazy(() => import("./pages/RoyalChronicles"));
 
@@ -76,6 +77,7 @@ const App = () => (
                   <Route path="/artefacts" element={<Artefacts />} />
                   <Route path="/royal-chronicles" element={<RoyalChronicles />} />
                   <Route path="/fortresses" element={<Fortresses />} />
+                  <Route path="/fortresses/:id" element={<FortressDetail />} />
                   <Route path="/sv/runinskrifter" element={<Inscriptions />} />
                   <Route path="/sv/ristare" element={<Carvers />} />
                   <Route path="/sv/artefakter" element={<Artefacts />} />
