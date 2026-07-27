@@ -23,6 +23,7 @@ import { useMapSolidi } from './map/useMapSolidi';
 import { useMapCustomPoints } from './map/useMapCustomPoints';
 import { useRuneDensityLayer } from './map/useRuneDensityLayer';
 import { useMapEstates } from './useMapEstates';
+import { useMapCentralPlaces } from './map/useMapCentralPlaces';
 import { useActiveExploreProfile } from './useExploreProfiles';
 
 interface UseMapInitializationProps {
@@ -244,6 +245,10 @@ export const useMapInitialization = ({
     isMapReady: isMapReadyRef,
     safelyAddLayer,
   });
+
+  // Centralorter + koordinatsatta ortnamn (Agnetas forskning) — tänds via ?central=1 (Öppna kartan
+  // från /sv/angermanland) el. legendknappen 'central_places'. Annars fanns datan bara på AngMap.
+  useMapCentralPlaces({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
 
   return {
     mapContainer, 
