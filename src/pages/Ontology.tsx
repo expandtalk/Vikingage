@@ -64,6 +64,18 @@ const Ontology = () => {
             <p>2. {sv ? 'Proveniens + osäkerhet är obligatoriska. Ingen nod/kant utan källa.' : 'Provenance + uncertainty are mandatory. No node/edge without a source.'}</p>
             <p>3. {sv ? 'Konfidens propagerar: en hypoteskedja är aldrig starkare än sin svagaste länk (belagd > trolig > tradition > hypotes > omtvistad).' : 'Confidence propagates: a chain is never stronger than its weakest link.'}</p>
             <p>4. {sv ? 'Datering ≠ objektiv mätpunkt — den bär metod (kol-14, dendro, numismatik…) och referens.' : 'Dating ≠ objective point — it carries a method and a reference.'}</p>
+            <p>5. {sv ? 'Observation ≠ tolkning. Mätlagret (metall, isotop, hällristnings-observation, dateringsargument) är single source of truth — rent, avdubblat, källfört. Tolkningar hålls plurala, attribuerade och tidsstämplade — de skiftar med generationer och strömningar — aldrig konsoliderade till "sanningen".' : 'Observation ≠ interpretation. The measurement layer (metal, isotope, rock-art observation, dating argument) is the single source of truth — clean, de-duplicated, sourced. Interpretations stay plural, attributed and time-stamped — they shift with generations and currents — never consolidated into "the truth".'}</p>
+          </CardContent>
+        </Card>
+
+        {/* Analyslägen — de fyra sätten att arbeta med underlaget */}
+        <Card className="viking-card mb-6">
+          <CardHeader className="pb-2"><CardTitle className="text-foreground text-base">{sv ? 'Analyslägen' : 'Analysis modes'}</CardTitle></CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p><strong className="text-foreground">Explore Motor.</strong> {sv ? 'Ingång via plats, ort eller årtal. Samlokalisering mot en nollmodell (lokal ring / regionrestriktion) — "är det här ovanligt?" Genererar testbara hypoteser, bevisar aldrig.' : 'Entry by place, locality or year. Co-location against a null model — "is this unusual?" Generates testable hypotheses, never proves.'}</p>
+            <p><strong className="text-foreground">Stresstest.</strong> {sv ? 'Skalar bort fel i fyra lager: dataintegritet, källkvalitet, statistisk artefakt — och tolkningsbias (nationalism, bekräftelse). Bara de tre första är maskinella; det fjärde innehålls av struktur (observation≠tolkning, konkurrerande läsningar) + interpreter-effect-test (spårar slutsatsen av VEM snarare än evidensen?).' : 'Peels away error in four layers: data integrity, source quality, statistical artifact — and interpretive bias. Only the first three are mechanical; the fourth is contained by structure + an interpreter-effect test.'}</p>
+            <p><strong className="text-foreground">Fingerprinting.</strong> {sv ? 'Forensisk identifiering. Idag: AI-analys (form/typologi/datering + caveats, ingen mock-fallback) för runsten/fornborg/grav, plus metallprovenienis-matchning (isotop → malmkälla). Multimodal vektor-likhet (fingerprint_match) är nästa bygge.' : 'Forensic identification. Today: AI analysis (form/typology/dating + caveats, no mock) for runestone/hillfort/grave, plus metal-provenance matching. Multimodal vector similarity is the next build.'}</p>
+            <p><strong className="text-foreground">Digital Twin.</strong> {sv ? '(a) Komplett källbelagd representation av ett objekt — ontologins slutmål, underlaget allt annat äter. (b) Simulering (strandlinje år 800, saknad centralort) — kraftfull men märkt sandlåda: "modellerat, ej belagt".' : '(a) Complete sourced representation of an object — the substrate. (b) Simulation — powerful but a labelled sandbox: "modelled, not attested".'}</p>
           </CardContent>
         </Card>
 
