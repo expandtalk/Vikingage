@@ -16,19 +16,22 @@ import { supabase } from '@/integrations/supabase/client';
 const SITE = 'Kalmar gamla stad';
 const CENTER: [number, number] = [56.6598, 16.3520];
 
-// Evidens = hederlighetsaxeln: färg + streckmönster.
+// Evidensklass = hederlighetsaxeln (Daniel): uppmätt/grävd/bevarat = heldraget, interpolerat = streckat,
+// hypotetiskt = punktat. Osäkerheten är extremt ojämn → en klass PER SEGMENT, inte en utsmetad flagga.
 const EVIDENCE: Record<string, { color: string; dash?: string; sv: string; en: string }> = {
-  utgravd:      { color: '#22c55e', dash: undefined, sv: 'Utgrävd', en: 'Excavated' },
-  dokumenterad: { color: '#0ea5e9', dash: '8 6',    sv: 'Dokumenterad', en: 'Documented' },
-  rekonstruerad:{ color: '#eab308', dash: '3 7',    sv: 'Rekonstruerad', en: 'Reconstructed' },
-  hypotetisk:   { color: '#94a3b8', dash: '1 8',    sv: 'Hypotetisk', en: 'Hypothetical' },
+  uppmatt:           { color: '#22c55e', dash: undefined, sv: 'Uppmätt (totalstation/GNSS)', en: 'Surveyed (total station/GNSS)' },
+  gravd_punkt:       { color: '#14b8a6', dash: undefined, sv: 'Grävd punkt', en: 'Excavated point' },
+  bevarat_ovan_mark: { color: '#16a34a', dash: undefined, sv: 'Bevarat parti ovan mark', en: 'Preserved above ground' },
+  interpolerad:      { color: '#eab308', dash: '8 6',    sv: 'Interpolerad', en: 'Interpolated' },
+  hypotetisk:        { color: '#94a3b8', dash: '2 8',    sv: 'Hypotetisk', en: 'Hypothetical' },
 };
 
 interface FortFeature {
   type: 'Feature';
   geometry: GeoJSON.Geometry;
   properties: {
-    name: string | null; type: string; evidence: string; accuracy_m: number | null;
+    name: string | null; type: string; evidence: string; evidence_class: string | null;
+    accuracy_m: number | null; hypothesis_id: number | null; hypothesis: string | null;
     certainty: number; span: string; halo: GeoJSON.Geometry | null;
     sources: { citation: string | null; archive: string | null; url: string | null }[];
   };
@@ -83,12 +86,14 @@ const KalmarWall = () => {
       setCount(data.features.length);
       for (const f of data.features) {
         const p = f.properties;
-        const ev = EVIDENCE[p.evidence] ?? EVIDENCE.hypotetisk;
+        const ev = EVIDENCE[p.evidence_class ?? ''] ?? EVIDENCE.hypotetisk;
         const opacity = 0.25 + 0.75 * (p.certainty ?? 1);
         if (p.halo) {
           L.geoJSON(p.halo, { pane: 'halo', style: { stroke: false, fillColor: ev.color, fillOpacity: 0.1 * (p.certainty ?? 1) } }).addTo(grp);
         }
-        const popup = `<strong>${p.name ?? p.type}</strong><br/>${(sv ? ev.sv : ev.en)} · ±${p.accuracy_m ?? '?'} m<br/><span style="opacity:.7">${p.span}</span>`
+        const popup = `<strong>${p.name ?? p.type}</strong><br/>${(sv ? ev.sv : ev.en)} · ±${p.accuracy_m ?? '?'} m`
+          + (p.hypothesis ? `<br/><span style="opacity:.8">${sv ? 'Hypotes' : 'Hypothesis'}: ${p.hypothesis}</span>` : '')
+          + `<br/><span style="opacity:.7">${p.span}</span>`
           + (p.sources?.length ? `<br/><small>${p.sources.map((s) => s.citation).filter(Boolean).join('; ')}</small>` : '');
         L.geoJSON(f.geometry, {
           pane: 'walls',
@@ -144,8 +149,8 @@ const KalmarWall = () => {
         <div className="viking-card rounded-lg border border-border p-4 flex gap-3 max-w-3xl">
           <Info className="h-5 w-5 text-gold shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground">{sv
-            ? 'Geometrin är en preliminär rekonstruktion från bevarade landmärken (Skansgatan, kyrkogården, gatunät, slottet) och Arkeologernas beskrivning — inte georefererad precision. Den ersätts segment för segment av geometri georefererad i QGIS mot Pahrs karta 1585 och Lantmäteriets historiska kartor. Källa per segment visas i popupen.'
-            : 'The geometry is a preliminary reconstruction from surviving landmarks (Skansgatan, the cemetery, the street grid, the castle) and the Arkeologerna account — not georeferenced precision. It will be replaced segment by segment with geometry georeferenced in QGIS against Pahr\'s 1585 map and the National Land Survey\'s historical maps. Per-segment sources appear in the popup.'}</p>
+            ? 'Det finns ingen enda "rätt" sträckning. KLM:s undersökning i Odengatan jämförde tre publicerade tolkningar (Kalmar stads historia, Medeltidsstaden Kalmar, Harald Åkerlund) och fann Åkerlunds bäst — konkurrerande rekonstruktioner blir därför togglebara hypoteser, inte en utsmetad linje. Varje segment bär en evidensklass: heldraget = uppmätt/grävt/bevarat ovan mark, streckat = interpolerat längs gatunät, punktat = hypotetiskt. Idag är bara det ~70 m bevarade avsnittet S om Skansgatan (samt St Kristoffers bastion) genuint säkert; muren var totalt ~1,0–1,2 km med minst 15 marktorn (minst fyra fyrkantiga). Uppmätt geometri hämtas i tur: RAÄ:s öppna data (Lägesosäkerhet), Arkeologernas/KLM:s SWEREF-inmätta VA-schakt 2021–2024, laserdata (LRM), Lantmäteriets historiska kartor, och sist Pahr 1585 (bara för tornplacering/topologi). Källa per segment visas i popupen.'
+            : 'There is no single "correct" course. KLM\'s excavation in Odengatan compared three published reconstructions (Kalmar stads historia, Medeltidsstaden Kalmar, Harald Åkerlund) and found Åkerlund\'s the best fit — so competing reconstructions become togglable hypotheses, not one smeared line. Each segment carries an evidence class: solid = surveyed/excavated/preserved above ground, dashed = interpolated along the street grid, dotted = hypothetical. Today only the ~70 m preserved section S of Skansgatan (and St Christopher\'s bastion) is genuinely certain; the wall ran ~1.0–1.2 km with at least 15 towers (at least four square). Surveyed geometry is sourced in order: RAÄ open data (positional uncertainty), Arkeologerna/KLM SWEREF-surveyed utility trenches 2021–2024, LiDAR (LRM), the National Land Survey\'s historical maps, and Pahr 1585 last (towers/topology only). Per-segment sources appear in the popup.'}</p>
         </div>
       </main>
       <Footer />
