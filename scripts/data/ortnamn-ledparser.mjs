@@ -1,0 +1,59 @@
+// Ledparser (heuristisk) för centralorts-projekten. Ersätter delsträngsmatchning med
+// START-FÖRANKRAD förled-matchning + genitiv-preferens → dödar torp-/Stor-bruset.
+// Kör om anrikningstestet (kult-leder vs neutrala) för Ångermanland + Öland, parsad vs substräng.
+// OBS heuristik, inte full morfologi (det kräver SOFI:s leddata). Kör: node scripts/data/ortnamn-ledparser.mjs
+import pg from 'pg';
+import { readFileSync } from 'node:fs';
+const env = Object.fromEntries(readFileSync('./.env','utf8').split(/\r?\n/).filter(l=>l&&!l.startsWith('#')&&l.includes('=')).map(l=>{const i=l.indexOf('=');return [l.slice(0,i).trim(), l.slice(i+1).trim().replace(/^["']|["']$/g,'')];}));
+const c=new pg.Client({host:'aws-0-eu-north-1.pooler.supabase.com',port:5432,user:'postgres.mnuifmcjspeaauzehasj',password:env.SUPABASE_DB_PASSWORD,database:'postgres',ssl:{rejectUnauthorized:false}});
+await c.connect();
+
+// START-förankrade förled-matchare (genitiv-preferens). key = led, re testas mot lowercased namn.
+const CULT = [
+  { key:'tor',  re:/^tors[a-zäåö]/ },                 // Tors- (genitiv): Torsåker, Torslunda, Torsvik
+  { key:'frö',  re:/^(frös|frö|frey|frej|frea|fröj)/ }, // Frös-/Frö-/Frey-: Fröland, Frök, Frösslunda
+  { key:'sal',  re:/^sal(a|o|e|u)/ },                 // Sal/Sala/Salom/Salum/Salem  (ej Salt-, Salteå)
+  { key:'ross', re:/^(ross|hross|hors)[a-zäåö]/ },    // Ross-/Hors-
+  { key:'vang', re:/^vang/ },                          // Vangsta
+  { key:'stav', re:/^stav[a-zäåö]/ },                  // Stav-
+  { key:'hov',  re:/^hov[a-zäåö]/ },                   // Hov- (svag, tvetydig)
+  { key:'härn', re:/^härn/ },                          // Härn(a) (svag)
+  { key:'gull', re:/^gull/ },                          // Gull (svag)
+  { key:'katt', re:/^katt[a-zäåö]/ },                  // Katt- (svag)
+];
+// substräng-varianten (som förra testet) för jämförelse:
+const CULT_SUB = ['tor','frö','sal','ross','hammar','gull','härn','katt','vang','stav','hov','helg'];
+const NEUTRAL_SUB = ['berg','sjö','vik','näs','holm','bäck','myr','dal','mark','lund'];
+const NEUTRAL_END = /(berg|sjön?|viken?|näs|holm|bäcken?|dalen?|marken?|myr|hult|änge?)$/; // parsad neutral = topografisk efterled
+
+const parseCult = (name) => { const n=name.toLowerCase(); const hits=[]; for(const e of CULT) if(e.re.test(n)) hits.push(e.key); return hits; };
+const hasSub = (name,keys)=>{const n=name.toLowerCase();return keys.some(k=>n.includes(k));};
+
+const hav=(a,b,d,e)=>{const R=6371,r=Math.PI/180,dφ=(d-a)*r,dλ=(e-b)*r,x=Math.sin(dφ/2)**2+Math.cos(a*r)*Math.cos(d*r)*Math.sin(dλ/2)**2;return 2*R*Math.asin(Math.sqrt(x));};
+
+const regions = [
+  { name:'Ångermanland', cps:['Nora','Torsåker','Härnösand–Säbrå'], bbox:[62.20,64.00,15.00,19.00] },
+  { name:'Öland',        cps:null, bbox:[56.20,57.37,16.38,17.12] },
+];
+
+for (const reg of regions) {
+  const [minlat,maxlat,minlng,maxlng]=reg.bbox;
+  const pn=(await c.query(`select name, lat, lng from place_names where lat between $1 and $2 and lng between $3 and $4 and lat is not null`,[minlat,maxlat,minlng,maxlng])).rows;
+  let cps;
+  if (reg.name==='Öland') cps=(await c.query(`select lat, lng from central_places where name='Nora' or name='Torsåker' or name='Härnösand–Säbrå'`)).rows; // ej Öland → använd öns nod
+  if (reg.name==='Öland') cps=[{lat:56.885,lng:16.727}]; // Köpingsvik-hubben som Öland-nod
+  else cps=(await c.query(`select lat,lng from central_places where name = any($1) and lat is not null`,[reg.cps])).rows;
+  const nearAny=(p,R)=>cps.some(cp=>hav(p.lat,p.lng,cp.lat,cp.lng)<=R);
+  const R=8, total=pn.length, near=pn.filter(p=>nearAny(p,R)).length, pNear=near/total;
+  const rate=(subset)=>{const m=pn.filter(subset);const mn=m.filter(p=>nearAny(p,R)).length;return {n:m.length,p:m.length?mn/m.length:0};};
+  const subC=rate(p=>hasSub(p.name,CULT_SUB)), subN=rate(p=>hasSub(p.name,NEUTRAL_SUB));
+  const parC=rate(p=>parseCult(p.name).length>0), parN=rate(p=>NEUTRAL_END.test(p.name.toLowerCase()));
+  console.log(`\n### ${reg.name}  (baslinje ${total} namn, ${(pNear*100).toFixed(1)}% nära nod, R=${R} km) ###`);
+  console.log(`  SUBSTRÄNG  kult ${subC.n} st, anrikn ${(subC.p/pNear).toFixed(2)}×  |  neutral ${subN.n} st, anrikn ${(subN.p/pNear).toFixed(2)}×  → kvot ${((subC.p/pNear)/(subN.p/pNear||1)).toFixed(2)}`);
+  console.log(`  PARSAD     kult ${parC.n} st, anrikn ${(parC.p/pNear).toFixed(2)}×  |  neutral ${parN.n} st, anrikn ${(parN.p/pNear).toFixed(2)}×  → kvot ${((parC.p/pNear)/(parN.p/pNear||1)).toFixed(2)}`);
+  // per-led parsad, med exempel
+  const per={}; pn.forEach(p=>parseCult(p.name).forEach(k=>{(per[k]=per[k]||[]).push(p.name);}));
+  console.log('  Parsade kult-led:', Object.entries(per).map(([k,v])=>`${k}:${v.length}`).join(' '));
+  Object.entries(per).forEach(([k,v])=>console.log(`     ${k}: ${v.slice(0,8).join(', ')}${v.length>8?'…':''}`));
+}
+await c.end();
