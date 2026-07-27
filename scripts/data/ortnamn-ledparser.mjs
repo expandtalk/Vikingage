@@ -26,7 +26,17 @@ const CULT_SUB = ['tor','frö','sal','ross','hammar','gull','härn','katt','vang
 const NEUTRAL_SUB = ['berg','sjö','vik','näs','holm','bäck','myr','dal','mark','lund'];
 const NEUTRAL_END = /(berg|sjön?|viken?|näs|holm|bäcken?|dalen?|marken?|myr|hult|änge?)$/; // parsad neutral = topografisk efterled
 
-const parseCult = (name) => { const n=name.toLowerCase(); const hits=[]; for(const e of CULT) if(e.re.test(n)) hits.push(e.key); return hits; };
+let CULT_ON = CULT; // sätts efter att konfig lästs (ortnamn_element_config.include)
+const parseCult = (name) => { const n=name.toLowerCase(); const hits=[]; for(const e of CULT_ON) if(e.re.test(n)) hits.push(e.key); return hits; };
+
+// Läs forskarens ledkatalog (include-flaggor) — vilka led som räknas är forskarens beslut.
+const _cfg=(await c.query('select element_key, include, category from ortnamn_element_config')).rows;
+const _incl=new Set(_cfg.filter(r=>r.include).map(r=>r.element_key));
+const _cat=Object.fromEntries(_cfg.map(r=>[r.element_key,r.category]));
+CULT_ON = CULT.filter(e=>_incl.has(e.key));
+console.log('Aktiva kult-led (ortnamn_element_config.include=true):', CULT_ON.map(e=>e.key).join(', '));
+const APPLY = process.argv.includes('--apply');
+const WRITE_REGION = (process.argv.find(a=>a.startsWith('--region='))||'').split('=')[1];
 const hasSub = (name,keys)=>{const n=name.toLowerCase();return keys.some(k=>n.includes(k));};
 
 const hav=(a,b,d,e)=>{const R=6371,r=Math.PI/180,dφ=(d-a)*r,dλ=(e-b)*r,x=Math.sin(dφ/2)**2+Math.cos(a*r)*Math.cos(d*r)*Math.sin(dλ/2)**2;return 2*R*Math.asin(Math.sqrt(x));};
@@ -38,7 +48,7 @@ const regions = [
 
 for (const reg of regions) {
   const [minlat,maxlat,minlng,maxlng]=reg.bbox;
-  const pn=(await c.query(`select name, lat, lng from place_names where lat between $1 and $2 and lng between $3 and $4 and lat is not null`,[minlat,maxlat,minlng,maxlng])).rows;
+  const pn=(await c.query(`select id, name, lat, lng from place_names where lat between $1 and $2 and lng between $3 and $4 and lat is not null`,[minlat,maxlat,minlng,maxlng])).rows;
   let cps;
   if (reg.name==='Öland') cps=[ // väst-korridorens noder + Köpingsvik-hubben (Daniel)
     {lat:56.545,lng:16.462}, // Färjestaden
@@ -62,5 +72,10 @@ for (const reg of regions) {
   const per={}; pn.forEach(p=>parseCult(p.name).forEach(k=>{(per[k]=per[k]||[]).push(p.name);}));
   console.log('  Parsade kult-led:', Object.entries(per).map(([k,v])=>`${k}:${v.length}`).join(' '));
   Object.entries(per).forEach(([k,v])=>console.log(`     ${k}: ${v.slice(0,8).join(', ')}${v.length>8?'…':''}`));
+  if (APPLY && reg.name===WRITE_REGION) {
+    let w=0;
+    for (const p of pn) { const keys=parseCult(p.name); if(keys.length){ const r=await c.query(`update place_names set element_keys=$1, element_category=$2, updated_at=now() where id=$3 and (element_keys is null or array_length(element_keys,1) is null)`,[keys,_cat[keys[0]]||'sacral',p.id]); w+=r.rowCount; } }
+    console.log(`  → SKREV element_keys för ${w} kult-namn i ${reg.name} (endast där tomt; forskarens include-konfig gäller).`);
+  }
 }
 await c.end();
