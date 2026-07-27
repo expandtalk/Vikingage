@@ -361,7 +361,7 @@ export const SRDIntegration: React.FC = () => {
                       <p><strong>Kommun:</strong> {validationResult.municipality}</p>
                     )}
                     {validationResult.coordinates && (
-                      <p><strong>Koordinater:</strong> {validationResult.coordinates.lat.toFixed(6)}, {validationResult.coordinates.lng.toFixed(6)}</p>
+                      <p><strong>Koordinater:</strong> {validationResult.coordinates ? `${validationResult.coordinates.lat.toFixed(6)}, ${validationResult.coordinates.lng.toFixed(6)}` : '—'}</p>
                     )}
                     {validationResult.uri && (
                       <p><strong>URI:</strong> <a href={validationResult.uri} target="_blank" rel="noopener" className="text-blue-600 hover:underline">Länk</a></p>

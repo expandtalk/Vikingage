@@ -178,7 +178,7 @@ export const HistoricalEventsManager: React.FC = () => {
                       <p className="text-slate-300 text-sm mb-3">{event.description}</p>
                       
                       <div className="flex items-center gap-4 text-xs text-slate-400">
-                        <span>📍 {event.coordinates.lat.toFixed(1)}°N, {event.coordinates.lng.toFixed(1)}°E</span>
+                        <span>📍 {event.coordinates ? `${event.coordinates.lat.toFixed(1)}°N, ${event.coordinates.lng.toFixed(1)}°E` : '—'}</span>
                         <span>📅 {event.period.replace('_', ' ')}</span>
                       </div>
                     </div>

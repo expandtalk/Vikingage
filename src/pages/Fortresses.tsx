@@ -383,7 +383,7 @@ const Fortresses = () => {
                       
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span className="font-mono text-xs">
-                          {hillfort.coordinates.lat.toFixed(5)}°N {hillfort.coordinates.lng.toFixed(5)}°E
+                          {hillfort.coordinates ? `${hillfort.coordinates.lat.toFixed(5)}°N ${hillfort.coordinates.lng.toFixed(5)}°E` : '—'}
                         </span>
                       </div>
                     </div>
@@ -437,7 +437,7 @@ const Fortresses = () => {
                           <p className="text-xs text-muted-foreground"><strong>RAÄ:</strong> {hillfort.raa_number}</p>
                         )}
                         <a
-                          href={`/explore?lat=${hillfort.coordinates.lat}&lng=${hillfort.coordinates.lng}`}
+                          href={hillfort.coordinates ? `/explore?lat=${hillfort.coordinates.lat}&lng=${hillfort.coordinates.lng}` : '/fortresses'}
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
                         >
@@ -640,10 +640,10 @@ const Fortresses = () => {
                           <p className="text-xs text-muted-foreground"><strong>Status:</strong> {fortress.status}</p>
                         )}
                         <span className="block text-xs font-mono text-muted-foreground">
-                          {fortress.coordinates.lat.toFixed(5)}°N {fortress.coordinates.lng.toFixed(5)}°E
+                          {fortress.coordinates ? `${fortress.coordinates.lat.toFixed(5)}°N ${fortress.coordinates.lng.toFixed(5)}°E` : '—'}
                         </span>
                         <a
-                          href={`/explore?lat=${fortress.coordinates.lat}&lng=${fortress.coordinates.lng}`}
+                          href={fortress.coordinates ? `/explore?lat=${fortress.coordinates.lat}&lng=${fortress.coordinates.lng}` : '/fortresses'}
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
                         >
@@ -828,10 +828,10 @@ const Fortresses = () => {
                     {expandedCard === `city-${city.id}` && (
                       <div className="pt-2 border-t border-border space-y-2">
                         <span className="block text-xs font-mono text-muted-foreground">
-                          {city.coordinates.lat.toFixed(5)}°N {city.coordinates.lng.toFixed(5)}°E
+                          {city.coordinates ? `${city.coordinates.lat.toFixed(5)}°N ${city.coordinates.lng.toFixed(5)}°E` : '—'}
                         </span>
                         <a
-                          href={`/explore?lat=${city.coordinates.lat}&lng=${city.coordinates.lng}`}
+                          href={city.coordinates ? `/explore?lat=${city.coordinates.lat}&lng=${city.coordinates.lng}` : '/fortresses'}
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
                         >

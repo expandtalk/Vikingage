@@ -108,8 +108,12 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
   const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
   // Egen cluster-grupp för fornborgarna (~1200) — utan klustring blev kartan
   // en oläslig prickmatta. Fästningar/centra (få) ligger kvar i markersRef.
+  // Fallback till vanlig layerGroup om markercluster-pluginet inte registrerats (annars
+  // kastar anropet under render → hela sidan svartnar). Samma addTo/addLayer/clearLayers-API.
   const hillfortClusterRef = useRef<L.LayerGroup>(
-    (L as any).markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 55, disableClusteringAtZoom: 11 })
+    typeof (L as any).markerClusterGroup === 'function'
+      ? (L as any).markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 55, disableClusteringAtZoom: 11 })
+      : L.layerGroup()
   );
 
   // Initialize map
