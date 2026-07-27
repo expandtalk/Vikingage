@@ -37,6 +37,7 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
 
   // --- Opt-in-lager AV som standard ---
   runestone_density: false, // GIS-analyslager: runstenstäthet per härad (centroid-cirklar)
+  runbleck_only: false, // fristående filter: begränsa kartan till runbleck/amuletter (~150)
   place_names: false, // ~495 ortnamn klottrar kartan; tänds medvetet (opt-in). Ligger under
   // Kulturlager (Daniel), kategoriserat på element-typ (sakral/makt/natur):
   place_names_sacral: true,

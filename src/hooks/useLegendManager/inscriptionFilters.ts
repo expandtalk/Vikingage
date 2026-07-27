@@ -1,4 +1,8 @@
 
+// Runbleck/amuletter — klientspegling av DB-predikatet is_runbleck (migration 20260728210000).
+export const isRunbleckType = (objectType?: string | null): boolean =>
+  !!objectType && /bleck|amulet/i.test(objectType);
+
 export const filterInscriptionsByLegend = (
   inscriptions: any[],
   enabledLegendItems: { [key: string]: boolean },
@@ -42,6 +46,11 @@ export const filterInscriptionsByLegend = (
   }
   
   console.log(`📊 Final result: ${result.length} inscriptions (Swedish: ${enabledLegendItems.runic_inscriptions !== false ? swedishInscriptions.length : 0}, Foreign: ${enabledLegendItems.foreign_inscriptions !== false ? foreignInscriptions.length : 0})`);
-  
+
+  // Runbleck-filter (fristående, opt-in, AV som standard): begränsa till runbleck/amuletter.
+  if (enabledLegendItems.runbleck_only) {
+    result = result.filter((i) => isRunbleckType(i.object_type ?? i.objectType ?? i.objecttype));
+  }
+
   return result;
 };

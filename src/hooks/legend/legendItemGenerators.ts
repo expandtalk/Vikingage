@@ -5,6 +5,7 @@ import { getFindsInPeriod, ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFi
 import { getDeityPlaces, getChristianCenters, getChristianCentersByType } from '@/utils/religiousLocations/religiousPlacesData';
 import { generateChristianSitesLegendItems } from './christianSitesLegend';
 import { itemEnabled } from './itemEnabled';
+import { isRunbleckType } from '@/hooks/useLegendManager/inscriptionFilters';
 import { HISTORICAL_MAP_LAYERS } from '@/config/historicalMapLayers';
 import { computeHaradDensity } from '@/hooks/map/runeDensity';
 import { ChristianSite } from '@/hooks/useChristianSites';
@@ -71,6 +72,17 @@ export const generateBasicInscriptionItems = (
     color: '#ea580c',
     count: computeHaradDensity(inscriptions as any[]).length,
     enabled: itemEnabled(enabledLegendItems, 'runestone_density'),
+  });
+
+  // RUNBLECK & AMULETTER (fristående filter, opt-in). Begränsar kartan till runbleck/amuletter
+  // (~150). Fristående — INTE barn till cat_runic (kaskaden skulle annars filtrera bort allt
+  // annat när runkategorin slås på). Klientpredikat = is_runbleck (migration 20260728210000).
+  items.push({
+    id: 'runbleck_only',
+    label: '🪬 Endast runbleck & amuletter',
+    color: '#b08d57',
+    count: inscriptions.filter((i: any) => isRunbleckType(i.object_type ?? i.objectType ?? i.objecttype)).length,
+    enabled: itemEnabled(enabledLegendItems, 'runbleck_only'),
   });
 
   // 2. VIKINGACENTRA - andra prioritet
@@ -508,6 +520,7 @@ export const generateBasicInscriptionItems = (
 
   const ordered: (LegendItem | null)[] = [
     group('cat_runic', 'ᛘ ' + t('runestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions', 'runestone_density']),
+    keep('runbleck_only'),
     catChurch,
     keep('heritage_sites'),
     keep('heritage_folklore'),
