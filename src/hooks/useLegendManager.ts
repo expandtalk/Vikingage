@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { generateBasicInscriptionItems } from './legend/legendItemGenerators';
-import { LEGEND_DEFAULTS } from './legend/itemEnabled';
 import { scopeLayersByPeriod } from './legend/layerPeriodScope';
 import { processLegendItems } from './legend/legendItemProcessor';
 import { filterInscriptionsByLegend } from './useLegendManager/inscriptionFilters';
@@ -118,9 +117,11 @@ export const useLegendManager = (
 
   // Handle legend toggle. En KATEGORI (post med barn) styr sina barn: kartlagren gate:ar
   // på barnens nycklar, så en kategori-toggle måste kaskadera — annars gömdes bara barnen
-  // medan lagret låg kvar (kunde ej stängas av; Daniel: focus=churches). Stäng av → alla
-  // barn av. Slå på → barnen till sin default (LEGEND_DEFAULTS) så tunga opt-in-lager inte
-  // tänds oväntat och ett vettigt utgångsläge återställs.
+  // medan lagret låg kvar (kunde ej stängas av; Daniel: focus=churches).
+  // Slå på förälder → ALLA barn på. Stäng av → alla barn av. (Tidigare tändes barnen bara
+  // till sin LEGEND_DEFAULTS, vilket för opt-in-barn = false → "inget hände" när man slog på
+  // t.ex. Monastic orders / Church and christianity. Daniel: aktiverar man ett överval ska
+  // alla underval aktiveras.)
   const handleLegendToggle = useCallback((itemId: string) => {
     setEnabledLegendItems(prevState => {
       const newValue = !prevState[itemId];
@@ -141,7 +142,7 @@ export const useLegendManager = (
       const target = findItem(legendItems, itemId);
       if (target?.children?.length) {
         collectChildIds(target).forEach((cid) => {
-          newState[cid] = newValue ? (LEGEND_DEFAULTS[cid] ?? false) : false;
+          newState[cid] = newValue;   // förälder på → alla barn på; förälder av → alla barn av
         });
       }
       return newState;
