@@ -19,6 +19,7 @@ const KIND_STYLE: Record<string, { color: string; radius: number; label: string 
   hillfort: { color: '#1e3a8a', radius: 5, label: 'Fornborg' },
   fro_name: { color: '#a855f7', radius: 5, label: 'Frö-namn' },
   find: { color: '#d4af37', radius: 6, label: 'Guld-/silverfynd' },
+  cult: { color: '#14b8a6', radius: 5, label: 'Kult/offerplats' },
 };
 
 const OlandMap: React.FC<{ points: OlandPoint[] }> = ({ points }) => {
