@@ -204,18 +204,24 @@ create index if not exists dating_argument_figure_idx on public.dating_argument 
 create index if not exists dating_argument_lamning_idx on public.dating_argument (lamning_id);
 create index if not exists dating_argument_method_idx on public.dating_argument (method);
 
--- ---------- PALIMPSEST-SPÄRR (Daniels villkorade version) ----------
--- Lämningsförankring tillåts ENBART som oreviderad 'unspecified' (legacy-kö). Allt reviderat
--- måste hänga på figur. Detta är mekanismen som gör spärren överlevbar vid underbestämda rader.
--- ÖPPEN FRÅGA (flaggad, ej löst här): strandförskjutning ger en häll-nivå-TPQ som egentligen
--- hör på lämningen, inte på en figur. Med denna strikta regel måste en reviderad shoreline-TPQ
--- hängas på figur. Tas upp när första shoreline-dateringen faktiskt läggs in.
+-- ---------- PALIMPSEST-SPÄRR (villkorad) + yt-/kontextnivå-undantag ----------
+-- Lämningsförankring tillåts för: (1) legacy-kön (unspecified/oreviderad); (2) genuint YT-/KONTEXT-
+-- nivå-metoder som daterar hela hällytan, inte en figurs ristningshändelse — strandförskjutning
+-- (TPQ ur ytans landhöjning; gäller ALLA figurer på ytan lika) och sluten kontext (Sagaholm: hela
+-- hällen stratigrafiskt innesluten). Allt annat reviderat måste hänga på figur.
+-- LÖST (tidigare öppen fråga): en shoreline-TPQ är en egenskap hos YTAN, inte en figurs datering →
+-- hör legitimt på lämningen. Spärren gäller carving-dateringar (figur-anspråk) utsmetade på hällen;
+-- en yt-emergens-TPQ är inte det. Undantaget är METOD-grindat — bronze_typology/c14/superposition
+-- m.fl. förblir blockerade på lämning, så hålet kan inte missbrukas.
 create or replace function public.no_carving_date_on_lamning()
 returns trigger language plpgsql as $$
 begin
   if new.lamning_id is not null then
-    if not (new.target_event = 'unspecified' and new.provenance_reviewed = false) then
-      raise exception 'Datering på lämning tillåts endast som oreviderad unspecified (legacy-kö). Ristningsdatering hör på figur — hällen är ett palimpsest.';
+    if not (
+         (new.target_event = 'unspecified' and new.provenance_reviewed = false)
+      or (new.method in ('shoreline_displacement','sealed_context'))
+    ) then
+      raise exception 'Datering på lämning tillåts endast som (a) oreviderad unspecified (legacy-kö) eller (b) yt-/kontextnivå-metod (strandförskjutning/sluten kontext). Ristningsdatering hör på figur — hällen är ett palimpsest.';
     end if;
   end if;
   return new;

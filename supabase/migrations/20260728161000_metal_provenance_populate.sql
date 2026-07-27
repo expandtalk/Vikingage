@@ -17,7 +17,7 @@ update public.ore_sources set lat = 38.721111, lng = -5.219444,
   where name = 'Cabeza del Buey (Extremadura)';
 
 update public.ore_sources set lat = 53.330984, lng = -3.847961,
-  isotope_signature = '{"206Pb/204Pb":[18.317,19.917],"207Pb/204Pb":[15.632,15.697],"208Pb/204Pb":[38.344,38.702],"207Pb/206Pb":[0.788,0.853],"n":3,"source":"Williams 2014, Historical Metallurgy 47(1):93-110 (Pentrwyn-malm, NIGL)","caveat":"n=3 malmprov; fullständigt fält i Williams & Le Carlier de Veslud 2019 (Antiquity, DOI 10.15184/aqy.2019.130) supplement"}'::jsonb,
+  isotope_signature = '{"Pb206_204":[18.317,19.917],"Pb207_204":[15.632,15.697],"Pb208_204":[38.344,38.702],"Pb207_206":[0.788,0.853],"n":3,"source":"Williams 2014, Historical Metallurgy 47(1):93-110 (Pentrwyn-malm, NIGL)","caveat":"n=3 malmprov; fullständigt fält i Williams & Le Carlier de Veslud 2019 (Antiquity, DOI 10.15184/aqy.2019.130) supplement; systemnycklar = metal_analyses.system-form för join"}'::jsonb,
   note = 'Koordinat = Great Orme Copper Mines (Wikidata Q85941086, P625), exakt gruvläge. isotope_signature primärläst ur Williams 2014 (n=3 malmprov, ej fullt fält).'
   where name = 'Great Orme';
 
