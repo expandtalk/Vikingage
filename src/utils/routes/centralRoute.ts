@@ -51,11 +51,34 @@ export const centralRoutePoints: RoutePoint[] = [
     isMajorWaypoint: true
   },
   {
-    id: 'olands_norra_udde',
-    name: 'Ölands norra udde',
-    coordinates: { lat: 57.3660, lng: 17.0930 }, // norra spetsen (Långe Erik/Grankullavik)
-    description: 'Följer kusten norrut och rundar Ölands norra udde ut ur Kalmarsund',
+    id: 'hornsudden',
+    name: 'Hornsudden (Stenkusten)',
+    coordinates: { lat: 57.2000, lng: 16.8800 }, // NV Öland, Persnäs/Föra (approx; nästan i höjd med Blå Jungfrun)
+    description: 'Passeras längs Ölands västra Stenkust (Persnäs/Föra) på väg norrut.',
     section: 'Kalmarsund'
+  },
+  {
+    id: 'byxelkrok',
+    name: 'Byxelkrok',
+    coordinates: { lat: 57.3267, lng: 17.0153 }, // NV Öland
+    description: 'Byxelkrok - naturhamn på nordvästra Öland.',
+    section: 'Kalmarsund',
+    isMajorWaypoint: true
+  },
+  {
+    id: 'holmeboda_utanfor',
+    name: 'Utanför Holmeboda',
+    coordinates: { lat: 57.3628, lng: 17.0673 }, // NÖ Öland
+    description: 'Passeras utanför Holmeboda vid Ölands nordspets i Kalmarsund.',
+    section: 'Kalmarsund'
+  },
+  {
+    id: 'grankullavik',
+    name: 'Grankullavik (skyddande vik)',
+    coordinates: { lat: 57.3324, lng: 17.1005 }, // den skyddade viken vid NÖ Öland
+    description: 'In i den skyddande viken Grankullavik vid Ölands nordöstra spets, innan färden fortsätter norrut mot Tjust.',
+    section: 'Kalmarsund',
+    isMajorWaypoint: true
   },
 
   // === Tjust skärgård ===
