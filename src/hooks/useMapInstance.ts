@@ -13,10 +13,27 @@ export const useMapInstance = ({ isVikingMode }: UseMapInstanceProps) => {
   useEffect(() => {
     if (!mapContainer.current) return;
 
+    // Djuplänk: ?center=lat,lng&zoom=N centrerar kartan på en region (t.ex. från
+    // /sv/oland → "Öppna kartan"). Faller tillbaka på Skandinavien-vy om saknas/ogiltig.
+    let center: [number, number] = [60.0, 15.0];
+    let zoom = 5;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const c = params.get('center');
+      if (c) {
+        const [la, ln] = c.split(',').map(Number);
+        if (Number.isFinite(la) && Number.isFinite(ln) && la >= 54 && la <= 70 && ln >= 4 && ln <= 32) {
+          center = [la, ln];
+        }
+      }
+      const z = Number(params.get('zoom'));
+      if (Number.isFinite(z) && z >= 3 && z <= 18) zoom = z;
+    } catch { /* ignorera trasig URL */ }
+
     // ✅ SÄKER map initialization med race condition-skydd
     const mapInstance = L.map(mapContainer.current, {
-      center: [60.0, 15.0], // Centered on Scandinavia
-      zoom: 5, // Good zoom level to see all of Scandinavia
+      center,
+      zoom,
       preferCanvas: true, // Förbättrar prestanda och förhindrar DOM-problem
       worldCopyJump: true,
       // ✅ Tilläggsåtgärder för att förhindra race conditions

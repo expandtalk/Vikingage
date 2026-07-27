@@ -176,7 +176,7 @@ const Angermanland = () => {
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>Materialet går att pröva rumsligt redan nu, utan att namnen är geokodade:</p>
             <ol className="list-decimal pl-5 space-y-1">
-              <li>Öppna <Link to="/explore" className="text-gold hover:underline">kartan (Utforska)</Link> och navigera till centralorten.</li>
+              <li>Öppna <Link to="/explore?center=62.95,18.0&zoom=9" className="text-gold hover:underline">kartan (Utforska)</Link> — den öppnas centrerad på Ångermanland.</li>
               <li><strong>Högerklicka</strong> på platsen (eller klicka på ett objekt) → välj <em>“Mät räckvidd härifrån”</em>.</li>
               <li>Välj <strong>form</strong> (cirkel/fyrkant/hexagon) och <strong>radie</strong> — t.ex. knappen <em>“Daglig maskvidd 9 km”</em> (gångavstånd från ett centrum).</li>
               <li>Läs antalet objekt inuti formen, och <strong>exportera</strong> resultatet till GeoJSON (QGIS) eller CSV för att jobba vidare i egna verktyg.</li>
@@ -187,7 +187,7 @@ const Angermanland = () => {
               <span><strong className="text-foreground">Åtkomst:</strong> sidan och kartan är öppna — ingen inloggning behövs för att läsa, mäta räckvidd eller exportera. Inloggning krävs bara om du vill <em>spara</em> dina egna hypotes-ytor till ett konto.</span>
             </p>
             <div className="pt-1">
-              <Link to="/explore" className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2 text-slate-900 font-semibold hover:bg-amber-400 transition-colors">
+              <Link to="/explore?center=62.95,18.0&zoom=9" className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2 text-slate-900 font-semibold hover:bg-amber-400 transition-colors">
                 <Compass className="h-4 w-4" /> Öppna kartan
               </Link>
             </div>

@@ -169,7 +169,7 @@ const Oland = () => {
           Källor: Samnordisk runtextdatabas; RAÄ/Fornsök; Historiska museet (guldfynd); Ortnamnsregistret.
         </p>
         <div className="pt-4">
-          <a href="/explore" className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2 text-slate-900 font-semibold hover:bg-amber-400 transition-colors">
+          <a href="/explore?center=56.7,16.6&zoom=9" className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2 text-slate-900 font-semibold hover:bg-amber-400 transition-colors">
             <Compass className="h-4 w-4" /> Öppna hela kartan (experimentera med fler lager)
           </a>
         </div>
