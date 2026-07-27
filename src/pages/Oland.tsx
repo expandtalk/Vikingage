@@ -22,14 +22,28 @@ const KIND_STYLE: Record<string, { color: string; radius: number; label: string 
   cult: { color: '#14b8a6', radius: 5, label: 'Kult/offerplats' },
 };
 
-const OlandMap: React.FC<{ points: OlandPoint[] }> = ({ points }) => {
+// Förbindelser (kurerat, schematiskt — Öland definieras av sina länkar till fastland + Gotland).
+const CONN_NODES: { name: string; lat: number; lng: number; note: string }[] = [
+  { name: 'Kalmar', lat: 56.663, lng: 16.366, note: 'fastland — stad & slott' },
+  { name: 'Revsudden', lat: 56.747, lng: 16.553, note: 'smalaste Kalmarsund — överfart' },
+  { name: 'Hossmo', lat: 56.632, lng: 16.437, note: 'fastland — tidigt center' },
+  { name: 'Ottenby', lat: 56.198, lng: 16.398, note: 'Ölands sydspets — kungsgård' },
+];
+const CONN_LINES: { name: string; coords: [number, number][] }[] = [
+  { name: 'Kalmar–Färjestaden (sund + landväg österut)', coords: [[56.663, 16.366], [56.545, 16.462], [56.60, 16.52], [56.67, 16.60]] },
+  { name: 'Revsudden-överfarten', coords: [[56.747, 16.553], [56.752, 16.62]] },
+  { name: 'Hossmo–Karlevi', coords: [[56.632, 16.437], [56.608, 16.440]] },
+  { name: 'Ölands norra udde → Gotland', coords: [[57.355, 17.05], [57.45, 17.55]] },
+];
+
+const OlandMap: React.FC<{ points: OlandPoint[]; showConnections: boolean }> = ({ points, showConnections }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { preferCanvas: true, center: [56.75, 16.65], zoom: 9, scrollWheelZoom: true });
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [56.7, 16.55], zoom: 9, scrollWheelZoom: true });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
     // Köpingsvik-hubben
     L.circle([56.885, 16.727], { radius: 4000, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.08 })
@@ -56,7 +70,13 @@ const OlandMap: React.FC<{ points: OlandPoint[] }> = ({ points }) => {
         .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${s.label}${p.note ? ` · ${p.note}` : ''}</span>`)
         .addTo(layer);
     });
-  }, [points]);
+    if (showConnections) {
+      CONN_LINES.forEach((l) => L.polyline(l.coords, { color: '#f59e0b', weight: 2, dashArray: '6 6', opacity: 0.75 })
+        .bindPopup(`<b>${l.name}</b><br/><span style="font-size:11px">Schematisk förbindelse (ej uppmätt väg)</span>`).addTo(layer));
+      CONN_NODES.forEach((n) => L.circleMarker([n.lat, n.lng], { radius: 6, color: '#f59e0b', weight: 2, fillColor: '#ffffff', fillOpacity: 0.9 })
+        .bindPopup(`<b>${n.name}</b><br/><span style="font-size:11px;color:#666">${n.note}</span>`).addTo(layer));
+    }
+  }, [points, showConnections]);
 
   return <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />;
 };
@@ -72,6 +92,10 @@ const Legend: React.FC<{ on: Record<string, boolean>; toggle: (k: string) => voi
         </button>
       );
     })}
+    <button type="button" onClick={() => toggle('connection')}
+      className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${on['connection'] !== false ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
+      <span style={{ width: 14, height: 0, borderTop: '2px dashed #f59e0b', display: 'inline-block' }} /> Förbindelser
+    </button>
     <span className="inline-flex items-center gap-1 text-muted-foreground"><span style={{ width: 10, height: 10, borderRadius: 9999, border: '2px solid #f59e0b', display: 'inline-block' }} /> Köpingsvik-hub</span>
   </div>
 );
@@ -138,7 +162,7 @@ const Oland = () => {
         {isLoading ? (
           <p className="text-muted-foreground">Laddar kartan…</p>
         ) : (
-          <OlandMap points={shown} />
+          <OlandMap points={shown} showConnections={on['connection'] !== false} />
         )}
         <p className="text-xs text-muted-foreground mt-3 opacity-80">
           {points.length} punkter: {count('runestone')} runstenar · {count('hillfort')} fornborgar · {count('church')} kyrkor · {count('find')} guld-/silverfynd · {count('fro_name')} Frö-namn.
