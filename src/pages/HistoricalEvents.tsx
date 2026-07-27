@@ -1,4 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
@@ -45,7 +48,62 @@ interface TItem {
   id: string; kind: 'event' | 'species'; year: number; yearEnd?: number;
   title: string; tag: string; desc: string; confidence?: string;
   region?: string; sources?: string; note?: string;
+  lat?: number | null; lng?: number | null; status?: string | null; eventId?: string;
 }
+
+// Karta över lokaliserade händelser. Ärlig flaggning: belagd = fylld, omtvistad = streckad,
+// legendarisk = punktad "?". Omtvistade händelser med flera kandidatlägen (Svolder: Öresund vs
+// Rügen) ritas som konkurrerande pins ur event_location_candidates. Klick i tidslinjen → flyg hit.
+const STATUS_STYLE: Record<string, { color: string; dash?: string; label: string }> = {
+  belagd: { color: '#22c55e', label: 'belagt läge' },
+  omtvistad: { color: '#eab308', dash: '4 4', label: 'omtvistat läge' },
+  legendarisk: { color: '#94a3b8', dash: '1 5', label: 'legendariskt/okänt läge' },
+};
+const EventsMap: React.FC<{ items: TItem[]; focus: { lat: number; lng: number } | null }> = ({ items, focus }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const layerRef = useRef<L.LayerGroup | null>(null);
+  const [cands, setCands] = useState<any[]>([]);
+
+  useEffect(() => {
+    (supabase.from('event_location_candidates') as any).select('*').then(({ data }: { data: any[] }) => setCands(data ?? []));
+  }, []);
+
+  useEffect(() => {
+    if (!ref.current || mapRef.current) return;
+    const map = L.map(ref.current, { center: [58.5, 15.5], zoom: 4, scrollWheelZoom: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
+    layerRef.current = L.layerGroup().addTo(map);
+    mapRef.current = map;
+    setTimeout(() => map.invalidateSize(), 80);
+    return () => { map.remove(); mapRef.current = null; layerRef.current = null; };
+  }, []);
+
+  useEffect(() => {
+    const layer = layerRef.current; if (!layer) return;
+    layer.clearLayers();
+    items.forEach((i) => {
+      if (i.lat == null || i.lng == null) return;
+      const st = STATUS_STYLE[i.status ?? 'belagd'] ?? STATUS_STYLE.belagd;
+      L.circleMarker([i.lat, i.lng], { radius: 6, color: st.color, weight: 2, fillColor: st.color, fillOpacity: st.dash ? 0.15 : 0.75, dashArray: st.dash })
+        .bindPopup(`<strong>${i.title}</strong><br/><span style="font-size:11px">${formatYear(i.year, true)} · ${st.label}</span>${i.note ? `<br/><span style="font-size:11px;color:#94a3b8">${i.note}</span>` : ''}`)
+        .addTo(layer);
+    });
+    // Konkurrerande kandidatlägen (t.ex. Svolder) — dubbla pins med teori.
+    cands.forEach((c) => {
+      if (c.lat == null || c.lng == null) return;
+      L.circleMarker([c.lat, c.lng], { radius: 7, color: '#eab308', weight: 2, fillColor: '#eab308', fillOpacity: 0.1, dashArray: '4 4' })
+        .bindPopup(`<strong>Kandidatläge: ${c.theory}</strong><br/><span style="font-size:11px">${c.proponent ?? ''}</span>${c.note ? `<br/><span style="font-size:11px;color:#94a3b8">${c.note}</span>` : ''}${c.supporting_finds ? `<br/><span style="font-size:11px">Fynd: ${c.supporting_finds}</span>` : ''}`)
+        .addTo(layer);
+    });
+  }, [items, cands]);
+
+  useEffect(() => {
+    if (focus && mapRef.current) mapRef.current.flyTo([focus.lat, focus.lng], 8, { duration: 0.7 });
+  }, [focus]);
+
+  return <div ref={ref} className="w-full rounded-lg border border-border mb-6" style={{ height: '55vh', minHeight: 380 }} />;
+};
 
 const HistoricalEvents = () => {
   const { language } = useLanguage();
@@ -55,6 +113,8 @@ const HistoricalEvents = () => {
   const [kind, setKind] = useState<'all' | 'event' | 'species'>('all');
   const [tag, setTag] = useState<string>('all');
   const [query, setQuery] = useState('');
+  const [focus, setFocus] = useState<{ lat: number; lng: number } | null>(null);
+  const mapAnchorRef = useRef<HTMLDivElement>(null);
 
   const items = useMemo<TItem[]>(() => {
     const ev: TItem[] = events.map((e) => ({
@@ -62,8 +122,9 @@ const HistoricalEvents = () => {
       title: sv ? e.event_name : e.event_name_en || e.event_name,
       tag: e.event_type ?? 'övrigt',
       desc: (sv ? e.description : e.description_en || e.description) ?? '',
-      confidence: undefined, region: (e.region_affected ?? []).join(', '),
+      confidence: (e as any).location_status ?? undefined, region: (e.region_affected ?? []).join(', '),
       sources: (e.sources ?? []).join('; '),
+      lat: (e as any).lat, lng: (e as any).lng, status: (e as any).location_status, eventId: e.id,
     }));
     const sp: TItem[] = species
       .filter((s) => s.date_from != null)
@@ -160,6 +221,22 @@ const HistoricalEvents = () => {
           )}
         </div>
 
+        {/* KARTA över lokaliserade händelser — klick i tidslinjen flyger hit */}
+        <div ref={mapAnchorRef} />
+        {(() => {
+          const located = filtered.filter((i) => i.lat != null && i.lng != null);
+          if (!located.length) return null;
+          return (
+            <div className="mb-6">
+              <p className="text-sm text-muted-foreground mb-2 flex items-center gap-2"><MapPin className="h-4 w-4 text-gold" />
+                {sv
+                  ? `${located.length} lokaliserade händelser — klicka en post i tidslinjen för att flyga dit. Fyllt = belagt läge, streckat = omtvistat, punktat = legendariskt/okänt. Gula ringar = konkurrerande kandidatlägen (t.ex. Svolder Öresund vs Rügen).`
+                  : `${located.length} located events — click an entry below to fly there. Solid = attested, dashed = disputed, dotted = legendary/unknown. Yellow rings = competing candidate locations.`}</p>
+              <EventsMap items={located} focus={focus} />
+            </div>
+          );
+        })()}
+
         {isLoading ? (
           <p className="text-muted-foreground">{sv ? 'Laddar…' : 'Loading…'}</p>
         ) : (
@@ -172,7 +249,8 @@ const HistoricalEvents = () => {
               return (
                 <div key={i.id} className="relative pl-6">
                   <span className="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full border-2 border-slate-900" style={{ backgroundColor: color }} />
-                  <Card className="viking-card">
+                  <Card className={`viking-card ${i.lat != null ? 'cursor-pointer hover:ring-1 hover:ring-gold/50 transition-shadow' : ''}`}
+                    onClick={i.lat != null && i.lng != null ? () => { setFocus({ lat: i.lat!, lng: i.lng! }); mapAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } : undefined}>
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <span className="text-sm font-mono text-gold">{years}</span>
