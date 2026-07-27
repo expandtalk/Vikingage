@@ -40,8 +40,15 @@ for (const reg of regions) {
   const [minlat,maxlat,minlng,maxlng]=reg.bbox;
   const pn=(await c.query(`select name, lat, lng from place_names where lat between $1 and $2 and lng between $3 and $4 and lat is not null`,[minlat,maxlat,minlng,maxlng])).rows;
   let cps;
-  if (reg.name==='Öland') cps=(await c.query(`select lat, lng from central_places where name='Nora' or name='Torsåker' or name='Härnösand–Säbrå'`)).rows; // ej Öland → använd öns nod
-  if (reg.name==='Öland') cps=[{lat:56.885,lng:16.727}]; // Köpingsvik-hubben som Öland-nod
+  if (reg.name==='Öland') cps=[ // väst-korridorens noder + Köpingsvik-hubben (Daniel)
+    {lat:56.545,lng:16.462}, // Färjestaden
+    {lat:56.592,lng:16.465}, // Vickleby
+    {lat:56.608,lng:16.440}, // Karlevi
+    {lat:56.502,lng:16.425}, // Bårby borg
+    {lat:56.511,lng:16.437}, // Mörbylånga
+    {lat:56.198,lng:16.398}, // Ottenby
+    {lat:56.885,lng:16.727}, // Köpingsvik
+  ];
   else cps=(await c.query(`select lat,lng from central_places where name = any($1) and lat is not null`,[reg.cps])).rows;
   const nearAny=(p,R)=>cps.some(cp=>hav(p.lat,p.lng,cp.lat,cp.lng)<=R);
   const R=8, total=pn.length, near=pn.filter(p=>nearAny(p,R)).length, pNear=near/total;
