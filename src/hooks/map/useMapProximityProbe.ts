@@ -45,17 +45,26 @@ export const useMapProximityProbe = ({ map, isMapReady }: Props) => {
 
     // Form: cirkel (isotrop), fyrkant (rutnät/väg) eller hexagon (central-place).
     const shapeStyle = { color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.06, dashArray: '6 4' };
+    let shapeLayer: L.Circle | L.Polygon;
     if (shape === 'circle') {
-      L.circle([probe.lat, probe.lng], { radius: radiusM, ...shapeStyle }).addTo(layer);
+      shapeLayer = L.circle([probe.lat, probe.lng], { radius: radiusM, ...shapeStyle }).addTo(layer);
     } else {
       // Fyrkant: 4 hörn roterade 45° (platt topp). Hexagon: 6 hörn (spetsig topp).
-      L.polygon(probeShapeLatLngs(probe.lat, probe.lng, radiusKm, shape), shapeStyle).addTo(layer);
+      shapeLayer = L.polygon(probeShapeLatLngs(probe.lat, probe.lng, radiusKm, shape), shapeStyle).addTo(layer);
     }
     const shapeSv = shape === 'circle' ? 'cirkel' : shape === 'square' ? 'fyrkant' : 'hexagon';
-    // Draggbar center-markör — flytta hela sonden; antal räknas om vid släpp.
+    // Draggbar center-markör — HELA sonden följer med LIVE medan man drar (så man ser
+    // vad som ligger under), antal räknas om vid släpp. Träffprickarna tonas bort under
+    // draget så de inte skymmer, och ritas om på nya läget vid släpp.
     const centerIcon = L.divIcon({ className: 'probe-center', html: '<span style="display:block;width:15px;height:15px;border-radius:50%;background:#fbbf24;border:2px solid #78350f;box-shadow:0 0 4px rgba(0,0,0,.6);cursor:grab"></span>', iconSize: [15, 15], iconAnchor: [7, 7] });
     L.marker([probe.lat, probe.lng], { draggable: true, icon: centerIcon, zIndexOffset: 1000 })
       .bindTooltip(`${probe.label} — ${shapeSv}, radie ${radiusKm} km (⌀ ${radiusKm * 2} km) · dra för att flytta`, { permanent: false })
+      .on('drag', (e) => {
+        const ll = (e.target as L.Marker).getLatLng();
+        if (shape === 'circle') (shapeLayer as L.Circle).setLatLng(ll);
+        else (shapeLayer as L.Polygon).setLatLngs(probeShapeLatLngs(ll.lat, ll.lng, radiusKm, shape));
+      })
+      .on('dragstart', () => { markersRef.current.forEach((m) => m.setOpacity(0.25)); })
       .on('dragend', (e) => { const ll = (e.target as L.Marker).getLatLng(); moveProbe(ll.lat, ll.lng); })
       .addTo(layer);
 

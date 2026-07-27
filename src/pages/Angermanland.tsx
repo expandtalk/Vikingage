@@ -68,10 +68,14 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
     if (!layer || !map) return;
     layer.clearLayers();
     const pts: [number, number][] = [];
+    const nameLabels: { m: L.CircleMarker; name: string }[] = [];
+    const LABEL_ZOOM = 11; // enskilda kluster-namn tänds vid inzoom (annars för rörigt i överblick)
     groups.forEach((g) => {
       if (on['central'] !== false && g.lat != null && g.lng != null) {
         pts.push([g.lat, g.lng]);
+        // Centralorten har ALLTID sitt namn synligt (klustrets huvud).
         L.circleMarker([g.lat, g.lng], { radius: 8, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.25 })
+          .bindTooltip(g.name, { permanent: true, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
           .bindPopup(`<b>${g.name}</b><br/><span style="font-size:11px">Centralort</span>`).addTo(layer);
       }
       g.names.forEach((n) => {
@@ -80,11 +84,23 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
         pts.push([n.lat, n.lng]);
         const color = CAT_MARKER[n.category ?? ''] ?? '#94a3b8';
         const core = n.evidence_tier === 'core';
-        L.circleMarker([n.lat, n.lng], { radius: core ? 5 : 4, color, weight: core ? 2 : 1, fillColor: color, fillOpacity: core ? 0.85 : 0.5 })
+        const nm = L.circleMarker([n.lat, n.lng], { radius: core ? 5 : 4, color, weight: core ? 2 : 1, fillColor: color, fillOpacity: core ? 0.85 : 0.5 })
           .bindPopup(`<b>${n.name}</b>${n.attested_form ? ` <i>(${n.attested_form}${n.attested_year ? ` ${n.attested_year}` : ''})</i>` : ''}<br/><span style="font-size:11px;color:#666">${n.category ?? ''}${core ? ' · kärna' : ' · utvidgad'}${n.interpretation ? `<br/>${n.interpretation}` : ''}</span>`).addTo(layer);
+        nameLabels.push({ m: nm, name: n.name });
       });
     });
+    // Zoom-styrda namn-etiketter: tänds vid LABEL_ZOOM, släcks i överblick.
+    const applyLabels = () => {
+      const show = map.getZoom() >= LABEL_ZOOM;
+      nameLabels.forEach(({ m, name }) => {
+        if (show && !m.getTooltip()) m.bindTooltip(name, { permanent: true, direction: 'top', offset: [0, -4], className: 'ang-nlabel' });
+        else if (!show && m.getTooltip()) m.unbindTooltip();
+      });
+    };
+    applyLabels();
+    map.on('zoomend', applyLabels);
     if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [24, 24] });
+    return () => { map.off('zoomend', applyLabels); };
   }, [groups, on]);
 
   return <div ref={containerRef} className="w-full h-[480px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 480 }} />;
