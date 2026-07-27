@@ -84,14 +84,10 @@ const Angermanland = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
-            <p><strong className="text-foreground">Finns:</strong> {groups.length} centralorter och {totalNames} kluster-namn, var och en klassad efter namnled (sakralt/makt), evidensnivå (kärna/utvidgad) och en tolkning. Allt är läsbart nedan.</p>
-            <p><strong className="text-foreground">Saknas (nästa steg):</strong></p>
-            <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Koordinater.</strong> Varken centralorterna eller namnen är geokodade ännu (koordinat = tom). Därför finns inga kartnålar — det ligger som textmaterial. Geokodningen ska göras mot <em>auktoritativ källa</em> (Lantmäteriets ortnamn / RAÄ), inte gissas.</li>
-              <li><strong>Baslinje per landskap.</strong> För att pröva att klustren är verkliga (och inte en artefakt av urvalet) behöver namnen mätas mot en baslinje av vanliga bebyggelsenamn i samma område.</li>
-              <li><strong>Belägg-år</strong> saknas för många namn (äldsta skriftliga formen är ifylld bara där den är känd).</li>
-            </ul>
-            <p className="text-xs opacity-80">Konfidens är satt till <em>hypotes</em> på hela datasetet — behandla tolkningarna (⚠ i texten markerar de osäkraste) som uppslag att pröva, inte som fastställda.</p>
+            <p><strong className="text-foreground">Finns:</strong> {groups.length} centralorter och {totalNames} kluster-namn, klassade efter namnled (sakralt/makt), evidensnivå (kärna/utvidgad) och tolkning. <strong className="text-foreground">Nu koordinatsatta</strong> (SWEREF99 TM ur Agnetas forskning, transformerade till WGS84).</p>
+            <p><strong className="text-foreground">Verifierat mot auktoritativ källa:</strong> Länsstyrelsen Västernorrland / RAÄ:s riksintressebeskrivning <em>Nora-Rossvik [Y 24]</em> bekräftar Nora som en av Ångermanlands tätaste järnåldersbygder, storhögar vid Nora prästbord, Holshögen och <strong>fyra vikingatida silverskatter</strong> (bl.a. Frök med 373 silvermynt) — nu inlagda som källförda fynd.</p>
+            <p><strong className="text-amber-300">Källkritik (viktigt):</strong> mainstream ortnamnsforskning (Länsstyrelsen/RAÄ; Vikstrand, <em>Gudarnas platser</em> 2001) läser flera av klustrets namn annorlunda än kulttolkningen: <em>-om/-um</em>-namn (Nora, Torrom, Salom, Grötom) som "hem/gård" (~år 0), och <em>-sta</em>-namn (Ärsta) som "plats + personnamn". <strong>Centralorts-statusen är belagd; flera enskilda kult-etymologier (Ross/häst, Härna/Fröja, Ed/ed, Hammar/ting) är omtvistade</strong> och ska läsas som hypotes.</p>
+            <p><strong className="text-foreground">Saknas (nästa steg):</strong> en karta direkt på sidan (koordinaterna finns nu men renderas inte här ännu); baslinjetest per landskap; belägg-år för många namn.</p>
           </CardContent>
         </Card>
 
