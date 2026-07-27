@@ -125,32 +125,32 @@ begin
   end if;
 
   -- ===== RUNAMO: 4 förstahandsobservationer =====
-  select id into o1 from public.observation where lamning_id=v_runamo and agent='Finnur Magnússon' limit 1;
+  select observation_id into o1 from public.observation where lamning_id=v_runamo and agent='Finnur Magnússon' limit 1;
   if o1 is null then insert into public.observation (lamning_id, agent, obs_date, method, is_primary, source_id, notes)
     values (v_runamo, 'Finnur Magnússon', daterange('1833-01-01','1833-12-31','[]'), 'autopsy_visual', true, s_magn,
-      'Läste höger-till-vänster som bindrunor; kommittén (Molbech/Finn Magnusen/Forchhammer) godkände som äkta runinskrift i diabas-gång.') returning id into o1; end if;
-  select id into o2 from public.observation where lamning_id=v_runamo and agent='J.J. Berzelius' limit 1;
+      'Läste höger-till-vänster som bindrunor; kommittén (Molbech/Finn Magnusen/Forchhammer) godkände som äkta runinskrift i diabas-gång.') returning observation_id into o1; end if;
+  select observation_id into o2 from public.observation where lamning_id=v_runamo and agent='J.J. Berzelius' limit 1;
   if o2 is null then insert into public.observation (lamning_id, agent, obs_date, method, is_primary, source_id, notes)
     values (v_runamo, 'J.J. Berzelius', daterange('1836-01-01','1836-12-31','[]'), 'autopsy_visual', true, s_berz,
-      'Besökte platsen 1836; enbart naturligt bildade sprickor i trapp(diabas)-gång, ej runor.') returning id into o2; end if;
-  select id into o3 from public.observation where lamning_id=v_runamo and agent='Sven Nilsson' limit 1;
+      'Besökte platsen 1836; enbart naturligt bildade sprickor i trapp(diabas)-gång, ej runor.') returning observation_id into o2; end if;
+  select observation_id into o3 from public.observation where lamning_id=v_runamo and agent='Sven Nilsson' limit 1;
   if o3 is null then insert into public.observation (lamning_id, agent, obs_date, method, is_primary, source_id, notes)
     values (v_runamo, 'Sven Nilsson', daterange('1839-01-01','1840-12-31','[]'), 'autopsy_visual', true, s_nils,
-      'Biträdde Berzelius naturförklaring (VAH del 16).') returning id into o3; end if;
-  select id into o4 from public.observation where lamning_id=v_runamo and agent='J.J.A. Worsaae' limit 1;
+      'Biträdde Berzelius naturförklaring (VAH del 16).') returning observation_id into o3; end if;
+  select observation_id into o4 from public.observation where lamning_id=v_runamo and agent='J.J.A. Worsaae' limit 1;
   if o4 is null then insert into public.observation (lamning_id, agent, obs_date, method, is_primary, source_id, notes)
     values (v_runamo, 'J.J.A. Worsaae', daterange('1844-01-01','1844-12-31','[]'), 'casting', true, s_wors,
-      'Tredje undersökningen 1844; gipsavgjutningar + jämförelse; vände lärd opinion mot naturförklaringen.') returning id into o4; end if;
+      'Tredje undersökningen 1844; gipsavgjutningar + jämförelse; vände lärd opinion mot naturförklaringen.') returning observation_id into o4; end if;
 
   if not exists (select 1 from public.intervention where lamning_id=v_runamo and kind='moulding') then
     insert into public.intervention (lamning_id, kind, event_date, agent, contaminates_interpretation, source_id, notes)
     values (v_runamo, 'moulding', daterange('1844-01-01','1844-12-31','[]'), 'J.J.A. Worsaae', false, s_wors, 'Gipsavgjutning av de påstådda runorna.');
   end if;
 
-  select id into f_run from public.figure where lamning_id=v_runamo and local_label='Påstådd runrad (Runamo-inskriften)' limit 1;
+  select figure_id into f_run from public.figure where lamning_id=v_runamo and local_label='Påstådd runrad (Runamo-inskriften)' limit 1;
   if f_run is null then insert into public.figure (lamning_id, local_label, authenticity, authenticity_source_id, authenticity_note)
     values (v_runamo, 'Påstådd runrad (Runamo-inskriften)', 'pareidolia', s_wors,
-      'Naturliga sprickor i diabas-gång tolkade som runrad. Vederlagd Berzelius 1836 → Nilsson → Worsaae 1844. Källa = Worsaae 1844, EJ modern konsensus.') returning id into f_run; end if;
+      'Naturliga sprickor i diabas-gång tolkade som runrad. Vederlagd Berzelius 1836 → Nilsson → Worsaae 1844. Källa = Worsaae 1844, EJ modern konsensus.') returning figure_id into f_run; end if;
 
   insert into public.figure_record (figure_id, observation_id, present, motif_class)
     select f_run, o1, true,  'runrad (påstådd)' where not exists (select 1 from public.figure_record where figure_id=f_run and observation_id=o1);
@@ -162,16 +162,16 @@ begin
     select f_run, o4, false, 'runrad (påstådd)' where not exists (select 1 from public.figure_record where figure_id=f_run and observation_id=o4);
 
   -- ===== MADSEBAKKE: seriationssubjekt skepp 1/5/11 (PLOS 2026). geom NULL, asymmetri NULL. =====
-  select id into o_made from public.observation where lamning_id=v_made and source_id=s_kaul limit 1;
+  select observation_id into o_made from public.observation where lamning_id=v_made and source_id=s_kaul limit 1;
   if o_made is null then insert into public.observation (lamning_id, agent, method, is_primary, source_id, notes)
-    values (v_made, 'Kaul/PLOS (typologi)', 'autopsy_visual', true, s_kaul, 'Skeppsristningar; Kauls ändskepps-typokronologi. Målningsstatus EJ satt (omtvistad, flaggad).') returning id into o_made; end if;
+    values (v_made, 'Kaul/PLOS (typologi)', 'autopsy_visual', true, s_kaul, 'Skeppsristningar; Kauls ändskepps-typokronologi. Målningsstatus EJ satt (omtvistad, flaggad).') returning observation_id into o_made; end if;
 
-  select id into f_m1  from public.figure where lamning_id=v_made and local_label='Skepp 1'  limit 1;
-  if f_m1  is null then insert into public.figure (lamning_id, local_label, authenticity, authenticity_source_id) values (v_made,'Skepp 1', 'accepted', s_beng) returning id into f_m1;  end if;
-  select id into f_m5  from public.figure where lamning_id=v_made and local_label='Skepp 5'  limit 1;
-  if f_m5  is null then insert into public.figure (lamning_id, local_label, authenticity, authenticity_source_id) values (v_made,'Skepp 5', 'accepted', s_beng) returning id into f_m5;  end if;
-  select id into f_m11 from public.figure where lamning_id=v_made and local_label='Skepp 11' limit 1;
-  if f_m11 is null then insert into public.figure (lamning_id, local_label, authenticity, authenticity_source_id) values (v_made,'Skepp 11','accepted', s_beng) returning id into f_m11; end if;
+  select figure_id into f_m1  from public.figure where lamning_id=v_made and local_label='Skepp 1'  limit 1;
+  if f_m1  is null then insert into public.figure (lamning_id, local_label, authenticity, authenticity_source_id) values (v_made,'Skepp 1', 'accepted', s_beng) returning figure_id into f_m1;  end if;
+  select figure_id into f_m5  from public.figure where lamning_id=v_made and local_label='Skepp 5'  limit 1;
+  if f_m5  is null then insert into public.figure (lamning_id, local_label, authenticity, authenticity_source_id) values (v_made,'Skepp 5', 'accepted', s_beng) returning figure_id into f_m5;  end if;
+  select figure_id into f_m11 from public.figure where lamning_id=v_made and local_label='Skepp 11' limit 1;
+  if f_m11 is null then insert into public.figure (lamning_id, local_label, authenticity, authenticity_source_id) values (v_made,'Skepp 11','accepted', s_beng) returning figure_id into f_m11; end if;
 
   -- ship_asymmetry_idx = NULL: ingen publicerad ordinal mätning (fyndet). Redo för egen morfometri.
   insert into public.figure_record (figure_id, observation_id, present, motif_class, ship_asymmetry_idx, depicted_object_note)
@@ -185,11 +185,11 @@ begin
     where not exists (select 1 from public.figure_record where figure_id=f_m11 and observation_id=o_made);
 
   -- ===== HAMMERSHOLM-FÄLTET: 1 representativt skepp =====
-  select id into o_hamm from public.observation where lamning_id=v_hamm and source_id=s_kaul limit 1;
+  select observation_id into o_hamm from public.observation where lamning_id=v_hamm and source_id=s_kaul limit 1;
   if o_hamm is null then insert into public.observation (lamning_id, agent, method, is_primary, source_id, notes)
-    values (v_hamm, 'Kaul (typologi)', 'autopsy_visual', true, s_kaul, 'Skeppsristningar; kvalitativt beskrivna som symmetriskare (Hjortspring-profil). Ingen mätt asymmetri.') returning id into o_hamm; end if;
-  select id into f_hamm from public.figure where lamning_id=v_hamm and local_label='Skepp (Hammersholm-fältet)' limit 1;
-  if f_hamm is null then insert into public.figure (lamning_id, local_label, authenticity, authenticity_source_id) values (v_hamm,'Skepp (Hammersholm-fältet)', 'accepted', s_kaul) returning id into f_hamm; end if;
+    values (v_hamm, 'Kaul (typologi)', 'autopsy_visual', true, s_kaul, 'Skeppsristningar; kvalitativt beskrivna som symmetriskare (Hjortspring-profil). Ingen mätt asymmetri.') returning observation_id into o_hamm; end if;
+  select figure_id into f_hamm from public.figure where lamning_id=v_hamm and local_label='Skepp (Hammersholm-fältet)' limit 1;
+  if f_hamm is null then insert into public.figure (lamning_id, local_label, authenticity, authenticity_source_id) values (v_hamm,'Skepp (Hammersholm-fältet)', 'accepted', s_kaul) returning figure_id into f_hamm; end if;
   insert into public.figure_record (figure_id, observation_id, present, motif_class, ship_asymmetry_idx, depicted_object_note)
     select f_hamm, o_hamm, true, 'skepp', NULL, 'Kvalitativt symmetriskare än Madsebakke, inget tal. Ordinal axel väntar morfometri.'
     where not exists (select 1 from public.figure_record where figure_id=f_hamm and observation_id=o_hamm);

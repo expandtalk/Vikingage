@@ -312,13 +312,14 @@ join public.heritage_sites l on l.id = d.lamning_id
 where d.lamning_id is not null and not d.provenance_reviewed;
 
 -- Reproduktionskedjor: hur många led från hällen?
-create or replace recursive view public.v_observation_depth
+drop view if exists public.v_observation_depth;
+create recursive view public.v_observation_depth
   (observation_id, lamning_id, agent, method, depth, root_observation) as
   select observation_id, lamning_id, agent, method, 0, observation_id
   from public.observation where derived_from is null
   union all
   select o.observation_id, o.lamning_id, o.agent, o.method, p.depth + 1, p.root_observation
-  from public.observation o join public.v_observation_depth p on o.derived_from = p.observation_id;
+  from public.observation o join v_observation_depth p on o.derived_from = p.observation_id;
 
 -- geom lagras redan i 4326 (webbkartan läser direkt). Metrisk projektion on-demand via metric_srid.
 create or replace view public.v_lamning_geometry_metric as
