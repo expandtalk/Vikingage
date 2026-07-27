@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
@@ -7,7 +9,7 @@ import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, AlertTriangle, FlaskConical, Info, Compass } from 'lucide-react';
-import { useCentralPlaces, type CentralPlaceName } from '@/hooks/useCentralPlaces';
+import { useCentralPlaces, type CentralPlaceName, type CentralPlaceGroup } from '@/hooks/useCentralPlaces';
 
 // Centralortsprojektet Ångermanland — delbar forskningssida. Läser central_places
 // + central_place_names live. Medvetet tydlig med vad som saknas (koordinater/
@@ -42,9 +44,58 @@ const NameRow: React.FC<{ n: CentralPlaceName }> = ({ n }) => {
   );
 };
 
+// Egen karta över klustret (imperativ Leaflet, samma mönster som Öland-sidan) — så man ser
+// de inlagda positionerna direkt, i stället för att skickas till hela /explore.
+const CAT_MARKER: Record<string, string> = { sacral: '#c084fc', power: '#3b82f6' };
+
+const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean> }> = ({ groups, on }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const layerRef = useRef<L.LayerGroup | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [62.95, 17.7], zoom: 9, scrollWheelZoom: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
+    layerRef.current = L.layerGroup().addTo(map);
+    mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; layerRef.current = null; };
+  }, []);
+
+  useEffect(() => {
+    const layer = layerRef.current;
+    const map = mapRef.current;
+    if (!layer || !map) return;
+    layer.clearLayers();
+    const pts: [number, number][] = [];
+    groups.forEach((g) => {
+      if (on['central'] !== false && g.lat != null && g.lng != null) {
+        pts.push([g.lat, g.lng]);
+        L.circleMarker([g.lat, g.lng], { radius: 8, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.25 })
+          .bindPopup(`<b>${g.name}</b><br/><span style="font-size:11px">Centralort</span>`).addTo(layer);
+      }
+      g.names.forEach((n) => {
+        if (n.lat == null || n.lng == null) return;
+        if (on[n.category ?? ''] === false) return;
+        pts.push([n.lat, n.lng]);
+        const color = CAT_MARKER[n.category ?? ''] ?? '#94a3b8';
+        const core = n.evidence_tier === 'core';
+        L.circleMarker([n.lat, n.lng], { radius: core ? 5 : 4, color, weight: core ? 2 : 1, fillColor: color, fillOpacity: core ? 0.85 : 0.5 })
+          .bindPopup(`<b>${n.name}</b>${n.attested_form ? ` <i>(${n.attested_form}${n.attested_year ? ` ${n.attested_year}` : ''})</i>` : ''}<br/><span style="font-size:11px;color:#666">${n.category ?? ''}${core ? ' · kärna' : ' · utvidgad'}${n.interpretation ? `<br/>${n.interpretation}` : ''}</span>`).addTo(layer);
+      });
+    });
+    if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [24, 24] });
+  }, [groups, on]);
+
+  return <div ref={containerRef} className="w-full h-[480px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 480 }} />;
+};
+
 const Angermanland = () => {
   const { data: groups = [], isLoading } = useCentralPlaces();
   const totalNames = groups.reduce((s, g) => s + g.names.length, 0);
+  const [on, setOn] = useState<Record<string, boolean>>({});
+  const toggle = (k: string) => setOn((s) => ({ ...s, [k]: s[k] === false ? true : false }));
+  const TOGGLES: [string, string, string][] = [['central', 'Centralort', '#f59e0b'], ['power', 'Makt', '#3b82f6'], ['sacral', 'Sakralt', '#c084fc']];
 
   const tierNames = (names: CentralPlaceName[], tier: string) =>
     names.filter((n) => n.evidence_tier === tier).sort((a, b) => a.name.localeCompare(b.name, 'sv'));
@@ -75,6 +126,30 @@ const Angermanland = () => {
             källförd metod, inte en färdig slutsats.
           </p>
         </div>
+
+        {/* KARTA — egen karta över klustret med tänd/släck-filter (Daniel: inte skicka till /explore) */}
+        {!isLoading && groups.length > 0 && (
+          <Card className="viking-card mb-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2 text-gold"><MapPin className="h-5 w-5" /> Kartan över klustret</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2 text-xs mb-3">
+                {TOGGLES.map(([k, label, color]) => {
+                  const active = on[k] !== false;
+                  return (
+                    <button key={k} type="button" onClick={() => toggle(k)}
+                      className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${active ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
+                      <span style={{ width: 10, height: 10, borderRadius: 9999, background: color, display: 'inline-block' }} /> {label}
+                    </button>
+                  );
+                })}
+              </div>
+              <AngMap groups={groups} on={on} />
+              <p className="text-xs text-muted-foreground mt-2 opacity-75">Fylld ring = kärna (starkast belägg), tunn = utvidgad hypotes. Klicka en punkt för tolkning + belägg-år.</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* STATUS — vad som finns och vad som saknas (tydligt, medvetet) */}
         <Card className="viking-card mb-4 border-amber-600/40">

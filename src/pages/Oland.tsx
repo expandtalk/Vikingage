@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Header } from '../components/Header';
@@ -61,19 +61,26 @@ const OlandMap: React.FC<{ points: OlandPoint[] }> = ({ points }) => {
   return <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />;
 };
 
-const Legend: React.FC = () => (
-  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mb-3">
-    {Object.values(KIND_STYLE).map((s) => (
-      <span key={s.label} className="inline-flex items-center gap-1">
-        <span style={{ width: 10, height: 10, borderRadius: 9999, background: s.color, display: 'inline-block' }} /> {s.label}
-      </span>
-    ))}
-    <span className="inline-flex items-center gap-1"><span style={{ width: 10, height: 10, borderRadius: 9999, border: '2px solid #f59e0b', display: 'inline-block' }} /> Köpingsvik-hub</span>
+const Legend: React.FC<{ on: Record<string, boolean>; toggle: (k: string) => void }> = ({ on, toggle }) => (
+  <div className="flex flex-wrap gap-2 text-xs mb-3">
+    {Object.entries(KIND_STYLE).map(([k, s]) => {
+      const active = on[k] !== false;
+      return (
+        <button key={k} type="button" onClick={() => toggle(k)}
+          className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${active ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
+          <span style={{ width: 10, height: 10, borderRadius: 9999, background: s.color, display: 'inline-block' }} /> {s.label}
+        </button>
+      );
+    })}
+    <span className="inline-flex items-center gap-1 text-muted-foreground"><span style={{ width: 10, height: 10, borderRadius: 9999, border: '2px solid #f59e0b', display: 'inline-block' }} /> Köpingsvik-hub</span>
   </div>
 );
 
 const Oland = () => {
   const { data: points = [], isLoading } = useOlandModel();
+  const [on, setOn] = useState<Record<string, boolean>>({});
+  const toggle = (k: string) => setOn((s) => ({ ...s, [k]: s[k] === false ? true : false }));
+  const shown = points.filter((p) => on[p.kind] !== false);
   const count = (k: string) => points.filter((p) => p.kind === k).length;
 
   return (
@@ -127,11 +134,11 @@ const Oland = () => {
           </CardContent>
         </Card>
 
-        <Legend />
+        <Legend on={on} toggle={toggle} />
         {isLoading ? (
           <p className="text-muted-foreground">Laddar kartan…</p>
         ) : (
-          <OlandMap points={points} />
+          <OlandMap points={shown} />
         )}
         <p className="text-xs text-muted-foreground mt-3 opacity-80">
           {points.length} punkter: {count('runestone')} runstenar · {count('hillfort')} fornborgar · {count('church')} kyrkor · {count('find')} guld-/silverfynd · {count('fro_name')} Frö-namn.
