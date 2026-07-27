@@ -1,0 +1,150 @@
+import React, { useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Header } from '../components/Header';
+import { Breadcrumbs } from '../components/Breadcrumbs';
+import { Footer } from '../components/Footer';
+import { PageMeta } from '../components/PageMeta';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MapPin, Route, AlertTriangle, Compass } from 'lucide-react';
+import { useOlandModel, type OlandPoint } from '@/hooks/useOlandModel';
+
+// Öland-modellen — forskningssida. Testar hypotesen om vikingatidens vägnät och
+// centralplatser via runstenar, fornborgar, guldfynd, Frö-namn och kyrkor. Imperativ
+// Leaflet (samma mönster som ExcursionsMap → undviker react-leaflet-versionskrångel).
+
+const KIND_STYLE: Record<string, { color: string; radius: number; label: string }> = {
+  runestone: { color: '#ef4444', radius: 3, label: 'Runsten' },
+  church: { color: '#64748b', radius: 3, label: 'Kyrka' },
+  hillfort: { color: '#1e3a8a', radius: 5, label: 'Fornborg' },
+  fro_name: { color: '#a855f7', radius: 5, label: 'Frö-namn' },
+  find: { color: '#d4af37', radius: 6, label: 'Guld-/silverfynd' },
+};
+
+const OlandMap: React.FC<{ points: OlandPoint[] }> = ({ points }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const layerRef = useRef<L.LayerGroup | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [56.75, 16.65], zoom: 9, scrollWheelZoom: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
+    // Köpingsvik-hubben
+    L.circle([56.885, 16.727], { radius: 4000, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.08 })
+      .bindPopup('<b>Köpingsvik</b><br/><span style="font-size:11px">Öns dominerande vikingatida nod — 89 av 190 runstenar inom 4 km.</span>')
+      .addTo(map);
+    layerRef.current = L.layerGroup().addTo(map);
+    mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; layerRef.current = null; };
+  }, []);
+
+  useEffect(() => {
+    const layer = layerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+    points.forEach((p) => {
+      const s = KIND_STYLE[p.kind] ?? { color: '#94a3b8', radius: 3, label: p.kind };
+      L.circleMarker([p.lat, p.lng], {
+        radius: s.radius,
+        color: s.color,
+        weight: p.kind === 'find' ? 2 : 1,
+        fillColor: s.color,
+        fillOpacity: p.kind === 'find' ? 0.9 : 0.55,
+      })
+        .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${s.label}${p.note ? ` · ${p.note}` : ''}</span>`)
+        .addTo(layer);
+    });
+  }, [points]);
+
+  return <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />;
+};
+
+const Legend: React.FC = () => (
+  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mb-3">
+    {Object.values(KIND_STYLE).map((s) => (
+      <span key={s.label} className="inline-flex items-center gap-1">
+        <span style={{ width: 10, height: 10, borderRadius: 9999, background: s.color, display: 'inline-block' }} /> {s.label}
+      </span>
+    ))}
+    <span className="inline-flex items-center gap-1"><span style={{ width: 10, height: 10, borderRadius: 9999, border: '2px solid #f59e0b', display: 'inline-block' }} /> Köpingsvik-hub</span>
+  </div>
+);
+
+const Oland = () => {
+  const { data: points = [], isLoading } = useOlandModel();
+  const count = (k: string) => points.filter((p) => p.kind === k).length;
+
+  return (
+    <div className="min-h-screen viking-bg">
+      <PageMeta
+        title="Öland-modellen — vägnät och centralplatser under vikingatiden"
+        titleEn="The Öland model — Viking-age roads and central places"
+        description="Forskningssida: rekonstruktion av Ölands vikingatida vägnät och centralplatser ur runstenar, fornborgar, guldfynd, Frö-namn och kyrkor. Reproducerbar, källförd, med redovisade osäkerheter."
+        descriptionEn="Research page: reconstructing Öland's Viking-age road network and central places."
+        keywords="Öland, vikingatid, runstenar, fornborgar, Karlevi, Köpingsvik, Gråborg, Färjestadskragen, centralplats, vägnät"
+      />
+      <Header />
+      <Breadcrumbs />
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-6">
+          <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
+            <MapPin className="h-8 w-8 text-gold" /> Öland-modellen
+          </h1>
+          <p className="text-gold/90 text-sm font-medium mb-3">Vikingatidens vägnät och centralplatser</p>
+          <p className="text-muted-foreground text-lg">
+            Öland har inte ändrat form nämnvärt sedan järnåldern. Genom att lägga runstenar, fornborgar,
+            guldfynd, Frö-namn och medeltidskyrkor på samma karta framträder ett troligt mönster för hur
+            vägarna gick och var makten satt. Materialet är en <em>modell</em> — källförd och prövbar, inte en
+            färdig slutsats.
+          </p>
+        </div>
+
+        <Card className="viking-card mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-gold"><Route className="h-5 w-5" /> Vad datan visar</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p><strong className="text-foreground">Väst/Kalmarsund-korridoren</strong> är entydig: Karlevistenen (Öl 1), Frö-klungan (Stora/Lilla Frö), Färjestadskragen (folkvandringstida prestigeguld, SHM 108870) och en runstenslinje längs sundet — monument, kult, guld och runstenar på samma axel.</p>
+            <p><strong className="text-foreground">Köpingsvik</strong> är öns dominerande nod: 89 av 190 runstenar inom 4 km.</p>
+            <p><strong className="text-foreground">Fornborgs-spinen</strong> ligger i mitten (Gråborg, Ismantorp, Bårby…); Sandby borg östligare mot Östersjön.</p>
+            <p><strong className="text-foreground">E–V-väg Färjestaden→Björnhovda→Gråborg:</strong> Björnhovda-skattens (36 solidi) läge på vägen som passerar Gråborg pekar på en gammal tvärförbindelse mellan kust och inre.</p>
+          </CardContent>
+        </Card>
+
+        <Card className="viking-card mb-4 border-amber-600/40">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-amber-300"><AlertTriangle className="h-5 w-5" /> Ärliga förbehåll</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-1">
+            <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Östkusten är gles</strong> på runstenar — modellen är väst-dominerad, inte två jämnstarka N–S-vägar.</li>
+              <li><strong>Kyrkorna står ~3 km isär</strong> (median), inte 7–15 km — dagsräckvidds-modellen gäller fastlandets glesare centralorter, inte täta Öland.</li>
+              <li><strong>Tvär-sundskontext:</strong> Kalmar-bygden (Hossmo m.fl.) mittemot hör till samma system över det långgrunda Kalmarsund — men den är fastland och visas inte här.</li>
+              <li>Väglinjerna är ännu inte inritade; 1700-talets milstenar (~137) är nästa verktyg för att spåra dem.</li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Legend />
+        {isLoading ? (
+          <p className="text-muted-foreground">Laddar kartan…</p>
+        ) : (
+          <OlandMap points={points} />
+        )}
+        <p className="text-xs text-muted-foreground mt-3 opacity-80">
+          {points.length} punkter: {count('runestone')} runstenar · {count('hillfort')} fornborgar · {count('church')} kyrkor · {count('find')} guld-/silverfynd · {count('fro_name')} Frö-namn.
+          Källor: Samnordisk runtextdatabas; RAÄ/Fornsök; Historiska museet (guldfynd); Ortnamnsregistret.
+        </p>
+        <div className="pt-4">
+          <a href="/explore" className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2 text-slate-900 font-semibold hover:bg-amber-400 transition-colors">
+            <Compass className="h-4 w-4" /> Öppna hela kartan (experimentera med fler lager)
+          </a>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default Oland;
