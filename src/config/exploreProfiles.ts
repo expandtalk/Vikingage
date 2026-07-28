@@ -16,7 +16,10 @@ export type ProfileId =
   | "archaeologist"
   | "trade"
   | "geneticist"
-  | "osteolog";
+  | "osteolog"
+  | "marine"
+  | "church"
+  | "geologist";
 
 export type TimePeriod = "all" | "viking_age";
 
@@ -50,6 +53,9 @@ export const PROFILE_IDS: ProfileId[] = [
   "trade",
   "geneticist",
   "osteolog",
+  "marine",
+  "church",
+  "geologist",
 ];
 
 /** Legacy localStorage-id:n (pre-refaktor-roster) → nya id:n. */
@@ -291,6 +297,63 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
       results: { visible: true, emphasis: "primary" },
       search: { visible: false },
       filters: { visible: true, emphasis: "minimized" },
+    },
+  },
+  {
+    id: "marine",
+    sortOrder: 7,
+    label: { sv: "Marinarkeolog", en: "Marine archaeologist" },
+    description: { sv: "Farleder, hamnar, vrak och strandförskjutning", en: "Waterways, harbours, wrecks and shoreline shift" },
+    icon: "anchor",
+    basemap: "terrain",
+    layers: on("valdemar_route", "water_routes", "river_routes", "paleo_shoreline", "viking_cities", "beacon_sites"),
+    theme: "flow",
+    primaryLayers: ["valdemar_route", "water_routes"],
+    defaultPeriod: "all",
+    showTimeline: true,
+    panels: {
+      legend: { visible: true },
+      results: { visible: true },
+      search: { visible: false },
+      filters: { visible: true },
+    },
+  },
+  {
+    id: "church",
+    sortOrder: 8,
+    label: { sv: "Kyrkohistoriker", en: "Church historian" },
+    description: { sv: "Kyrkor, kristnande och kors-runstenar", en: "Churches, Christianization and cross runestones" },
+    icon: "church",
+    basemap: "terrain",
+    layers: on("ecclesiastical_churches", "religious_places", "runic_inscriptions"),
+    theme: "chronology",
+    primaryLayers: ["ecclesiastical_churches", "runic_inscriptions"],
+    defaultPeriod: "all",
+    showTimeline: true,
+    panels: {
+      legend: { visible: true },
+      results: { visible: true },
+      search: { visible: false },
+      filters: { visible: true },
+    },
+  },
+  {
+    id: "geologist",
+    sortOrder: 9,
+    label: { sv: "Geolog", en: "Geologist" },
+    description: { sv: "Strandlinjer, berggrund och fornborgars terräng", en: "Shorelines, bedrock and hillfort terrain" },
+    icon: "mountain",
+    basemap: "terrain",
+    layers: on("paleo_shoreline", "viking_fortresses", "archaeological_sites", "river_routes"),
+    theme: "earth",
+    primaryLayers: ["paleo_shoreline", "viking_fortresses"],
+    defaultPeriod: "all",
+    showTimeline: true,
+    panels: {
+      legend: { visible: true },
+      results: { visible: true },
+      search: { visible: false },
+      filters: { visible: true },
     },
   },
 ];

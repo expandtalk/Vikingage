@@ -1,4 +1,4 @@
-import { Monitor, Globe, Microscope, Shovel, Ship, Dna, Bone, type LucideIcon } from "lucide-react";
+import { Monitor, Globe, Microscope, Shovel, Ship, Dna, Bone, Anchor, Church, Mountain, type LucideIcon } from "lucide-react";
 
 export type BasemapId = "osm" | "terrain" | "light";
 
@@ -57,7 +57,7 @@ export const THEME_ACCENTS: Record<ThemeId, string> = {
   genetic: "#ec4899",
 };
 
-export type ProfileIcon = "monitor" | "globe" | "microscope" | "shovel" | "ship" | "dna" | "bone";
+export type ProfileIcon = "monitor" | "globe" | "microscope" | "shovel" | "ship" | "dna" | "bone" | "anchor" | "church" | "mountain";
 
 export const PROFILE_ICONS: Record<ProfileIcon, LucideIcon> = {
   monitor: Monitor,
@@ -67,6 +67,9 @@ export const PROFILE_ICONS: Record<ProfileIcon, LucideIcon> = {
   ship: Ship,
   dna: Dna,
   bone: Bone,
+  anchor: Anchor,
+  church: Church,
+  mountain: Mountain,
 };
 
 /** Lagernycklar som appen faktiskt kan rita (topp-nivå lager). */
