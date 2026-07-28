@@ -54,7 +54,18 @@
       "Bash(psql --version)",
       "Bash(echo \"EXIT: $?\")",
       "Artifact",
-      "Bash(curl -s \"https://www.vikingage.se/?_=$\\(date +%s || echo x\\)\" -H \"Cache-Control: no-cache\")"
+      "Bash(curl -s \"https://www.vikingage.se/?_=$\\(date +%s || echo x\\)\" -H \"Cache-Control: no-cache\")",
+      "Skill(checkpoint)",
+      "Bash(curl -s -A \"vikingage-research/1.0 \\(daniel.larsson@expandtalk.se\\)\" \"https://nominatim.openstreetmap.org/search?q=Viggbyholm%2C+T%C3%A4by%2C+Sweden&format=json&limit=1\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d[0]['display_name'],'|',d[0]['lat'],d[0]['lon']\\) if d else print\\('NONE'\\)\")",
+      "Bash(curl -s -A \"vikingage-research/1.0 \\(daniel.larsson@expandtalk.se\\)\" \"https://nominatim.openstreetmap.org/search?q=Sand%2C+Senja%2C+Troms%2C+Norway&format=json&limit=3\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(x['display_name'],'|',x['lat'],x['lon']\\) for x in d] if d else print\\('NONE'\\)\")",
+      "WebFetch(domain:journals.plos.org)",
+      "WebFetch(domain:ora.ox.ac.uk)",
+      "WebFetch(domain:pmc.ncbi.nlm.nih.gov)",
+      "WebFetch(domain:www.wikidata.org)",
+      "WebFetch(domain:www.researchgate.net)",
+      "WebFetch(domain:univ-rennes.hal.science)"
     ]
   }
 }
