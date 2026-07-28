@@ -61,6 +61,7 @@ export const CarverDetailPanel: React.FC<CarverDetailPanelProps> = ({
         title: "Öpir",
         subtitle: "svensk runristare",
         image: null,
+        source: "Sammanställt efter Svenska Wikipedia; forskaruppgifter enligt namngivna forskare (Åhlén, Källström, Gräslund, von Friesen m.fl.).",
         mainText: `Öpir, (nysvensk normalisering Öpe), eller Ofeig Öpir som troligen var hans epitet, var verksam som runristare under 1000-talets senare hälft, vilket är den mest aktiva perioden av stenresning i Mellansverige. Han är en av de runmästare som efterlämnat allra flest verk, omkring åttio stycken varav de flesta är signerade.`,
         sections: [
           {
@@ -92,6 +93,7 @@ export const CarverDetailPanel: React.FC<CarverDetailPanelProps> = ({
         title: "Livsten",
         subtitle: "uppländsk runristare",
         image: null,
+        source: "Sammanställt efter Svenska Wikipedia; forskaruppgifter enligt namngivna forskare (Åhlén, Källström, Gräslund, von Friesen m.fl.).",
         mainText: `Livsten var en uppländsk runristare, verksam cirka 1030–1050 i västra och sydvästra Uppland samt i Salatrakten. 18 ristningar tillskrivs Livsten, varav fyra är signerade. Livstens ristningar kännetecknas av ett stort fyrfotadjur med utdragna lemmar och en ringlande ornamentik.`,
         sections: [
           {
@@ -119,6 +121,7 @@ export const CarverDetailPanel: React.FC<CarverDetailPanelProps> = ({
         title: "Balle",
         subtitle: "runristare",
         image: null,
+        source: "Sammanställt efter Svenska Wikipedia; forskaruppgifter enligt namngivna forskare (Åhlén, Källström, Gräslund, von Friesen m.fl.).",
         mainText: `Balle var en runristare som levde under senare hälften av 1000-talet. Ett fyrtiotal av hans ristningar är bevarade, varav ett tjugotal är signerade. De finns i Västmanland, sydvästra Uppland och norra Södermanland. En del av Balles runstenar har text på vers, till exempel Ågerstastenen. Han anses ha varit lärjunge till Livsten och han arbetade i en ornamenterad stil, rikligt försedd med bild- och mönstervariationer. Det är osäkert om Balle och Balle den röde ("Röd-Balle"), som ristat två stenar vid Lilla Kyringe och Hassmyra i Västmanland, är samma person.`,
         sections: [
           {
@@ -146,6 +149,7 @@ export const CarverDetailPanel: React.FC<CarverDetailPanelProps> = ({
         title: "Åsmund Kåresson",
         subtitle: "runristare",
         image: null,
+        source: "Sammanställt efter Svenska Wikipedia; forskaruppgifter enligt namngivna forskare (Åhlén, Källström, Gräslund, von Friesen m.fl.).",
         mainText: `Åsmund Kåresson, Asmundr Kara sunn, var en runristare i Uppland och hans verksamhet med centrum kring Uppsala varade från 1020-talet till seklets mitt. Hans arbetsområde sträckte sig uppifrån Gävletrakten i norr och ner till Stockholms regioner i söder.`,
         sections: [
           {
@@ -168,18 +172,18 @@ export const CarverDetailPanel: React.FC<CarverDetailPanelProps> = ({
       };
     }
     
-    // Default biography template for other carvers
+    // Ingen vetted biografi: använd den DATADRIVNA DB-beskrivningen (faktisk, källförd ur Rundata) —
+    // ALDRIG påhittad prosa (hårt krav, Daniel 2026-07-28). Finns ingen text visas ärligt tomt läge.
+    const dbDesc = (carver as { description?: string })?.description;
     return {
       title: carverName,
       subtitle: "runristare",
       image: null,
-      mainText: `${carverName} var en runristare som var verksam under vikingatiden och medeltiden. Mer detaljerad biografisk information kommer att läggas till när forskningen utvecklas.`,
-      sections: [
-        {
-          title: "Bakgrund",
-          content: "Biografisk information om denna runristare samlas in och kommer att uppdateras när mer forskning blir tillgänglig."
-        }
-      ]
+      mainText: dbDesc && dbDesc.length > 0
+        ? dbDesc
+        : "Ingen biografi är inlagd ännu. Se ristarens stenar och statistik ovan.",
+      source: dbDesc ? "Datadriven sammanfattning ur Rundata (Samnordisk runtextdatabas)" : null,
+      sections: [],
     };
   };
 
@@ -328,6 +332,9 @@ export const CarverDetailPanel: React.FC<CarverDetailPanelProps> = ({
                     <h2 className="text-2xl font-bold text-white mb-1">{biography.title}</h2>
                     <p className="text-slate-300 italic mb-3">{biography.subtitle}</p>
                     <p className="text-slate-200 leading-relaxed">{biography.mainText}</p>
+                    {(biography as { source?: string | null }).source && (
+                      <p className="text-[11px] text-slate-400 mt-3 border-t border-white/10 pt-2">Källa: {(biography as { source?: string | null }).source}</p>
+                    )}
                   </div>
 
                   {/* Biography Sections */}

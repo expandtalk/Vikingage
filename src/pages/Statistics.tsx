@@ -5,7 +5,7 @@ import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
-import { BarChart3, MapPin, Hammer, Landmark, Image as ImageIcon, Loader2, ScrollText, Church, Crown, Coins as CoinsIcon, Dna, Database } from 'lucide-react';
+import { BarChart3, MapPin, Hammer, Landmark, Image as ImageIcon, Loader2, ScrollText, Church, Crown, Coins as CoinsIcon, Dna, Database, Compass, Fingerprint, FlaskConical, Boxes } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -124,6 +124,28 @@ const Statistics = () => {
             ))}
           </div>
         )}
+
+        {/* METODER & SYSTEM — hur plattformen arbetar (ärligt flaggat efter mognad) */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2 mb-1"><Compass className="h-6 w-6 text-gold" />{sv ? 'Metoder & system' : 'Methods & systems'}</h2>
+          <p className="text-sm text-muted-foreground mb-4">{sv ? 'Fyra arbetssätt ovanpå datat. Statusen är ärlig: vad som är i drift och vad som är en riktning.' : 'Four methods layered on the data. Status is honest: what is live vs a direction.'}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { icon: <Compass className="h-5 w-5 text-gold" />, t: 'Explorer View', d: sv ? 'Interaktiv karta med togglebara lager, räckvidds-/piltavleverktyg (cirkel, kvadrat, dagsmaskvidd) och export till GeoJSON/CSV. Utforska materialet rumsligt.' : 'Interactive map with toggleable layers, a reach probe and GeoJSON/CSV export.', s: sv ? 'I drift' : 'Live', live: true },
+              { icon: <Fingerprint className="h-5 w-5 text-gold" />, t: 'Forensik & Digital Fingerprinting', d: sv ? 'Identifierar och daterar runstenar ur en "fingeravtryck": ristarhand (1 017 attributioner), korstypologi (Gräslund), numerisk datering (7 142 termini), runstil och kristna markörer.' : 'Identifies and dates runestones from a fingerprint: carver hand, cross typology, numeric dating, style, Christian markers.', s: sv ? 'Datalager i drift · analys växer' : 'Data live · analysis growing', live: true },
+              { icon: <FlaskConical className="h-5 w-5 text-gold" />, t: 'Stress test (hypotesprövning)', d: sv ? 'Prövar rumsliga samband mot en kontrollgrupp — ortnamnskluster kring centralorter, kyrktäthet över tid — alltid med redovisade osäkerheter, aldrig en naken siffra.' : 'Tests spatial correlations against a control group, always with stated uncertainty.', s: sv ? 'I drift' : 'Live', live: true },
+              { icon: <Boxes className="h-5 w-5 text-gold" />, t: 'Digitala tvillingar', d: sv ? 'Simuleringar mot dåtidens landskap — strandförskjutning, dagsräckvidd, farleder. Delar finns (räckvidd, strandlinje); full simulering är en riktning, inte färdig.' : 'Simulations against the past landscape — shoreline, daily reach, sailing routes. Partly built; full simulation is a direction.', s: sv ? 'Riktning · delar byggda' : 'Direction · partly built', live: false },
+            ].map((m) => (
+              <section key={m.t} className="viking-card rounded-lg border border-border p-5">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">{m.icon}{m.t}</h3>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full border ${m.live ? 'border-emerald-500/50 text-emerald-300' : 'border-amber-500/50 text-amber-300'}`}>{m.s}</span>
+                </div>
+                <p className="text-sm text-muted-foreground">{m.d}</p>
+              </section>
+            ))}
+          </div>
+        </div>
 
         {/* RUNSTENSDATABASEN — bläddra per X */}
         <div className="mb-4">
