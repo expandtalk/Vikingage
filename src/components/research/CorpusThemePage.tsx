@@ -48,12 +48,9 @@ export function CorpusThemePage({ title, titleEn, description, intro, rows, stat
         <div className="text-sm text-muted-foreground mb-4 max-w-3xl space-y-2">{intro}</div>
 
         {stats && stats.length > 0 && (
-          <div className="flex flex-wrap gap-3 mb-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4 text-sm text-muted-foreground">
             {stats.map((s, i) => (
-              <div key={i} className="viking-card rounded-lg border border-border px-3 py-2">
-                <div className="text-lg font-bold text-gold">{s.value}</div>
-                <div className="text-[11px] text-muted-foreground">{s.label}</div>
-              </div>
+              <span key={i}><span className="text-gold font-semibold">{s.value}</span> {s.label}</span>
             ))}
           </div>
         )}

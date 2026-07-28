@@ -45,6 +45,7 @@ const Greklandsfarare = lazy(() => import("./pages/Greklandsfarare"));
 const Langbardaland = lazy(() => import("./pages/Langbardaland"));
 const Titlar = lazy(() => import("./pages/Titlar"));
 const Kungshogar = lazy(() => import("./pages/Kungshogar"));
+const Bronsalder = lazy(() => import("./pages/Bronsalder"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -127,6 +128,7 @@ const App = () => (
                   <Route path="/forskning/langbardaland" element={<Langbardaland />} />
                   <Route path="/forskning/titlar" element={<Titlar />} />
                   <Route path="/forskning/kungshogar" element={<Kungshogar />} />
+                  <Route path="/forskning/bronsalder" element={<Bronsalder />} />
                   <Route path="/sv/kalmar" element={<Kalmar />} />
                   <Route path="/kalmar" element={<Kalmar />} />
                   <Route path="/prices" element={<Prices />} />
