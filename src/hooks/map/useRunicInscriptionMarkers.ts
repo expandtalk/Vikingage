@@ -123,11 +123,27 @@ const createRuneIcon = (inscription: RunicInscription): L.DivIcon => {
   });
 };
 
+export interface InscriptionLocationOverride {
+  lat: number;
+  lng: number;
+  place?: string | null;
+}
+
+export interface RunicMarkerOptions {
+  // 'current' (default) = plotta där stenen står idag. 'original' = plotta vid ursprunglig
+  // plats för de stenar som flyttats (inscription_locations) + rita en flyttlinje till nuläget.
+  locationMode?: 'current' | 'original';
+  originalById?: Map<string, InscriptionLocationOverride>;
+}
+
 export const addRunicInscriptionMarkers = (
   map: L.Map,
   inscriptions: RunicInscription[],
-  onMarkerClick?: (inscription: RunicInscription) => void
+  onMarkerClick?: (inscription: RunicInscription) => void,
+  options?: RunicMarkerOptions
 ): L.Marker[] => {
+  const mode = options?.locationMode ?? 'current';
+  const originalById = options?.originalById;
   // OBS: ingen per-markör-loggning här — 6 000+ console.log per omritning
   // frös renderingen (prestandafix 2026-07-20). En summeringsrad i slutet räcker.
   const markers: L.Marker[] = [];
@@ -136,10 +152,16 @@ export const addRunicInscriptionMarkers = (
 
   // Klustring: ta bort ev. föregående grupp och skapa en ny. Gruppen lagras på map-
   // objektet så hooken är självhanterande (anroparens per-markör-städning blir no-op).
-  const mapAny = map as unknown as { __runeClusterGroup?: L.LayerGroup };
+  const mapAny = map as unknown as { __runeClusterGroup?: L.LayerGroup; __runeMoveLines?: L.LayerGroup };
   if (mapAny.__runeClusterGroup && map.hasLayer(mapAny.__runeClusterGroup)) {
     map.removeLayer(mapAny.__runeClusterGroup);
   }
+  // Flyttlinjer (original → nuläge) ligger på ett eget lager utanför klustret; städa alltid.
+  if (mapAny.__runeMoveLines && map.hasLayer(mapAny.__runeMoveLines)) {
+    map.removeLayer(mapAny.__runeMoveLines);
+    mapAny.__runeMoveLines = undefined;
+  }
+  const moveLines = (mode === 'original' && originalById) ? L.layerGroup() : null;
   const clusterGroup = (L as unknown as { markerClusterGroup: (o?: unknown) => L.LayerGroup }).markerClusterGroup({
     chunkedLoading: true,            // prestanda för ~5000 punkter
     maxClusterRadius: 50,
@@ -179,9 +201,18 @@ export const addRunicInscriptionMarkers = (
       lng = inscription.longitude;
     }
 
+    // Ursprungsläge: plotta flyttade stenar vid ursprunglig plats + rita flyttlinje till nuläget.
+    if (mode === 'original' && originalById && inscription.id && originalById.has(inscription.id)) {
+      const o = originalById.get(inscription.id)!;
+      if (moveLines && lat && lng && !isNaN(lat) && !isNaN(lng)) {
+        L.polyline([[o.lat, o.lng], [lat, lng]], { color: '#a0342a', weight: 1, dashArray: '4 4', opacity: 0.6 }).addTo(moveLines);
+      }
+      lat = o.lat; lng = o.lng;
+    }
+
     if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
       validCoordinatesCount++;
-      
+
       // Create rune-based icon
       const icon = createRuneIcon(inscription);
       
@@ -250,6 +281,7 @@ export const addRunicInscriptionMarkers = (
 
   clusterGroup.addTo(map);
   mapAny.__runeClusterGroup = clusterGroup;
+  if (moveLines) { moveLines.addTo(map); mapAny.__runeMoveLines = moveLines; }
 
   return markers;
 };
