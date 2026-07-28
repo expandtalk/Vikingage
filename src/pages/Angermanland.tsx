@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, AlertTriangle, FlaskConical, Info, Compass } from 'lucide-react';
 import { useCentralPlaces, type CentralPlaceName, type CentralPlaceGroup } from '@/hooks/useCentralPlaces';
 import { supabase } from '@/integrations/supabase/client';
+import { OrtnamnVerification } from '@/components/OrtnamnVerification';
 
 // Centralortsprojektet Ångermanland — delbar forskningssida. Läser central_places
 // + central_place_names live. Medvetet tydlig med vad som saknas (koordinater/
@@ -240,6 +241,9 @@ const Angermanland = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* VERIFIERING — Agneta skiljer kult från homonym per namnträff (ren kvot) */}
+        <OrtnamnVerification region="Ångermanland" />
 
         {/* STATUS — vad som finns och vad som saknas (tydligt, medvetet) */}
         <Card className="viking-card mb-4 border-amber-600/40">
