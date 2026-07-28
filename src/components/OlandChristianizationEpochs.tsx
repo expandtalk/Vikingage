@@ -39,13 +39,14 @@ export function OlandChristianizationEpochs() {
   const ticks = [200, 400, 600, 800, 1000, 1200, 1400];
   const epochs = [
     { label: 'Förkristet gravlandskap', a: 200, b: 1000, bg: 'rgba(150,120,70,0.16)',
-      note: c ? `${c.graves} gravar (stensättningar, gravfält, domarringar, stenkammargravar, storhögar) + ${c.forts} fornborgar` : '' },
+      note: c ? `${c.graves} gravar + ${c.forts} fornborgar · Vaner-kult (Skedemosse) · solidus-guldskatter (Björnhovda, Åby)` : '' },
     { label: 'Runstensfönstret', a: 980, b: 1130, bg: 'rgba(80,140,90,0.18)',
       note: '~190 runstenar; kristna markörer från ~1020 (se banden nedan)' },
     { label: 'Kyrkoera', a: 1100, b: 1400, bg: 'rgba(212,175,55,0.16)',
       note: c ? `${c.church1100} stenkyrkor ~1100 → ${c.church1200} vid 1200; kapell; ${c.moved} runstenar inflyttade i kyrkan` : '' },
   ];
   const pins = [
+    { y: 1000, t: 'Kristna mynt (crux-penning)' },
     { y: 1100, t: 'Första stenkyrkorna' },
     { y: 1200, t: 'S:ta Brita kapell' },
     { y: 1374, t: 'Birgittas likfärd' },
@@ -87,6 +88,8 @@ export function OlandChristianizationEpochs() {
       <p className="text-[11px] text-muted-foreground mt-1">
         De förkristna gravarna saknar datering per objekt och visas som bakgrundsepok, inte som kurva.
         (Ölands allra äldsta gravar — dös och gånggrifter, ~3500 f.Kr. — ligger före axeln.)
+        Solidus-skatterna är folkvandringstidens hedniska prestige-guld — inte en kristen markör;
+        den kristna mynt-signalen är crux-penningen (Olof Skötkonungs Sigtuna-mynt, ~995–1035, kors + CRUX).
       </p>
     </div>
   );
