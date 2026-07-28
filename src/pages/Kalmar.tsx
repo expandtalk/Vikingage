@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Link } from 'react-router-dom';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
@@ -69,10 +70,11 @@ const precMeta = (p: string | null) => PRECISION_META[p ?? ''] ?? { color: '#94a
 
 // Egen karta över Kalmar-noden. Visar bara objekt med belagd koordinat (Hossmo kyrka, Grimskär,
 // hamnen Kättilen, myntfynden). Ortnamn utan koord listas nedan, ej på kartan (geokodning pending).
-const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: Coin[] }> = ({ places, harbor, coins }) => {
+const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: Coin[]; canEdit: boolean; onMove: (id: string, lat: number, lng: number) => void }> = ({ places, harbor, coins, canEdit, onMove }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const fittedRef = useRef(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -94,14 +96,30 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
       const pm = precMeta(p.coord_precision);
       const color = husaby ? '#f59e0b' : pm.solid ? '#a78bfa' : pm.color;
       pts.push([p.lat!, p.lng!]);
-      L.circleMarker([p.lat!, p.lng!], {
-        radius: husaby ? 9 : 6, color, weight: 2, fillColor: color,
-        fillOpacity: husaby ? 0.35 : pm.solid ? 0.65 : 0.2,
-        dashArray: pm.solid ? undefined : '3 4', // approx/placeholder = streckad ring
-      })
-        .bindTooltip(p.name, { permanent: husaby, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
-        .bindPopup(`<b>${p.name}</b> <span style="font-size:10px;color:#888">${CAT_LABEL[p.category] ?? p.category}</span><br/><span style="font-size:11px">${p.element_reading ?? ''}</span>${p.interpretation && p.interpretation !== '—' ? `<br/><span style="font-size:11px;color:#666">${p.interpretation}</span>` : ''}<br/><span style="font-size:10px;color:${pm.color}">◉ ${pm.label}</span>`)
-        .addTo(layer);
+      const popupHtml = `<b>${p.name}</b> <span style="font-size:10px;color:#888">${CAT_LABEL[p.category] ?? p.category}</span><br/><span style="font-size:11px">${p.element_reading ?? ''}</span>${p.interpretation && p.interpretation !== '—' ? `<br/><span style="font-size:11px;color:#666">${p.interpretation}</span>` : ''}<br/><span style="font-size:10px;color:${pm.color}">◉ ${pm.label}</span>${canEdit ? '<br/><span style="font-size:10px;color:#38bdf8">✎ dra för att flytta → sparas som "forskare"</span>' : ''}`;
+      if (canEdit) {
+        // Redigeringsläge: dragbar markör som sparar exakt läge (precision 'forskare').
+        const sz = husaby ? 18 : 14;
+        const icon = L.divIcon({ className: '', iconSize: [sz, sz], iconAnchor: [sz / 2, sz / 2],
+          html: `<span style="display:block;width:${sz}px;height:${sz}px;border-radius:9999px;background:${color};border:2px solid #0b1220;box-shadow:0 0 5px ${color};cursor:grab"></span>` });
+        L.marker([p.lat!, p.lng!], { draggable: true, icon, autoPan: true })
+          .bindTooltip(p.name, { direction: 'top', offset: [0, -sz / 2], className: 'ang-clabel' })
+          .bindPopup(popupHtml)
+          .on('dragend', (ev: L.LeafletEvent) => {
+            const ll = (ev.target as L.Marker).getLatLng();
+            onMove(p.id, +ll.lat.toFixed(6), +ll.lng.toFixed(6));
+          })
+          .addTo(layer);
+      } else {
+        L.circleMarker([p.lat!, p.lng!], {
+          radius: husaby ? 9 : 6, color, weight: 2, fillColor: color,
+          fillOpacity: husaby ? 0.35 : pm.solid ? 0.65 : 0.2,
+          dashArray: pm.solid ? undefined : '3 4', // approx/placeholder = streckad ring
+        })
+          .bindTooltip(p.name, { permanent: husaby, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
+          .bindPopup(popupHtml)
+          .addTo(layer);
+      }
     });
 
     if (harbor && harbor.lat != null && harbor.lng != null) {
@@ -120,8 +138,9 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
         .addTo(layer);
     });
 
-    if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 12 });
-  }, [places, harbor, coins]);
+    // Fit bara första gången — annars hoppar kartan vid varje sparad flytt.
+    if (pts.length && !fittedRef.current) { map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 12 }); fittedRef.current = true; }
+  }, [places, harbor, coins, canEdit, onMove]);
 
   return <div ref={containerRef} className="w-full h-[460px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 460 }} />;
 };
@@ -161,6 +180,17 @@ const Kalmar = () => {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [events, setEvents] = useState<Ev[]>([]);
   const [forms, setForms] = useState<PlaceForm[]>([]);
+  const { canEdit } = useUserRole();
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  const handleMove = useCallback(async (id: string, lat: number, lng: number) => {
+    const { error } = await (supabase.from('kalmar_place_names') as any)
+      .update({ lat, lng, coord_precision: 'forskare' }).eq('id', id);
+    if (error) { setSaveMsg('Kunde inte spara — saknar behörighet (editor/admin krävs).'); return; }
+    setPlaces((prev) => prev.map((p) => (p.id === id ? { ...p, lat, lng, coord_precision: 'forskare' } : p)));
+    const moved = places.find((p) => p.id === id);
+    setSaveMsg(`Läge sparat ✓ ${moved ? moved.name : ''} → ${lat.toFixed(4)}, ${lng.toFixed(4)} (precision: forskare)`);
+  }, [places]);
 
   useEffect(() => {
     (supabase.from('kalmar_place_names') as any).select('*').order('name')
@@ -222,7 +252,14 @@ const Kalmar = () => {
             <CardTitle className="text-base flex items-center gap-2 text-gold"><MapPin className="h-5 w-5" /> Kalmar-noden på kartan</CardTitle>
           </CardHeader>
           <CardContent>
-            <KalmarMap places={places} harbor={harbor} coins={coins} />
+            {canEdit && (
+              <div className="mb-2 flex flex-wrap items-center gap-2 rounded border border-sky-700/50 bg-sky-950/30 px-3 py-2 text-xs text-sky-200">
+                <span className="font-semibold">✎ Redigeringsläge (forskare)</span>
+                <span className="opacity-80">— dra en markör till rätt läge, det sparas direkt (precision blir "forskare").</span>
+                {saveMsg && <span className="ml-auto text-emerald-300">{saveMsg}</span>}
+              </div>
+            )}
+            <KalmarMap places={places} harbor={harbor} coins={coins} canEdit={canEdit} onMove={handleMove} />
             <p className="text-xs text-muted-foreground mt-2 opacity-75">
               <strong>Guld</strong> = Hossmo husaby. <strong>Lila (heldragen)</strong> = verifierad koord (register/Fornsök/rutt).
               <strong> Gul/grå (streckad ring)</strong> = approx (OSM) resp. placeholder — <em>positioneras av dig</em>.
@@ -276,7 +313,7 @@ const Kalmar = () => {
                   );
                 })}
               </div>
-              <p className="text-[11px] opacity-70">Nästa steg: dragbara markörer på kartan som sparar din placering (sätter precision = "forskare"). Kräver editor-inloggning.</p>
+              <p className="text-[11px] opacity-70">{canEdit ? 'Du är inloggad som forskare: dra markörerna i kartan ovan för att sätta exakt läge — det sparas direkt (precision "forskare") och namnet försvinner härifrån.' : 'Logga in som forskare (editor/admin) för att dra markörerna och spara exakta lägen direkt i kartan.'}</p>
             </CardContent>
           </Card>
         )}
@@ -339,7 +376,7 @@ const Kalmar = () => {
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p><strong className="text-foreground">Belagt:</strong> {solLocality} ortnamn behandlas direkt i SOL 2003 (bl.a. <em>Hossmo = *Husa + mo</em>, husaby-tolkningen). {inReg.length} finns i Lantmäteriets ortregister med register-koordinat. Hossmo rundkyrka (ca 1120) och hamnen Kättilen är källförda med koordinat (RAÄ Fornsök).</p>
             <p><strong className="text-amber-300">Tolkning, ej dom:</strong> att Hossmo-Rinkaby-noden var Möres maktcentrum <em>före</em> Kalmar är en välgrundad hypotes utifrån husaby-/rink-namnen — forskaren avgör.</p>
-            <p><strong className="text-foreground">Koordinater ({geocoded}/{places.length}):</strong> alla utsatta, med precisions-flagga. Verifierade (register/Fornsök/rutt), OSM-approximerade och 4 placeholder. <strong className="text-sky-300">Du (forskaren) avgör och positionerar</strong> — nästa steg är dragbara markörer som sparar din placering. Sedan: blodbadet 1505 och Kalmar-/Öland-släkterna.</p>
+            <p><strong className="text-foreground">Koordinater ({geocoded}/{places.length}):</strong> alla utsatta, med precisions-flagga. Verifierade (register/Fornsök/rutt/forskare), OSM-approximerade och placeholder. <strong className="text-sky-300">Inloggad forskare (editor/admin) drar markörerna direkt i kartan</strong> — sparas som precision "forskare". Kvar: blodbadet 1505 och Kalmar-/Öland-släkterna.</p>
           </CardContent>
         </Card>
 
