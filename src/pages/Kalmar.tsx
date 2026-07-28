@@ -24,7 +24,9 @@ interface PlaceName {
   sol_match: string; sol_note: string | null; element_reading: string | null;
   interpretation: string | null; lat: number | null; lng: number | null; source: string | null;
   gazetteer_match: boolean; coord_precision: string | null;
+  head_element: string | null; semantic_domain: string | null; period_stratum: string | null;
 }
+interface PlaceForm { place_name: string; attested_form: string; attested_year: number | null; form_kind: string | null; source: string; verified: boolean; dialect_note: string | null; }
 interface Harbor { name: string; harbor_type: string | null; lat: number | null; lng: number | null; description: string | null; }
 interface Coin { name: string; metal: string | null; find_place: string | null; coordinates: { x: number; y: number } | null; significance: string | null; }
 interface Ev { event_name: string; year_start: number | null; description: string | null; location_status: string | null; }
@@ -32,6 +34,21 @@ interface Ev { event_name: string; year_start: number | null; description: strin
 const CAT_LABEL: Record<string, string> = {
   husaby: 'Husaby', by_administrativt: 'Administrativ by', by: 'By', torp: 'Torp',
   'ö': 'Ö', skär_grund: 'Skär/grund', terräng: 'Terräng', vattendrag: 'Vattendrag',
+  'lösa': 'Lösa-namn', socken: 'Socken/kyrkby',
+};
+// Semantiska fält (sidoordnat per område) + periodskikt (namnledskronologin = "kontoplanen")
+const DOMAIN_LABEL: Record<string, string> = {
+  krig: 'Krig', 'rätt': 'Rätt/ting', hantverk: 'Hantverk', makt_administration: 'Makt/adm.',
+  jordbruk: 'Jordbruk', natur_växt: 'Natur/växt', 'träslag': 'Träslag', terräng_sten: 'Terräng/sten',
+  bebyggelse: 'Bebyggelse', personnamn: 'Personnamn', vatten_kust: 'Vatten/kust', kult: 'Kult', 'okänd': 'Okänd',
+};
+const STRATUM_META: Record<string, { color: string; label: string }> = {
+  'järnålder': { color: '#f472b6', label: 'Järnålder' },
+  vikingatid: { color: '#f59e0b', label: 'Vikingatid' },
+  tidig_medeltid: { color: '#fbbf24', label: 'Tidig medeltid' },
+  medeltid: { color: '#a3e635', label: 'Medeltid' },
+  efterreformatorisk: { color: '#38bdf8', label: 'Efterreformatorisk' },
+  'okänd': { color: '#94a3b8', label: 'Okänt skikt' },
 };
 const MATCH_META: Record<string, { color: string; label: string }> = {
   locality: { color: '#22c55e', label: 'SOL: orten belagd' },
@@ -109,20 +126,31 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   return <div ref={containerRef} className="w-full h-[460px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 460 }} />;
 };
 
-const NameRow: React.FC<{ n: PlaceName }> = ({ n }) => {
+const NameRow: React.FC<{ n: PlaceName; forms?: PlaceForm[] }> = ({ n, forms = [] }) => {
   const m = MATCH_META[n.sol_match] ?? MATCH_META.none;
   const pm = precMeta(n.coord_precision);
+  const strat = n.period_stratum ? STRATUM_META[n.period_stratum] ?? STRATUM_META['okänd'] : null;
   return (
     <div className="py-2 border-b border-slate-800/60 last:border-0">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-foreground font-medium text-sm">{n.name}</span>
         <span className="text-[10px] px-1.5 py-0.5 rounded border border-slate-600 text-slate-300">{CAT_LABEL[n.category] ?? n.category}</span>
+        {n.semantic_domain && n.semantic_domain !== 'okänd' && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded border border-slate-600 text-slate-200">{DOMAIN_LABEL[n.semantic_domain] ?? n.semantic_domain}</span>
+        )}
+        {strat && <Badge variant="secondary" className="text-[10px]" style={{ backgroundColor: strat.color + '22', color: strat.color }}>{strat.label}</Badge>}
         <Badge variant="secondary" className="text-[10px]" style={{ backgroundColor: m.color + '22', color: m.color }}>{m.label}</Badge>
         <Badge variant="secondary" className="text-[10px]" style={{ backgroundColor: pm.color + '22', color: pm.color }}>◉ {pm.label}</Badge>
       </div>
-      {n.element_reading && <p className="text-xs text-foreground/80 mt-1">{n.element_reading}</p>}
+      {n.head_element && <p className="text-xs text-foreground/70 mt-1">Led: <strong>{n.head_element}</strong> — {n.element_reading}</p>}
       {n.sol_note && <p className="text-xs text-muted-foreground mt-0.5"><strong>SOL:</strong> {n.sol_note}</p>}
       {n.interpretation && n.interpretation !== '—' && <p className="text-xs text-muted-foreground mt-0.5 italic">{n.interpretation}</p>}
+      {forms.length > 0 && (
+        <p className="text-xs text-sky-300/90 mt-0.5">
+          Belagda former: {forms.map((f) => `${f.attested_form}${f.attested_year ? ` (${f.attested_year})` : ''}${f.verified ? '' : ' *'}`).join(' · ')}
+          <span className="text-muted-foreground"> {forms.some((f) => !f.verified) && '(* overifierad/lokalkännedom)'}</span>
+        </p>
+      )}
     </div>
   );
 };
@@ -132,10 +160,13 @@ const Kalmar = () => {
   const [harbor, setHarbor] = useState<Harbor | null>(null);
   const [coins, setCoins] = useState<Coin[]>([]);
   const [events, setEvents] = useState<Ev[]>([]);
+  const [forms, setForms] = useState<PlaceForm[]>([]);
 
   useEffect(() => {
     (supabase.from('kalmar_place_names') as any).select('*').order('name')
       .then(({ data }: { data: PlaceName[] | null }) => setPlaces(data ?? []));
+    (supabase.from('place_name_forms') as any).select('place_name,attested_form,attested_year,form_kind,source,verified,dialect_note')
+      .then(({ data }: { data: PlaceForm[] | null }) => setForms(data ?? []));
     (supabase.from('harbors') as any).select('name,harbor_type,lat,lng,description').ilike('name', '%kättil%').maybeSingle()
       .then(({ data }: { data: Harbor | null }) => setHarbor(data));
     (supabase.from('coins') as any).select('name,metal,find_place,coordinates,significance')
@@ -151,6 +182,10 @@ const Kalmar = () => {
   const notReg = places.filter((p) => !p.gazetteer_match).sort(sv);
   const geocoded = places.filter((p) => p.lat != null).length;
   const solLocality = places.filter((p) => p.sol_match === 'locality').length;
+  const formsFor = (name: string) => forms.filter((f) => f.place_name === name);
+  const needGeotag = places
+    .filter((p) => p.coord_precision === 'approx-osm' || p.coord_precision === 'placeholder')
+    .sort((a, b) => (a.coord_precision === 'placeholder' ? 0 : 1) - (b.coord_precision === 'placeholder' ? 0 : 1) || a.name.localeCompare(b.name, 'sv'));
 
   return (
     <div className="min-h-screen viking-bg">
@@ -204,22 +239,47 @@ const Kalmar = () => {
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-3">
             <p className="text-xs opacity-80">
-              Grupperade efter <strong>ortregistret</strong> (Lantmäteriets gazetteer <code>place_names</code>): de som
-              finns där har register-koordinat, de som saknas är egen grupp. Två badges per namn: <strong>SOL-belägg</strong>
-              (grönt = orten belagd, gult = bara elementet/annan ort, grått = ej i SOL) och <strong>koord-precision</strong>
-              (register/Fornsök/rutt = verifierat, OSM = approx, placeholder = du positionerar). Inget är påhittat — allt är
-              flaggat och flyttbart.
+              Grupperade efter <strong>ortregistret</strong> (Lantmäteriets gazetteer <code>place_names</code>). Varje namn är
+              kodat i det onomastiska ramverket: <strong>semantiskt fält</strong> (krig/rätt/hantverk…, som en områdes-kontoplan)
+              och <strong>periodskikt</strong> ur namnledskronologin (järnålder → efterreformatorisk). Plus <strong>SOL-belägg</strong>
+              (grönt = orten belagd, gult = bara elementet, grått = ej i SOL) och <strong>koord-precision</strong>. Där belagda
+              äldre former finns visas de (huvudboken). Kodningen är standardläsning (kronologi + SOL 2003) — <strong>du kan ändra den</strong>.
             </p>
             <div>
               <div className="text-xs font-semibold text-emerald-300 mb-1">I ortregistret ({inReg.length})</div>
-              {inReg.map((n) => <NameRow key={n.id} n={n} />)}
+              {inReg.map((n) => <NameRow key={n.id} n={n} forms={formsFor(n.name)} />)}
             </div>
             <div>
               <div className="text-xs font-semibold text-amber-300 mb-1">Saknas i ortregistret ({notReg.length}) — skär &amp; små torp, geokodade approx/placeholder</div>
-              {notReg.map((n) => <NameRow key={n.id} n={n} />)}
+              {notReg.map((n) => <NameRow key={n.id} n={n} forms={formsFor(n.name)} />)}
             </div>
           </CardContent>
         </Card>
+
+        {/* GEOTAG-ARBETSLISTA — vilka namn som inte blivit färdig-geotaggade (forskaren positionerar) */}
+        {needGeotag.length > 0 && (
+          <Card className="viking-card mb-4 border-amber-600/40">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2 text-amber-300"><MapPin className="h-5 w-5" /> Ej färdig-geotaggat ({needGeotag.length})</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground space-y-2">
+              <p className="text-xs opacity-80">Dessa har bara <strong>approximerad</strong> (OSM) eller <strong>placeholder</strong>-koordinat — de väntar på din positionering. Verifierade (register/Fornsök/rutt) visas inte här.</p>
+              <div className="flex flex-wrap gap-2">
+                {needGeotag.map((p) => {
+                  const pm = precMeta(p.coord_precision);
+                  return (
+                    <span key={p.id} className="inline-flex items-center gap-1.5 rounded border border-slate-700 px-2 py-1 text-xs" style={{ color: pm.color }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 9999, background: pm.color, display: 'inline-block' }} />
+                      {p.name}
+                      <span className="text-[10px] text-muted-foreground">{p.coord_precision === 'placeholder' ? 'placeholder' : 'approx'}</span>
+                    </span>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] opacity-70">Nästa steg: dragbara markörer på kartan som sparar din placering (sätter precision = "forskare"). Kräver editor-inloggning.</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* DEN MEDELTIDA STADEN */}
         <Card className="viking-card mb-4">
