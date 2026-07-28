@@ -29,7 +29,19 @@ interface PlaceName {
 }
 interface PlaceForm { place_name: string; attested_form: string; attested_year: number | null; form_kind: string | null; source: string; verified: boolean; dialect_note: string | null; }
 interface Harbor { name: string; harbor_type: string | null; lat: number | null; lng: number | null; description: string | null; }
-interface Coin { name: string; metal: string | null; find_place: string | null; coordinates: { x: number; y: number } | null; significance: string | null; }
+interface Coin { name: string; metal: string | null; find_place: string | null; coordinates: { x: number; y: number } | string | null; significance: string | null; }
+
+// coins.coordinates är Postgres 'point' → postgREST ger strängen "(x,y)" i browsern (pg ger {x,y}).
+// Tål båda formerna. Point = (x=lng, y=lat).
+const parsePoint = (v: Coin['coordinates']): { x: number; y: number } | null => {
+  if (!v) return null;
+  if (typeof v === 'object') {
+    const x = Number((v as { x: unknown }).x), y = Number((v as { y: unknown }).y);
+    return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+  }
+  const m = String(v).match(/\(?\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)?/);
+  return m ? { x: +m[1], y: +m[2] } : null;
+};
 interface Ev { event_name: string; year_start: number | null; description: string | null; location_status: string | null; }
 
 const CAT_LABEL: Record<string, string> = {
@@ -91,7 +103,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     layer.clearLayers();
     const pts: [number, number][] = [];
 
-    places.filter((p) => p.lat != null && p.lng != null).forEach((p) => {
+    places.filter((p) => Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng))).forEach((p) => {
       const husaby = p.category === 'husaby';
       const pm = precMeta(p.coord_precision);
       const color = husaby ? '#f59e0b' : pm.solid ? '#a78bfa' : pm.color;
@@ -122,7 +134,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
       }
     });
 
-    if (harbor && harbor.lat != null && harbor.lng != null) {
+    if (harbor && Number.isFinite(Number(harbor.lat)) && Number.isFinite(Number(harbor.lng))) {
       pts.push([harbor.lat, harbor.lng]);
       L.circleMarker([harbor.lat, harbor.lng], { radius: 7, color: '#38bdf8', weight: 2, fillColor: '#38bdf8', fillOpacity: 0.5 })
         .bindTooltip(harbor.name, { direction: 'top', offset: [0, -8] })
@@ -130,10 +142,11 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
         .addTo(layer);
     }
 
-    coins.filter((c) => c.coordinates).forEach((c) => {
+    coins.map((c) => ({ c, pt: parsePoint(c.coordinates) })).filter((x) => x.pt).forEach(({ c, pt }) => {
       const color = METAL_COLOR[(c.metal ?? '').toLowerCase()] ?? '#e5e7eb';
-      pts.push([c.coordinates!.y, c.coordinates!.x]);
-      L.circleMarker([c.coordinates!.y, c.coordinates!.x], { radius: 6, color, weight: 2, fillColor: color, fillOpacity: 0.7 })
+      const cy = pt!.y, cx = pt!.x;
+      pts.push([cy, cx]);
+      L.circleMarker([cy, cx], { radius: 6, color, weight: 2, fillColor: color, fillOpacity: 0.7 })
         .bindPopup(`<b>${c.name}</b><br/><span style="font-size:11px;color:#666">${c.find_place ?? ''}</span>${c.significance ? `<br/><span style="font-size:11px">${c.significance}</span>` : ''}`)
         .addTo(layer);
     });
