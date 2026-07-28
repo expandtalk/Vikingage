@@ -6,6 +6,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChristianizationChart } from '@/components/ChristianizationChart';
 import { MapPin, Route, AlertTriangle, Compass } from 'lucide-react';
 import { useOlandModel, type OlandPoint } from '@/hooks/useOlandModel';
 
@@ -151,10 +152,23 @@ const Oland = () => {
           <CardContent className="text-sm text-muted-foreground space-y-1">
             <ul className="list-disc pl-5 space-y-1">
               <li><strong>Östkusten är gles</strong> på runstenar — modellen är väst-dominerad, inte två jämnstarka N–S-vägar.</li>
-              <li><strong>Kyrkorna står ~3 km isär</strong> (median), inte 7–15 km — dagsräckvidds-modellen gäller fastlandets glesare centralorter, inte täta Öland.</li>
+              <li><strong>Kyrkorna står tätt</strong> (uppmätt median ~5,5 km öbrett; tätare i söder) — inte 7–15 km som dagsräckvidds-modellen ger för fastlandets glesbygd. Se kristnande-grafen nedan.</li>
               <li><strong>Tvär-sundskontext:</strong> Kalmar-bygden (Hossmo m.fl.) mittemot hör till samma system över det långgrunda Kalmarsund — men den är fastland och visas inte här.</li>
               <li>Väglinjerna är ännu inte inritade; 1700-talets milstenar (~137) är nästa verktyg för att spåra dem.</li>
             </ul>
+          </CardContent>
+        </Card>
+
+        <Card className="viking-card mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-gold"><Route className="h-5 w-5" /> Kristnandet på Öland — tempo mot Uppland &amp; Ångermanland</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>
+              <strong className="text-foreground">Öland kristnades fort:</strong> ~halva kyrkbeståndet stod redan på 1100-talet och var i stort klart till 1200. <strong>Uppland</strong> fylldes gradvis (16&nbsp;% vid 1100 → 58&nbsp;% vid 1200), och <strong>Ångermanland</strong> förblev glest (26 kyrkor, ~10 km isär, bara 3 fornborgar). Olika odlingslandskap och befolkning → olika tempo.
+            </p>
+            <ChristianizationChart />
+            <p className="text-xs opacity-80"><strong className="text-amber-300">Tolkning (hypotes):</strong> ett snabbt, front-tungt kristnande tyder på att kyrkorna restes på redan etablerade centrum — övertagande av gamla kult-/maktplatser — eller på ett område som var kristet-influerat tidigare. Täthet ensam avgör inte vilket; det gör kyrkornas läge (på hednisk kultplats? vid runsten med kors?). Nästa steg: lägga 190 Öland-runstenar + spolia (återbrukade bildstenar i kyrkor) mot kyrkolägena.</p>
           </CardContent>
         </Card>
 
