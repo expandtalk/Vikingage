@@ -4,7 +4,7 @@ import { useRunicData } from '@/hooks/useRunicData';
 import { useLegendManager } from '@/hooks/useLegendManager';
 import { useFilterState } from '../FilterState';
 import { useFocusManager } from '@/hooks/useFocusManager';
-import { useActiveExploreProfile } from '@/hooks/useExploreProfiles';
+import { useActiveExploreProfiles } from '@/hooks/useExploreProfiles';
 import { resolveProfileLayers } from '@/config/exploreProfiles';
 import { filterInscriptionsByPeriod } from '@/utils/timePeriods';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,7 +24,9 @@ export const useExplorerData = ({
 }: UseExplorerDataProps) => {
   const queryClient = useQueryClient();
   const { currentFocus } = useFocusManager();
-  const activeProfile = useActiveExploreProfile();
+  // Additivt urval: primär profil styr basemap/tema/paneler/period; lagren är unionen av alla valda.
+  const selectedProfiles = useActiveExploreProfiles();
+  const activeProfile = selectedProfiles[0];
   
   const {
     searchQuery,
@@ -63,10 +65,16 @@ export const useExplorerData = ({
     }
   }, [currentFocus, activeProfile.id, activeProfile.defaultPeriod]);
 
-  const roleLayerPreset = useMemo(
-    () => resolveProfileLayers(activeProfile, currentFocus),
-    [activeProfile, currentFocus],
-  );
+  // Union av lager över alla valda profiler (marin + geolog + ockult = allas lager). Focus
+  // appliceras per profil av resolveProfileLayers; true vinner vid sammanslagning.
+  const roleLayerPreset = useMemo(() => {
+    const merged: Record<string, boolean> = {};
+    for (const p of selectedProfiles) {
+      const lp = resolveProfileLayers(p, currentFocus);
+      for (const k of Object.keys(lp)) if ((lp as Record<string, boolean>)[k]) merged[k] = true;
+    }
+    return merged as ReturnType<typeof resolveProfileLayers>;
+  }, [selectedProfiles, currentFocus]);
 
   const enhancedFilterState = {
     ...filterState,

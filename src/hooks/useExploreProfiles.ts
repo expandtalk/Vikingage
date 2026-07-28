@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useActiveExploreRole } from "./useActiveExploreRole";
+import { useActiveExploreRole, useActiveExploreRoles } from "./useActiveExploreRole";
 import {
   buildProfilesFromRows,
   PROFILE_SEEDS,
@@ -31,9 +32,19 @@ export const useExploreProfiles = (): ExploreProfile[] => {
   return data && data.length ? data : PROFILE_SEEDS;
 };
 
-/** Den för närvarande aktiva profilen (store-id upplöst mot profil-listan). */
+/** Den PRIMÄRA aktiva profilen (basemap/tema/paneler/period tas härifrån). */
 export const useActiveExploreProfile = (): ExploreProfile => {
   const id = useActiveExploreRole();
   const profiles = useExploreProfiles();
   return profiles.find((p) => p.id === id) ?? profiles[0] ?? PROFILE_SEEDS[0];
+};
+
+/** Alla valda profiler (additivt). Primär = [0]. Memoiserad → stabil referens för useMemo-deps. */
+export const useActiveExploreProfiles = (): ExploreProfile[] => {
+  const ids = useActiveExploreRoles();
+  const profiles = useExploreProfiles();
+  return useMemo(() => {
+    const picked = ids.map((id) => profiles.find((p) => p.id === id)).filter(Boolean) as ExploreProfile[];
+    return picked.length ? picked : [profiles[0] ?? PROFILE_SEEDS[0]];
+  }, [ids, profiles]);
 };

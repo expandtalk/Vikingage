@@ -1,6 +1,14 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, RotateCcw, Check } from "lucide-react";
+
+// Din vy sparas automatiskt (useLegendManager, samma nyckel). "Återställ" rensar den sparade
+// överstyrningen och läser om profilens standard — självständigt, utan prop-drilling genom kedjan.
+const SAVED_VIEW_KEY = 'vikingage_saved_legend_view_v1';
+const resetToProfileDefault = () => {
+  try { localStorage.removeItem(SAVED_VIEW_KEY); } catch { /* privat läge */ }
+  window.location.reload();
+};
 
 interface LegendControlsProps {
   onShowAll: () => void;
@@ -16,6 +24,7 @@ export const LegendControls: React.FC<LegendControlsProps> = ({
   totalItems
 }) => {
   return (
+    <>
     <div className="flex gap-2 p-2 border-b border-white/10">
       <Button
         size="sm"
@@ -37,6 +46,20 @@ export const LegendControls: React.FC<LegendControlsProps> = ({
         <EyeOff className="h-3 w-3 mr-1" />
         Dölj alla
       </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={resetToProfileDefault}
+        title="Återställ till profilens standard (rensar din sparade vy)"
+        className="text-xs bg-slate-600/20 border-slate-400/60 text-slate-100 hover:bg-slate-500/30 font-medium"
+      >
+        <RotateCcw className="h-3 w-3 mr-1" />
+        Återställ
+      </Button>
     </div>
+    <p className="flex items-center gap-1 px-2 py-1 text-[10px] text-emerald-300/80 border-b border-white/10">
+      <Check className="h-3 w-3" /> Din vy sparas automatiskt
+    </p>
+    </>
   );
 };
