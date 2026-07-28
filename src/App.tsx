@@ -117,6 +117,8 @@ const App = () => (
                   <Route path="/angermanland" element={<Angermanland />} />
                   <Route path="/sv/oland" element={<Oland />} />
                   <Route path="/oland" element={<Oland />} />
+                  {/* Forskningssidor under /forskning/<namn> (konvention, Daniel 2026-07-28). /sv/-varianter kvar som alias. */}
+                  <Route path="/forskning/kalmar" element={<Kalmar />} />
                   <Route path="/sv/kalmar" element={<Kalmar />} />
                   <Route path="/kalmar" element={<Kalmar />} />
                   <Route path="/prices" element={<Prices />} />
