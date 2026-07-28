@@ -20,8 +20,8 @@ export const centralRoutePoints: RoutePoint[] = [
   {
     id: 'grimskar',
     name: 'Grimskär (lotsbyte)',
-    coordinates: { lat: 56.6580, lng: 16.3920 }, // ön Grimskär strax utanför Kalmar
-    description: 'Grimskär strax utanför Kalmar - lotsbyte här innan färden norrut i Kalmarsund.',
+    coordinates: { lat: 56.6521776, lng: 16.3702873 }, // KORRIGERAD: Grimskärs skans (var felaktigt 56.658/16.392) — Google Maps-pin, Daniel 2026-07-28
+    description: 'Grimskär (medeltida Stegelholmen, avrättningsplats där dömda steglades) - lotsbyte här innan färden norrut i Kalmarsund. En grima (grinande huvud på stolpe) varnade för revet Skansgrundet och tjänade som inseglingsmärke → namnet Grimskär (belagt 1534). Grimskärs skans (fyruddig stjärna) uppfördes från 1623 av sten från öländska borgar; lotsstation till 1940.',
     section: 'Kalmarsund',
     isLotstation: true,
     isMajorWaypoint: true

@@ -60,12 +60,15 @@ export const southernRoutePoints: RoutePoint[] = [
     section: 'Småland östkust'
   },
 
-  // === Destination ===
+  // === Leden slutar vid Grimskär (Daniel 2026-07-28) ===
+  // Tidigare gick leden in i Kalmar stad (56.6621/16.3627) och hoppade sedan ut till Grimskär —
+  // det såg ut som att man körde in i staden. Nu slutar leden vid Grimskär (lotsbyte); själva
+  // inloppet till Kalmar visas INTE ännu. Rätt Grimskär-position = skansen (Google Maps-pin).
   {
-    id: 'kalmar',
-    name: 'Kalmar',
-    coordinates: { lat: 56.6621, lng: 16.3627 }, // Kalmar stad
-    description: 'Kalmar - viktig medeltida handelsstad och kunglig residens',
+    id: 'grimskar_ankomst',
+    name: 'Grimskär (leden slutar här — lotsbyte)',
+    coordinates: { lat: 56.6521776, lng: 16.3702873 }, // Grimskärs skans (korrigerad från 56.658/16.392)
+    description: 'Grimskär (medeltida Stegelholmen) - lotsstation och inseglingsmärke utanför Kalmar. Inget skepp når Kalmar utan att ses härifrån. Leden slutar vid Grimskär; inloppet till själva Kalmar visas inte ännu (lots byttes här).',
     section: 'Kalmar',
     isLotstation: true,
     isMajorWaypoint: true
