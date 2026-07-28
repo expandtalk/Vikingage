@@ -1,6 +1,11 @@
 Options -MultiViews
 RewriteEngine On
 
+# Kanonisk värd: tvinga icke-www. Annars ligger inloggnings-sessionen i localStorage på
+# fel origin (www.vikingage.se ≠ vikingage.se) och man ser utloggad ut. En origin = en session.
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
 # /welcome var en dublett av startsidan — permanent redirect (SEO: en kanonisk URL)
 RewriteRule ^welcome/?$ / [R=301,L]
 

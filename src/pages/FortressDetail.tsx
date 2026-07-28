@@ -23,6 +23,14 @@ interface Fort {
   dating_basis: string | null; dating_confidence: string | null; nearby_runestones: number | null;
 }
 
+interface RcDate { cal_from: number | null; cal_to: number | null; cal_sigma: string | null; material: string | null; context: string | null; source: string | null; note: string | null; }
+interface Geochem { element: string; higher_in: string | null; significant: boolean | null; interpretation: string | null; }
+interface MetalAn { find_ref?: string | null; system: string; value: number | null; unit: string | null; note: string | null; }
+interface MaterialAn { find_ref: string | null; material: string | null; method: string | null; result: string | null; provenance_interpretation: string | null; }
+interface Inv { title: string; year_from: number | null; investigation_type: string | null; source_institution: string | null; }
+
+const yr = (n: number | null | undefined) => n == null ? '' : n < 0 ? `${-n} f.Kr.` : `${n} e.Kr.`;
+
 const parseLatLng = (co: Fort['coordinates']): [number, number] | null => {
   if (!co) return null;
   if (typeof co === 'string') { const m = co.match(/\(([^,]+),([^)]+)\)/); return m ? [parseFloat(m[2]), parseFloat(m[1])] : null; }
@@ -39,6 +47,11 @@ const FortressDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [fort, setFort] = useState<Fort | null>(null);
   const [similar, setSimilar] = useState<number | null>(null);
+  const [rc, setRc] = useState<RcDate[]>([]);
+  const [geochem, setGeochem] = useState<Geochem[]>([]);
+  const [metal, setMetal] = useState<MetalAn[]>([]);
+  const [material, setMaterial] = useState<MaterialAn[]>([]);
+  const [invs, setInvs] = useState<Inv[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -57,6 +70,31 @@ const FortressDetail = () => {
         .select('id', { count: 'exact', head: true }).eq('landscape', (data as Fort).landscape);
       setSimilar(count ?? null);
       setLoading(false);
+    })();
+  }, [id]);
+
+  // Forensik-lager (14C, geokemi, arkeometri, undersökningshistorik) — var för sig, tål tomt/fel.
+  useEffect(() => {
+    if (!id) return;
+    (async () => {
+      const sb = supabase as any;
+      const [rcR, gcR, maR, matR, relR] = await Promise.all([
+        sb.from('radiocarbon_dates').select('cal_from,cal_to,cal_sigma,material,context,source,note').eq('object_id', id).order('cal_from'),
+        sb.from('site_geochemistry').select('element,higher_in,significant,interpretation').eq('hillfort_id', id).order('element'),
+        sb.from('metal_analyses').select('system,value,unit,note').eq('object_id', id),
+        sb.from('material_analyses').select('find_ref,material,method,result,provenance_interpretation').eq('object_id', id),
+        sb.from('relationship').select('object_id').eq('subject_id', id).eq('predicate', 'investigated_by'),
+      ]);
+      setRc(rcR.data ?? []);
+      setGeochem(gcR.data ?? []);
+      setMetal(maR.data ?? []);
+      setMaterial(matR.data ?? []);
+      const invIds = (relR.data ?? []).map((r: { object_id: string }) => r.object_id);
+      if (invIds.length) {
+        const { data } = await sb.from('archaeological_investigations')
+          .select('title,year_from,investigation_type,source_institution').in('id', invIds).order('year_from');
+        setInvs(data ?? []);
+      }
     })();
   }, [id]);
 
@@ -150,6 +188,81 @@ const FortressDetail = () => {
                 {fort.source_reference && <p className="text-[11px] text-muted-foreground">{sv ? 'Källa' : 'Source'}: {fort.source_reference}</p>}
               </div>
             </div>
+
+            {/* Forensik: 14C, geokemi, arkeometri, undersökningshistorik */}
+            {(rc.length > 0 || geochem.length > 0 || metal.length > 0 || material.length > 0 || invs.length > 0) && (
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {rc.length > 0 && (
+                  <div className="viking-card rounded-lg border border-border p-4">
+                    <div className="text-sm font-semibold text-foreground mb-2">{sv ? '¹⁴C-dateringar' : 'Radiocarbon dates'}</div>
+                    <ul className="space-y-2">
+                      {rc.map((d, i) => (
+                        <li key={i} className="text-sm">
+                          <span className="text-gold font-medium">{yr(d.cal_from)}–{yr(d.cal_to)}</span>
+                          {d.cal_sigma && <span className="text-muted-foreground"> ({d.cal_sigma})</span>}
+                          {d.material && <span className="text-muted-foreground"> · {d.material}</span>}
+                          {d.context && <div className="text-xs text-muted-foreground">{d.context}</div>}
+                          {d.note && <div className="text-xs text-muted-foreground italic">{d.note}</div>}
+                        </li>
+                      ))}
+                    </ul>
+                    {rc[0]?.source && <p className="text-[11px] text-muted-foreground mt-2">{sv ? 'Källa' : 'Source'}: {rc[0].source}</p>}
+                  </div>
+                )}
+
+                {geochem.length > 0 && (
+                  <div className="viking-card rounded-lg border border-border p-4">
+                    <div className="text-sm font-semibold text-foreground mb-2">{sv ? 'Geokemi (XRF) — funktionsindelning' : 'Geochemistry (XRF)'}</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {geochem.filter((g) => g.significant).map((g, i) => (
+                        <span key={i} title={g.interpretation ?? ''}
+                          className="text-xs px-2 py-0.5 rounded border border-border text-foreground">
+                          {g.element} <span className="text-muted-foreground">↑ {g.higher_in}</span>
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-2">{sv ? 'Signifikant förhöjda grundämnen per borgdel (hovra för tolkning). Östra ringen: föda + kopparlegeringshantverk; mellersta: järn.' : 'Elements significantly enriched per fort segment (hover for interpretation).'}</p>
+                  </div>
+                )}
+
+                {(metal.length > 0 || material.length > 0) && (
+                  <div className="viking-card rounded-lg border border-border p-4">
+                    <div className="text-sm font-semibold text-foreground mb-2">{sv ? 'Arkeometri' : 'Archaeometry'}</div>
+                    {metal.length > 0 && (
+                      <div className="mb-2">
+                        <div className="text-xs text-muted-foreground mb-1">{sv ? 'Metallanalys (XRF)' : 'Metal analysis (XRF)'}</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {metal.map((m, i) => (
+                            <span key={i} title={m.note ?? ''} className="text-xs px-2 py-0.5 rounded border border-border text-foreground">
+                              {m.system} {m.value != null ? `${m.value}${m.unit === 'mass%' ? '%' : ` ${m.unit ?? ''}`}` : ''}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {material.map((m, i) => (
+                      <div key={i} className="text-xs text-muted-foreground mb-1">
+                        <span className="text-foreground">{m.find_ref} · {m.material}</span> ({m.method}): {m.provenance_interpretation ?? m.result}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {invs.length > 0 && (
+                  <div className="viking-card rounded-lg border border-border p-4">
+                    <div className="text-sm font-semibold text-foreground mb-2">{sv ? 'Undersökningshistorik' : 'Investigation history'}</div>
+                    <ul className="space-y-1">
+                      {invs.map((v, i) => (
+                        <li key={i} className="text-sm text-foreground">
+                          <span className="text-gold">{v.year_from}</span> · {v.title}
+                          {v.source_institution && <div className="text-[11px] text-muted-foreground">{v.source_institution}</div>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </main>
