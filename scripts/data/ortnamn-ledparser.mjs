@@ -20,6 +20,21 @@ const CULT = [
   { key:'härn', re:/^härn/ },                          // Härn(a) (svag)
   { key:'gull', re:/^gull/ },                          // Gull (svag)
   { key:'katt', re:/^katt[a-zäåö]/ },                  // Katt- (svag)
+  // Agnetas tillägg (2026-07-28). Konservativa förled-matchare; homonym-risk flaggad i config.
+  { key:'val',  re:/^val(?!l)[a-zäåö]/ },              // Val/Vala — EJ vall/valla (topografi)
+  { key:'ed',   re:/^eds[a-zäåö]/ },                   // Eds- (Edsele) — ej bara 'ed'
+  { key:'hammar', re:/^hammar/ },                       // Hammar (ting?)
+  { key:'horn', re:/^horn[a-zäåö]/ },                  // Horn-
+  { key:'mor',  re:/^mora?[a-zäåö]/ },                 // Mor/Mora — homonym mo/mark, flaggat
+  { key:'lund', re:/^lund/ },                          // Lund- (förled; efterled -lund missas)
+  { key:'tuna', re:/^tuna/ },                          // Tuna-
+  { key:'var',  re:/^var(?!a)[a-zäåö]/ },              // Vár — hög falsk-risk, flaggat
+  { key:'skade', re:/^skade/ },                        // Skade
+  { key:'hel',  re:/^hel(?!s)[a-zäåö]/ },              // Hel — ej Helsing-
+  { key:'oden', re:/^od[ei]n/ },                       // Oden/Odin (Odensvi/Odensala)
+  { key:'galt', re:/^galt/ },                          // Galt
+  { key:'get',  re:/^get[a-zäåö]/ },                   // Get — homonym tamdjur, flaggat
+  { key:'gås',  re:/^gås/ },                           // Gås
 ];
 // substräng-varianten (som förra testet) för jämförelse:
 const CULT_SUB = ['tor','frö','sal','ross','hammar','gull','härn','katt','vang','stav','hov','helg'];
