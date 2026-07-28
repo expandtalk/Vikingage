@@ -39,6 +39,9 @@ export interface Excursion {
   points?: { name: string; lat: number; lng: number; note?: string }[];
   /** feature_slug i location_hypotheses — tänder lägeshypotes-lagret (monument vs kandidatplatser). */
   hypothesesSlug?: string;
+  /** source_uri för motsvarande heritage_sites-rad. Sätts när monumentet OCKSÅ finns i DB → heritage
+   *  är sanningskälla för koordinat/fakta, utflykten bidrar foton. Undviker dubblettdata. */
+  heritageRef?: string;
 }
 
 // Ordning som grupperna visas i på sidan.
@@ -387,6 +390,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   },
   {
     id: 'haga',
+    heritageRef: 'raa:hagahogen',
     photoDir: 'haga-hogen-kungs-bjorns-hog',
     name: 'Hågahögen',
     region: 'Håga, väster om Uppsala, Uppland',
@@ -736,6 +740,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   // === Anundshög (Västmanland/Mälardalen) ===
   {
     id: 'anundshog',
+    heritageRef: 'raa:anundshog',
     photoDir: 'anundshog',
     thumbCredit: 'Christer Johansson, CC BY-SA 2.5, Wikimedia Commons',
     name: 'Anundshög',
