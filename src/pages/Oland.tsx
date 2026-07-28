@@ -7,6 +7,7 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChristianizationChart } from '@/components/ChristianizationChart';
+import { OlandChristianizationTimeline } from '@/components/OlandChristianizationTimeline';
 import { MapPin, Route, AlertTriangle, Compass } from 'lucide-react';
 import { useOlandModel, type OlandPoint } from '@/hooks/useOlandModel';
 
@@ -168,6 +169,7 @@ const Oland = () => {
               <strong className="text-foreground">Öland kristnades fort:</strong> ~halva kyrkbeståndet stod redan på 1100-talet och var i stort klart till 1200. <strong>Uppland</strong> fylldes gradvis (16&nbsp;% vid 1100 → 58&nbsp;% vid 1200), och <strong>Ångermanland</strong> förblev glest (26 kyrkor, ~10 km isär, bara 3 fornborgar). Olika odlingslandskap och befolkning → olika tempo.
             </p>
             <ChristianizationChart />
+            <OlandChristianizationTimeline />
             <p className="text-xs opacity-80"><strong className="text-amber-300">Tolkning (hypotes):</strong> ett snabbt, front-tungt kristnande tyder på att kyrkorna restes på redan etablerade centrum — övertagande av gamla kult-/maktplatser — eller på ett område som var kristet-influerat tidigare. Täthet ensam avgör inte vilket; det gör kyrkornas läge (på hednisk kultplats? vid runsten med kors?). Nästa steg: lägga 190 Öland-runstenar + spolia (återbrukade bildstenar i kyrkor) mot kyrkolägena.</p>
           </CardContent>
         </Card>
