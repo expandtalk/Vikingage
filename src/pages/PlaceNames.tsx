@@ -16,6 +16,7 @@ import { useNameDatings, eraSortYear } from '@/hooks/useNameDatings';
 import { DistanceStatsCard } from '@/components/placenames/DistanceStatsCard';
 import { FreeDistanceStatsCard } from '@/components/placenames/FreeDistanceStatsCard';
 import { ChurchDistanceCard } from '@/components/placenames/ChurchDistanceCard';
+import { HeritageProximityCard } from '@/components/placenames/HeritageProximityCard';
 import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import { setElementTest } from '@/hooks/useElementTest';
@@ -226,6 +227,9 @@ const PlaceNames = () => {
 
           {/* Avstånd mellan kyrkorna */}
           <ChurchDistanceCard sv={sv} />
+
+          {/* Ligger leden vid en fornlämningstyp? (hypotestestare v2, nationella lager) */}
+          <HeritageProximityCard sv={sv} />
 
           {/* Förfina ett sökord (ordförädling) — t.ex. gull */}
           <WordRefineCard sv={sv} />
