@@ -24,11 +24,13 @@ export const RunicWordCard: React.FC<{ sv: boolean }> = ({ sv }) => {
   const [input, setInput] = useState('trik');
   const [term, setTerm] = useState('trik');
   const [reference, setReference] = useState('town');
+  const [placement, setPlacement] = useState('exclude_moved');
+  const [medium, setMedium] = useState('all');
 
   const { data, isFetching } = useQuery({
-    queryKey: ['runic-word-nn', term, reference], enabled: term.length >= 2, staleTime: 30 * 60 * 1000,
+    queryKey: ['runic-word-nn', term, reference, placement, medium], enabled: term.length >= 2, staleTime: 30 * 60 * 1000,
     queryFn: async () => {
-      const { data, error } = await (supabase.rpc as any)('runic_word_nn', { p_term: term, p_reference: reference });
+      const { data, error } = await (supabase.rpc as any)('runic_word_nn', { p_term: term, p_reference: reference, p_placement: placement, p_medium: medium });
       if (error) throw error;
       const m: Record<string, { n: number; median_m: number }> = {};
       (data as { cohort: string; n: number; median_m: number }[]).forEach((r) => { m[r.cohort] = r; });
@@ -59,6 +61,22 @@ export const RunicWordCard: React.FC<{ sv: boolean }> = ({ sv }) => {
           <Button size="sm" className="h-8" onClick={() => setTerm(input.trim())}>{sv ? 'Testa' : 'Test'}</Button>
           {isFetching && <span className="opacity-60">…</span>}
         </div>
+        <div className="flex flex-wrap items-center gap-3 text-[11px]">
+          <span className="inline-flex items-center gap-1">{sv ? 'Läge:' : 'Placement:'}
+            <select value={placement} onChange={(e) => setPlacement(e.target.value)} className="rounded border border-slate-600 bg-slate-900 px-1.5 py-0.5 text-foreground">
+              <option value="exclude_moved">{sv ? 'uteslut flyttade' : 'exclude moved'}</option>
+              <option value="all">{sv ? 'alla (även flyttade)' : 'all'}</option>
+            </select>
+          </span>
+          <span className="inline-flex items-center gap-1">{sv ? 'Medium:' : 'Medium:'}
+            <select value={medium} onChange={(e) => setMedium(e.target.value)} className="rounded border border-slate-600 bg-slate-900 px-1.5 py-0.5 text-foreground">
+              <option value="all">{sv ? 'alla' : 'all'}</option>
+              <option value="stone">{sv ? 'runstenar' : 'stones'}</option>
+              <option value="portable">{sv ? 'bärbara (kävle/ben)' : 'portable'}</option>
+              <option value="coin">{sv ? 'mynt' : 'coins'}</option>
+            </select>
+          </span>
+        </div>
         <div className="flex flex-wrap gap-1 text-[11px]">
           <span className="opacity-60">{sv ? 'exempel:' : 'e.g.:'}</span>
           {SUGGEST.map((w) => <button key={w} onClick={() => { setInput(w); setTerm(w); }} className="rounded border border-slate-700 px-1.5 hover:border-slate-500 font-mono">{w}</button>)}
@@ -77,8 +95,8 @@ export const RunicWordCard: React.FC<{ sv: boolean }> = ({ sv }) => {
             </div>
             {verdict && <div className="flex items-center gap-2 text-sm"><span style={{ width: 12, height: 12, borderRadius: 9999, background: verdict.c, boxShadow: `0 0 6px ${verdict.c}` }} /><span className="text-foreground">{verdict.t}</span></div>}
             <p className="text-[11px] opacity-70">{sv
-              ? 'Söker substräng i inskrifternas translitteration (~6 800 med text + koord) → median till närmaste referens vs slumpbaslinje. Korta ord matchar brett (t.ex. "þur" fångar alla Tor-namn) — läs som utforskande, inte bevis.'
-              : 'Substring search in inscription transliterations vs random baseline. Short terms match broadly — exploratory, not proof.'}</p>
+              ? 'Substräng i translittereringen → median till närmaste referens vs slumpbaslinje. VARNINGAR: (1) Många stenar FLYTTADES (median 647 m; 106 kända till kyrka) — därför "uteslut flyttade" som standard, och originalkoordinat används där den finns. (2) Kyrkor är en dålig referens (cirkulärt — stenar flyttades ju TILL kyrkor). (3) Korpusen är ojämn (Uppland-tung) — mönstret kan spegla var stenar finns, inte var ordet användes. (4) Korta ord matchar brett. Utforskande, inte bevis.'
+              : 'Substring vs random baseline. Caveats: many stones were relocated (median 647 m; church-moved excluded by default, original coords used where known); churches are a circular reference; the corpus is uneven; short terms match broadly. Exploratory.'}</p>
           </>
         )}
       </CardContent>
