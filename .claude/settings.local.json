@@ -65,7 +65,10 @@
       "WebFetch(domain:pmc.ncbi.nlm.nih.gov)",
       "WebFetch(domain:www.wikidata.org)",
       "WebFetch(domain:www.researchgate.net)",
-      "WebFetch(domain:univ-rennes.hal.science)"
+      "WebFetch(domain:univ-rennes.hal.science)",
+      "Bash(node *)",
+      "Bash(npx supabase *)",
+      "Bash(git check-ignore *)"
     ]
   }
 }

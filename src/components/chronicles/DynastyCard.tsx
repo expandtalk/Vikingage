@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import { useDynastyMembers } from '@/hooks/chronicles/useDynastyMembers';
+import { DynastyArms } from './DynastyArms';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { RoyalDynasty } from '@/hooks/useRoyalChronicles';
 
@@ -55,6 +56,8 @@ export const DynastyCard: React.FC<DynastyCardProps> = ({ dynasty, onMemberSelec
 
           {dynasty.description && <p className="text-slate-300 text-sm">{dynasty.description}</p>}
         </button>
+
+        <div className="mt-3"><DynastyArms dynastyId={dynasty.id} /></div>
 
         {open && (
           <div className="mt-3 pt-3 border-t border-slate-600/40 space-y-1">

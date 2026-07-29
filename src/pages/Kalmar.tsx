@@ -56,13 +56,15 @@ const DOMAIN_LABEL: Record<string, string> = {
   bebyggelse: 'Bebyggelse', personnamn: 'Personnamn', vatten_kust: 'Vatten/kust', kult: 'Kult', 'okänd': 'Okänd',
 };
 const STRATUM_META: Record<string, { color: string; label: string }> = {
-  'järnålder': { color: '#f472b6', label: 'Järnålder' },
+  'järnålder': { color: '#f472b6', label: 'Järnålder / vendeltid' },
   vikingatid: { color: '#f59e0b', label: 'Vikingatid' },
   tidig_medeltid: { color: '#fbbf24', label: 'Tidig medeltid' },
   medeltid: { color: '#a3e635', label: 'Medeltid' },
-  efterreformatorisk: { color: '#38bdf8', label: 'Efterreformatorisk' },
+  efterreformatorisk: { color: '#38bdf8', label: 'Efterreformatorisk (nyare tid)' },
   'okänd': { color: '#94a3b8', label: 'Okänt skikt' },
 };
+// Kronologisk ordning för den periodgrupperade vyn (vendel → nutid).
+const STRATUM_ORDER = ['järnålder', 'vikingatid', 'tidig_medeltid', 'medeltid', 'efterreformatorisk', 'okänd'];
 const MATCH_META: Record<string, { color: string; label: string }> = {
   locality: { color: '#22c55e', label: 'SOL: orten belagd' },
   element: { color: '#eab308', label: 'SOL: bara elementet (annan ort)' },
@@ -279,6 +281,44 @@ const Kalmar = () => {
               <strong> Blå</strong> = hamnen Kättilen. <strong>Metallfärg</strong> = myntfynd. Alla {geocoded} av {places.length} ortnamn
               är nu utsatta; klicka för precision-källa.
             </p>
+          </CardContent>
+        </Card>
+
+        {/* ORTNAMN EFTER TIDSSKIKT — periodgrupperad vy (vendel → nutid) */}
+        <Card className="viking-card mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-gold"><ScrollText className="h-5 w-5" /> Ortnamnen efter tidsskikt</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-3">
+            <p className="text-xs opacity-80">
+              Namnleden är tidsmarkörer. Grupperade efter <strong>periodskikt</strong> (järnålder/vendeltid → nyare tid)
+              framträder <em>vad varje epok satte spår i</em> — det semantiska fältet (i grått) visar handlingen:
+              krig, rätt, hantverk, jordbruk, kust, kult…
+            </p>
+            {STRATUM_ORDER.map((key) => {
+              const inStratum = places.filter((p) => (p.period_stratum ?? 'okänd') === key).sort(sv);
+              if (inStratum.length === 0) return null;
+              const meta = STRATUM_META[key];
+              return (
+                <div key={key}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="secondary" className="text-[11px]" style={{ backgroundColor: meta.color + '22', color: meta.color }}>{meta.label}</Badge>
+                    <span className="text-xs text-muted-foreground">{inStratum.length}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {inStratum.map((n) => {
+                      const dom = n.semantic_domain && n.semantic_domain !== 'okänd' ? (DOMAIN_LABEL[n.semantic_domain] ?? n.semantic_domain) : null;
+                      return (
+                        <span key={n.id} className="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs" style={{ borderColor: meta.color + '55' }}>
+                          <span className="text-foreground">{n.name}</span>
+                          {dom && <span className="text-[10px] text-muted-foreground">{dom}</span>}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
 

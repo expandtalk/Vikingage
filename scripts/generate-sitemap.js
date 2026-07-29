@@ -35,6 +35,8 @@ const routes = [
   { path: '/sv/genetiska-handelser', priority: 0.8 },
   { path: '/sv/kungakronikor', priority: 0.9 },
   { path: '/sv/borgar', priority: 0.9 },
+  { path: '/sv/heraldik', priority: 0.8 },
+  { path: '/en/heraldry', priority: 0.7 },
 ];
 
 const baseUrl = 'https://vikingage.se';

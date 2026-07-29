@@ -9,6 +9,7 @@ import { useRoyalDynasties } from '@/hooks/chronicles/useRoyalDynasties';
 import { useKingOsteology } from '@/hooks/chronicles/useKingOsteology';
 import { KingSourceMentions } from './KingSourceMentions';
 import { KingInscriptionLinks } from './KingInscriptionLinks';
+import { DynastyArms } from './DynastyArms';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { HistoricalKing, KingSourceMention } from '@/hooks/useRoyalChronicles';
 
@@ -116,6 +117,8 @@ export const KingDetailPanel: React.FC<KingDetailPanelProps> = ({ king, sourceMe
             {dynasty.description && <p className="text-slate-300 text-xs mt-1 leading-relaxed">{dynasty.description}</p>}
           </div>
         )}
+
+        <DynastyArms dynastyId={king.dynasty_id} compact />
 
         {king.sources && (
           <div className="flex items-start gap-2 text-slate-300">
