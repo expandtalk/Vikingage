@@ -27,6 +27,10 @@ const TYPES = [
   { term: 'skeppssättning',  type: 'skeppssättning',  re: /skeppss(ä|a)ttning/i },
   { term: 'rest sten',       type: 'rest sten',       re: /rest sten|bautasten|rest\s+sten/i },
   { term: 'stenkammargrav',  type: 'stenkammargrav',  re: /stenkammargrav|hällkista/i },
+  { term: 'röse',            type: 'Röse',            re: /röse/i },
+  { term: 'skärvstenshög',   type: 'skärvstenshög',   re: /skärvstenshög/i },
+  { term: 'hällristning',    type: 'hällristning',    re: /hällristning|hällbild/i },
+  { term: 'skålgrop',        type: 'skålgropsförekomst', re: /skålgrop/i },
 ];
 
 // Regioner: län (countyName) + valfritt landskaps- eller bbox-filter (post-filter på placeLabel/koord).
