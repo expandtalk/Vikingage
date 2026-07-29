@@ -20,17 +20,17 @@ const REFERENCES: { key: string; sv: string; en: string }[] = [
 const SUGGEST = ['trik', 'þiakn', 'sun', 'faþur', 'kuþ', 'trkʀ'];
 const km = (m: number) => (m / 1000).toFixed(1);
 
-export const RunicWordCard: React.FC<{ sv: boolean }> = ({ sv }) => {
+import type { RunicCohort } from './RunicCorpusCard';
+
+export const RunicWordCard: React.FC<{ sv: boolean; cohort: RunicCohort }> = ({ sv, cohort }) => {
   const [input, setInput] = useState('trik');
   const [term, setTerm] = useState('trik');
   const [reference, setReference] = useState('town');
-  const [placement, setPlacement] = useState('exclude_moved');
-  const [medium, setMedium] = useState('all');
 
   const { data, isFetching } = useQuery({
-    queryKey: ['runic-word-nn', term, reference, placement, medium], enabled: term.length >= 2, staleTime: 30 * 60 * 1000,
+    queryKey: ['runic-word-nn', term, reference, cohort], enabled: term.length >= 2, staleTime: 30 * 60 * 1000,
     queryFn: async () => {
-      const { data, error } = await (supabase.rpc as any)('runic_word_nn', { p_term: term, p_reference: reference, p_placement: placement, p_medium: medium });
+      const { data, error } = await (supabase.rpc as any)('runic_word_nn', { p_term: term, p_reference: reference, p_exclude_moved: cohort.excludeMoved, p_exclude_collections: cohort.excludeCollections, p_medium: cohort.medium, p_region_match: cohort.regionMatch });
       if (error) throw error;
       const m: Record<string, { n: number; median_m: number }> = {};
       (data as { cohort: string; n: number; median_m: number }[]).forEach((r) => { m[r.cohort] = r; });
@@ -61,22 +61,7 @@ export const RunicWordCard: React.FC<{ sv: boolean }> = ({ sv }) => {
           <Button size="sm" className="h-8" onClick={() => setTerm(input.trim())}>{sv ? 'Testa' : 'Test'}</Button>
           {isFetching && <span className="opacity-60">…</span>}
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-[11px]">
-          <span className="inline-flex items-center gap-1">{sv ? 'Läge:' : 'Placement:'}
-            <select value={placement} onChange={(e) => setPlacement(e.target.value)} className="rounded border border-slate-600 bg-slate-900 px-1.5 py-0.5 text-foreground">
-              <option value="exclude_moved">{sv ? 'uteslut flyttade' : 'exclude moved'}</option>
-              <option value="all">{sv ? 'alla (även flyttade)' : 'all'}</option>
-            </select>
-          </span>
-          <span className="inline-flex items-center gap-1">{sv ? 'Medium:' : 'Medium:'}
-            <select value={medium} onChange={(e) => setMedium(e.target.value)} className="rounded border border-slate-600 bg-slate-900 px-1.5 py-0.5 text-foreground">
-              <option value="all">{sv ? 'alla' : 'all'}</option>
-              <option value="stone">{sv ? 'runstenar' : 'stones'}</option>
-              <option value="portable">{sv ? 'bärbara (kävle/ben)' : 'portable'}</option>
-              <option value="coin">{sv ? 'mynt' : 'coins'}</option>
-            </select>
-          </span>
-        </div>
+        <p className="text-[11px] opacity-60">{sv ? 'Urvalet (flyttade/samlingar/medium/region-matchning) styrs av kohort-väljaren ovan.' : 'The selection is controlled by the cohort selector above.'}</p>
         <div className="flex flex-wrap gap-1 text-[11px]">
           <span className="opacity-60">{sv ? 'exempel:' : 'e.g.:'}</span>
           {SUGGEST.map((w) => <button key={w} onClick={() => { setInput(w); setTerm(w); }} className="rounded border border-slate-700 px-1.5 hover:border-slate-500 font-mono">{w}</button>)}

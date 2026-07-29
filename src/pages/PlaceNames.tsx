@@ -90,6 +90,9 @@ const PlaceNames = () => {
   const { data: runic } = useRunicTheophoricSummary();
   const { data: datings = [] } = useNameDatings();
   const { data: elementCounts = {} } = useElementCounts();
+  // Delad runkohort — ett urval som styr alla runtest (Corpus-kortet ställer in, Word-kortet lyder).
+  // Default (Daniels insikt): uteslut samlingar (tvärregionala), BEHÅLL flyttade (lokal kyrkflytt = kvar i landskapet), region-matcha.
+  const [runicCohort, setRunicCohort] = useState({ excludeMoved: false, excludeCollections: true, medium: 'all', regionMatch: true });
   const [category, setCategory] = useState<string>('all');
   const [elementKey, setElementKey] = useState<string>('all');
   const [query, setQuery] = useState<string>('');
@@ -237,11 +240,11 @@ const PlaceNames = () => {
           {/* Helgon i centralorterna (sjöfararhelgon-hypotesen) */}
           <SaintCentralityCard sv={sv} />
 
-          {/* Runkorpus-översikt: välj & förfina urvalet (rena vs risk-stenar) */}
-          <RunicCorpusCard sv={sv} />
+          {/* Runkorpus-översikt + kohort-väljare: styr alla runtest */}
+          <RunicCorpusCard sv={sv} cohort={runicCohort} onChange={setRunicCohort} />
 
-          {/* Runiska ord i landskapet (titlar/gudanamn/släktord) */}
-          <RunicWordCard sv={sv} />
+          {/* Runiska ord i landskapet — lyder den delade kohorten */}
+          <RunicWordCard sv={sv} cohort={runicCohort} />
 
           {/* Förfina ett sökord (ordförädling) — t.ex. gull */}
           <WordRefineCard sv={sv} />

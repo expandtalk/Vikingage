@@ -9,8 +9,10 @@ import { Database } from 'lucide-react';
 // välj urval → se risk → testerna använder som standard bara de "rena".
 
 interface Stats { with_coords: number; moved: number; collection: number; clean: number; stones: number; portable: number; coins: number; plaster: number }
+export interface RunicCohort { excludeMoved: boolean; excludeCollections: boolean; medium: string; regionMatch: boolean }
 
-export const RunicCorpusCard: React.FC<{ sv: boolean }> = ({ sv }) => {
+export const RunicCorpusCard: React.FC<{ sv: boolean; cohort: RunicCohort; onChange: (c: RunicCohort) => void }> = ({ sv, cohort, onChange }) => {
+  const set = (patch: Partial<RunicCohort>) => onChange({ ...cohort, ...patch });
   const { data } = useQuery({
     queryKey: ['runic-corpus-stats'], staleTime: 60 * 60 * 1000,
     queryFn: async () => {
@@ -55,6 +57,23 @@ export const RunicCorpusCard: React.FC<{ sv: boolean }> = ({ sv }) => {
               <span key={l} className="inline-flex items-center gap-1 rounded border border-slate-700 px-2 py-0.5 text-muted-foreground">{l} <span className="text-foreground font-medium">{n.toLocaleString('sv-SE')}</span></span>
             ))}
           </div>
+        </div>
+        {/* Kohort-väljare — styr alla runtest nedan */}
+        <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-3 space-y-2">
+          <div className="text-xs font-semibold text-foreground">{sv ? 'Urval som styr testerna nedan' : 'Selection driving the tests below'}</div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
+            <label className="inline-flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={cohort.excludeCollections} onChange={(e) => set({ excludeCollections: e.target.checked })} /> {sv ? 'Uteslut samlingspunkter' : 'Exclude collection points'} <span className="opacity-50">({data.collection})</span></label>
+            <label className="inline-flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={cohort.excludeMoved} onChange={(e) => set({ excludeMoved: e.target.checked })} /> {sv ? 'Uteslut flyttade' : 'Exclude relocated'} <span className="opacity-50">({data.moved})</span></label>
+            <label className="inline-flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={cohort.regionMatch} onChange={(e) => set({ regionMatch: e.target.checked })} /> {sv ? 'Region-matchad baslinje' : 'Region-matched baseline'}</label>
+            <span className="inline-flex items-center gap-1">{sv ? 'Medium:' : 'Medium:'}
+              <select value={cohort.medium} onChange={(e) => set({ medium: e.target.value })} className="rounded border border-slate-600 bg-slate-900 px-1.5 py-0.5 text-foreground">
+                <option value="all">{sv ? 'alla' : 'all'}</option><option value="stone">{sv ? 'runstenar' : 'stones'}</option><option value="portable">{sv ? 'bärbara' : 'portable'}</option><option value="coin">{sv ? 'mynt' : 'coins'}</option>
+              </select>
+            </span>
+          </div>
+          <p className="text-[11px] opacity-70">{sv
+            ? 'Standard: uteslut samlingar (tvärregionala, förvanskar), men BEHÅLL flyttade — en lokal kyrkflytt (median 647 m) är kvar i samma landskap. Region-matchad baslinje jämför bara mot stenar i samma landskap → dödar Uppland-skevheten.'
+            : 'Default: exclude collections but keep relocated (a local church move stays in the same province). Region-matched baseline compares within the same province.'}</p>
         </div>
         <p className="text-[11px] opacity-60">{sv ? 'Immobila lämningar (hällristningar, fornborgar, gravfält) har alltid pålitligt läge — de flyttas inte. Runstenarnas TEXT är giltig även om stenen flyttats; det är bara positionen som är osäker.' : 'Immovable monuments always have reliable positions; a stone’s text is valid even if relocated.'}</p>
       </CardContent>
