@@ -109,7 +109,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     layer.clearLayers();
     const pts: [number, number][] = [];
 
-    places.filter((p) => Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng))).forEach((p) => {
+    places.filter((p) => p.lat != null && p.lng != null && Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng))).forEach((p) => {
       const husaby = p.category === 'husaby';
       const pm = precMeta(p.coord_precision);
       const color = husaby ? '#f59e0b' : pm.solid ? '#a78bfa' : pm.color;
@@ -140,7 +140,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
       }
     });
 
-    if (harbor && Number.isFinite(Number(harbor.lat)) && Number.isFinite(Number(harbor.lng))) {
+    if (harbor && harbor.lat != null && harbor.lng != null && Number.isFinite(Number(harbor.lat)) && Number.isFinite(Number(harbor.lng))) {
       pts.push([harbor.lat, harbor.lng]);
       L.circleMarker([harbor.lat, harbor.lng], { radius: 7, color: '#38bdf8', weight: 2, fillColor: '#38bdf8', fillOpacity: 0.5 })
         .bindTooltip(harbor.name, { direction: 'top', offset: [0, -8] })
