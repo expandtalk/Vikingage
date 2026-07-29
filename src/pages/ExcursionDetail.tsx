@@ -308,12 +308,12 @@ const ExcursionDetail = () => {
     const g = L.featureGroup();
     L.circle([excursion.coords.lat, excursion.coords.lng], { radius, color: '#38bdf8', weight: 1, fillColor: '#38bdf8', fillOpacity: 0.06 }).addTo(g);
     (nearbyDb ?? []).forEach((f) => {
-      const church = f.kind === 'church', isRune = f.kind === 'runestone';
-      const fill = church ? '#38bdf8' : isRune ? '#eab308' : '#22d3ee';
+      const church = f.kind === 'church', isRune = f.kind === 'runestone', isRock = /hällrist/i.test(f.raa_type || '');
+      const fill = church ? '#38bdf8' : isRune ? '#eab308' : isRock ? '#f97316' : '#22d3ee';
       const link = isRune ? `/inscription/${encodeURIComponent(f.raa_type || '')}` : `/explore?center=${f.lat},${f.lng}&zoom=15`;
       const linkLabel = isRune ? (sv ? 'Öppna runinskriften' : 'Open inscription') : (sv ? 'Öppna på kartan' : 'Open on map');
       L.circleMarker([f.lat, f.lng], { radius: church || isRune ? 6 : 4, color: isRune ? '#78350f' : '#0c4a6e', weight: 1, fillColor: fill, fillOpacity: 0.85 })
-        .bindPopup(`<strong>${church ? '⛪ ' : isRune ? 'ᚱ ' : ''}${f.name}</strong><br/><span style="font-size:11px;color:#666">${isRune ? '' : (f.raa_type || '') + ' · '}${f.dist_m < 1000 ? f.dist_m + ' m' : (f.dist_m / 1000).toFixed(1) + ' km'}</span><br/><a href="${link}" style="font-size:11px">${linkLabel} →</a>`)
+        .bindPopup(`<strong>${church ? '⛪ ' : isRune ? 'ᚱ ' : isRock ? '🪨 ' : ''}${f.name}</strong><br/><span style="font-size:11px;color:#666">${isRune ? '' : (f.raa_type || '') + ' · '}${f.dist_m < 1000 ? f.dist_m + ' m' : (f.dist_m / 1000).toFixed(1) + ' km'}</span><br/><a href="${link}" style="font-size:11px">${linkLabel} →</a>`)
         .addTo(g);
     });
     g.addTo(map); radiusLayerRef.current = g;
@@ -464,7 +464,7 @@ const ExcursionDetail = () => {
                 {nearbyDb.map((f, i) => {
                   const isRune = f.kind === 'runestone';
                   const to = isRune ? `/inscription/${encodeURIComponent(f.raa_type || '')}` : `/explore?center=${f.lat},${f.lng}&zoom=15`;
-                  const icon = f.kind === 'church' ? '⛪' : isRune ? 'ᚱ' : '▪';
+                  const icon = f.kind === 'church' ? '⛪' : isRune ? 'ᚱ' : /hällrist/i.test(f.raa_type || '') ? '🪨' : '▪';
                   return (
                     <a key={i} href={to} title={isRune ? (sv ? 'Öppna runinskriften' : 'Open inscription') : (sv ? 'Öppna på kartan' : 'Open on map')}
                       className="flex items-baseline gap-2 text-sm py-0.5 border-b border-border/40 hover:bg-muted/30 rounded">

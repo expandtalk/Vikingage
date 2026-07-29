@@ -199,7 +199,7 @@ const Genealogy = () => {
                       {nearby.map((f, i) => {
                         const isRune = f.kind === 'runestone';
                         const to = isRune ? `/inscription/${encodeURIComponent(f.raa_type || '')}` : `/explore?center=${f.lat},${f.lng}&zoom=14`;
-                        const icon = f.kind === 'church' ? '⛪' : isRune ? 'ᚱ' : '▪';
+                        const icon = f.kind === 'church' ? '⛪' : isRune ? 'ᚱ' : /hällrist/i.test(f.raa_type || '') ? '🪨' : '▪';
                         return (
                           <Link key={i} to={to} title={isRune ? (sv ? 'Öppna runinskriften' : 'Open the inscription') : (sv ? 'Öppna på kartan' : 'Open on the map')}
                             className="flex items-baseline gap-2 text-xs py-0.5 border-b border-slate-800/50 hover:bg-slate-800/40 rounded">

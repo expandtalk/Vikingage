@@ -24,6 +24,6 @@ export const ShorelinePeriodControl: React.FC<{ value: number | null; onChange: 
         </button>
       );
     })}
-    <span className="text-[10px] text-muted-foreground opacity-70">SGU strandförskjutningsmodell (CC-BY)</span>
+    <span className="text-[10px] text-muted-foreground opacity-70">SGU strandförskjutningsmodell (CC-BY) — märkbar i Mälardalen/Norrland, försumbar i söder</span>
   </div>
 );
