@@ -11,6 +11,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useExecutionSites, type ExecutionEvent, type ExecutionPlace } from '@/hooks/useExecutionSites';
 
 const LICENSE_LABEL: Record<string, string> = { cc0: 'CC0', pdmark: 'Public Domain', by: 'CC BY', 'by-sa': 'CC BY-SA' };
+const EVIDENCE = {
+  belagd: { sv: 'Belagd', en: 'Documented', op: 0.85 },
+  tradition: { sv: 'Tradition', en: 'Tradition', op: 0.3 },
+} as const;
+const evMeta = (e: string | null) => EVIDENCE[(e ?? '') as keyof typeof EVIDENCE] ?? { sv: 'Oklar', en: 'Unverified', op: 0.5 };
 
 // /forskning/avrattningsplatser — tvålagerskarta: RAÄ-platser (Fornsök CC0) + daterade händelser
 // (execution_events, Wikidata CC0 m.fl.). Årsreglaget filtrerar HÄNDELSER (tidsdimensionen bärs av
@@ -51,8 +56,9 @@ const ExecMap: React.FC<{ places: ExecutionPlace[]; events: ExecutionEvent[]; ye
         if (p.lat == null || p.lng == null) return;
         pts.push([p.lat, p.lng]);
         const raLinkP = raArkivLink(p.parish, p.name);
-        L.circleMarker([p.lat, p.lng], { radius: 3, color: PLACE_COLOR, weight: 1, fillColor: PLACE_COLOR, fillOpacity: 0.55 })
-          .bindPopup(`<b>${p.name || (sv ? 'Avrättningsplats' : 'Execution site')}</b><br/><span style="font-size:11px;color:#666">${p.raa_type || ''}${p.parish ? ' · ' + p.parish : ''}${p.landscape ? ', ' + p.landscape : ''}${p.period ? '<br/>' + (sv ? 'Datering' : 'Dating') + ': ' + p.period : ''}</span><br/><span style="font-size:10px;color:#94a3b8">RAÄ Fornsök (CC0)</span>${raLinkP ? `<br/><a href="${raLinkP}" target="_blank" rel="noopener" style="font-size:10px;color:#f59e0b">${sv ? 'Verifiera i kyrkoarkiv ↗' : 'Verify in church archive ↗'}</a>` : ''}`)
+        const ev = evMeta(p.evidence_class);
+        L.circleMarker([p.lat, p.lng], { radius: p.evidence_class === 'belagd' ? 4 : 3, color: PLACE_COLOR, weight: 1, fillColor: PLACE_COLOR, fillOpacity: ev.op })
+          .bindPopup(`<b>${p.name || (sv ? 'Avrättningsplats' : 'Execution site')}</b> <span style="font-size:10px;color:#f59e0b">[${sv ? ev.sv : ev.en}]</span><br/><span style="font-size:11px;color:#666">${p.raa_type || ''}${p.parish ? ' · ' + p.parish : ''}${p.landscape ? ', ' + p.landscape : ''}${p.period ? '<br/>' + (sv ? 'Datering' : 'Dating') + ': ' + p.period : ''}</span><br/><span style="font-size:10px;color:#94a3b8">RAÄ Fornsök (CC0)</span>${raLinkP ? `<br/><a href="${raLinkP}" target="_blank" rel="noopener" style="font-size:10px;color:#f59e0b">${sv ? 'Verifiera i kyrkoarkiv ↗' : 'Verify in church archive ↗'}</a>` : ''}`)
           .addTo(layer);
       });
     }
@@ -143,7 +149,7 @@ const ExecutionSites = () => {
             {!isLoading && <ExecMap places={places} events={shownEvents} year={year} show={show} sv={sv} />}
             {isLoading && <p className="text-muted-foreground text-sm py-8 text-center">{sv ? 'Laddar…' : 'Loading…'}</p>}
             <p className="text-xs text-muted-foreground mt-2 opacity-75">
-              <strong>{sv ? 'Data' : 'Data'}:</strong> <code>heritage_sites</code> (RAÄ Fornsök, CC0) + <code>execution_events</code> (Wikidata CC0 m.fl.). <span style={{ color: PLACE_COLOR }}>●</span> {sv ? 'plats' : 'site'} · <span style={{ color: EVENT_COLOR }}>●</span> {sv ? 'daterad händelse' : 'dated event'}.
+              <strong>{sv ? 'Data' : 'Data'}:</strong> <code>heritage_sites</code> (RAÄ Fornsök, CC0) + <code>execution_events</code> (Wikidata CC0 m.fl.). <span style={{ color: PLACE_COLOR }}>●</span> {sv ? 'plats' : 'site'} · <span style={{ color: EVENT_COLOR }}>●</span> {sv ? 'daterad händelse' : 'dated event'}. {sv ? 'Platsens fyllnad = evidensklass: fylld = belagd (karta/arkeologi/datum), blek = tradition. Röse/högar som bara bär galgbacke-namn är bortsorterade.' : 'Site fill = evidence class: solid = documented, faint = tradition.'}
             </p>
           </CardContent>
         </Card>

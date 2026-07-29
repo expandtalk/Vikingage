@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface ExecutionPlace {
   id: string; name: string; raa_type: string | null;
   lat: number; lng: number; landscape: string | null; parish: string | null; period: string | null;
+  evidence_class: string | null;
 }
 export interface ExecutionEvent {
   id: string; executed_person: string | null; crime: string | null; method: string | null;
@@ -30,7 +31,7 @@ export function useExecutionSites() {
       // Paginera heritage_sites (avrättnings-typer) — kan vara >1000.
       for (let from = 0; ; from += 1000) {
         const { data, error } = await (supabase.from('heritage_sites') as any)
-          .select('id,name,raa_type,lat,lng,landscape,parish,period')
+          .select('id,name,raa_type,lat,lng,landscape,parish,period,evidence_class')
           .or('raa_type.ilike.%avrätt%,raa_type.ilike.%galg%,raa_type.ilike.%stegl%')
           .not('lat', 'is', null).range(from, from + 999);
         if (error) throw error;
