@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, AlertTriangle, FlaskConical, Info, Compass, Anchor, ScrollText, Coins as CoinsIcon, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
+import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 
 // /sv/kalmar — forskningshubb för det tidiga/medeltida Kalmar i Möre. Binder ihop:
 //  - Ortnamnsforskningen kring Hossmo (husaby-nukleusen, SOL 2003, kalmar_place_names)
@@ -89,6 +91,8 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const fittedRef = useRef(false);
+  const [shoreYear, setShoreYear] = useState<number | null>(950);
+  useShorelineOverlay(mapRef, shoreYear);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -157,7 +161,12 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     if (pts.length && !fittedRef.current) { map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 12 }); fittedRef.current = true; }
   }, [places, harbor, coins, canEdit, onMove]);
 
-  return <div ref={containerRef} className="w-full h-[460px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 460 }} />;
+  return (
+    <div>
+      <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+      <div ref={containerRef} className="w-full h-[460px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 460 }} />
+    </div>
+  );
 };
 
 const NameRow: React.FC<{ n: PlaceName; forms?: PlaceForm[] }> = ({ n, forms = [] }) => {

@@ -68,7 +68,9 @@
       "WebFetch(domain:univ-rennes.hal.science)",
       "Bash(node *)",
       "Bash(npx supabase *)",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "Bash(BBOX='16.15,56.40,16.95,57.10' node *)",
+      "Bash(BBOX='17.0,62.4,19.2,64.0' node scripts/data/ingest-paleo-shorelines.mjs)"
     ]
   }
 }

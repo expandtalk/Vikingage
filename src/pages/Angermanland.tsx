@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, AlertTriangle, FlaskConical, Info, Compass } from 'lucide-react';
 import { useCentralPlaces, type CentralPlaceName, type CentralPlaceGroup } from '@/hooks/useCentralPlaces';
+import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
+import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { supabase } from '@/integrations/supabase/client';
 import { OrtnamnVerification } from '@/components/OrtnamnVerification';
 
@@ -54,6 +56,8 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const [shoreYear, setShoreYear] = useState<number | null>(950);
+  useShorelineOverlay(mapRef, shoreYear);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -105,7 +109,12 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
     return () => { map.off('zoomend', applyLabels); };
   }, [groups, on]);
 
-  return <div ref={containerRef} className="w-full h-[480px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 480 }} />;
+  return (
+    <div>
+      <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+      <div ref={containerRef} className="w-full h-[480px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 480 }} />
+    </div>
+  );
 };
 
 const Angermanland = () => {

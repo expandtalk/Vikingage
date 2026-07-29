@@ -11,6 +11,8 @@ import { OlandChristianizationTimeline } from '@/components/OlandChristianizatio
 import { OlandChristianizationEpochs } from '@/components/OlandChristianizationEpochs';
 import { MapPin, Route, AlertTriangle, Compass } from 'lucide-react';
 import { useOlandModel, type OlandPoint } from '@/hooks/useOlandModel';
+import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
+import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 
 // Öland-modellen — forskningssida. Testar hypotesen om vikingatidens vägnät och
 // centralplatser via runstenar, fornborgar, guldfynd, Frö-namn och kyrkor. Imperativ
@@ -43,6 +45,8 @@ const OlandMap: React.FC<{ points: OlandPoint[]; showConnections: boolean }> = (
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const [shoreYear, setShoreYear] = useState<number | null>(950);
+  useShorelineOverlay(mapRef, shoreYear);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -81,7 +85,12 @@ const OlandMap: React.FC<{ points: OlandPoint[]; showConnections: boolean }> = (
     }
   }, [points, showConnections]);
 
-  return <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />;
+  return (
+    <div>
+      <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+      <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
+    </div>
+  );
 };
 
 const Legend: React.FC<{ on: Record<string, boolean>; toggle: (k: string) => void }> = ({ on, toggle }) => (
