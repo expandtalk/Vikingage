@@ -18,6 +18,13 @@ const PLACE_COLOR = '#f59e0b';   // guld = registrerad plats (arkeologi)
 const EVENT_COLOR = '#ef4444';   // röd = daterad händelse (person/brott)
 const MIN_YEAR = 1200, MAX_YEAR = 1910;
 
+// Verify-path: djuplänk till Riksarkivets sök för socknens kyrkoarkiv (dödböcker = primärkällan).
+// Faller tillbaka på platsnamnet (rensat från RAÄ-nr) när parish saknas.
+const raArkivLink = (parish: string | null, placeName: string | null): string | null => {
+  const q = (parish || (placeName || '').replace(/\s*\(.*?\)\s*/g, '').split(',')[0]).trim();
+  return q ? `https://sok.riksarkivet.se/?Sokord=${encodeURIComponent(q + ' kyrkoarkiv')}` : null;
+};
+
 const ExecMap: React.FC<{ places: ExecutionPlace[]; events: ExecutionEvent[]; year: number; show: Record<string, boolean>; sv: boolean }> = ({ places, events, year, show, sv }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -41,8 +48,9 @@ const ExecMap: React.FC<{ places: ExecutionPlace[]; events: ExecutionEvent[]; ye
       places.forEach((p) => {
         if (p.lat == null || p.lng == null) return;
         pts.push([p.lat, p.lng]);
+        const raLinkP = raArkivLink(p.parish, p.name);
         L.circleMarker([p.lat, p.lng], { radius: 3, color: PLACE_COLOR, weight: 1, fillColor: PLACE_COLOR, fillOpacity: 0.55 })
-          .bindPopup(`<b>${p.name || (sv ? 'Avrättningsplats' : 'Execution site')}</b><br/><span style="font-size:11px;color:#666">${p.raa_type || ''}${p.parish ? ' · ' + p.parish : ''}${p.landscape ? ', ' + p.landscape : ''}${p.period ? '<br/>' + (sv ? 'Datering' : 'Dating') + ': ' + p.period : ''}</span><br/><span style="font-size:10px;color:#94a3b8">RAÄ Fornsök (CC0)</span>`)
+          .bindPopup(`<b>${p.name || (sv ? 'Avrättningsplats' : 'Execution site')}</b><br/><span style="font-size:11px;color:#666">${p.raa_type || ''}${p.parish ? ' · ' + p.parish : ''}${p.landscape ? ', ' + p.landscape : ''}${p.period ? '<br/>' + (sv ? 'Datering' : 'Dating') + ': ' + p.period : ''}</span><br/><span style="font-size:10px;color:#94a3b8">RAÄ Fornsök (CC0)</span>${raLinkP ? `<br/><a href="${raLinkP}" target="_blank" rel="noopener" style="font-size:10px;color:#f59e0b">${sv ? 'Verifiera i kyrkoarkiv ↗' : 'Verify in church archive ↗'}</a>` : ''}`)
           .addTo(layer);
       });
     }
@@ -51,8 +59,9 @@ const ExecMap: React.FC<{ places: ExecutionPlace[]; events: ExecutionEvent[]; ye
         if (e.lat == null || e.lng == null) return;
         if (e.event_year != null && e.event_year > year) return; // kumulativ avslöjning t.o.m. valt år
         pts.push([e.lat, e.lng]);
+        const raLink = raArkivLink(e.parish, e.place_name);
         L.circleMarker([e.lat, e.lng], { radius: 6, color: EVENT_COLOR, weight: 2, fillColor: EVENT_COLOR, fillOpacity: 0.8 })
-          .bindPopup(`<b>${e.executed_person || (sv ? 'Avrättad (okänd)' : 'Executed (unknown)')}</b>${e.event_year ? ` <span style="color:#999">${e.event_date || e.event_year}</span>` : ''}<br/><span style="font-size:11px;color:#666">${[e.crime, e.method, e.place_name].filter(Boolean).join(' · ')}${e.executioner ? '<br/>' + (sv ? 'Bödel' : 'Executioner') + ': ' + e.executioner : ''}</span>${e.source_url ? `<br/><a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:10px">${e.source_ref || 'källa'}</a>` : e.source_ref ? `<br/><span style="font-size:10px;color:#94a3b8">${e.source_ref}</span>` : ''}`)
+          .bindPopup(`<b>${e.executed_person || (sv ? 'Avrättad (okänd)' : 'Executed (unknown)')}</b>${e.event_year ? ` <span style="color:#999">${e.event_date || e.event_year}</span>` : ''}<br/><span style="font-size:11px;color:#666">${[e.crime, e.method, e.place_name].filter(Boolean).join(' · ')}${e.executioner ? '<br/>' + (sv ? 'Bödel' : 'Executioner') + ': ' + e.executioner : ''}</span>${e.source_url ? `<br/><a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:10px">${e.source_ref || 'källa'}</a>` : e.source_ref ? `<br/><span style="font-size:10px;color:#94a3b8">${e.source_ref}</span>` : ''}${raLink ? `<br/><a href="${raLink}" target="_blank" rel="noopener" style="font-size:10px;color:#f59e0b">${sv ? 'Verifiera i kyrkoarkiv ↗' : 'Verify in church archive ↗'}</a>` : ''}`)
           .addTo(layer);
       });
     }
@@ -155,6 +164,7 @@ const ExecutionSites = () => {
                     <th className="px-2 py-1.5 font-medium">{sv ? 'Metod' : 'Method'}</th>
                     <th className="px-2 py-1.5 font-medium">{sv ? 'Plats' : 'Place'}</th>
                     <th className="px-2 py-1.5 font-medium">{sv ? 'Källa' : 'Source'}</th>
+                    <th className="px-2 py-1.5 font-medium">{sv ? 'Verifiera' : 'Verify'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -166,6 +176,7 @@ const ExecutionSites = () => {
                       <td className="px-2 py-1 whitespace-nowrap" style={{ color: e.method ? EVENT_COLOR : undefined }}>{e.method || '—'}</td>
                       <td className="px-2 py-1 text-muted-foreground">{e.place_name || '—'}</td>
                       <td className="px-2 py-1 whitespace-nowrap">{e.source_url ? <a href={e.source_url} target="_blank" rel="noopener" className="text-sky-400 hover:underline">{e.source_ref ? e.source_ref.slice(0, 18) : 'källa'}</a> : <span className="text-muted-foreground opacity-70" title={e.source_ref || ''}>{(e.source_ref || '—').slice(0, 22)}</span>}</td>
+                      <td className="px-2 py-1 whitespace-nowrap">{(() => { const l = raArkivLink(e.parish, e.place_name); return l ? <a href={l} target="_blank" rel="noopener" className="text-amber-400/90 hover:underline" title={sv ? 'Sök socknens kyrkoarkiv (dödböcker) hos Riksarkivet' : 'Search the parish church archive at the National Archives'}>{sv ? 'kyrkoarkiv ↗' : 'archive ↗'}</a> : <span className="text-muted-foreground opacity-50">—</span>; })()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -199,6 +210,9 @@ const ExecutionSites = () => {
             <p><strong className="text-amber-300">{sv ? 'Vad vi INTE gör' : 'What we do NOT do'}:</strong> {sv
               ? <>vi kopierar inte sammanställda databaser som rotter.se faktabank — de skyddas av <em>katalogskydd</em> (49 § URL). Enskilda fakta är fria; vi följer i stället deras källhänvisning till primärkällan (Riksarkivet, public domain) och skriver i egna ord.</>
               : <>we do not copy compiled databases — they are protected by database right. We follow citations to the public-domain primary source instead.</>}</p>
+            <p><strong className="text-foreground">{sv ? 'Verifiera i primärkällan' : 'Verify in the primary source'}:</strong> {sv
+              ? <>varje post länkar (där socken är känd) till <strong>socknens kyrkoarkiv</strong> hos Riksarkivet — dödböckerna är primärkällan (den avrättade fördes ofta in särskilt; fram till 1864 ej vigd jord). En avrättning berör flera arkiv: dödbok (avrättningssocknen), födelsebok (hemsocknen), dombok (häradsrätten) och mortalitetstabeller. Arkiven är skannade bilder — vi länkar dit, men kan inte massimportera ur dem.</>
+              : <>each record links (where the parish is known) to the parish church archive at the National Archives — the death books are the primary source. These are scanned images, so we link but cannot bulk-import from them.</>}</p>
             <p><strong className="text-amber-300">{sv ? 'Temporal lucka' : 'Temporal gap'}:</strong> {sv
               ? <>medeltida avrättningsplatser saknar ofta registrering (jfr SCB 2021). Ex: <em>Bägby galgbacke</em> (Runsten, Öland) finns i kyrkoböckerna men inte i Fornsök — en oregistrerad historisk plats.</>
               : <>medieval execution sites are often unregistered. E.g. Bägby gallows hill exists in parish records but not in the heritage register.</>}</p>

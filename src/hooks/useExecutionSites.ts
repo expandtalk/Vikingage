@@ -11,7 +11,7 @@ export interface ExecutionPlace {
 }
 export interface ExecutionEvent {
   id: string; executed_person: string | null; crime: string | null; method: string | null;
-  event_date: string | null; event_year: number | null; place_name: string | null;
+  event_date: string | null; event_year: number | null; place_name: string | null; parish: string | null;
   lat: number | null; lng: number | null; executioner: string | null;
   description: string | null; source_ref: string | null; source_url: string | null;
 }
@@ -33,7 +33,7 @@ export function useExecutionSites() {
         if (rows.length < 1000) break;
       }
       const { data: ev, error: e2 } = await (supabase.from('execution_events') as any)
-        .select('id,executed_person,crime,method,event_date,event_year,place_name,lat,lng,executioner,description,source_ref,source_url')
+        .select('id,executed_person,crime,method,event_date,event_year,place_name,parish,lat,lng,executioner,description,source_ref,source_url')
         .order('event_year', { ascending: true });
       if (e2) throw e2;
       return { places, events: (ev ?? []) as ExecutionEvent[] };
