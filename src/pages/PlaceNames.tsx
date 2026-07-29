@@ -20,6 +20,7 @@ import { HeritageProximityCard } from '@/components/placenames/HeritageProximity
 import { SaintCentralityCard } from '@/components/placenames/SaintCentralityCard';
 import { RunicWordCard } from '@/components/placenames/RunicWordCard';
 import { RunicCorpusCard } from '@/components/placenames/RunicCorpusCard';
+import { RunicTransitionCard } from '@/components/placenames/RunicTransitionCard';
 import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import { setElementTest } from '@/hooks/useElementTest';
@@ -245,6 +246,9 @@ const PlaceNames = () => {
 
           {/* Runiska ord i landskapet — lyder den delade kohorten */}
           <RunicWordCard sv={sv} cohort={runicCohort} />
+
+          {/* Kristnandet i sten — omvandlingsanalys (kristen markör × region × datering × expeditioner) */}
+          <RunicTransitionCard sv={sv} />
 
           {/* Förfina ett sökord (ordförädling) — t.ex. gull */}
           <WordRefineCard sv={sv} />
