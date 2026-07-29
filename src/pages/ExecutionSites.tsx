@@ -73,6 +73,7 @@ const ExecutionSites = () => {
   const toggle = (k: string) => setShow((s) => ({ ...s, [k]: !s[k] }));
 
   const shownEvents = useMemo(() => events.filter((e) => e.event_year == null || e.event_year <= year), [events, year]);
+  const sortedEvents = useMemo(() => [...shownEvents].sort((a, b) => (a.event_year ?? 9999) - (b.event_year ?? 9999)), [shownEvents]);
   const byLandscape = useMemo(() => {
     const m = new Map<string, number>();
     places.forEach((p) => m.set(p.landscape || '—', (m.get(p.landscape || '—') || 0) + 1));
@@ -132,6 +133,44 @@ const ExecutionSites = () => {
             <p className="text-xs text-muted-foreground mt-2 opacity-75">
               <strong>{sv ? 'Data' : 'Data'}:</strong> <code>heritage_sites</code> (RAÄ Fornsök, CC0) + <code>execution_events</code> (Wikidata CC0 m.fl.). <span style={{ color: PLACE_COLOR }}>●</span> {sv ? 'plats' : 'site'} · <span style={{ color: EVENT_COLOR }}>●</span> {sv ? 'daterad händelse' : 'dated event'}.
             </p>
+          </CardContent>
+        </Card>
+
+        {/* Händelsetabell — surfar de avrättade (även utan koordinat) */}
+        <Card className="viking-card mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-gold flex items-center gap-2">
+              {sv ? 'De avrättade' : 'The executed'} <span className="text-xs font-normal text-muted-foreground">({shownEvents.length}{sv ? ` t.o.m. ${year}` : ` up to ${year}`})</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground mb-2 opacity-80">{sv ? 'Person, brott och avrättningsmetod ur öppna källor. Många saknar exakt plats (visas ej på kartan) men finns här. Styrs av årsreglaget ovan.' : 'Person, crime and method from open sources; many lack an exact place. Controlled by the year slider above.'}</p>
+            <div className="overflow-x-auto max-h-[420px] overflow-y-auto rounded border border-slate-800">
+              <table className="w-full text-xs">
+                <thead className="sticky top-0 bg-slate-900/95 text-muted-foreground">
+                  <tr className="text-left">
+                    <th className="px-2 py-1.5 font-medium">{sv ? 'År' : 'Year'}</th>
+                    <th className="px-2 py-1.5 font-medium">{sv ? 'Person' : 'Person'}</th>
+                    <th className="px-2 py-1.5 font-medium">{sv ? 'Brott' : 'Crime'}</th>
+                    <th className="px-2 py-1.5 font-medium">{sv ? 'Metod' : 'Method'}</th>
+                    <th className="px-2 py-1.5 font-medium">{sv ? 'Plats' : 'Place'}</th>
+                    <th className="px-2 py-1.5 font-medium">{sv ? 'Källa' : 'Source'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedEvents.map((e) => (
+                    <tr key={e.id} className="border-t border-slate-800/60 hover:bg-slate-800/30">
+                      <td className="px-2 py-1 whitespace-nowrap text-muted-foreground">{e.event_date || e.event_year || '—'}</td>
+                      <td className="px-2 py-1 text-foreground">{e.executed_person || '—'}{e.executioner ? <span className="text-muted-foreground"> · {sv ? 'bödel' : 'executioner'}: {e.executioner}</span> : ''}</td>
+                      <td className="px-2 py-1 text-muted-foreground">{e.crime || '—'}</td>
+                      <td className="px-2 py-1 whitespace-nowrap" style={{ color: e.method ? EVENT_COLOR : undefined }}>{e.method || '—'}</td>
+                      <td className="px-2 py-1 text-muted-foreground">{e.place_name || '—'}</td>
+                      <td className="px-2 py-1 whitespace-nowrap">{e.source_url ? <a href={e.source_url} target="_blank" rel="noopener" className="text-sky-400 hover:underline">{e.source_ref ? e.source_ref.slice(0, 18) : 'källa'}</a> : <span className="text-muted-foreground opacity-70" title={e.source_ref || ''}>{(e.source_ref || '—').slice(0, 22)}</span>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
 
