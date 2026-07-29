@@ -16,6 +16,12 @@ export interface ExecutionEvent {
   description: string | null; source_ref: string | null; source_url: string | null;
 }
 
+export interface ExecutionMediaItem {
+  id: string; title: string | null; term: string | null;
+  thumb_url: string | null; image_url: string | null; highres_url: string | null;
+  license: string | null; license_url: string | null; attribution: string | null; place_label: string | null;
+}
+
 export function useExecutionSites() {
   return useQuery({
     queryKey: ['execution-sites'],
@@ -36,7 +42,10 @@ export function useExecutionSites() {
         .select('id,executed_person,crime,method,event_date,event_year,place_name,parish,lat,lng,executioner,description,source_ref,source_url')
         .order('event_year', { ascending: true });
       if (e2) throw e2;
-      return { places, events: (ev ?? []) as ExecutionEvent[] };
+      const { data: media } = await (supabase.from('execution_media') as any)
+        .select('id,title,term,thumb_url,image_url,highres_url,license,license_url,attribution,place_label')
+        .order('term', { ascending: true });
+      return { places, events: (ev ?? []) as ExecutionEvent[], media: (media ?? []) as ExecutionMediaItem[] };
     },
     staleTime: 5 * 60 * 1000,
   });

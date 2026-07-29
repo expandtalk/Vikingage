@@ -10,6 +10,8 @@ import { Skull, AlertTriangle, Info, Clock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExecutionSites, type ExecutionEvent, type ExecutionPlace } from '@/hooks/useExecutionSites';
 
+const LICENSE_LABEL: Record<string, string> = { cc0: 'CC0', pdmark: 'Public Domain', by: 'CC BY', 'by-sa': 'CC BY-SA' };
+
 // /forskning/avrattningsplatser — tvålagerskarta: RAÄ-platser (Fornsök CC0) + daterade händelser
 // (execution_events, Wikidata CC0 m.fl.). Årsreglaget filtrerar HÄNDELSER (tidsdimensionen bärs av
 // dem; platserna saknar oftast per-plats brukningsspann). rotter.se används ALDRIG (katalogskydd).
@@ -77,6 +79,7 @@ const ExecutionSites = () => {
   const { data, isLoading } = useExecutionSites();
   const places = data?.places ?? [];
   const events = data?.events ?? [];
+  const media = data?.media ?? [];
   const [year, setYear] = useState(MAX_YEAR);
   const [show, setShow] = useState<Record<string, boolean>>({ places: true, events: true });
   const toggle = (k: string) => setShow((s) => ({ ...s, [k]: !s[k] }));
@@ -218,6 +221,40 @@ const ExecutionSites = () => {
               : <>medieval execution sites are often unregistered. E.g. Bägby gallows hill exists in parish records but not in the heritage register.</>}</p>
           </CardContent>
         </Card>
+
+        {/* Bildgalleri — fria foton ur K-samsök */}
+        {media.length > 0 && (
+          <Card className="viking-card mb-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base text-gold flex items-center gap-2">
+                {sv ? 'Bilder' : 'Images'} <span className="text-xs font-normal text-muted-foreground">({media.length})</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground mb-3 opacity-80">{sv ? 'Avrättningsplatser, bilor och bödelsmotiv ur K-samsök — endast fritt licensierade foton, med institution och licens.' : 'Execution sites, axes and executioner imagery from the Swedish Open Cultural Heritage aggregator — freely licensed only.'}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {media.map((m) => (
+                  <a key={m.id} href={m.highres_url || m.image_url || '#'} target="_blank" rel="noopener"
+                     className="group block rounded overflow-hidden border border-slate-800 bg-slate-900/40 hover:border-slate-600 transition-colors"
+                     title={m.title || ''}>
+                    <div className="aspect-square overflow-hidden bg-slate-950">
+                      <img src={m.image_url || m.thumb_url || ''} alt={m.title || 'avrättningsbild'} loading="lazy"
+                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    </div>
+                    <div className="p-1.5">
+                      <div className="text-[11px] text-foreground leading-tight line-clamp-2">{m.title || '—'}</div>
+                      <div className="text-[9px] text-muted-foreground mt-0.5 flex items-center justify-between gap-1">
+                        <span className="truncate">{m.attribution || ''}</span>
+                        <span className="shrink-0 rounded bg-slate-800 px-1 text-slate-300">{LICENSE_LABEL[m.license || ''] || m.license}</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-2 opacity-70">{sv ? 'Källa: K-samsök (Riksantikvarieämbetet). Klicka för högupplöst hos ägande institution. Attribution krävs för CC BY/BY-SA.' : 'Source: K-samsök (Swedish National Heritage Board). Click for the high-resolution image at the holding institution.'}</p>
+            </CardContent>
+          </Card>
+        )}
 
         <p className="text-xs text-muted-foreground mt-6 opacity-75 flex items-start gap-2">
           <Info className="h-4 w-4 text-sky-300 shrink-0 mt-0.5" />
