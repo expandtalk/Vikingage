@@ -382,7 +382,7 @@ const ExcursionDetail = () => {
               <label className="inline-flex items-center gap-1.5 text-xs text-emerald-300 cursor-pointer"><input type="checkbox" checked={relief} onChange={(e) => setRelief(e.target.checked)} /> {sv ? 'Höjdrelief (terräng — strandvallar)' : 'Elevation hillshade (terrain)'}</label>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-sky-300 whitespace-nowrap">{sv ? 'Radie' : 'Radius'}: {radius < 1000 ? `${radius} m` : `${(radius / 1000).toFixed(1)} km`}</span>
-                <input type="range" min={200} max={5000} step={100} value={radius} onChange={(e) => setRadius(Number(e.target.value))} className="flex-1 accent-sky-500" />
+                <input type="range" min={200} max={30000} step={500} value={radius} onChange={(e) => setRadius(Number(e.target.value))} className="flex-1 accent-sky-500" />
                 <span className="text-muted-foreground whitespace-nowrap">{nearbyDb?.length ?? 0} {sv ? 'fynd' : 'finds'}</span>
               </div>
             </div>

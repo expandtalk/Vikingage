@@ -151,6 +151,21 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
       { sv: 'Gravfält', en: 'Grave field', color: '#a855f7' },
       { sv: 'Farled', en: 'Waterway', color: '#eab308' },
     ],
+    tagline: {
+      sv: 'Den forntida vattenvägen från Östersjön till Uppsala — nu till stora delar torrlagd av landhöjningen.',
+      en: 'The ancient waterway from the Baltic to Uppsala — now largely dried out by land uplift.',
+    },
+    sections: [
+      { key: 'leden', titleSv: 'Vattenleden', titleEn: 'The waterway',
+        sv: 'En forntida vattenled från Trälhavet vid Östersjön genom sjöar och åar upp mot Uppsala — kartan visar hela sträckningen. En pulsåder för transport och handel under järnålder och vikingatid, kantad av gravfält och runstenar.',
+        en: 'An ancient waterway from Trälhavet on the Baltic through lakes and streams up towards Uppsala — a transport and trade artery in the Iron and Viking Ages, lined with grave fields and runestones.' },
+      { key: 'vatten', titleSv: 'Vattennivå & landhöjning', titleEn: 'Water level & land uplift',
+        sv: 'Kring 500 e.Kr. låg vattnet 6–7 m högre än idag och leden band samman Uppsala med Östersjön. Landhöjningen har sedan dess torrlagt stora delar av leden — dra i strandlinje-reglaget ovanför kartan (välj t.ex. Vendel ~750 eller Vikingatid ~950) för att se den forna kusten.',
+        en: 'Around AD 500 the water stood 6–7 m higher and linked Uppsala with the Baltic. Land uplift has since dried out much of the route — use the shoreline slider above the map to see the former coast.' },
+      { key: 'monument', titleSv: 'Monument längs leden', titleEn: 'Monuments along the route',
+        sv: 'Vid ledens övre lopp står runstenen U 357 vid Skepptuna kyrka. Vid den trängsta passagen vakar fornborgen Broborg med sin förglasade mur — med vårdkasar kunde en varning nå Gamla Uppsala, 3–4 mil bort, på minuter. På andra sidan borgberget ligger Hönsgärde med ett järnåldersgravfält om över 100 gravar.',
+        en: 'On the upper reaches stands runestone U 357 by Skepptuna church. At the narrowest passage the hillfort Broborg keeps watch with its vitrified wall — beacon fires could carry a warning to Gamla Uppsala, 30–40 km away, in minutes. Beyond the fort hill lies Hönsgärde with an Iron Age grave field of 100+ graves.' },
+    ],
   },
   {
     id: 'broborg',
