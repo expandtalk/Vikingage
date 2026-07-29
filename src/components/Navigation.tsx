@@ -202,6 +202,20 @@ const EXTRA_LINKS: NavLink[] = [
     descEn: 'Browse the material — counts per province, parish, hundred and carver.',
     icon: BarChart3, category: 'science',
   },
+  {
+    pathEn: '/en/genealogy', pathSv: '/sv/slaktforskning',
+    labelSv: 'Släktforskning', labelEn: 'Genealogy',
+    descSv: 'Släpp din GEDCOM — se anfäderna i sitt landskap och djuptid, med gångavstånds-räckvidd. Klientsidigt och privat, ingen inloggning.',
+    descEn: 'Drop your GEDCOM — see ancestors in their landscape and deep time, within walking distance. Client-side and private.',
+    icon: Users, category: 'places',
+  },
+  {
+    pathEn: '/en/execution-sites', pathSv: '/sv/avrattningsplatser',
+    labelSv: 'Avrättningsplatser', labelEn: 'Execution sites',
+    descSv: 'Alla galg- och avrättningsplatser i Sverige + daterade avrättningar, med tidsreglage och källkritisk evidensklass.',
+    descEn: 'All gallows and execution sites in Sweden plus dated executions, with a time slider and evidence grading.',
+    icon: Landmark, category: 'history',
+  },
 ];
 
 const home: NavLink = {

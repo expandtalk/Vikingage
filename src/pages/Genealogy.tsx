@@ -5,6 +5,7 @@ import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, ShieldCheck, MapPin, ScrollText, Info } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -196,10 +197,11 @@ const Genealogy = () => {
                     <div className="text-foreground font-medium mb-1">{sv ? 'Att se inom räckvidd' : 'Within reach'} ({nearby.length})</div>
                     <div className="max-h-64 overflow-y-auto pr-1">
                       {nearby.map((f, i) => (
-                        <div key={i} className="flex items-baseline gap-2 text-xs py-0.5 border-b border-slate-800/50">
+                        <Link key={i} to={`/explore?center=${f.lat},${f.lng}&zoom=14`} title={sv ? 'Öppna på kartan' : 'Open on the map'}
+                          className="flex items-baseline gap-2 text-xs py-0.5 border-b border-slate-800/50 hover:bg-slate-800/40 rounded">
                           <span className="text-sky-300 font-mono shrink-0 w-14 text-right">{f.dist_m < 1000 ? f.dist_m + ' m' : (f.dist_m / 1000).toFixed(1) + ' km'}</span>
-                          <span>{f.kind === 'church' ? '⛪' : '▪'} {f.name} <span className="opacity-60">{f.raa_type || ''}</span></span>
-                        </div>
+                          <span className="hover:underline">{f.kind === 'church' ? '⛪' : '▪'} {f.name} <span className="opacity-60">{f.raa_type || ''}</span> <span className="text-sky-400">↗</span></span>
+                        </Link>
                       ))}
                     </div>
                   </div>
