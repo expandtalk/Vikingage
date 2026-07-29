@@ -17,6 +17,7 @@ import { DistanceStatsCard } from '@/components/placenames/DistanceStatsCard';
 import { FreeDistanceStatsCard } from '@/components/placenames/FreeDistanceStatsCard';
 import { ChurchDistanceCard } from '@/components/placenames/ChurchDistanceCard';
 import { HeritageProximityCard } from '@/components/placenames/HeritageProximityCard';
+import { SaintCentralityCard } from '@/components/placenames/SaintCentralityCard';
 import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import { setElementTest } from '@/hooks/useElementTest';
@@ -230,6 +231,9 @@ const PlaceNames = () => {
 
           {/* Ligger leden vid en fornlämningstyp? (hypotestestare v2, nationella lager) */}
           <HeritageProximityCard sv={sv} />
+
+          {/* Helgon i centralorterna (sjöfararhelgon-hypotesen) */}
+          <SaintCentralityCard sv={sv} />
 
           {/* Förfina ett sökord (ordförädling) — t.ex. gull */}
           <WordRefineCard sv={sv} />
