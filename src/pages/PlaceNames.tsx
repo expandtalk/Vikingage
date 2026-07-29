@@ -19,6 +19,7 @@ import { ChurchDistanceCard } from '@/components/placenames/ChurchDistanceCard';
 import { HeritageProximityCard } from '@/components/placenames/HeritageProximityCard';
 import { SaintCentralityCard } from '@/components/placenames/SaintCentralityCard';
 import { RunicWordCard } from '@/components/placenames/RunicWordCard';
+import { RunicCorpusCard } from '@/components/placenames/RunicCorpusCard';
 import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import { setElementTest } from '@/hooks/useElementTest';
@@ -235,6 +236,9 @@ const PlaceNames = () => {
 
           {/* Helgon i centralorterna (sjöfararhelgon-hypotesen) */}
           <SaintCentralityCard sv={sv} />
+
+          {/* Runkorpus-översikt: välj & förfina urvalet (rena vs risk-stenar) */}
+          <RunicCorpusCard sv={sv} />
 
           {/* Runiska ord i landskapet (titlar/gudanamn/släktord) */}
           <RunicWordCard sv={sv} />
