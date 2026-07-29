@@ -47,6 +47,7 @@ const Titlar = lazy(() => import("./pages/Titlar"));
 const Kungshogar = lazy(() => import("./pages/Kungshogar"));
 const Heraldry = lazy(() => import("./pages/Heraldry"));
 const Bronsalder = lazy(() => import("./pages/Bronsalder"));
+const ExecutionSites = lazy(() => import("./pages/ExecutionSites"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -131,6 +132,9 @@ const App = () => (
                   <Route path="/forskning/kungshogar" element={<Kungshogar />} />
                   <Route path="/forskning/bronsalder" element={<Bronsalder />} />
                   <Route path="/forskning/heraldik" element={<Heraldry />} />
+                  <Route path="/forskning/avrattningsplatser" element={<ExecutionSites />} />
+                  <Route path="/sv/avrattningsplatser" element={<ExecutionSites />} />
+                  <Route path="/en/execution-sites" element={<ExecutionSites />} />
                   <Route path="/sv/heraldik" element={<Heraldry />} />
                   <Route path="/en/heraldry" element={<Heraldry />} />
                   <Route path="/sv/kalmar" element={<Kalmar />} />

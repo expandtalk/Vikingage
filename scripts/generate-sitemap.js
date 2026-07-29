@@ -37,6 +37,8 @@ const routes = [
   { path: '/sv/borgar', priority: 0.9 },
   { path: '/sv/heraldik', priority: 0.8 },
   { path: '/en/heraldry', priority: 0.7 },
+  { path: '/sv/avrattningsplatser', priority: 0.8 },
+  { path: '/en/execution-sites', priority: 0.7 },
 ];
 
 const baseUrl = 'https://vikingage.se';
