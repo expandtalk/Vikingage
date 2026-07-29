@@ -78,7 +78,14 @@ async function main() {
       }
     }
     const yrs = [...allYears];
-    await client.query(`DELETE FROM paleo_shorelines WHERE model_version='sgu_strandforskjutning' AND year_ce = ANY($1)`, [yrs]);
+    // BBOX-SCOPAD DELETE (2026-07-29): radera bara rader vars geom skär den aktuella bboxen, så
+    // pipelinen blir REGIONALT återkörbar (en Kalmar-körning rör inte Mälardalen-datan, som ligger
+    // 300 km bort och inte skär bboxen). Widening av BBOX-env är fortsatt sättet att utöka en region.
+    const [bx1, by1, bx2, by2] = BBOX.split(',').map(Number);
+    await client.query(
+      `DELETE FROM paleo_shorelines WHERE model_version='sgu_strandforskjutning' AND year_ce = ANY($1)
+         AND ST_Intersects(geom, ST_MakeEnvelope($2,$3,$4,$5,4326))`,
+      [yrs, bx1, by1, bx2, by2]);
     const ins = await client.query(
       `INSERT INTO paleo_shorelines(period_label,year_ce,rsl_bound,water_body_type,geom,model_version,source,license,attribution)
        SELECT max(period_label), year_ce, 'median',
