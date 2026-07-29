@@ -126,7 +126,7 @@ export const PanelLayoutSelector: React.FC<PanelLayoutSelectorProps> = ({
                 onClick={() => (isActive && !isPrimary ? setPrimaryExploreRole(profile.id) : toggleExploreRole(profile.id))}
                 variant={isActive ? "default" : "outline"}
                 size="sm"
-                className={`relative h-auto p-3 flex flex-col items-center gap-2 transition-all ${
+                className={`relative h-auto min-h-[76px] w-full p-3 flex flex-col items-center gap-2 whitespace-normal break-words transition-all ${
                   isActive
                     ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
                     : "bg-slate-700/50 hover:bg-slate-600/60 text-slate-200 border-slate-500/50"
@@ -137,10 +137,10 @@ export const PanelLayoutSelector: React.FC<PanelLayoutSelectorProps> = ({
                     {lang === "en" ? "primary" : "primär"}
                   </span>
                 )}
-                {IconComponent ? <IconComponent className="h-4 w-4" /> : null}
-                <div className="text-center">
-                  <div className="text-xs font-medium">{profile.label[lang]}</div>
-                  <div className="text-xs opacity-75 mt-1">{profile.description[lang]}</div>
+                {IconComponent ? <IconComponent className="h-4 w-4 shrink-0" /> : null}
+                <div className="text-center w-full">
+                  <div className="text-xs font-medium leading-tight">{profile.label[lang]}</div>
+                  <div className="text-[11px] opacity-75 mt-1 leading-snug">{profile.description[lang]}</div>
                 </div>
               </Button>
             );
