@@ -18,6 +18,7 @@ import { FreeDistanceStatsCard } from '@/components/placenames/FreeDistanceStats
 import { ChurchDistanceCard } from '@/components/placenames/ChurchDistanceCard';
 import { HeritageProximityCard } from '@/components/placenames/HeritageProximityCard';
 import { SaintCentralityCard } from '@/components/placenames/SaintCentralityCard';
+import { RunicWordCard } from '@/components/placenames/RunicWordCard';
 import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import { setElementTest } from '@/hooks/useElementTest';
@@ -234,6 +235,9 @@ const PlaceNames = () => {
 
           {/* Helgon i centralorterna (sjöfararhelgon-hypotesen) */}
           <SaintCentralityCard sv={sv} />
+
+          {/* Runiska ord i landskapet (titlar/gudanamn/släktord) */}
+          <RunicWordCard sv={sv} />
 
           {/* Förfina ett sökord (ordförädling) — t.ex. gull */}
           <WordRefineCard sv={sv} />
