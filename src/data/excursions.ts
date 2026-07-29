@@ -9,6 +9,9 @@ export interface MonumentType {
   color: string;
 }
 
+/** En underrubricerad prosasektion på detaljsidan (Arkitektur, Vad som gör den unik, …). */
+export interface ExcursionSection { key: string; titleSv: string; titleEn: string; sv: string; en: string; }
+
 export interface Excursion {
   id: string;
   name: string;
@@ -17,6 +20,10 @@ export interface Excursion {
   coords: { lat: number; lng: number };
   sv: string;
   en: string;
+  /** Enradig "därför är platsen unik" — visas under rubriken. */
+  tagline?: { sv: string; en: string };
+  /** Strukturerade underrubriker. När satt ersätter de det långa sv/en-stycket (som blir fallback + PageMeta). */
+  sections?: ExcursionSection[];
   /** Region-/temagrupp för sektionsindelning på utflyktssidan. */
   group?: string;
   /** Typologi över monument på platsen — visas som färgkodad legend på detaljsidan. */
@@ -160,6 +167,27 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
       { sv: 'Gravfält', en: 'Grave field', color: '#a855f7' },
       { sv: 'Gravhög', en: 'Burial mound', color: '#f97316' },
       { sv: 'Farled', en: 'Waterway', color: '#eab308' },
+    ],
+    tagline: {
+      sv: 'Fornborgen med den avsiktligt förglasade muren — sten smält till glas, som vakt över farleden mot Gamla Uppsala.',
+      en: 'The hillfort whose ring wall was deliberately vitrified — stone fused to glass, guarding the approach to Gamla Uppsala.',
+    },
+    sections: [
+      { key: 'arkitektur', titleSv: 'Arkitektur', titleEn: 'Architecture',
+        sv: 'En av Upplands mest anmärkningsvärda fornborgar (95×85 m), på ett borgberg ~40 m över den forna Långhundraleden vid Stenby gård. Dubbla vallar: en inre ringmur 300 m lång och 8–15 m bred, en yttre vall om 140 m och två ingångar.',
+        en: "One of Uppland's most remarkable hillforts (95×85 m), on a crag ~40 m above the former Långhundraleden waterway at Stenby farm. Double ramparts: an inner ring wall 300 m long and 8–15 m wide, an outer bank of 140 m and two entrances." },
+      { key: 'unikt', titleSv: 'Vad som gör den unik', titleEn: 'What makes it unique',
+        sv: 'Det unika är den medvetet förglasade ringmuren — stenen har hettats till över 1 100 °C i boxliknande "ugnar" längs murens insida och smält samman till ett hårt, glänsande material (gnejs, granit, amfibolit). Analyserna (Upplandsmuseet 1992; Arkeologerna 2018:127) visar att det är byggnadsteknik, inte en brand. Muren måste ha glänst långt ut över vattnet.',
+        en: 'Its unique feature is the deliberately vitrified ring wall — stone heated above 1,100 °C in box-like "furnaces" along the wall\'s inner face until it fused into a hard, glassy mass (gneiss, granite, amphibolite). Analyses (Upplandsmuseet 1992; Arkeologerna report 2018:127) show construction technique, not accidental fire. The wall must have gleamed far across the water.' },
+      { key: 'perioder', titleSv: 'Tidsperioder & aktivitet', titleEn: 'Periods & activity',
+        sv: 'Två byggfaser är daterade med kol-14: borgen grundades under folkvandringstid (kol 1982: ca 375–550 e.Kr.) och förglasades under vendeltid (kol 2017–18: ca 550–750 e.Kr.). Härifrån kontrollerades farleden mot Gamla Uppsala — utkik, trolig tullplats och första länken i vårdkase-kedjan.',
+        en: 'Two building phases are radiocarbon-dated: the fort was founded in the Migration Period (charcoal 1982: c. 375–550 AD) and vitrified in the Vendel Period (charcoal 2017–18: c. 550–750 AD). From here the approach to Gamla Uppsala was controlled — lookout, likely toll point and first link in the beacon-fire chain.' },
+      { key: 'sagner', titleSv: 'Sägner & forskning', titleEn: 'Legend & scholarship',
+        sv: 'Grimsasägnen om hövdingadottern som brände borgen "så att det syntes till Gamla Uppsala" bevarar kanske ett eko av förglasningen. Bo Gräslund har föreslagit en koppling till Beowulfkvädets svear–götar-konflikter — en omdiskuterad hypotes, inte etablerad forskning.',
+        en: 'The Grimsa legend, of the chieftain\'s daughter who burned the fort "so it was seen all the way to Gamla Uppsala", may preserve an echo of the vitrification. Bo Gräslund has proposed a link to the Swede–Geat conflicts of Beowulf — a debated hypothesis, not established scholarship.' },
+      { key: 'landskap', titleSv: 'Arkeologiska fynd i landskapet', titleEn: 'Finds in the landscape',
+        sv: 'Intill borgen ligger Grimsahögen, och på andra sidan berget Hönsgärde gravfält med över 100 gravar. Borgen är en nod i ett tätt fornlämningslandskap längs Långhundraleden — se kartan för vad som ligger inom gångavstånd.',
+        en: 'Beside the fort lies the Grimsa mound, and beyond the hill the Hönsgärde grave field with over 100 graves. The fort is a node in a dense heritage landscape along Långhundraleden — see the map for what lies within walking distance.' },
     ],
   },
   {

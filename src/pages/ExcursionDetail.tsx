@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
+import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '../components/Header';
@@ -52,6 +54,21 @@ const ExcursionDetail = () => {
 
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const radiusLayerRef = useRef<L.FeatureGroup | null>(null);
+  const [shoreYear, setShoreYear] = useState<number | null>(null);
+  const [radius, setRadius] = useState(500);
+  useShorelineOverlay(mapRef, shoreYear);
+
+  // Sevärdheter inom reglerbar radie (features_near-RPC: heritage_sites + kyrkor, avstånd i meter).
+  const { data: nearbyDb } = useQuery({
+    queryKey: ['excursion-features-near', excursion?.coords.lat, excursion?.coords.lng, radius],
+    enabled: !!excursion,
+    queryFn: async () => {
+      const { data, error } = await (supabase.rpc as any)('features_near', { p_lat: excursion!.coords.lat, p_lng: excursion!.coords.lng, radius_m: radius });
+      if (error) throw error;
+      return (data ?? []) as { kind: string; name: string; raa_type: string | null; lat: number; lng: number; dist_m: number }[];
+    },
+  });
 
   // Runsten (inskrift + ristare + edda-länkar) via RPC
   const { data: stone } = useQuery({
@@ -284,6 +301,22 @@ const ExcursionDetail = () => {
     return () => { try { map.removeLayer(group); } catch { /* noop */ } };
   }, [hypotheses, excursion, sv]);
 
+  // Räckviddscirkel + närbelägna lämningar/kyrkor ur DB (reglerbar radie).
+  useEffect(() => {
+    const map = mapRef.current; if (!map || !excursion) return;
+    if (radiusLayerRef.current) { try { map.removeLayer(radiusLayerRef.current); } catch { /* noop */ } radiusLayerRef.current = null; }
+    const g = L.featureGroup();
+    L.circle([excursion.coords.lat, excursion.coords.lng], { radius, color: '#38bdf8', weight: 1, fillColor: '#38bdf8', fillOpacity: 0.06 }).addTo(g);
+    (nearbyDb ?? []).forEach((f) => {
+      const church = f.kind === 'church';
+      L.circleMarker([f.lat, f.lng], { radius: church ? 6 : 4, color: '#0c4a6e', weight: 1, fillColor: church ? '#38bdf8' : '#22d3ee', fillOpacity: 0.85 })
+        .bindPopup(`<strong>${church ? '⛪ ' : ''}${f.name}</strong><br/><span style="font-size:11px;color:#666">${f.raa_type || ''} · ${f.dist_m < 1000 ? f.dist_m + ' m' : (f.dist_m / 1000).toFixed(1) + ' km'}</span><br/><a href="/explore?center=${f.lat},${f.lng}&zoom=15" style="font-size:11px">${sv ? 'Öppna på kartan' : 'Open on map'} →</a>`)
+        .addTo(g);
+    });
+    g.addTo(map); radiusLayerRef.current = g;
+    return () => { try { map.removeLayer(g); } catch { /* noop */ } };
+  }, [nearbyDb, radius, excursion, sv]);
+
   if (!excursion) {
     return (
       <div className="min-h-screen viking-bg">
@@ -315,17 +348,37 @@ const ExcursionDetail = () => {
         </Link>
 
         <div className="mb-6">
-          <h1 className="text-4xl font-bold text-foreground mb-3 flex items-center gap-3"><MapPin className="h-8 w-8 text-gold" />{excursion.name}</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-1 flex items-center gap-3"><MapPin className="h-8 w-8 text-gold" />{excursion.name}</h1>
+          {excursion.tagline && <p className="text-gold/90 text-base font-medium mb-3 max-w-3xl">{sv ? excursion.tagline.sv : excursion.tagline.en}</p>}
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge variant="secondary" className="text-xs">{excursion.region}</Badge>
             <Badge variant="outline" className="text-xs flex items-center gap-1"><Calendar className="h-3 w-3" />{excursion.period}</Badge>
             {stone?.meter && <MeterBadge meter={stone.meter} sv={sv} />}
           </div>
-          <ExcursionProse text={sv ? excursion.sv : excursion.en} className="max-w-3xl text-lg" />
+          {excursion.sections?.length ? (
+            <div className="max-w-3xl space-y-4">
+              {excursion.sections.map((s) => (
+                <section key={s.key}>
+                  <h2 className="text-lg font-semibold text-gold mb-1">{sv ? s.titleSv : s.titleEn}</h2>
+                  <p className="text-muted-foreground leading-relaxed">{sv ? s.sv : s.en}</p>
+                </section>
+              ))}
+            </div>
+          ) : (
+            <ExcursionProse text={sv ? excursion.sv : excursion.en} className="max-w-3xl text-lg" />
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
+            <div className="mb-2 flex flex-col gap-2">
+              <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-sky-300 whitespace-nowrap">{sv ? 'Radie' : 'Radius'}: {radius < 1000 ? `${radius} m` : `${(radius / 1000).toFixed(1)} km`}</span>
+                <input type="range" min={200} max={5000} step={100} value={radius} onChange={(e) => setRadius(Number(e.target.value))} className="flex-1 accent-sky-500" />
+                <span className="text-muted-foreground whitespace-nowrap">{nearbyDb?.length ?? 0} {sv ? 'fynd' : 'finds'}</span>
+              </div>
+            </div>
             <div ref={containerRef} className="w-full rounded-lg border border-border" style={{ height: '55vh', minHeight: 380 }} />
             <div className="mt-2 flex flex-wrap gap-3">
               <a href={`/explore?lat=${excursion.coords.lat}&lng=${excursion.coords.lng}`} className="inline-flex items-center gap-1 text-xs text-gold hover:underline"><Compass className="h-3 w-3" />{sv ? 'Utforska i kartan' : 'Explore on map'}</a>
@@ -401,6 +454,21 @@ const ExcursionDetail = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Sevärdheter inom räckvidd (features_near, reglerbar radie) */}
+          {nearbyDb && nearbyDb.length > 0 && (
+            <Section icon={<Navigation className="h-5 w-5 text-sky-400" />} title={`${sv ? 'Sevärdheter inom räckvidd' : 'Sights within reach'} (${nearbyDb.length})`}>
+              <div className="max-h-64 overflow-y-auto pr-1">
+                {nearbyDb.map((f, i) => (
+                  <a key={i} href={`/explore?center=${f.lat},${f.lng}&zoom=15`} title={sv ? 'Öppna på kartan' : 'Open on map'}
+                    className="flex items-baseline gap-2 text-sm py-0.5 border-b border-border/40 hover:bg-muted/30 rounded">
+                    <span className="text-sky-300 font-mono shrink-0 w-14 text-right text-xs">{f.dist_m < 1000 ? `${f.dist_m} m` : `${(f.dist_m / 1000).toFixed(1)} km`}</span>
+                    <span className="hover:underline">{f.kind === 'church' ? '⛪' : '▪'} {f.name} <span className="text-muted-foreground/60 text-xs">{f.raa_type || ''}</span></span>
+                  </a>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground/70 mt-2">{sv ? 'Ur RAÄ Fornsök + kyrkor (fågelvägen). Justera radien ovanför kartan. Klicka för att öppna på huvudkartan.' : 'From the heritage register + churches. Adjust the radius above the map.'}</p>
+            </Section>
+          )}
           {/* Runsten */}
           {stone && (
             <Section icon={<Scroll className="h-5 w-5 text-gold" />} title={`${sv ? 'Om runstenen' : 'About the runestone'} ${stone.signum}`}>
