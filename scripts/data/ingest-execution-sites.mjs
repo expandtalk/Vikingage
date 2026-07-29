@@ -30,11 +30,11 @@ for(const t of TERMS){
       if(!LABEL_RE.test(name) && !LABEL_RE.test(tags)) continue;
       const cm=r.match(/<gml:coordinates[^>]*>([-\d.]+)[, ]([-\d.]+)</); if(!cm) continue;
       const lng=+cm[1], lat=+cm[2]; if(!(lat>54&&lat<70&&lng>10&&lng<25)) continue;
-      const place=dec((r.match(/<pres:placeLabel>([^<]+)/)||[])[1]); // "Sverige, Län, Landskap, Kommun, Socken,..."
+      const place=dec((r.match(/<pres:placeLabel>([^<]+)/)||[])[1]); // "Sverige, Län, Kommun, Landskap, Socken"
       const parts=place.split(',').map(s=>s.trim());
       const raa=/avrätt/i.test(name)?'Avrättningsplats':/stegl/i.test(name)?'Stegling':/galg/i.test(name)?'Galgplats/galgbacke':'Avrättningsplats';
       const short=uri.replace(/^https?:\/\//,'');
-      if(!found.has(short)) found.set(short,{name:name||raa, raa, lat, lng, landscape:parts[2]||null, municipality:parts[3]||null, parish:parts[4]||null});
+      if(!found.has(short)) found.set(short,{name:name||raa, raa, lat, lng, municipality:parts[2]||null, landscape:parts[3]||null, parish:parts[4]||null});
     }
     start+=500; await sleep(400);
   }
