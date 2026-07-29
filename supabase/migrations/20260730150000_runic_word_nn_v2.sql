@@ -15,8 +15,15 @@ language sql stable as $$
     union all select ST_SetSRID(ST_MakePoint((coordinates)[0],(coordinates)[1]),4326) from viking_cities where p_reference='town' and coordinates is not null
     union all select geom from heritage_sites where p_reference='gravfalt' and geom is not null and raa_type ilike '%gravfält%'
   ),
+  -- Samlingspunkter (museer/utgrävningar): ≥15 inskrifter inom ~100 m → förvanskar geografin
+  -- (Bergen 1010, Uppsala 158, Lund, Trondheim, Sigtuna…). Beräknas på NUVARANDE koordinat.
+  pil as (
+    select round((coordinates)[1]::numeric,3) la, round((coordinates)[0]::numeric,3) lo
+    from runic_inscriptions where coordinates is not null group by 1,2 having count(*) >= 15
+  ),
   ins as (
     select ri.id, ri.transliteration, ri.object_type,
+      round((ri.coordinates)[1]::numeric,3) cla, round((ri.coordinates)[0]::numeric,3) clo,
       (lower(coalesce(ri.location,'')||' '||coalesce(ri.current_location,'')) like '%kyrk%'
        or exists (select 1 from inscription_locations o join inscription_locations cu
             on o.inscription_id=cu.inscription_id and o.role='original' and cu.role='current'
@@ -35,7 +42,7 @@ language sql stable as $$
         or (p_medium='stone'    and (object_type ilike '%runsten%' or object_type ilike '%runestone%' or object_type ilike '%gravhäll%'))
         or (p_medium='portable' and (object_type ilike '%pinne%' or object_type ilike '%träinskrift%' or object_type ilike '%runben%' or object_type ilike '%revben%' or object_type ilike '%märklapp%'))
         or (p_medium='coin'     and object_type ilike '%mynt%'))
-      and (p_placement='all' or not moved)
+      and (p_placement='all' or (not moved and not exists (select 1 from pil where pil.la=ins.cla and pil.lo=ins.clo)))
   ),
   coh as (
     select 'match'::text cohort, g from filt where transliteration ilike '%'||p_term||'%'

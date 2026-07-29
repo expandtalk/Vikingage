@@ -95,7 +95,7 @@ export const RunicWordCard: React.FC<{ sv: boolean }> = ({ sv }) => {
             </div>
             {verdict && <div className="flex items-center gap-2 text-sm"><span style={{ width: 12, height: 12, borderRadius: 9999, background: verdict.c, boxShadow: `0 0 6px ${verdict.c}` }} /><span className="text-foreground">{verdict.t}</span></div>}
             <p className="text-[11px] opacity-70">{sv
-              ? 'Substräng i translittereringen → median till närmaste referens vs slumpbaslinje. VARNINGAR: (1) Många stenar FLYTTADES (median 647 m; 106 kända till kyrka) — därför "uteslut flyttade" som standard, och originalkoordinat används där den finns. (2) Kyrkor är en dålig referens (cirkulärt — stenar flyttades ju TILL kyrkor). (3) Korpusen är ojämn (Uppland-tung) — mönstret kan spegla var stenar finns, inte var ordet användes. (4) Korta ord matchar brett. Utforskande, inte bevis.'
+              ? '"Uteslut flyttade" (standard) tar bort: (a) stenar som flyttats (median 647 m; 106 kända till kyrka) — originalkoordinat används där den finns; (b) SAMLINGSPUNKTER där ≥15 inskrifter klumpats på en prick (Bergen 1010, Uppsala 158, Lund, Sigtuna…) som annars drar allt mot städer. Kvarstår: kyrkor = cirkulär referens; ojämn korpus (Uppland-tung); korta ord matchar brett. OBS: texten/orden är giltiga även för flyttade stenar — det är bara positionen som är opålitlig. Utforskande, inte bevis.'
               : 'Substring vs random baseline. Caveats: many stones were relocated (median 647 m; church-moved excluded by default, original coords used where known); churches are a circular reference; the corpus is uneven; short terms match broadly. Exploratory.'}</p>
           </>
         )}
