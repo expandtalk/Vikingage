@@ -196,13 +196,18 @@ const Genealogy = () => {
                   <div>
                     <div className="text-foreground font-medium mb-1">{sv ? 'Att se inom räckvidd' : 'Within reach'} ({nearby.length})</div>
                     <div className="max-h-64 overflow-y-auto pr-1">
-                      {nearby.map((f, i) => (
-                        <Link key={i} to={`/explore?center=${f.lat},${f.lng}&zoom=14`} title={sv ? 'Öppna på kartan' : 'Open on the map'}
-                          className="flex items-baseline gap-2 text-xs py-0.5 border-b border-slate-800/50 hover:bg-slate-800/40 rounded">
-                          <span className="text-sky-300 font-mono shrink-0 w-14 text-right">{f.dist_m < 1000 ? f.dist_m + ' m' : (f.dist_m / 1000).toFixed(1) + ' km'}</span>
-                          <span className="hover:underline">{f.kind === 'church' ? '⛪' : '▪'} {f.name} <span className="opacity-60">{f.raa_type || ''}</span> <span className="text-sky-400">↗</span></span>
-                        </Link>
-                      ))}
+                      {nearby.map((f, i) => {
+                        const isRune = f.kind === 'runestone';
+                        const to = isRune ? `/inscription/${encodeURIComponent(f.raa_type || '')}` : `/explore?center=${f.lat},${f.lng}&zoom=14`;
+                        const icon = f.kind === 'church' ? '⛪' : isRune ? 'ᚱ' : '▪';
+                        return (
+                          <Link key={i} to={to} title={isRune ? (sv ? 'Öppna runinskriften' : 'Open the inscription') : (sv ? 'Öppna på kartan' : 'Open on the map')}
+                            className="flex items-baseline gap-2 text-xs py-0.5 border-b border-slate-800/50 hover:bg-slate-800/40 rounded">
+                            <span className="text-sky-300 font-mono shrink-0 w-14 text-right">{f.dist_m < 1000 ? f.dist_m + ' m' : (f.dist_m / 1000).toFixed(1) + ' km'}</span>
+                            <span className="hover:underline"><span className={isRune ? 'text-amber-400' : ''}>{icon}</span> {f.name} {!isRune && <span className="opacity-60">{f.raa_type || ''}</span>} <span className="text-sky-400">↗</span></span>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                   <p className="text-[11px] opacity-70">{sv ? 'Ur vår publika databas (RAÄ Fornsök, kyrkor m.fl.). Fågelvägen från sockencentroiden.' : 'From our public database, as-the-crow-flies from the parish centroid.'}</p>

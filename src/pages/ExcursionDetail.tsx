@@ -308,9 +308,12 @@ const ExcursionDetail = () => {
     const g = L.featureGroup();
     L.circle([excursion.coords.lat, excursion.coords.lng], { radius, color: '#38bdf8', weight: 1, fillColor: '#38bdf8', fillOpacity: 0.06 }).addTo(g);
     (nearbyDb ?? []).forEach((f) => {
-      const church = f.kind === 'church';
-      L.circleMarker([f.lat, f.lng], { radius: church ? 6 : 4, color: '#0c4a6e', weight: 1, fillColor: church ? '#38bdf8' : '#22d3ee', fillOpacity: 0.85 })
-        .bindPopup(`<strong>${church ? '⛪ ' : ''}${f.name}</strong><br/><span style="font-size:11px;color:#666">${f.raa_type || ''} · ${f.dist_m < 1000 ? f.dist_m + ' m' : (f.dist_m / 1000).toFixed(1) + ' km'}</span><br/><a href="/explore?center=${f.lat},${f.lng}&zoom=15" style="font-size:11px">${sv ? 'Öppna på kartan' : 'Open on map'} →</a>`)
+      const church = f.kind === 'church', isRune = f.kind === 'runestone';
+      const fill = church ? '#38bdf8' : isRune ? '#eab308' : '#22d3ee';
+      const link = isRune ? `/inscription/${encodeURIComponent(f.raa_type || '')}` : `/explore?center=${f.lat},${f.lng}&zoom=15`;
+      const linkLabel = isRune ? (sv ? 'Öppna runinskriften' : 'Open inscription') : (sv ? 'Öppna på kartan' : 'Open on map');
+      L.circleMarker([f.lat, f.lng], { radius: church || isRune ? 6 : 4, color: isRune ? '#78350f' : '#0c4a6e', weight: 1, fillColor: fill, fillOpacity: 0.85 })
+        .bindPopup(`<strong>${church ? '⛪ ' : isRune ? 'ᚱ ' : ''}${f.name}</strong><br/><span style="font-size:11px;color:#666">${isRune ? '' : (f.raa_type || '') + ' · '}${f.dist_m < 1000 ? f.dist_m + ' m' : (f.dist_m / 1000).toFixed(1) + ' km'}</span><br/><a href="${link}" style="font-size:11px">${linkLabel} →</a>`)
         .addTo(g);
     });
     g.addTo(map); radiusLayerRef.current = g;
@@ -458,13 +461,18 @@ const ExcursionDetail = () => {
           {nearbyDb && nearbyDb.length > 0 && (
             <Section icon={<Navigation className="h-5 w-5 text-sky-400" />} title={`${sv ? 'Sevärdheter inom räckvidd' : 'Sights within reach'} (${nearbyDb.length})`}>
               <div className="max-h-64 overflow-y-auto pr-1">
-                {nearbyDb.map((f, i) => (
-                  <a key={i} href={`/explore?center=${f.lat},${f.lng}&zoom=15`} title={sv ? 'Öppna på kartan' : 'Open on map'}
-                    className="flex items-baseline gap-2 text-sm py-0.5 border-b border-border/40 hover:bg-muted/30 rounded">
-                    <span className="text-sky-300 font-mono shrink-0 w-14 text-right text-xs">{f.dist_m < 1000 ? `${f.dist_m} m` : `${(f.dist_m / 1000).toFixed(1)} km`}</span>
-                    <span className="hover:underline">{f.kind === 'church' ? '⛪' : '▪'} {f.name} <span className="text-muted-foreground/60 text-xs">{f.raa_type || ''}</span></span>
-                  </a>
-                ))}
+                {nearbyDb.map((f, i) => {
+                  const isRune = f.kind === 'runestone';
+                  const to = isRune ? `/inscription/${encodeURIComponent(f.raa_type || '')}` : `/explore?center=${f.lat},${f.lng}&zoom=15`;
+                  const icon = f.kind === 'church' ? '⛪' : isRune ? 'ᚱ' : '▪';
+                  return (
+                    <a key={i} href={to} title={isRune ? (sv ? 'Öppna runinskriften' : 'Open inscription') : (sv ? 'Öppna på kartan' : 'Open on map')}
+                      className="flex items-baseline gap-2 text-sm py-0.5 border-b border-border/40 hover:bg-muted/30 rounded">
+                      <span className="text-sky-300 font-mono shrink-0 w-14 text-right text-xs">{f.dist_m < 1000 ? `${f.dist_m} m` : `${(f.dist_m / 1000).toFixed(1)} km`}</span>
+                      <span className="hover:underline"><span className={isRune ? 'text-amber-500' : ''}>{icon}</span> {f.name} {!isRune && <span className="text-muted-foreground/60 text-xs">{f.raa_type || ''}</span>}</span>
+                    </a>
+                  );
+                })}
               </div>
               <p className="text-[11px] text-muted-foreground/70 mt-2">{sv ? 'Ur RAÄ Fornsök + kyrkor (fågelvägen). Justera radien ovanför kartan. Klicka för att öppna på huvudkartan.' : 'From the heritage register + churches. Adjust the radius above the map.'}</p>
             </Section>
