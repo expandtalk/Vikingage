@@ -40,6 +40,10 @@ const REGIONS = {
   stockholm: { county: 'Stockholm' },
   goteborg:  { county: '"Västra Götaland"', bbox: [11.5, 57.5, 12.4, 58.05] }, // Göteborgstrakten
   uppland:   { county: 'Uppsala',           bbox: [17.5, 59.5, 18.25, 59.95] }, // Långhundraleden/Broborg–Knivsta–Uppsala
+  skane:        { county: 'Skåne' },
+  ostergotland: { county: 'Östergötland' },
+  blekinge:     { county: 'Blekinge' },
+  halland:      { county: 'Halland' },
 };
 
 const argv = process.argv.slice(2);
