@@ -9,6 +9,8 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const dec=s=>(s||'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\s+/g,' ').trim();
 const TERMS=['avrättningsplats','avrättning','galgplats','galgbacke','bödel','stegling','halshuggning'];
 const REL=/avrätt|galg|bödel|böl|stegl|halshugg|schavott|spöstraff|bila/i;   // relevans
+// Uteslut motiv utanför Norden (Daniel 2026-07-30): behåll bara nordiska platser/motiv.
+const FOREIGN=/belgien|breendonk|persien|persisk|iran|kazeroun|fransk|frankrike|tyskland|tysk uniform|kina|kinesisk|amerika|\bUSA\b|afrika|italien|spanien|ryssland|rysk|polen|england|engelsk|osmansk|turkiet|japan/i;
 const PER_TERM=60;
 // tillåtna licenser → kortform
 function lic(url){ const u=(url||'').toLowerCase();
@@ -34,6 +36,7 @@ for(const term of TERMS){
     const label=dec((r.match(/<pres:itemLabel>([^<]+)/)||[])[1]);
     const tags=(r.match(/<pres:tag>([^<]+)/g)||[]).join(' ');
     if(!REL.test(label+' '+tags)) continue;                       // relevansfilter
+    if(FOREIGN.test(label+' '+tags)) continue;                     // uteslut icke-nordiska motiv
     const licUrl=(r.match(/<pres:mediaLicense>([^<]+)/)||[])[1]||(r.match(/<pres:mediaLicenseUrl>([^<]+)/)||[])[1];
     const L=lic(licUrl); if(!L) continue;                         // bara fria licenser
     const thumb=(r.match(/<pres:src type="thumbnail">([^<]+)/)||[])[1];

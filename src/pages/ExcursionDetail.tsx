@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
+import { useReliefOverlay } from '@/hooks/useReliefOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -57,7 +58,9 @@ const ExcursionDetail = () => {
   const radiusLayerRef = useRef<L.FeatureGroup | null>(null);
   const [shoreYear, setShoreYear] = useState<number | null>(null);
   const [radius, setRadius] = useState(500);
+  const [relief, setRelief] = useState(false);
   useShorelineOverlay(mapRef, shoreYear);
+  useReliefOverlay(mapRef, relief);
 
   // Sevärdheter inom reglerbar radie (features_near-RPC: heritage_sites + kyrkor, avstånd i meter).
   const { data: nearbyDb } = useQuery({
@@ -376,6 +379,7 @@ const ExcursionDetail = () => {
           <div className="lg:col-span-2">
             <div className="mb-2 flex flex-col gap-2">
               <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+              <label className="inline-flex items-center gap-1.5 text-xs text-emerald-300 cursor-pointer"><input type="checkbox" checked={relief} onChange={(e) => setRelief(e.target.checked)} /> {sv ? 'Höjdrelief (terräng — strandvallar)' : 'Elevation hillshade (terrain)'}</label>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-sky-300 whitespace-nowrap">{sv ? 'Radie' : 'Radius'}: {radius < 1000 ? `${radius} m` : `${(radius / 1000).toFixed(1)} km`}</span>
                 <input type="range" min={200} max={5000} step={100} value={radius} onChange={(e) => setRadius(Number(e.target.value))} className="flex-1 accent-sky-500" />

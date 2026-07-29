@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, AlertTriangle, FlaskConical, Info, Compass } from 'lucide-react';
 import { useCentralPlaces, type CentralPlaceName, type CentralPlaceGroup } from '@/hooks/useCentralPlaces';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
+import { useReliefOverlay } from '@/hooks/useReliefOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { supabase } from '@/integrations/supabase/client';
 import { OrtnamnVerification } from '@/components/OrtnamnVerification';
@@ -57,7 +58,9 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
+  const [relief, setRelief] = useState(false);
   useShorelineOverlay(mapRef, shoreYear);
+  useReliefOverlay(mapRef, relief);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -112,6 +115,7 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
   return (
     <div>
       <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+      <label className="inline-flex items-center gap-1.5 text-xs text-emerald-300 cursor-pointer mb-2"><input type="checkbox" checked={relief} onChange={(e) => setRelief(e.target.checked)} /> Höjdrelief (terräng — Höga kustens strandvallar)</label>
       <div ref={containerRef} className="w-full h-[480px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 480 }} />
     </div>
   );
