@@ -241,5 +241,4 @@ export const getFindsByType = (finds: ArchaeologicalFind[], type: string): Archa
 
 // Export types and functions needed by other modules
 export type { ArchaeologicalFind };
-export { getFindIcon, getFindColor } from './archaeologicalFinds/helpers';
-export { clusterFinds, getClusterIcon, type FindCluster } from './archaeologicalFinds/clustering';
+export { clusterFinds, type FindCluster } from './archaeologicalFinds/clustering';

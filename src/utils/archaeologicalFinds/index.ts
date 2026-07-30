@@ -4,5 +4,5 @@ export type { ArchaeologicalFind, FindCluster } from './types';
 export { ARCHAEOLOGICAL_FINDS } from './data';
 export { NEW_SWEDISH_FINDS } from './newSwedishFinds';
 export { ARCHAEOLOGICAL_PERIODS } from './periods';
-export { clusterFinds, getClusterIcon } from './clustering';
-export { getFindsInPeriod, getFindIcon, getFindColor } from './helpers';
+export { clusterFinds } from './clustering';
+export { getFindsInPeriod } from './helpers';

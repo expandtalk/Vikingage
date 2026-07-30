@@ -49,25 +49,6 @@ export const clusterFinds = (finds: ArchaeologicalFind[], radiusKm: number = 5):
   return [...clusters, ...singleFinds];
 };
 
-export const getClusterIcon = (cluster: FindCluster): string => {
-  // Use icon from the most significant find or most common type
-  const findTypes = cluster.finds.map(f => f.findType);
-  const mostCommon = findTypes.reduce((a, b, _, arr) => 
-    arr.filter(v => v === a).length >= arr.filter(v => v === b).length ? a : b
-  );
-  
-  const iconMap: Record<string, string> = {
-    'settlement': '🏘️',
-    'burial': '⚱️',
-    'city': '🏛️',
-    'trading_city': '🏙️',
-    'boat_graves': '⛵',
-    'royal_burial': '👑'
-  };
-  
-  return iconMap[mostCommon] || '📍';
-};
-
 // Helper function to calculate distance between two points
 const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
   const R = 6371; // Earth's radius in km
