@@ -6,7 +6,7 @@ import { Crown } from 'lucide-react';
 
 // Kuraterad grupp: exceptionella elit-monument (Daniels tes) — avviker från massan av minnesstenar
 // genom genre (medium) eller roll. Klustren på kartan = separata samtida maktsfärer (sphere).
-interface EM { id: string; name: string; kind: string; signum: string | null; dating: string | null; landscape: string | null; note: string | null; influence: string | null; link: string | null; sphere: string | null }
+interface EM { id: string; name: string; kind: string; signum: string | null; dating: string | null; landscape: string | null; note: string | null; influence: string | null; link: string | null; sphere: string | null; eriksgata_km: number | null }
 
 const KIND: Record<string, { sv: string; icon: string }> = {
   'hjältediktning': { sv: 'Hjältediktning', icon: '⚔' },
@@ -16,6 +16,7 @@ const KIND: Record<string, { sv: string; icon: string }> = {
   'bildsten': { sv: 'Bildsten', icon: '🖼' },
   'centralplats': { sv: 'Central-/kultplats', icon: '✦' },
   'elitgrav': { sv: 'Elitgrav / båtgravfält', icon: '⚱' },
+  'ringborg': { sv: 'Ringborg', icon: '⌾' },
   'kristet maktcentrum': { sv: 'Kristet maktcentrum', icon: '✝' },
   'politisk plats': { sv: 'Politisk plats', icon: '♔' },
 };
@@ -24,10 +25,11 @@ const SPHERE: Record<string, { sv: string; icon: string }> = {
   'ostergotland': { sv: 'Östergötland (Folkungar/Bjälbo)', icon: '🟢' },
   'svealand': { sv: 'Svealand – Mälardalen (Uppsala-kungarna)', icon: '🟡' },
   'vastergotland': { sv: 'Västergötland (kristet kungacentrum)', icon: '🟠' },
+  'oland': { sv: 'Öland (autonom öbygd, ringborgar)', icon: '🟤' },
   'gotland': { sv: 'Gotland (autonom bondearistokrati)', icon: '🟣' },
 };
-const KIND_ORDER = ['hjältediktning', 'hjältebild', 'skaldevers', 'förbannelse', 'bildsten', 'centralplats', 'elitgrav', 'kristet maktcentrum', 'politisk plats'];
-const SPHERE_ORDER = ['syd', 'ostergotland', 'svealand', 'vastergotland', 'gotland'];
+const KIND_ORDER = ['hjältediktning', 'hjältebild', 'skaldevers', 'förbannelse', 'bildsten', 'centralplats', 'ringborg', 'elitgrav', 'kristet maktcentrum', 'politisk plats'];
+const SPHERE_ORDER = ['syd', 'ostergotland', 'svealand', 'vastergotland', 'oland', 'gotland'];
 
 export function EliteMonumentsCard({ sv }: { sv: boolean }) {
   const [rows, setRows] = useState<EM[]>([]);
@@ -74,6 +76,7 @@ export function EliteMonumentsCard({ sv }: { sv: boolean }) {
                       {m.signum ? <span className="opacity-60"> · {m.signum}</span> : ''}
                       {m.dating ? <span className="opacity-60"> · {m.dating}</span> : ''}
                       {tag ? <span className="opacity-50"> · {tag.icon} {tag.sv}</span> : ''}
+                      {m.eriksgata_km != null && m.eriksgata_km <= 15 ? <span className="text-amber-400/90" title={`${m.eriksgata_km} km från Eriksgatan`}> · ♛ på Eriksgatan</span> : ''}
                     </div>
                     {m.note && <div className="opacity-80">{m.note}{m.influence && m.influence !== '—' ? ` · influens: ${m.influence}` : ''}</div>}
                   </div>
@@ -82,7 +85,7 @@ export function EliteMonumentsCard({ sv }: { sv: boolean }) {
             </div>
           </div>
         ))}
-        <p className="text-[11px] opacity-70">{sv ? 'Kuraterad grupp; koordinater ur vår runsten-/heritage-data resp. verifierade mot Wikidata. Birger Jarls val av Varnhem binder Östergötlands Folkungamakt till Västergötlands kristna landskap. Sigurdsristningen + de gotländska bildstenarna visar att den heroiska bilden föregår runsten-texten.' : 'Curated group; coordinates from our runic/heritage data or verified via Wikidata.'}</p>
+        <p className="text-[11px] opacity-70">{sv ? '♛ = ligger ≤15 km från Eriksgatan, kungens legitimeringsrunda som band ihop landen (Mora stenar → Rök → Skara/Husaby/Varnhem). Kuraterad grupp; koordinater ur vår runsten-/heritage-data resp. verifierade mot Wikidata. Öland utgör en egen sfär (ö-täckande ringborgssystem + tidig kyrklig konsolidering ~1000, före Gotland).' : 'Curated group; ♛ = within 15 km of the royal Eriksgata circuit.'}</p>
       </CardContent>
     </Card>
   );
