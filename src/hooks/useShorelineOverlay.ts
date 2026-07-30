@@ -23,7 +23,13 @@ function validGeom(g: unknown): g is GeoJSON.Geometry {
   return true;
 }
 
-export function useShorelineOverlay(mapRef: RefObject<L.Map | null>, year: number | null) {
+// rpcFn: 'get_paleo_shorelines_nearest' (SGU, default) eller 'get_paleo_shorelines_dem'
+// (finupplöst Copernicus-DEM-modell, används på Kalmar-sidan). Båda returnerar samma form.
+export function useShorelineOverlay(
+  mapRef: RefObject<L.Map | null>,
+  year: number | null,
+  rpcFn: 'get_paleo_shorelines_nearest' | 'get_paleo_shorelines_dem' = 'get_paleo_shorelines_nearest',
+) {
   const layerRef = useRef<L.GeoJSON | null>(null);
 
   useEffect(() => {
@@ -48,7 +54,7 @@ export function useShorelineOverlay(mapRef: RefObject<L.Map | null>, year: numbe
 
       const { data, error } = await (supabase as unknown as {
         rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
-      }).rpc('get_paleo_shorelines_nearest', { p_year: year });
+      }).rpc(rpcFn, { p_year: year });
       if (cancelled || error || !data) return;
 
       const features: GeoJSON.Feature[] = [];
@@ -77,5 +83,5 @@ export function useShorelineOverlay(mapRef: RefObject<L.Map | null>, year: numbe
     })();
 
     return () => { cancelled = true; if (raf) cancelAnimationFrame(raf); clear(); };
-  }, [mapRef, year]);
+  }, [mapRef, year, rpcFn]);
 }

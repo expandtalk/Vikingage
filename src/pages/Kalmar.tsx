@@ -92,7 +92,9 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   const layerRef = useRef<L.LayerGroup | null>(null);
   const fittedRef = useRef(false);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
-  useShorelineOverlay(mapRef, shoreYear);
+  // Kalmar använder den finupplösta DEM-modellen (Copernicus GLO-30 + paleo_rsl),
+  // inte SGU:s grova/statiska raster. Se scripts/data/derive-shoreline-dem.py.
+  useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem');
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
