@@ -70,7 +70,11 @@
       "Bash(npx supabase *)",
       "Bash(git check-ignore *)",
       "Bash(BBOX='16.15,56.40,16.95,57.10' node *)",
-      "Bash(BBOX='17.0,62.4,19.2,64.0' node scripts/data/ingest-paleo-shorelines.mjs)"
+      "Bash(BBOX='17.0,62.4,19.2,64.0' node scripts/data/ingest-paleo-shorelines.mjs)",
+      "Bash(curl -s \"https://kulturarvsdata.se/ksamsok/api?x-api=test&method=search&hitsPerPage=1&query=$\\(node -e \"console.log\\(encodeURIComponent\\('\\(text=\\\\\"avrättning\\\\\" OR text=\\\\\"galgbacke\\\\\"\\) AND text=\\\\\"Kalmar\\\\\" AND thumbnailExists=j'\\)\\)\"\\)\" -H 'User-Agent: VikingageBot/1.0')",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:sok.riksarkivet.se)",
+      "Bash(awk '/broborg/{f=1} f{print NR\": \"$0} f&&/^  \\\\},/{c++; if\\(c>=1\\)exit}' src/data/excursions.ts)"
     ]
   }
 }
