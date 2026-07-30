@@ -24,6 +24,8 @@ export interface Excursion {
   tagline?: { sv: string; en: string };
   /** Strukturerade underrubriker. När satt ersätter de det långa sv/en-stycket (som blir fallback + PageMeta). */
   sections?: ExcursionSection[];
+  /** Tänd dåtida strandlinje direkt vid detta år (t.ex. 750 för drunknade farleder) så besökaren ser det forna vattnet på en gång. */
+  defaultShoreYear?: number;
   /** Region-/temagrupp för sektionsindelning på utflyktssidan. */
   group?: string;
   /** Typologi över monument på platsen — visas som färgkodad legend på detaljsidan. */
@@ -155,6 +157,8 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
       sv: 'Den forntida vattenvägen från Östersjön till Uppsala — nu till stora delar torrlagd av landhöjningen.',
       en: 'The ancient waterway from the Baltic to Uppsala — now largely dried out by land uplift.',
     },
+    defaultShoreYear: 750, // tänd Vendel-strandlinjen direkt → den då segelbara leden syns som vatten
+
     sections: [
       { key: 'leden', titleSv: 'Vattenleden', titleEn: 'The waterway',
         sv: 'En forntida vattenled från Trälhavet vid Östersjön genom sjöar och åar upp mot Uppsala — kartan visar hela sträckningen. En pulsåder för transport och handel under järnålder och vikingatid, kantad av gravfält och runstenar.',

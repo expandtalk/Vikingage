@@ -56,10 +56,12 @@ const ExcursionDetail = () => {
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const radiusLayerRef = useRef<L.FeatureGroup | null>(null);
-  const [shoreYear, setShoreYear] = useState<number | null>(null);
+  const [shoreYear, setShoreYear] = useState<number | null>(excursion?.defaultShoreYear ?? null);
   const [radius, setRadius] = useState(500);
   const [relief, setRelief] = useState(false);
   useShorelineOverlay(mapRef, shoreYear);
+  // Byt utflykt (id-param) → återställ strandlinjen till utflyktens default.
+  useEffect(() => { setShoreYear(excursion?.defaultShoreYear ?? null); }, [excursion?.id]);
   useReliefOverlay(mapRef, relief);
 
   // Sevärdheter inom reglerbar radie (features_near-RPC: heritage_sites + kyrkor, avstånd i meter).
@@ -233,7 +235,9 @@ const ExcursionDetail = () => {
       .then((geo) => {
         if (cancelled || !geo || !mapRef.current) return;
         const layer = L.geoJSON(geo, {
-          style: () => ({ color: '#eab308', weight: 2, fillColor: '#eab308', fillOpacity: 0.12 }),
+          style: (feature) => (feature?.properties?.type ?? feature?.properties?.typ) === 'Farled'
+            ? { color: '#0ea5e9', weight: 4, opacity: 0.9 }          // vattenled = tjock blå linje (syns över strandlinjen)
+            : { color: '#eab308', weight: 2, fillColor: '#eab308', fillOpacity: 0.12 },
           pointToLayer: (feature, latlng) => {
             const typ = feature?.properties?.type ?? feature?.properties?.typ;
             return L.circleMarker(latlng, { radius: 5, color: '#1c1917', weight: 1, fillColor: colorByType.get(norm(typ)) ?? '#94a3b8', fillOpacity: 0.85 });
