@@ -41,6 +41,7 @@ const EconomicHistory = lazy(() => import("./pages/EconomicHistory"));
 const Angermanland = lazy(() => import("./pages/Angermanland"));
 const Kalmar = lazy(() => import("./pages/Kalmar"));
 const Staket = lazy(() => import("./pages/Staket"));
+const LegendStones = lazy(() => import("./pages/LegendStones"));
 const Oland = lazy(() => import("./pages/Oland"));
 const Maktsfarer = lazy(() => import("./pages/Maktsfarer"));
 const Greklandsfarare = lazy(() => import("./pages/Greklandsfarare"));
@@ -150,6 +151,9 @@ const App = () => (
                   <Route path="/sv/staket" element={<Staket />} />
                   <Route path="/en/staket" element={<Staket />} />
                   <Route path="/staket" element={<Staket />} />
+                  <Route path="/sv/legendstenar" element={<LegendStones />} />
+                  <Route path="/en/legend-stones" element={<LegendStones />} />
+                  <Route path="/legendstenar" element={<LegendStones />} />
                   <Route path="/prices" element={<Prices />} />
                   <Route path="/excursions" element={<Excursions />} />
                   <Route path="/sv/utflykter" element={<Excursions />} />
