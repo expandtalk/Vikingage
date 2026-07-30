@@ -50,6 +50,7 @@ export function EliteMonumentsCard({ sv }: { sv: boolean }) {
     <Card className="viking-card mb-4">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2 text-gold"><Crown className="h-5 w-5" /> {sv ? 'Exceptionella elit-monument' : 'Exceptional elite monuments'}</CardTitle>
+        <Link to="/sv/maktsfarer" className="text-xs text-sky-300 hover:underline">{sv ? '→ Se maktsfärer & handelsleder på karta' : '→ See power spheres & trade routes on map'}</Link>
       </CardHeader>
       <CardContent className="text-sm text-muted-foreground space-y-3">
         <p className="text-xs">{sv ? 'Monument som avviker från massan av formelartade minnesstenar — den yttersta elitens kommunikation. På kartan bildar de flera kluster som motsvarar samtida maktsfärer (varav den södra är dansk och Gotland en autonom bondearistokrati), inte ett enat Sverige. Uttrycksformen skiftar med sfär och tid: urnordisk förbannelse → båtgravar → hjältevers/-bild → kristet kungacentrum.' : 'Monuments that deviate from the mass of formulaic memorials — elite communication. On the map they form clusters matching contemporaneous power spheres, not one unified Sweden.'}</p>

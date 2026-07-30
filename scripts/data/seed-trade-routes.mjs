@@ -76,10 +76,12 @@ try{
     year_from:750,year_to:1050,
     description:'Väringarnas väg österut: rodd och drag över Östersjön → Neva → Ladoga → Volchov → Novgorod, portage till Dnjepr → Kiev → forsarna → Svarta havet → Miklagård (Bysans); Volga-gren mot kalifatet. Silver/dirham strömmar tillbaka. Etymologin bär leden: fornsv. *róþer* (rodd) → Roslagen/Roden → finskans *Ruotsi* → *Rus*.',
     source:'viking_cities (koord) + allmän forskningskonsensus',license:'CC0/allmän',link:null});
+  // Dnjepr-grenen mot Bysans (Gnezdovo = portage-nod på övre Dnjepr, finns i viking_cities)
   const east=[
     {name:'Birka',norse:null,section:'Mälaren (avresa)'},
     {name:'Staraja Ladoga',norse:'Aldeigjuborg',section:'Ladoga'},
     {name:'Novgorod',norse:'Holmgård',section:'Volchov'},
+    {name:'Gnezdovo',norse:null,section:'Dnjepr-portaget',desc:'Stor skandinavisk-rysk handelsplats/gravfält vid övre Dnjepr — portaget mellan Dvina och Dnjepr'},
     {name:'Kiev',norse:'Könugård',section:'Dnjepr'},
     {name:'Konstantinopel',norse:'Miklagård',section:'Bysans (slutmål)'},
   ];
@@ -89,8 +91,29 @@ try{
     if(!cy){ console.log('SAKNAS i viking_cities:',e.name); continue; }
     const disp = e.norse ? `${e.name} (${e.norse})` : e.name;
     const st=await insPoint(oid,{seq:seq++,name:disp,lat:cy.lat,lng:cy.lng,kind:'stad',major:true,section:e.section,
-      desc:null,source:'viking_cities'},950);
+      desc:e.desc||null,source:'viking_cities'},950);
     bump('Ö:'+st);
+  }
+
+  // ---- (3) VOLGA-GRENEN mot kalifatet (silver/dirham-artären via Bulgar) ----
+  const gid=await upsertRoute({slug:'volgavagen',name:'Volgavägen (mot kalifatet)',route_kind:'flodled',orientation:'öst',
+    year_from:800,year_to:1000,
+    description:'Den östligare grenen: via Volga till Bulgar (Volgabulgariens emporium) och vidare mot Khazariska riket/Itil och det abbasidiska kalifatet. Detta var SILVERARTÄREN — huvudflödet av islamiska dirhamer som fyller Gotlands och Mälardalens skatter. Ibn Fadlan mötte Rus-köpmän vid Bulgar 922.',
+    source:'viking_cities + Ibn Fadlan / allmän forskningskonsensus',license:'CC0/allmän',link:null});
+  // Bulgar (Bolgar, Tatarstan) — välkänd UNESCO-lokal; koord allmänt etablerad
+  const volga=[
+    {name:'Birka',fromCity:true,section:'Mälaren (avresa)'},
+    {name:'Staraja Ladoga',fromCity:true,norse:'Aldeigjuborg',section:'Ladoga'},
+    {name:'Bulgar (Bolgar)',lat:54.9785,lng:49.0294,section:'Volgabulgarien',major:true,
+      desc:'Volgabulgariens handelsstad — dirham-marknaden där Rus mötte kalifatets silver (Ibn Fadlan 922)',source:'Wikidata (allmänt känd UNESCO-lokal), approximativ'},
+  ];
+  let vseq=1;
+  for(const e of volga){
+    let lat=e.lat,lng=e.lng,src=e.source;
+    if(e.fromCity){ const {rows:[cy]}=await c.query(`select coordinates[1] lat, coordinates[0] lng from viking_cities where name=$1 limit 1`,[e.name]); if(cy){lat=cy.lat;lng=cy.lng;src='viking_cities';} }
+    const disp = e.norse ? `${e.name} (${e.norse})` : e.name;
+    const st=await insPoint(gid,{seq:vseq++,name:disp,lat,lng,kind:'stad',major:e.major!==false,section:e.section,desc:e.desc||null,source:src},950);
+    bump('Vo:'+st);
   }
 
   const nV=(await c.query(`select count(*)::int n from trade_route_points where route_id=$1`,[vid])).rows[0].n;
