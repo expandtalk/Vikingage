@@ -26,7 +26,7 @@ export const MARKER_COLORS: Record<string, string> = {
   established_city: '#566472', gotlandic_center: '#3f7f93',
   // Övrigt
   folk: '#7c6f5a', archaeological: '#8a6f3e', event: '#7a5c5c',
-  estate: '#9a7b3c', default: '#5b6976',
+  estate: '#9a7b3c', beacon: '#b5651d', default: '#5b6976',
 };
 
 export const markerColor = (key: string | undefined | null): string =>
@@ -59,6 +59,7 @@ export const MARKER_ICONS: Record<string, string> = {
   helmet: '<path d="M4 13a8 8 0 0 1 16 0"/><path d="M12 5v10"/><path d="M4 13v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/><path d="M8 13v3M16 13v3"/>',
   ship: '<path d="M4 13h16l-1.6 4.2a2 2 0 0 1-1.9 1.3H7.5a2 2 0 0 1-1.9-1.3z"/><path d="M4 13c-1-1-1.4-2.4-1-3.9 1.2.2 2.1 1 2.4 2.1"/><path d="M20 13c1-1 1.4-2.4 1-3.9-1.2.2-2.1 1-2.4 2.1"/><path d="M12 13V4"/><path d="M12 5h5l-1.4 3.2H12"/>',
   idol: '<circle cx="12" cy="5" r="2.3"/><path d="M12 7.3v7.2"/><path d="M8.5 10h7"/><path d="M9 20.5l3-6 3 6"/><path d="M7.5 20.5h9"/>',
+  beacon: '<path d="M12 3c1.7 3.2 4.6 4.9 4.6 8.9a4.6 4.6 0 0 1-9.2 0c0-1.7.7-3 1.7-4 .2 1 .8 1.8 1.6 2.2.9-1.6.6-4 1.3-7.1Z"/>',
   dot: '<circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/>',
 };
 
