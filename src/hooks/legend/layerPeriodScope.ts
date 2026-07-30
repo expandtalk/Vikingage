@@ -1,7 +1,10 @@
 // Period-scoping av kartlager: för perioder ÄLDRE än vendeltid är bara ett fåtal
 // lager relevanta (historiska händelser, folk & regioner, megaliter/äldre gravar,
 // landhöjning, aDNA, innovationer). Övriga (runstenar, städer, mynt, kyrkor,
-// tingsplatser, vikingaleder, maktsäten …) döljs. Vendeltid + vikingatid = fullt.
+// tingsplatser, färd-/vattenvägar, maktsäten …) döljs. Vendeltid + vikingatid = fullt.
+// OBS: "Viktiga vattenvägar" (river_routes, t.ex. Götavirke-korridoren) är egentligen
+// förhistorisk (Motala bebott sedan mesolitikum) — men saknar per-objekt periodfilter,
+// så den hålls tills vidare vikingatidsskopad. Djuptids-synlighet = medveten TODO.
 //
 // Detta är en ren härledning ovanpå enabledLegendItems — rå-staten rörs inte, så
 // när användaren går tillbaka till vikingatid återställs alla lager-val.
