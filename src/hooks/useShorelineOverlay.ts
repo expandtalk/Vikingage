@@ -29,8 +29,10 @@ export function useShorelineOverlay(
   mapRef: RefObject<L.Map | null>,
   year: number | null,
   rpcFn: 'get_paleo_shorelines_nearest' | 'get_paleo_shorelines_dem' = 'get_paleo_shorelines_nearest',
+  bbox?: [number, number, number, number],   // [minlng,minlat,maxlng,maxlat] — bara DEM-RPC:n; regionavgränsar
 ) {
   const layerRef = useRef<L.GeoJSON | null>(null);
+  const bboxKey = bbox ? bbox.join(',') : '';
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +56,7 @@ export function useShorelineOverlay(
 
       const { data, error } = await (supabase as unknown as {
         rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
-      }).rpc(rpcFn, { p_year: year });
+      }).rpc(rpcFn, bbox ? { p_year: year, p_bbox: bbox } : { p_year: year });
       if (cancelled || error || !data) return;
 
       const features: GeoJSON.Feature[] = [];
@@ -83,5 +85,5 @@ export function useShorelineOverlay(
     })();
 
     return () => { cancelled = true; if (raf) cancelAnimationFrame(raf); clear(); };
-  }, [mapRef, year, rpcFn]);
+  }, [mapRef, year, rpcFn, bboxKey]);   // bboxKey (ej bbox-arrayen) → stabil dep
 }

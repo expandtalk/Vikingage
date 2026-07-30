@@ -79,6 +79,27 @@ def smooth_polygon(geom, iters=2):
     return out.buffer(0)  # laga ev. självskärning från utjämningen
 
 
+def clean_mask(mask, min_px):
+    """Ta bort små vatten-specks OCH fyll små öar (hål) < min_px — kapar payload för översiktskartor."""
+    if min_px <= 1:
+        return mask
+    m = mask.copy()
+    lbl, n = ndimage.label(m)
+    if n:
+        sizes = ndimage.sum(np.ones_like(lbl), lbl, range(1, n + 1))
+        small = np.nonzero(sizes < min_px)[0] + 1
+        if len(small):
+            m[np.isin(lbl, small)] = False
+    holes = ndimage.binary_fill_holes(m) & ~m
+    hl, hn = ndimage.label(holes)
+    if hn:
+        hsizes = ndimage.sum(np.ones_like(hl), hl, range(1, hn + 1))
+        fill = np.nonzero(hsizes < min_px)[0] + 1
+        if len(fill):
+            m[np.isin(hl, fill)] = True
+    return m
+
+
 def polygonize(mask, transform, min_px, simplify_deg, smooth_iters):
     geoms = [shape(g) for g, v in rio_shapes(mask.astype("uint8"), mask=mask, transform=transform) if v == 1]
     if not geoms:
@@ -99,6 +120,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--min-lake-px", type=int, default=4)
+    ap.add_argument("--min-island-px", type=int, default=0, help="fyll öar/hål mindre än N px (0=av); kapar payload")
     ap.add_argument("--simplify-deg", type=float, default=0.00006)  # ~6 m
     ap.add_argument("--smooth-iters", type=int, default=2)
     ap.add_argument("--sigma", type=float, default=0.8, help="gaussian px-utjämning av höjden (dämpar DSM-brus)")
@@ -152,6 +174,9 @@ def main():
             drop = [i + 1 for i, s in enumerate(sizes) if s < args.min_lake_px]
             if drop:
                 lake[np.isin(ll, drop)] = False
+        if args.min_island_px > 1:
+            sea = clean_mask(sea, args.min_island_px)
+            lake = clean_mask(lake, args.min_island_px)
 
         feats = []
         for wtype, mask in (("sea", sea), ("lake", lake)):

@@ -1,0 +1,206 @@
+import React, { useEffect, useRef, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Header } from '../components/Header';
+import { Breadcrumbs } from '../components/Breadcrumbs';
+import { Footer } from '../components/Footer';
+import { PageMeta } from '../components/PageMeta';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Waves, Anchor, Crown, ScrollText, Info, AlertTriangle, MapPin, Ship } from 'lucide-react';
+import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
+import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
+
+// /sv/staket — forskningssida om Mälaren som havsvik ~1000 e.Kr. och frågan om var Olav
+// Haraldssons seglats 1007–08 ägde rum (Almarestäket kontra Norrström/Stockholm).
+// Strandlinjen är DEM-härledd (Copernicus GLO-30 + projektets paleo_rsl, 4,7 mm/år i Mälardalen
+// → havet ~+5 m år 950). Kurerade platser på VERIFIERADE koordinater (Wikipedia/Fornsök/place_names).
+// Hederlighet: Sandéns Stäket-tes redovisas som HYPOTES jämte den traditionella Stockholm-tolkningen.
+
+const MALAREN_BBOX: [number, number, number, number] = [17.55, 59.18, 18.80, 59.72];
+
+interface Site {
+  name: string; lat: number; lng: number; kind: 'royal' | 'sound' | 'fort' | 'city';
+  note: string; todayM?: number;
+}
+// Verifierade koordinater (Wikipedia P625 / Upplandsmuseet / place_names). Ingen gissning.
+const SITES: Site[] = [
+  { name: 'Fornsigtuna (Signhildsberg)', lat: 59.6236, lng: 17.6528, kind: 'royal', todayM: 13.2,
+    note: 'Kungsgård vid Håtunaviken, vendel–vikingatid. Namnet ("gamla Sigtuna") övertogs av staden Sigtuna ~980. RAÄ L2016:1229 m.fl.' },
+  { name: 'Sigtuna (stad ~980)', lat: 59.6173, lng: 17.7236, kind: 'royal', todayM: 8.7,
+    note: 'Rikets första stad, anlagd ~980 av Erik Segersäll. Strandstad vid samma vik.' },
+  { name: 'Stäksundet', lat: 59.4808, lng: 17.7950, kind: 'sound', todayM: 4.5,
+    note: 'Det smala sundet — sagans "Stocksund … smalare än mången å". Enda utloppet för Svitjods vårflod.' },
+  { name: 'Almarestäkets borg', lat: 59.4686, lng: 17.7936, kind: 'fort',
+    note: 'S:t Eriks slott / Biskoparnas borg vid sundet — "kastali var fire vestan sundit" (väster om sundet), som sagan säger.' },
+  { name: 'Stockholm / Gamla stan', lat: 59.325, lng: 18.064, kind: 'city',
+    note: 'Anlagt ~1250. Vid Olavs tid ett brett, förgrenat sundsystem — inte ett enda smalt sund.' },
+  { name: 'Telge hus (Ragnhildsborg)', lat: 59.2181, lng: 17.6100, kind: 'fort',
+    note: 'Borg i Linasundet, Södertälje — låset för den södra sjövägen (Himmerfjärden) in i Mälaren.' },
+];
+const KIND: Record<Site['kind'], { color: string; label: string }> = {
+  royal: { color: '#d4a63c', label: 'Kungsgård / stad' },
+  sound: { color: '#38bdf8', label: 'Sund (sagans Stocksund)' },
+  fort: { color: '#b45309', label: 'Borg / spärr' },
+  city: { color: '#94a3b8', label: 'Senare stad' },
+};
+
+const StaketMap: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const [shoreYear, setShoreYear] = useState<number | null>(950);
+  useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', MALAREN_BBOX);
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [59.47, 17.92], zoom: 10, scrollWheelZoom: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
+    const layer = L.layerGroup().addTo(map);
+    SITES.forEach((s) => {
+      const c = KIND[s.kind].color;
+      const royal = s.kind === 'royal';
+      L.circleMarker([s.lat, s.lng], {
+        radius: royal ? 8 : 6, color: c, weight: 2, fillColor: c, fillOpacity: royal ? 0.5 : 0.65,
+      })
+        .bindTooltip(s.name, { permanent: royal, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
+        .bindPopup(`<b>${s.name}</b><br/><span style="font-size:11px">${s.note}</span>${s.todayM != null ? `<br/><span style="font-size:10px;color:#888">höjd idag ${s.todayM} m ö.h.</span>` : ''}`)
+        .addTo(layer);
+    });
+    mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; };
+  }, []);
+
+  return (
+    <div>
+      <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+      <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
+      <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
+        {Object.values(KIND).map((k) => (
+          <span key={k.label} className="inline-flex items-center gap-1.5">
+            <span style={{ width: 10, height: 10, borderRadius: 9999, background: k.color, display: 'inline-block' }} /> {k.label}
+          </span>
+        ))}
+        <span className="inline-flex items-center gap-1.5"><span style={{ width: 12, height: 3, background: '#38bdf8', display: 'inline-block' }} /> blå yta = hav vid vald tid</span>
+      </div>
+    </div>
+  );
+};
+
+const Staket = () => (
+  <div className="min-h-screen viking-bg">
+    <PageMeta
+      title="Stäket och Mälaren — var seglade Olav den helige 1007?"
+      titleEn="Stäket and Lake Mälaren — where did St Olav sail in 1007?"
+      description="Forskningssida om Mälaren som havsvik omkring år 1000 och frågan om Olav Haraldssons seglats 1007–08 ägde rum vid Almarestäket eller vid Norrström i Stockholm. DEM-härledd strandlinje (Copernicus GLO-30 + landhöjning) visar landskapet vid ~5 m högre havsnivå."
+      descriptionEn="Research page on Lake Mälaren as a sea bay around AD 1000 and the debate over whether St Olav's 1007–08 voyage took place at Almarestäket or at Norrström in Stockholm. A DEM-derived shoreline (Copernicus GLO-30 + land uplift) reconstructs the landscape at ~5 m higher sea level."
+      keywords="Stäket, Almarestäket, Mälaren, Olav den helige, Stocksund, Sigtuna, Fornsigtuna, landhöjning, strandförskjutning, Börje Sandén, vikingatid, Långhundraleden"
+    />
+    <Header />
+    <Breadcrumbs />
+    <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="mb-6">
+        <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
+          <Ship className="h-8 w-8 text-gold" />
+          Stäket och Mälaren — var seglade Olav 1007?
+        </h1>
+        <p className="text-gold/90 text-sm font-medium mb-3">Mälaren som havsvik, och sagans smala Stocksund</p>
+        <p className="text-muted-foreground text-lg">
+          För tusen år sedan var hela nuvarande Mälaren en <strong>vik av havet</strong>. Landet har sedan dess
+          höjts omkring <strong>5 meter</strong> (i Mälardalen ~4,7 mm/år). Reglaget nedan höjer havet till dåtidens
+          nivå så du ser vilket land som stack upp. Det gör en gammal stridsfråga testbar: seglade Olav Haraldsson
+          ("den helige") ut på havet vid <strong>Almarestäket</strong> — eller vid <strong>Norrström</strong> i det
+          som blev Stockholm?
+        </p>
+      </div>
+
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><MapPin className="h-5 w-5" /> Mälaren vid dåtida havsnivå</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <StaketMap />
+          <p className="text-xs text-muted-foreground mt-2 opacity-75">
+            Strandlinjen är <strong>härledd ur höjddata</strong> (Copernicus DEM GLO-30, ~30 m) tröskad mot projektets
+            landhöjningsmodell (<code>paleo_rsl</code>, 4,7 mm/år, kontrollpunkt "Mälaren", konfidens hög). Vid år 950
+            stod havet ~+4,9 m. Öar återges som hål i vattnet. Reglaget växlar mellan tidsskivorna.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><ScrollText className="h-5 w-5" /> Stridsfrågan: Stäket eller Norrström?</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3">
+          <p>
+            Sagan (Snorres Särskilda saga / Heimskringla) berättar att Olav blev instängd i ett vatten i Svitjod och
+            kom ut på havet genom ett <em>Stocksund</em> som var "smalare än mången å" — det <strong>enda</strong>
+            utloppet, där vårfloden forsade. Den <strong>traditionella</strong> tolkningen (sedan Rudbeck på 1600-talet)
+            är att detta är <strong>Norrström</strong> i Stockholm. Hembygdsforskaren <strong>Börje Sandén</strong> (UKF)
+            har argumenterat för att det i stället är <strong>Stäksundet</strong> vid Almarestäket.
+          </p>
+          <p className="text-xs">Höjddatan gör argumenten prövbara. Vad den visar vid ~+5 m havsnivå:</p>
+          <ul className="list-disc pl-5 space-y-1 text-xs">
+            <li><strong>Almarestäket är en smal midja</strong> mellan norra bassängen (Skarven/Håtunaviken) och söder — förenligt med sagans smala Stocksund.</li>
+            <li><strong>Gamla stan låg i ett brett, förgrenat sundsystem</strong> (flera 1–2 km breda sund) — svårare att förena med ett <em>enda smalt</em> utlopp.</li>
+            <li>Höjdkoll: Fornsigtuna 13 m och Sigtuna 9 m = land ovan stranden; <strong>Almarestäket 4,5 m = vid själva vattenlinjen</strong> (dvs ett sund), som tesen kräver.</li>
+          </ul>
+          <p className="text-xs opacity-80">
+            <strong>Detta bevisar inte saken</strong> — det visar att Stäket-tolkningen är geografiskt möjlig och att den
+            traditionella Norrström-tolkningen har en verklig svårighet (bredden). Frågan är fortsatt omtvistad bland forskare.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Anchor className="h-5 w-5" /> Sjövägarna in i Mälaren</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-2 text-xs">
+          <p>När Mälaren var en havsvik fanns flera farleder från Östersjön in mot Birka, Sigtuna och Uppsala:</p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li><strong>Stäket-leden</strong> — norrut via det smala Stäksundet, förbi Almarestäkets spärr, in i Skarven.</li>
+            <li><strong>Södertälje / Himmerfjärden</strong> — den södra, skyddade leden; låstes av Telge hus (Ragnhildsborg) i Linasundet.</li>
+            <li><strong>Långhundraleden</strong> — den östra vattenvägen (Åkersberga–Garnsviken–Vada) mot Uppsala, i dag delvis torrlagd av landhöjningen.</li>
+          </ul>
+          <p className="opacity-80">Exakta ruttlinjer ritas inte ut här — de kräver verifierade waypoints. Noderna ovan är däremot koordinatsatta.</p>
+        </CardContent>
+      </Card>
+
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Crown className="h-5 w-5" /> Fornsigtuna → Sigtuna: centralorten flyttar</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-2 text-xs">
+          <p>
+            <strong>Fornsigtuna</strong> (Signhildsberg) var den äldre <em>kungsgården</em> vid Håtunaviken, med anor i
+            vendel–vikingatid. När kung Erik Segersäll ~980 anlade den nya <strong>staden Sigtuna</strong> 4 km österut
+            övertogs namnet ("Forn-Sigtuna" = gamla Sigtuna) och vissa funktioner. Ett återkommande mönster:
+            <strong> en gammal maktnod ersätts av en ny, och de gamla namnen/vägarna byts ut</strong> — jämför Kalmar,
+            där Husbyvägen (mellan slottet och kyrkan) ersattes av Kungsvägen.
+          </p>
+          <p className="opacity-80">Samma kungsgård är scenen för <strong>Håtunaleken 1306</strong>, statskuppen då hertigarna Erik och Valdemar grep sin bror kung Birger.</p>
+        </CardContent>
+      </Card>
+
+      <Card className="viking-card mb-4 border-amber-600/40">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-amber-300"><AlertTriangle className="h-5 w-5" /> Förbehåll (redovisade)</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-1 text-xs">
+          <p>• <strong>Copernicus DEM är en ytmodell</strong> — hus/skog kan läsas som mark; inne i stadskärnan är strandlinjen ungefärlig.</p>
+          <p>• <strong>Ingen batymetri</strong> — metoden kan inte gå under dagens havsyta, och modern utfyllnad visas som land.</p>
+          <p>• <strong>Vertikalt datum</strong> (EGM2008) skiljer sig någon decimeter från RH2000; landhöjningen är en linjär förstaordningsmodell.</p>
+          <p>• <strong>Sandéns Stäket-tes är en hypotes</strong>, inte konsensus — sidan visar geografin, inte en dom.</p>
+        </CardContent>
+      </Card>
+
+      <p className="text-xs text-muted-foreground mt-6 opacity-75 flex items-start gap-2">
+        <Info className="h-4 w-4 shrink-0 mt-0.5" />
+        <span>Höjd: Copernicus DEM GLO-30 © ESA (fri/CC-BY). Landhöjning: projektets <code>paleo_rsl</code> (SGU-kalibrerad). Koordinater: Wikipedia (P625), RAÄ Fornsök, Upplandsmuseets rapport 2022:15, <code>place_names</code>. Tolkningsdiskussion: Börje Sandén / UKF (ukforsk.se) samt Nils Ahnlund, <em>Stockholms historia före Gustav Vasa</em>. Metoden delas med <a href="/sv/kalmar" className="text-gold hover:underline">Kalmar-sidan</a>.</span>
+      </p>
+    </main>
+    <Footer />
+  </div>
+);
+
+export default Staket;

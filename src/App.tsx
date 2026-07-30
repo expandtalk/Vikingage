@@ -40,6 +40,7 @@ const HistoricalEvents = lazy(() => import("./pages/HistoricalEvents"));
 const EconomicHistory = lazy(() => import("./pages/EconomicHistory"));
 const Angermanland = lazy(() => import("./pages/Angermanland"));
 const Kalmar = lazy(() => import("./pages/Kalmar"));
+const Staket = lazy(() => import("./pages/Staket"));
 const Oland = lazy(() => import("./pages/Oland"));
 const Maktsfarer = lazy(() => import("./pages/Maktsfarer"));
 const Greklandsfarare = lazy(() => import("./pages/Greklandsfarare"));
@@ -146,6 +147,9 @@ const App = () => (
                   <Route path="/en/heraldry" element={<Heraldry />} />
                   <Route path="/sv/kalmar" element={<Kalmar />} />
                   <Route path="/kalmar" element={<Kalmar />} />
+                  <Route path="/sv/staket" element={<Staket />} />
+                  <Route path="/en/staket" element={<Staket />} />
+                  <Route path="/staket" element={<Staket />} />
                   <Route path="/prices" element={<Prices />} />
                   <Route path="/excursions" element={<Excursions />} />
                   <Route path="/sv/utflykter" element={<Excursions />} />
