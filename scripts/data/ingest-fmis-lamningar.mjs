@@ -31,6 +31,9 @@ const TYPES = [
   { term: 'skärvstenshög',   type: 'skärvstenshög',   re: /skärvstenshög/i },
   { term: 'hällristning',    type: 'hällristning',    re: /hällristning|hällbild/i },
   { term: 'skålgrop',        type: 'skålgropsförekomst', re: /skålgrop/i },
+  { term: 'tingsplats',      type: 'tingsplats',      re: /ting/i },
+  // RAÄ klassar många tingsplatser som lämningstyp "Samlingsplats" → sök brett, behåll bara ting-ord.
+  { term: 'samlingsplats',   type: 'tingsplats',      re: /tings?(plats|ställe|hög|kulle|backe|vall|sten|stad|åker)|\bting\b|tingv|tingstad/i },
 ];
 
 // Regioner: län (countyName) + valfritt landskaps- eller bbox-filter (post-filter på placeLabel/koord).
@@ -44,6 +47,7 @@ const REGIONS = {
   ostergotland: { county: 'Östergötland' },
   blekinge:     { county: 'Blekinge' },
   halland:      { county: 'Halland' },
+  sverige:      {},   // nationellt: ingen countyName-filtrering (för glesa typer som tingsplats)
 };
 
 const argv = process.argv.slice(2);
@@ -51,9 +55,11 @@ const REGION = argv.find(a => !a.startsWith('--'));
 const APPLY = argv.includes('--apply');
 const LIMIT = Number((argv.find(a => a.startsWith('--limit=')) || '').split('=')[1]) || 0;
 const SLEEP = Number((argv.find(a => a.startsWith('--sleep=')) || '').split('=')[1]) || 600;
+const ONLY = (argv.find(a => a.startsWith('--only=')) || '').split('=')[1] || null;  // t.ex. --only=tingsplats
 if (!REGION || !REGIONS[REGION]) {
-  console.error('Ange region: oland | kalmar | stockholm | goteborg'); process.exit(1);
+  console.error('Ange region: oland | kalmar | stockholm | goteborg | uppland | skane | ostergotland | blekinge | halland | sverige'); process.exit(1);
 }
+const ACTIVE_TYPES = ONLY ? TYPES.filter(t => t.term === ONLY || t.type === ONLY) : TYPES;
 const region = REGIONS[REGION];
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -106,7 +112,8 @@ async function fetchType(t) {
   const rows = new Map();  // source_uri → row (dedupe)
   const PER = 100, MAX = 25;
   for (let page = 0; page < MAX; page++) {
-    const xml = await ksamsok(`text="${t.term}" AND countyName=${region.county}`, PER, page * PER + 1);
+    const query = region.county ? `text="${t.term}" AND countyName=${region.county}` : `text="${t.term}"`;
+    const xml = await ksamsok(query, PER, page * PER + 1);
     const items = xml.split('<pres:item ').slice(1);
     if (!items.length) break;
     for (const it of items) { const r = parseItem(it, t); if (r) rows.set(r.source_uri, r); }
@@ -126,7 +133,7 @@ async function main() {
   await client.connect();
   try {
     const perType = {}; let all = [];
-    for (const t of TYPES) {
+    for (const t of ACTIVE_TYPES) {
       let rows = await fetchType(t);
       if (LIMIT) rows = rows.slice(0, LIMIT);
       perType[t.type] = rows.length;
