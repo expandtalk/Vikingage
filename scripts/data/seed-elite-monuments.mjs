@@ -16,6 +16,8 @@ const M=[
   ['Istabystenen','förbannelse','DR 359',56.0224,14.6509,'~600–700','Blekinge','Blekinge-gruppen (Mjällby)','—','Urnordisk; kopplas stilistiskt till Stentoften','/inscription/DR 359'],
   ['Västra Vång','centralplats',null,56.2603,15.4203,'järnålder–vikingatid','Blekinge','central-/kultplats; ~7 km N om Björketorp/Listerby','keltiska/romerska bronsmasker; arabiska mynt','70 guldgubbar — makt & kult; nyare storfynd (upptäckt 2004)','/explore?center=56.2603,15.4203&zoom=13'],
   ['Uppåkra','centralplats',null,55.6664,13.1711,'~100 f.Kr.–1000 e.Kr.','Skåne','Nordens största järnålders-centralplats; kulthus','kontinentala kontakter; guldgubbar','Ett tusenårigt makt- och kultcentrum; kyrkan restes ovanpå platsen','/explore?center=55.6664,13.1711&zoom=13'],
+  ['Valsgärde båtgravfält','elitgrav',null,59.9261,17.6264,'~600–1050','Uppland','båtgravfält vid Fyrisån, ~3 km N om Gamla Uppsala','anglosaxiska/kontinentala paralleller (jfr Sutton Hoo)','Praktfulla obrända båtgravar med hjälmar, ringsvärd och kokkärl — den yttersta elitens mortuära display, inte runa','/explore?center=59.9261,17.6264&zoom=14'],
+  ['Vendel båtgravfält','elitgrav',null,60.1636,17.6011,'~550–1050','Uppland','hjälmgravar vid Vendels kyrka','anglosaxiska/kontinentala paralleller','Gett vendeltiden dess namn; en av Nordens rikaste vapengravar-serier — elitens gravkonst, ej inskrift','/explore?center=60.1636,17.6011&zoom=14'],
 ];
 if(mora) M.push(['Mora stenar','politisk plats',null,+mora.lat,+mora.lng,'medeltid (omtalad från 1200-tal)','Uppland','kungavals-/tingsplats','—','Där sveakungarna valdes och togs till kung (Eriksgatans start); monument m. samlade fragment','/utflykter/mora-stenar']);
 try{

@@ -13,6 +13,7 @@ const KIND: Record<string, { sv: string; icon: string }> = {
   'skaldevers': { sv: 'Skaldevers', icon: '📜' },
   'förbannelse': { sv: 'Urnordisk förbannelse', icon: 'ᚦ' },
   'centralplats': { sv: 'Central-/kultplats', icon: '✦' },
+  'elitgrav': { sv: 'Elitgrav / båtgravfält', icon: '⚱' },
   'politisk plats': { sv: 'Politisk plats', icon: '♔' },
 };
 
@@ -24,7 +25,7 @@ export function EliteMonumentsCard({ sv }: { sv: boolean }) {
     return () => { a = false; };
   }, []);
   if (!rows.length) return null;
-  const order = ['hjältediktning', 'skaldevers', 'förbannelse', 'centralplats', 'politisk plats'];
+  const order = ['hjältediktning', 'skaldevers', 'förbannelse', 'centralplats', 'elitgrav', 'politisk plats'];
   const groups = order.map(k => ({ k, items: rows.filter(r => r.kind === k) })).filter(g => g.items.length);
 
   return (
