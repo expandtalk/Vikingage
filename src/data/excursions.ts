@@ -316,7 +316,8 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
     region: 'Görväln, Järfälla, Uppland',
     group: 'Uppland & Mälardalen',
     period: 'Järnålder/folkvandringstid (ca 300–500 e.Kr.)',
-    coords: { lat: 59.418, lng: 17.836 },
+    coords: { lat: 59.4017, lng: 17.7623 }, // KORRIGERAD (var 59.418/17.836, ~4-5 km fel) — Wikipedia/WGS84, RAÄ Järfälla 62:1
+
     sv: 'En av Mälardalens största fornborgar (RAÄ Järfälla 62:1), på ett brant berg högt över Mälaren med fantastisk utsikt över Görvälnfjärden. Vid en undersökning 2002 hittade arkeologen Johan Carlström bland annat deglar — eldfasta behållare för metallgjutning — som daterar platsen till ca 300–500 e.Kr. Här har alltså funnits en bronsgjutarverkstad uppe på borgen, där högstatusföremål kan ha gjutits åt någon storman. En bit ned mot vattnet ligger Gåseborgs grotta, vars tak är ett jättelikt klippblock som kilats fast i en klyfta.',
     en: 'One of the largest hillforts in the Mälaren valley (RAÄ Järfälla 62:1), on a steep hill high above the lake with a spectacular view over Görväln bay. In a 2002 investigation the archaeologist Johan Carlström found, among other things, crucibles — refractory vessels for metal casting — dating the site to c. AD 300–500. A bronze-casting workshop thus operated up in the fort, perhaps producing high-status objects for a local magnate. Down towards the water lies the Gåseborg cave, whose roof is a giant boulder wedged into a cleft.',
   },
