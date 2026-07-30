@@ -47,9 +47,15 @@ async function insPoint(routeId,p,valYear){
     : `Paleo ${v.yr} e.Kr.: ${v.status}${v.dist_m!=null?` (${v.dist_m} m till dåtida vattenlinje)`:''}`;
   if(valYear>950 && v.status && !['outside_model','unchecked'].includes(v.status))
     note += ` — OBS modellens max är 950; överskattar vattenstånd vs ${valYear}`;
-  await c.query(`insert into trade_route_points (route_id,seq,name,lat,lng,point_kind,is_major,section,description,shoreline_status,shoreline_note,source)
-    values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-    [routeId,p.seq,p.name,p.lat,p.lng,p.kind,!!p.major,p.section,p.desc,v.status,note,p.source]);
+  // Metrisk RSL vid ROUTENS egen epok (valYear) — så en forntida korridor valideras rätt.
+  let rslM=null, rslConf=null;
+  if(p.lat!=null && p.lng!=null){
+    const {rows:[rr]}=await c.query(`select rsl_rise_m, confidence from paleo_rsl($1,$2,$3)`,[p.lng,p.lat,valYear]);
+    if(rr){ rslM=rr.rsl_rise_m; rslConf=rr.confidence; }
+  }
+  await c.query(`insert into trade_route_points (route_id,seq,name,lat,lng,point_kind,is_major,section,description,shoreline_status,shoreline_note,source,rsl_rise_m,rsl_confidence)
+    values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+    [routeId,p.seq,p.name,p.lat,p.lng,p.kind,!!p.major,p.section,p.desc,v.status,note,p.source,rslM,rslConf]);
   return v.status;
 }
 
@@ -134,6 +140,21 @@ try{
     const st=await insPoint(bid,{seq:bseq++,name:e.name,lat,lng,kind:'stad',major:true,section:e.section,desc:e.desc||null,source:src},950);
     bump('Ba:'+st);
   }
+
+  // ---- GÖTAVIRKE-KORRIDOREN (Slätbaken↔Vättern) — förhistorisk öst-västlig inlandsled ----
+  const cid=await upsertRoute({slug:'gotavirke-korridoren',name:'Götavirke-korridoren (Slätbaken–Vättern)',route_kind:'inreled',orientation:'inre',
+    year_from:-7000,year_to:1350,
+    description:'Förhistorisk öst-västlig korridor över Östgötaslätten som band Östersjön (Slätbaken/Söderköping) med Vättern (Motala/Vadstena). Naturligt färdstråk sedan stenåldern — Motala hör till Sveriges äldsta boplatser (Strandvägen/Kanaljorden, mesolitikum ~7000 f.Kr.). Götavirke-vallen (kulturlager folkvandringstid 400–550, vallen vikingatid 800–1050) spärrade passagen mellan Asplången och Lillsjön. EJ sammanhängande farled: Motala ström är för forsig (fallen) → portage + landtransport. Namnet "Götavirke" är sannolikt en senare bildning (Danevirke-modell), ej belagt originalnamn.',
+    source:'viking_cities + vikingRegionData (Götavirke) + Länsstyrelsen Östergötland',license:'CC0/allmän',link:null});
+  const corr=[
+    {name:'Söderköping (Slätbaken)',lat:58.4806,lng:16.3222,kind:'hamn',section:'Östersjö-änden',desc:'Slätbaken var en längre havsvik inåt land förr (~4 m högre vattenstånd vid 500 e.Kr.)',source:'viking_cities'},
+    {name:'Götavirke (spärrvall)',lat:58.4847,lng:16.1747,kind:'spärrvall',section:'Passagen Asplången–Lillsjön',desc:'3,5 km försvarsvall; äldre kulturlager 400–550, vallen 800–1050 — kontrollerade korridoren',source:'vikingRegionData/RAÄ'},
+    {name:'Linköping (Stångån/Roxen)',lat:58.4108,lng:15.6214,kind:'stad',section:'Roxen',desc:'Central knutpunkt på slätten',source:'viking_cities'},
+    {name:'Motala (Vätterns utlopp)',lat:58.5371,lng:15.0365,kind:'portage',section:'Vättern-änden',desc:'Vätterns utlopp; Motala ström för forsig → portage. Mesolitisk boplats (Strandvägen/Kanaljorden). OBS: Vättern är eget nivåregim — RSL-siffran (Slätbaken-kalibrerad) gäller ej sjön.',source:'allmänt känd stadskoord'},
+    {name:'Vadstena (Vättern)',lat:58.4503,lng:14.8894,kind:'stad',section:'Vättern-änden',desc:'Vätterns strand; senare kungsgård → Birgittinerkloster',source:'allmänt känd stadskoord'},
+  ];
+  let cseq=1;
+  for(const e of corr){ const st=await insPoint(cid,{seq:cseq++,name:e.name,lat:e.lat,lng:e.lng,kind:e.kind,major:true,section:e.section,desc:e.desc,source:e.source},500); bump('Gv:'+st); }
 
   const nV=(await c.query(`select count(*)::int n from trade_route_points where route_id=$1`,[vid])).rows[0].n;
   const nO=(await c.query(`select count(*)::int n from trade_route_points where route_id=$1`,[oid])).rows[0].n;

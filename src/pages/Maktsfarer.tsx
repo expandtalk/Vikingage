@@ -27,6 +27,7 @@ const ROUTE_STYLE: Record<string, { color: string; dash?: string; label: string 
   'ostvagen': { color: '#f59e0b', label: 'Östvägen — Dnjepr → Miklagård' },
   'volgavagen': { color: '#f43f5e', label: 'Volgavägen — silverartären → kalifatet' },
   'gotland-baltikum': { color: '#34d399', label: 'Gotland–Baltikum (Salme, Grobin)' },
+  'gotavirke-korridoren': { color: '#a3e635', label: 'Götavirke-korridoren (Slätbaken–Vättern, förhistorisk)' },
 };
 const STATUS_SV: Record<string, string> = {
   water_then: 'låg i vatten då', shore_then: 'strandnära då', review: 'granska (landhöjning)', outside_model: 'utanför strandmodell', unchecked: 'ej testad',
