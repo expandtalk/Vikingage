@@ -116,6 +116,25 @@ try{
     bump('Vo:'+st);
   }
 
+  // ---- GOTLAND–BALTIKUM (österled över havet; Öland/Gotland som språngbräda) ----
+  const bid=await upsertRoute({slug:'gotland-baltikum',name:'Gotland–Baltikum (österled över havet)',route_kind:'segelled',orientation:'öst',
+    year_from:600,year_to:1000,
+    description:'Havsleden som band samman Öland och Gotland med östra Östersjön och vidare mot flodmynningarna. Salme-skeppsgravarna på Saaremaa (~750, mälardalska krigare stupade i strid) och Grobin i Kurland (skandinavisk koloni) visar österledens tidiga hav-ben — före Rus-floderna. Salvefynden knyter Kalmarsund/Öland till Baltikum.',
+    source:'viking_cities + Salme/Grobin (allmän forskningskonsensus)',license:'CC0/allmän',link:null});
+  const balt=[
+    {name:'Köpingsvik (Öland)',lat:56.9008,lng:16.7286,section:'Öland',major:true,desc:'Ölands vikingatida hamn/handelsplats',source:'strandkontroll'},
+    {name:'Visby',fromCity:true,section:'Gotland',major:true,desc:'Gotlands hamn — silverskatternas ö'},
+    {name:'Salme (Saaremaa)',lat:58.3842,lng:22.2203,section:'Ösel/Estland',major:true,desc:'Salme-skeppsgravarna ~750 — mälardalska krigare stupade; tidigaste kända vikingaskeppständ österut',source:'Wikidata (approx), skeppsgravslokal'},
+    {name:'Grobin (Grobiņa)',lat:56.5486,lng:21.1667,section:'Kurland/Lettland',major:true,desc:'Skandinavisk koloni/emporium i Kurland (gravfält à la Birka/Gotland)',source:'Wikidata (approx)'},
+  ];
+  let bseq=1;
+  for(const e of balt){
+    let lat=e.lat,lng=e.lng,src=e.source;
+    if(e.fromCity){ const {rows:[cy]}=await c.query(`select coordinates[1] lat, coordinates[0] lng from viking_cities where name=$1 limit 1`,[e.name]); if(cy){lat=cy.lat;lng=cy.lng;src='viking_cities';} }
+    const st=await insPoint(bid,{seq:bseq++,name:e.name,lat,lng,kind:'stad',major:true,section:e.section,desc:e.desc||null,source:src},950);
+    bump('Ba:'+st);
+  }
+
   const nV=(await c.query(`select count(*)::int n from trade_route_points where route_id=$1`,[vid])).rows[0].n;
   const nO=(await c.query(`select count(*)::int n from trade_route_points where route_id=$1`,[oid])).rows[0].n;
   console.log(`Valdemar-punkter: ${nV}, Östvägen-punkter: ${nO}`);

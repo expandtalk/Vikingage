@@ -26,13 +26,14 @@ const ROUTE_STYLE: Record<string, { color: string; dash?: string; label: string 
   'valdemar-segelled': { color: '#0ea5e9', dash: '6 5', label: 'Kung Valdemars segelled (kust, ~1300)' },
   'ostvagen': { color: '#f59e0b', label: 'Östvägen — Dnjepr → Miklagård' },
   'volgavagen': { color: '#f43f5e', label: 'Volgavägen — silverartären → kalifatet' },
+  'gotland-baltikum': { color: '#34d399', label: 'Gotland–Baltikum (Salme, Grobin)' },
 };
 const STATUS_SV: Record<string, string> = {
   water_then: 'låg i vatten då', shore_then: 'strandnära då', review: 'granska (landhöjning)', outside_model: 'utanför strandmodell', unchecked: 'ej testad',
 };
 
 interface EM { name: string; kind: string; lat: number; lng: number; sphere: string | null; note: string | null; eriksgata_km: number | null }
-interface RP { route_id: string; seq: number; name: string; lat: number | null; lng: number | null; point_kind: string | null; is_major: boolean; section: string | null; shoreline_status: string | null; shoreline_note: string | null }
+interface RP { route_id: string; seq: number; name: string; lat: number | null; lng: number | null; point_kind: string | null; is_major: boolean; section: string | null; shoreline_status: string | null; shoreline_note: string | null; rsl_rise_m: number | null; rsl_confidence: string | null }
 interface RT { id: string; slug: string; name: string; route_kind: string | null; orientation: string | null; description: string | null }
 interface RG { route_id: string; direction: string | null; note: string | null; trade_goods: { name: string; commodity_class: string | null; evidence_note: string | null } | null }
 interface SOL { name: string; find_place: string | null; period_start: number | null; period_end: number | null; mint: string | null; lat: number; lng: number }
@@ -77,7 +78,7 @@ const OverviewMap: React.FC<{ monuments: EM[]; routes: RT[]; points: RP[]; solid
         L.circleMarker([p.lat as number, p.lng as number], {
           radius: p.is_major ? 5 : 3.5, color: review ? '#ef4444' : st.color, weight: review ? 2 : 1,
           dashArray: review ? '2 2' : undefined, fillColor: st.color, fillOpacity: 0.6,
-        }).bindPopup(`<b>${p.name}</b>${p.section ? `<br/><span style="font-size:11px;color:#94a3b8">${p.section}</span>` : ''}${p.shoreline_status ? `<br/><span style="font-size:10px;color:${review ? '#f87171' : '#94a3b8'}">Paleo: ${STATUS_SV[p.shoreline_status] ?? p.shoreline_status}</span>` : ''}`).addTo(layer);
+        }).bindPopup(`<b>${p.name}</b>${p.section ? `<br/><span style="font-size:11px;color:#94a3b8">${p.section}</span>` : ''}${p.shoreline_status ? `<br/><span style="font-size:10px;color:${review ? '#f87171' : '#94a3b8'}">Paleo: ${STATUS_SV[p.shoreline_status] ?? p.shoreline_status}</span>` : ''}${p.rsl_rise_m != null ? `<br/><span style="font-size:10px;color:#38bdf8">Vattnet stod ~${p.rsl_rise_m} m högre då (${p.rsl_confidence})</span>` : ''}`).addTo(layer);
       });
     });
 
@@ -137,7 +138,7 @@ const Maktsfarer = () => {
   useEffect(() => {
     (supabase.from('elite_monuments') as any).select('name,kind,lat,lng,sphere,note,eriksgata_km').then(({ data }: { data: EM[] }) => setMonuments(data ?? []));
     (supabase.from('trade_routes') as any).select('id,slug,name,route_kind,orientation,description').then(({ data }: { data: RT[] }) => setRoutes(data ?? []));
-    (supabase.from('trade_route_points') as any).select('route_id,seq,name,lat,lng,point_kind,is_major,section,shoreline_status,shoreline_note').order('seq').then(({ data }: { data: RP[] }) => setPoints(data ?? []));
+    (supabase.from('trade_route_points') as any).select('route_id,seq,name,lat,lng,point_kind,is_major,section,shoreline_status,shoreline_note,rsl_rise_m,rsl_confidence').order('seq').then(({ data }: { data: RP[] }) => setPoints(data ?? []));
     (supabase.from('route_goods') as any).select('route_id,direction,note,trade_goods(name,commodity_class,evidence_note)').then(({ data }: { data: RG[] }) => setGoods(data ?? []));
     (supabase.from('coins') as any).select('name,find_place,period_start,period_end,mint,coordinates,denomination').ilike('denomination', '%solid%').then(({ data }: { data: any[] }) => {
       setSolidi((data ?? []).map((c) => { const p = parsePoint(c.coordinates); return p ? { name: c.name, find_place: c.find_place, period_start: c.period_start, period_end: c.period_end, mint: c.mint, lat: p.lat, lng: p.lng } : null; }).filter(Boolean) as SOL[]);
