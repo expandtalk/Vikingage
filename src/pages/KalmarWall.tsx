@@ -9,6 +9,8 @@ import { PageMeta } from '../components/PageMeta';
 import { ArrowLeft, Anchor, Info } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
+import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 
 // Dedikerad Kalmar-sida: medeltida stadsmur med tidsslider (fyrdatumsmodell → opacitet),
 // osäkerhetshalo och evidensstyrd linjestil. Template för Visby/Stockholm/Viborg.
@@ -42,11 +44,16 @@ const KalmarWall = () => {
   const sv = language === 'sv';
   const [year, setYear] = useState(1400);
   const [count, setCount] = useState<number | null>(null);
+  const [shoreYear, setShoreYear] = useState<number | null>(950);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const reqIdRef = useRef(0);
+
+  // Dåtida strandlinje (DEM-modellen, samma som /sv/kalmar) — landhöjningen som kontext till muren.
+  // Ritas i botten (bringToBack) så mur/halo-panerna ligger över. Kalmar-bbox regionavgränsar.
+  useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', [16.18, 56.55, 16.46, 56.72]);
 
   // Init karta + halo/mur-paner (halo under linjerna).
   useEffect(() => {
@@ -134,6 +141,13 @@ const KalmarWall = () => {
           <div aria-live="polite" className="sr-only">{count != null ? `${count} ${sv ? 'element synliga år' : 'elements visible in year'} ${year}` : ''}</div>
         </div>
 
+        <div className="mb-2">
+          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+          <span className="block text-[11px] text-muted-foreground opacity-70">
+            {sv ? 'Strandlinjen är DEM-härledd (Copernicus + landhöjning). Vid murens tid (1300–1600-tal) stod havet bara ~0,5–0,7 m högre; vikingatidsskivan (~950) visas som djuptidskontext.'
+                : 'Shoreline is DEM-derived (Copernicus + land uplift). In the wall\'s era (14th–17th c.) the sea stood only ~0.5–0.7 m higher; the Viking-age slice (~950) is shown as deep-time context.'}
+          </span>
+        </div>
         <div ref={containerRef} className="w-full rounded-lg border border-border mb-3" style={{ height: '60vh', minHeight: 420 }} />
 
         <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm mb-6">
