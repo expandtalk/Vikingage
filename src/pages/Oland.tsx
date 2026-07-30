@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChristianizationChart } from '@/components/ChristianizationChart';
 import { OlandChristianizationTimeline } from '@/components/OlandChristianizationTimeline';
 import { OlandChristianizationEpochs } from '@/components/OlandChristianizationEpochs';
+import { ChurchConsolidationCard } from '@/components/placenames/ChurchConsolidationCard';
 import { MapPin, Route, AlertTriangle, Compass } from 'lucide-react';
 import { useOlandModel, type OlandPoint } from '@/hooks/useOlandModel';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
@@ -181,6 +182,7 @@ const Oland = () => {
             <OlandChristianizationEpochs />
             <ChristianizationChart />
             <OlandChristianizationTimeline />
+            <ChurchConsolidationCard sv={sv} />
             <p className="text-xs opacity-80"><strong className="text-amber-300">Tolkning (hypotes):</strong> ett snabbt, front-tungt kristnande tyder på att kyrkorna restes på redan etablerade centrum — övertagande av gamla kult-/maktplatser — eller på ett område som var kristet-influerat tidigare. Täthet ensam avgör inte vilket; det gör kyrkornas läge (på hednisk kultplats? vid runsten med kors?). Nästa steg: lägga 190 Öland-runstenar + spolia (återbrukade bildstenar i kyrkor) mot kyrkolägena.</p>
           </CardContent>
         </Card>
