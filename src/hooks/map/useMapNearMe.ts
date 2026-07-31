@@ -32,6 +32,20 @@ export const useMapNearMe = ({ map, isMapReady }: Props) => {
     return () => { try { delete (window as unknown as { __nearMeFlyTo?: unknown }).__nearMeFlyTo; } catch { /* noop */ } };
   }, [map]);
 
+  // Zooma kartan till MIN position när en ny lokalisering kommer in (Daniel: på mobil ska
+  // den flyga till platsen jag är på). Flyger EN gång per ny position (ej vid radie-byte).
+  const flownRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!map || !isMapReady.current || !open || !pos) { if (!open) flownRef.current = null; return; }
+    const key = `${pos.lat.toFixed(5)},${pos.lng.toFixed(5)}`;
+    if (flownRef.current === key) return;
+    flownRef.current = key;
+    try {
+      const b = L.circle([pos.lat, pos.lng], { radius: radiusKm * 1000 }).getBounds();
+      map.flyToBounds(b, { maxZoom: 14, padding: [40, 40], duration: 0.8 });
+    } catch { try { map.flyTo([pos.lat, pos.lng], 13, { duration: 0.8 }); } catch { /* noop */ } }
+  }, [map, isMapReady, open, pos, radiusKm]);
+
   useEffect(() => {
     if (!map || !isMapReady.current) return;
     if (!layerRef.current) layerRef.current = L.layerGroup().addTo(map);
