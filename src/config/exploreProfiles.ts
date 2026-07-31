@@ -404,6 +404,14 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         place_names: false,
         historical_events: false,
         battle_sites: false,
+        // Tunga punktlager som annars begraver vattenlinjerna (Daniel: "döljs av alla ikoner").
+        heritage_sites: false,
+        ecclesiastical_churches: false,
+        maritime: false,
+        maritime_nodes: false,
+        ship_losses: false,
+        coins: false,
+        beacon_sites: false,
       });
       break;
     case "eriksgatan":
@@ -504,7 +512,15 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
       // ortnamn/namnled explicit: annars följer place_names-lagret med från en aktiv
       // Lingvist-profil (som har det på) in i runstensvyn och "går inte att stänga av"
       // (Daniel 2026-07). Fokusvyer ska ge en ren vy oberoende av underliggande profil.
-      Object.assign(o, { runic_inscriptions: true, foreign_inscriptions: true, place_names: false });
+      Object.assign(o, {
+        runic_inscriptions: true, foreign_inscriptions: true, carvers: true,
+        // Ren runstensvy — släck tunga icke-inskrifts-lager som annars ger information overload.
+        place_names: false, heritage_sites: false, ecclesiastical_churches: false,
+        religious_places: false, viking_fortresses: false, maritime: false, maritime_nodes: false,
+        ship_losses: false, coins: false, beacon_sites: false, archaeological_sites: false,
+        river_routes: false, water_routes: false, viking_roads: false, viking_cities: false,
+        hundreds: false, parishes: false, viking_regions: false, folk_groups: false, gods: false,
+      });
       break;
   }
   return { ...preset, ...o };

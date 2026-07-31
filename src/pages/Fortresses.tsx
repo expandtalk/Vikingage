@@ -205,8 +205,8 @@ const Fortresses = () => {
   return (
     <div className="min-h-screen viking-bg">
       <PageMeta
-        title="Vikingaborgar"
-        titleEn="Viking Fortresses"
+        title="Borgar & fornborgar"
+        titleEn="Fortresses"
         description="Utforska vikingatida borgar, handelscentra och fornborgar i Skandinavien. Interaktiva kartor med detaljerad information om varje plats."
         descriptionEn="Explore Viking Age fortresses, trade centres and hillforts in Scandinavia. Interactive maps with detailed information about each location."
         keywords="vikingaborgar, fornborgar, vikingastäder, vikingatid, arkeologi, skandinavisk historia"

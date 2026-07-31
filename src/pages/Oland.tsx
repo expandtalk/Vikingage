@@ -11,6 +11,7 @@ import { OlandChristianizationTimeline } from '@/components/OlandChristianizatio
 import { OlandChristianizationEpochs } from '@/components/OlandChristianizationEpochs';
 import { ChurchConsolidationCard } from '@/components/placenames/ChurchConsolidationCard';
 import { MapPin, Route, AlertTriangle, Compass } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useOlandModel, type OlandPoint } from '@/hooks/useOlandModel';
 import { useSolidi } from '@/hooks/useSolidi';
 import { parseCoinCoord } from '@/hooks/useCoins';
@@ -179,6 +180,8 @@ const Legend: React.FC<{ on: Record<string, boolean>; toggle: (k: string) => voi
 );
 
 const Oland = () => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
   const { data: points = [], isLoading } = useOlandModel();
   const { data: allSolidi = [] } = useSolidi();
   const [on, setOn] = useState<Record<string, boolean>>({});

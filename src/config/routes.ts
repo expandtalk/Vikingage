@@ -113,8 +113,8 @@ export const routes: RouteConfig[] = [
     pathEn: '/fortresses',
     pathSv: '/sv/borgar',
     component: 'Fortresses',
-    titleSv: 'Vikingaborgar',
-    titleEn: 'Viking Fortresses',
+    titleSv: 'Borgar & fornborgar',
+    titleEn: 'Fortresses',
     descriptionSv: 'Utforska vikingatida borgar, städer och fornborgar i Skandinavien. Interaktiva kartor med detaljerad information.',
     descriptionEn: 'Explore Viking Age fortresses, cities and hillforts in Scandinavia. Interactive maps with detailed information.'
   },
