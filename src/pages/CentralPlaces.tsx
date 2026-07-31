@@ -6,8 +6,74 @@ import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, AlertTriangle, Coins, Anchor, Landmark } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCentralPlaceProfiles, type CentralPlaceProfile } from '@/hooks/useCentralPlaceProfiles';
+import { useTradeGoods, type TradeGood } from '@/hooks/useTradeGoods';
+
+// Ikon per varuklass — trälar (människa) markeras särskilt.
+const CLASS_EMOJI: Record<string, string> = {
+  'människa': '⛓️', 'päls': '🦫', 'järn': '⚒️', 'redskap': '⚔️', 'råvara': '🟡',
+  'ädelmetall': '🪙', 'lyxvara': '✨',
+};
+const goodEmoji = (c: string | null) => (c ? CLASS_EMOJI[c] ?? '•' : '•');
+
+// Export → Östvägen → silver. Förklarar tyngdpunktsförskjutningen: Nordens silver
+// FÖRTJÄNADES (päls + trälar ut), till skillnad från solidus-guldet som kom som prestige.
+const TradeFlowPanel: React.FC<{ sv: boolean }> = ({ sv }) => {
+  const { data: goods = [], isLoading } = useTradeGoods();
+  if (isLoading || goods.length === 0) return null;
+  const vikingEra = (g: TradeGood) => (g.era_from ?? 0) < 1100 && (g.era_to ?? 9999) > 700;
+  const exports = goods.filter((g) => g.direction === 'export' && vikingEra(g));
+  const silver = goods.filter((g) => g.commodity_class === 'ädelmetall' && g.direction === 'import' && vikingEra(g));
+  const otherImports = goods.filter((g) => g.direction === 'import' && g.commodity_class !== 'ädelmetall' && vikingEra(g));
+
+  const Col: React.FC<{ title: string; items: TradeGood[]; hi?: string }> = ({ title, items, hi }) => (
+    <div className="flex-1 min-w-[150px]">
+      <div className="text-[10px] uppercase tracking-wide text-slate-500 mb-1.5">{title}</div>
+      <ul className="space-y-1">
+        {items.map((g) => (
+          <li key={g.slug} title={g.evidence_note || undefined}
+            className={`flex items-center gap-2 text-sm rounded px-2 py-1 ${g.slug === hi ? 'bg-amber-500/15 text-amber-200 font-medium' : 'text-slate-200'}`}>
+            <span aria-hidden>{goodEmoji(g.commodity_class)}</span>
+            <span className="truncate">{sv ? g.name : g.name_en ?? g.name}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  return (
+    <Card className="viking-card mb-6">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2 text-gold">
+          <Coins className="h-5 w-5" /> {sv ? 'Varför Mälaren? Silvret förtjänades' : 'Why Mälaren? The silver was earned'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="text-sm text-muted-foreground space-y-3">
+        <p>
+          {sv
+            ? 'Guldregionernas solidi kom som prestige (subsidier, sold). Vikingatidens silver var något helt annat: det FÖRTJÄNADES genom export österut via Östvägen — främst päls och trälar. Birka satt i kontrollnoden för den handeln, inte på guldet.'
+            : 'The gold regions’ solidi arrived as prestige. Viking-Age silver was earned — via eastern exports (furs and slaves). Birka sat at the control node of that trade.'}
+        </p>
+        <div className="flex items-stretch gap-2 flex-wrap sm:flex-nowrap">
+          <Col title={sv ? 'Ut (export)' : 'Out (export)'} items={exports} hi="tralar" />
+          <div className="flex flex-col items-center justify-center px-1 text-slate-400 shrink-0">
+            <ArrowRight className="h-5 w-5" />
+            <span className="text-[10px] mt-1 text-center leading-tight">{sv ? 'Östvägen\n(Rus-floderna)' : 'Eastern route'}</span>
+          </div>
+          <Col title={sv ? 'In (silver)' : 'In (silver)'} items={silver} hi="islamiskt-silver-dirham" />
+          {otherImports.length > 0 && <Col title={sv ? 'In (lyx)' : 'In (luxury)'} items={otherImports} />}
+        </div>
+        <p className="text-xs opacity-80">
+          {sv
+            ? '"Slav" av Slav — Rus sålde tillfångatagna söderut för dirham (Ibn Fadlan 922; Rimberts Vita Ansgarii nämner trälar i Birka). Källa: trade_goods + trade_routes (Östvägen).'
+            : '"Slave" from Slav — the Rus sold captives south for dirhams (Ibn Fadlan 922; Rimbert names slaves at Birka).'}
+        </p>
+      </CardContent>
+    </Card>
+  );
+};
 
 // Centralplatser — jämför vikingatida noder KVANTITATIVT (fingerprint). "Vikingastad" är inte
 // en sak: kult-centralplats → emporium → köping → hamn → decentraliserat nät.
@@ -82,6 +148,8 @@ const CentralPlaces = () => {
             <p className="text-xs opacity-80">{sv ? 'Solidi per landskap ur solidi-corpuset (SHM CC BY).' : 'Solidi per province from the SHM corpus.'}</p>
           </CardContent>
         </Card>
+
+        <TradeFlowPanel sv={sv} />
 
         {isLoading ? (
           <p className="text-muted-foreground">{sv ? 'Laddar…' : 'Loading…'}</p>
