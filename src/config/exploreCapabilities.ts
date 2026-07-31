@@ -102,6 +102,7 @@ export const KNOWN_LAYER_KEYS = [
   "fort_territories",   // förskatte-Voronoi-territorier kring Ölands fornborgar
   // Marinarkeologi (useMapMaritimeLayers): noder, haverier, farleder, Hansa
   "maritime",
+  "museums",
   "maritime_nodes",
   "ship_losses",
   "fairways_modern",

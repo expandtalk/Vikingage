@@ -423,6 +423,15 @@ export const generateBasicInscriptionItems = (
     enabled: itemEnabled(enabledLegendItems, 'coins')
   });
 
+  // Museer (museums) — punkter med praktisk popup (typ, ort, webbplats, antal samlingsobjekt). AV som standard.
+  items.push({
+    id: 'museums',
+    label: '🏛️ Museer',
+    color: '#7c3aed',
+    count: dbStats?.layerCounts?.museums ?? 16,
+    enabled: itemEnabled(enabledLegendItems, 'museums')
+  });
+
   // Solidi + stämpellänkar (Fischer 2023). Guldprickar per fyndplats + linjer till die-kontext.
   items.push({
     id: 'solidus_die_links',

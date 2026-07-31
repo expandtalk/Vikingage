@@ -18,6 +18,7 @@ import { useMapElementMarkers } from './map/useMapElementMarkers';
 import { useMapRuler } from './map/useMapRuler';
 import { useMapNearMe } from './map/useMapNearMe';
 import { useMapMaritimeLayers } from './map/useMapMaritimeLayers';
+import { useMapMuseums } from './map/useMapMuseums';
 import { useMapFortTerritories } from './map/useMapFortTerritories';
 import { useMapPictureStones } from './map/useMapPictureStones';
 import { useMapCoins } from './map/useMapCoins';
@@ -221,6 +222,7 @@ export const useMapInitialization = ({
 
   // Marinarkeologi: maritima noder (fingerprint-popup), haverier, farleder, Hansa.
   useMapMaritimeLayers({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, safelyAddLayer });
+  useMapMuseums({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, safelyAddLayer });
 
   // Förskatte-borgterritorier (Öland Voronoi) — hypotesgenererande lager.
   useMapFortTerritories({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, safelyAddLayer });

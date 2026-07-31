@@ -23,6 +23,7 @@ const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   { label: 'Marint & farleder', ids: ['heritage_marine', 'maritime', 'stake_barriers', 'water_routes', 'paleo_shoreline'] },
   { label: 'Borgar & makt', ids: ['viking_fortresses', 'fort_territories', 'estates', 'thing_sites', 'viking_regions', 'folk_groups'] },
   { label: 'Mynt & fynd', ids: ['coins', 'solidus_die_links', 'archaeological_finds'] },
+  { label: 'Museer & samlingar', ids: ['museums'] },
   { label: 'Vetenskap & tid', ids: ['adna_sites', 'species_introductions', 'germanic_timeline'] },
   { label: 'Kartor & ortnamn', ids: ['historical_maps', 'place_names'] },
 ];
