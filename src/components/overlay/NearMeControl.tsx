@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { LocateFixed, Loader2, X, Navigation } from 'lucide-react';
+import { LocateFixed, Loader2, X, Navigation, Sparkles } from 'lucide-react';
 import {
   useNearMe, openNearMe, closeNearMe, setNearMeLocating, setNearMePos,
   setNearMeError, setNearMeRadiusKm, setNearMeResults,
 } from '@/hooks/useNearMe';
 import { useNearbyFeatures } from '@/hooks/useNearbyFeatures';
+import { useNearbyRanked } from '@/hooks/useNearbyRanked';
 
 // Svenska etiketter + färg per feature_type ur nearby_features (fallback = råtypen).
 const TYPE_LABEL: Record<string, { sv: string; color: string }> = {
@@ -61,9 +62,12 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   const toggleGroup = (t: string) => setOpenGroups((p) => { const n = new Set(p); n.has(t) ? n.delete(t) : n.add(t); return n; });
 
   const { data, isFetching } = useNearbyFeatures(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
+  const { data: ranked = [] } = useNearbyRanked(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
   // Filtrera på intresseprofilen (dölj typer vars lager är avslaget).
   const showByInterest = (t: string) => { const k = LAYER_FOR[t]; return k == null ? true : enabledLayers?.[k] !== false; };
   const rows = (data ?? []).filter((f: any) => showByInterest(f.feature_type));
+  // "Mest sevärt nära dig" — topp ur rank-RPC:n (avstånd + signifikans + graf-auktoritet).
+  const topRanked = ranked.filter((f) => showByInterest(f.feature_type)).slice(0, 6);
   useEffect(() => { setNearMeResults(rows, isFetching); }, [data, isFetching, enabledLayers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const locate = () => {
@@ -158,6 +162,33 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
 
       {pos && !error && (
         <div className="flex-1 overflow-y-auto px-2 pb-3">
+          {topRanked.length > 0 && (
+            <div className="mb-3">
+              <div className="flex items-center gap-1 px-1 mb-1 text-[10px] uppercase tracking-wide text-amber-300/90">
+                <Sparkles className="h-3 w-3" /> Mest sevärt nära dig
+              </div>
+              <ul className="space-y-0.5">
+                {topRanked.map((f) => {
+                  const isHer = f.feature_type === 'heritage';
+                  const name = isHer ? (heritageName(f.label) || capFirst(heritageType(f.label))) : f.label;
+                  const typeSv = isHer ? capFirst(heritageType(f.label)) : typeInfo(f.feature_type).sv;
+                  return (
+                    <li key={`top-${f.feature_id}`}>
+                      <button onClick={() => flyTo(f, name, typeSv)} title="Visa på kartan"
+                        className="w-full flex items-center justify-between gap-2 text-left px-2 rounded bg-amber-500/5 hover:bg-amber-500/15" style={{ minHeight: 44 }}>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm text-slate-100">{name}</span>
+                          <span className="block truncate text-[11px] text-amber-300/80">{f.rank_reason}</span>
+                        </span>
+                        <span className="shrink-0 tabular-nums text-xs text-sky-300">{fmtDist(f.distance_km)}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="border-t border-slate-700/60 mt-2" />
+            </div>
+          )}
           {rows.length === 0 && !isFetching ? (
             <p className="text-slate-400 text-sm text-center py-6">Inget registrerat inom {radiusKm < 1 ? `${Math.round(radiusKm * 1000)} m` : `${radiusKm.toFixed(1)} km`}. Dra ut radien.</p>
           ) : (
