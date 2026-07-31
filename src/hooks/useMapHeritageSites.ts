@@ -252,9 +252,10 @@ const HERITAGE_TYPE_KEYS: Record<string, string | string[]> = {
 };
 // Typ-nycklar som hör till "Stenar"-kategorin (parent 'heritage_stones') i st.f.
 // "Kulturlager" (parent 'heritage_sites'). heritage_bildsten flyttad hit i legenden.
-const STONE_KEYS = new Set(['heritage_milstolpe', 'heritage_vaghallningssten', 'heritage_gransmarke', 'heritage_bildsten', 'heritage_vagmarke']);
+const STONE_KEYS = new Set(['heritage_milstolpe', 'heritage_vaghallningssten', 'heritage_gransmarke', 'heritage_bildsten', 'heritage_vagmarke', 'heritage_sagensten']);
 // Folktradition-typer (egen parent 'heritage_folklore') och marina (parent 'heritage_marine').
-const FOLKLORE_KEYS = new Set(['heritage_sagensten', 'heritage_vardtrad', 'heritage_grotta', 'heritage_jattetroll', 'heritage_offerplats', 'heritage_platstradition']);
+// Sägenstenar flyttade till STONE_KEYS (grupperas på sten-form).
+const FOLKLORE_KEYS = new Set(['heritage_vardtrad', 'heritage_grotta', 'heritage_jattetroll', 'heritage_offerplats', 'heritage_platstradition']);
 const MARINE_KEYS = new Set(['heritage_vrak', 'heritage_vraktradition', 'heritage_sparr']);
 
 export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selectedTimePeriod }: Props) => {

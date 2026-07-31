@@ -229,7 +229,8 @@ export const generateBasicInscriptionItems = (
     { id: 'heritage_milstolpe', label: '🪧 Milstenar', color: '#b45309', count: 5820, enabled: itemEnabled(enabledLegendItems, 'heritage_milstolpe') },
     { id: 'heritage_vaghallningssten', label: 'Väghållningsstenar', color: '#78716c', count: 3934, enabled: itemEnabled(enabledLegendItems, 'heritage_vaghallningssten') },
     { id: 'heritage_gransmarke', label: 'Gränsstenar', color: '#7f1d1d', count: 26, enabled: itemEnabled(enabledLegendItems, 'heritage_gransmarke') },
-    { id: 'heritage_bildsten', label: 'Bildstenar', color: '#0891b2', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_bildsten') },
+    { id: 'heritage_bildsten', label: 'Bildstenar (mytologiska motiv)', color: '#0891b2', count: 192, enabled: itemEnabled(enabledLegendItems, 'heritage_bildsten') },
+    { id: 'heritage_sagensten', label: '🪨 Sägenstenar (mytiska)', color: '#a16207', count: 150, enabled: itemEnabled(enabledLegendItems, 'heritage_sagensten') },
     { id: 'heritage_vagmarke', label: '🛣️ Vägmärken', color: '#1d4ed8', count: 6133, enabled: itemEnabled(enabledLegendItems, 'heritage_vagmarke') },
   ];
   items.push({
@@ -247,7 +248,8 @@ export const generateBasicInscriptionItems = (
   // sägenstenar (Odins/Dackes sten), vårdträd, grottor, jätte-/trollplatser, offerplatser.
   // Skilt från "Källor (traditionella)" = heliga vattenkällor (ligger kvar i Kulturlager).
   const folkloreChildren = [
-    { id: 'heritage_sagensten', label: '🪨 Sägenstenar (namngivna)', color: '#a16207', count: 150, enabled: itemEnabled(enabledLegendItems, 'heritage_sagensten') },
+    // Sägenstenar (mytiska) flyttade till "Stenar"-gruppen (grupperas på sten-form). Övriga
+    // folktraditionslager (grottor, jätte/troll, offer, vårdträd) ligger kvar här.
     { id: 'heritage_platstradition', label: 'Platser med tradition', color: '#ca8a04', count: 176, enabled: itemEnabled(enabledLegendItems, 'heritage_platstradition') },
     { id: 'heritage_grotta', label: '🕳️ Grottor & överhäng', color: '#4338ca', count: 142, enabled: itemEnabled(enabledLegendItems, 'heritage_grotta') },
     { id: 'heritage_jattetroll', label: '👹 Jätte- & trollplatser', color: '#a21caf', count: 11, enabled: itemEnabled(enabledLegendItems, 'heritage_jattetroll') },

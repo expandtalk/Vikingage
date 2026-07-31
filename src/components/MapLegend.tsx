@@ -13,7 +13,9 @@ import { MapLegendProps } from './legend/types';
 // i stället för "alla lösa toggles, sedan alla kategorier" (Daniel: "ser rörigt ut").
 const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   { label: 'Runor', ids: ['runic_inscriptions', 'runestone_density', 'runbleck_only'] },
-  { label: 'Gravar & fornlämningar', ids: ['heritage_sites', 'heritage_stones', 'picture_stone_reuse'] },
+  { label: 'Gravar & fornlämningar', ids: ['heritage_sites', 'picture_stone_reuse'] },
+  // Egen sten-grupp (form): milstenar, gränsstenar, väghållnings-, bild- och sägenstenar (mytiska).
+  { label: 'Stenar', ids: ['heritage_stones'] },
   // Hednisk kult (gudar/Freja/offerplatser) + folktradition & sägen (sägenstenar, jätte-/troll,
   // vårdträd, GROTTOR) hör ihop under tro/myt — skilt från kristna kyrkor.
   { label: 'Kult, tro & myter', ids: ['religious_places', 'pagan_gods', 'heritage_folklore'] },
