@@ -60,10 +60,11 @@ async function writeCrosswalk(table,id,m){
 }
 
 async function run(table, rows, opts={}){
-  let hit=0,miss=0,normed=0;
+  let hit=0,miss=0,normed=0,related=0;
   for(const r of rows){
     if(r.lat==null||r.lng==null) continue;
     const cands=await around(r.lat,r.lng);
+    const n=norm(r.name);
     const m=pick(cands,r.name,!!opts.placeNames);
     if(m){ hit++; console.log(`  ✓ ${r.name} → ${m.qid} (${m.label||'?'}, ${m.dist.toFixed(2)}km, ${m.conf})`);
       if(APPLY){
@@ -72,23 +73,42 @@ async function run(table, rows, opts={}){
         if(opts.placeNames && (m.conf==='säker'||m.conf==='trolig') && m.label){
           await c.query(`update place_names set name_authority='wikidata', normed_name=$2 where id=$1`,[r.id,m.label]);
           normed++;
-          if(norm(m.label)!==norm(r.name)){
-            await c.query(`insert into place_name_forms (place_id,place_name,attested_form,form_kind,source,language_layer,framework,verified)
-              values ($1,$2,$3,'variant','osm','sv','god-ortnamnssed',false) on conflict do nothing`,
+          if(norm(m.label)!==norm(r.name)){  // OSM-stavningen bevaras som variant av SAMMA ort
+            await c.query(`insert into place_name_forms (place_id,place_name,attested_form,relation_kind,form_kind,source,language_layer,framework,verified)
+              values ($1,$2,$3,'same_place','osm_variant','osm','modern_svenska','god-ortnamnssed',false)
+              on conflict (place_id, lower(attested_form), coalesce(relation_kind,'')) do nothing`,
               [r.id,m.label,r.name]).catch(()=>{});
           }
         }
       }
     } else { miss++; }
+    // Relaterade namngivna företeelser: Wikidata-objekt med DELAD ortnamnsstam (ej exakt lika),
+    // inom 3 km — "Åkerby skans", "Ålems kyrkby", "Algustorpasjön". Informationsvärde, ej brus.
+    if(APPLY && opts.placeNames && cands){
+      for(const cand of cands){
+        const l=norm(cand.label);
+        if(!l || l===n || cand.dist>3) continue;
+        if(l.includes(n) || n.includes(l)){
+          const res=await c.query(`insert into place_name_forms
+            (place_id,place_name,attested_form,relation_kind,form_kind,source,language_layer,framework,external_ref,verified)
+            values ($1,$2,$3,'related_feature','wikidata_label','reconcile-wikidata','modern_svenska','namn-diakron',$4,false)
+            on conflict (place_id, lower(attested_form), coalesce(relation_kind,'')) do nothing`,
+            [r.id,r.name,cand.label,'https://www.wikidata.org/wiki/'+cand.qid]).catch(()=>({rowCount:0}));
+          related+=res.rowCount||0;
+        }
+      }
+    }
     await sleep(900);
   }
-  console.log(`${table}: ${hit} matchade, ${miss} utan match${opts.placeNames?`, ${normed} normerade`:''}.`);
+  console.log(`${table}: ${hit} matchade, ${miss} utan match${opts.placeNames?`, ${normed} normerade, ${related} relaterade företeelser`:''}.`);
 }
 
 try{
   if(TABLE==='place_names'){
-    const where=`name_authority='osm' and lat is not null${CURATED?' and element_category is not null':''}`;
-    const q=`select id,name,lat,lng from place_names where ${where} order by element_category nulls last, name ${LIMIT?`limit ${LIMIT}`:''}`;
+    // Alla kurerade (ej bara o-normerade): normering hoppar redan satta (idempotent),
+    // men relaterade företeelser ska fångas ÄVEN för orter som redan har gällande form.
+    const where=`lat is not null${CURATED?' and element_category is not null':''}`;
+    const q=`select id,name,lat,lng,name_authority from place_names where ${where} order by element_category nulls last, name ${LIMIT?`limit ${LIMIT}`:''}`;
     const rows=(await c.query(q)).rows;
     console.log(`\n== place_names (${rows.length} o-normerade${CURATED?', curated':''}) ==`);
     await run('place_names',rows,{placeNames:true});
