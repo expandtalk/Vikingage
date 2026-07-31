@@ -171,11 +171,13 @@ export const useLegendManager = (
     console.log(`👁️ Showing all legend items`);
     setEnabledLegendItems(prevState => {
       const newState = { ...prevState };
-      // Set all existing legend items to true (visible)
-      legendItems.forEach(item => {
+      // Tänd ALLA — inkl. barn (intresse-underlagren). Utan rekursionen tändes bara
+      // kategori-föräldrarna och kartan/intressena ändrades inte (Daniel: "Show all funkar ej").
+      const setAll = (items: typeof legendItems) => items.forEach(item => {
         newState[item.id] = true;
+        if (item.children) setAll(item.children as typeof legendItems);
       });
-      console.log(`🔧 After show all:`, newState);
+      setAll(legendItems);
       return newState;
     });
   }, [legendItems]);
@@ -196,8 +198,12 @@ export const useLegendManager = (
       const newState = { ...prevState };
       // Clear every currently-known key (covers the full profile preset set)…
       Object.keys(newState).forEach(k => { newState[k] = false; });
-      // …plus the generated legend item ids and the extra gate keys above.
-      legendItems.forEach(item => { newState[item.id] = false; });
+      // …plus de genererade legend-ids (inkl. barn) och extra gate-nycklarna.
+      const clearAll = (items: typeof legendItems) => items.forEach(item => {
+        newState[item.id] = false;
+        if (item.children) clearAll(item.children as typeof legendItems);
+      });
+      clearAll(legendItems);
       EXTRA_GATE_KEYS.forEach(k => { newState[k] = false; });
       console.log(`🔧 After hide all:`, newState);
       return newState;

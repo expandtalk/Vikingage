@@ -103,13 +103,16 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
   flattenEnabled(legendItems);
   return (
     <>
-      <ProximityControl />
-      <CustomPointsControl />
+      {/* Avancerade flytande verktyg (linjal, räckvidd, mina punkter, element-spotlight,
+          kluster-förklaring) är skrivbords-verktyg och skräpar ner den lilla mobilskärmen
+          (Daniel). Dölj dem på mobil — Near me + teckenförklaringen räcker där. */}
+      {!isMobile && <ProximityControl />}
+      {!isMobile && <CustomPointsControl />}
       {churchesOn && <ChurchYearControl />}
-      <ElementSpotlightControl />
-      <RulerControl />
+      {!isMobile && <ElementSpotlightControl />}
+      {!isMobile && <RulerControl />}
       <NearMeControl enabledLayers={enabledLayers} />
-      <ClusterLegendControl onLegendToggle={onLegendToggle} enabledLayers={enabledLayers} />
+      {!isMobile && <ClusterLegendControl onLegendToggle={onLegendToggle} enabledLayers={enabledLayers} />}
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
       {onToggleLegend && !showLegend && (
         <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">

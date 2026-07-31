@@ -1,6 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import { ChevronDown } from 'lucide-react';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
@@ -19,6 +21,8 @@ const Explore = () => {
   const { user, loading } = useAuth();
   const { loading: roleLoading } = useUserRole();
   const { language } = useLanguage();
+  const isMobile = useIsMobile();
+  const [aiOpen, setAiOpen] = useState(false);
 
   if (loading || roleLoading) {
     return (
@@ -48,8 +52,18 @@ const Explore = () => {
           <RunicExplorerSimple />
         </div>
 
-        {/* AI-analys/anteckningar = fotsektion, tydligt NEDANFÖR kartan (Daniel: låg inte
-            fel över linjal-/räckviddskontrollerna). Kraftig separator + egen isolate-nivå. */}
+        {/* AI-analys/anteckningar = fotsektion, tydligt NEDANFÖR kartan. På mobil hopfälld bakom
+            en knapp så den inte dominerar den lilla skärmen (Daniel). */}
+        {isMobile && !aiOpen ? (
+          <div className="mt-12 pt-8 border-t border-border/60">
+            <button
+              onClick={() => setAiOpen(true)}
+              className="w-full flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground"
+            >
+              <Brain className="h-4 w-4 text-gold" /> {t.ai} <ChevronDown className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
         <Tabs defaultValue="ai-analysis" className="w-full relative isolate mt-12 pt-8 border-t border-border/60">
           <TabsList className={`grid w-full ${user ? 'grid-cols-2' : 'grid-cols-1'} mb-6 bg-card border border-border`}>
             <TabsTrigger value="ai-analysis" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{t.ai}</TabsTrigger>
@@ -90,6 +104,7 @@ const Explore = () => {
             </TabsContent>
           )}
         </Tabs>
+        )}
       </main>
 
       <Footer />
