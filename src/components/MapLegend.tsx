@@ -9,6 +9,19 @@ import { LegendItemComponent } from './legend/LegendItem';
 import { LegendCategory } from './legend/LegendCategory';
 import { MapLegendProps } from './legend/types';
 
+// Tematisk ordning för legenden (mobil) — grupperar besläktade lager så listan blir läsbar
+// i stället för "alla lösa toggles, sedan alla kategorier" (Daniel: "ser rörigt ut").
+const LEGEND_THEMES: { label: string; ids: string[] }[] = [
+  { label: 'Runor', ids: ['runic_inscriptions', 'runestone_density', 'runbleck_only'] },
+  { label: 'Fornlämningar', ids: ['heritage_sites', 'heritage_stones', 'heritage_folklore', 'picture_stone_reuse'] },
+  { label: 'Marint & farleder', ids: ['heritage_marine', 'maritime', 'stake_barriers', 'water_routes', 'paleo_shoreline'] },
+  { label: 'Borgar & makt', ids: ['viking_fortresses', 'fort_territories', 'estates', 'thing_sites', 'viking_regions', 'folk_groups'] },
+  { label: 'Kyrkor & tro', ids: ['ecclesiastical_churches', 'heritage_kyrka', 'heritage_kapell', 'heritage_kloster', 'heritage_kyrkoruin', 'religious_places'] },
+  { label: 'Mynt & fynd', ids: ['coins', 'solidus_die_links', 'archaeological_finds'] },
+  { label: 'Vetenskap & tid', ids: ['adna_sites', 'species_introductions', 'germanic_timeline'] },
+  { label: 'Kartor & ortnamn', ids: ['historical_maps', 'place_names'] },
+];
+
 export const MapLegend: React.FC<MapLegendProps> = ({
   isVikingMode,
   legendItems,
@@ -48,8 +61,13 @@ export const MapLegend: React.FC<MapLegendProps> = ({
     );
   };
 
-  const primaryItems = legendItems.filter(item => !item.type || item.type === 'primary');
-  const categoryItems = legendItems.filter(item => item.type === 'category');
+  const renderItem = (item: MapLegendProps['legendItems'][number]) => (
+    item.type === 'category'
+      ? <LegendCategory key={item.id} item={item} onToggleItem={onToggleItem} expandedCategories={expandedCategories} onCategoryToggle={handleCategoryToggle} />
+      : <LegendItemComponent key={item.id} item={item} onToggleItem={onToggleItem} />
+  );
+  const themedIds = new Set(LEGEND_THEMES.flatMap(t => t.ids));
+  const restItems = legendItems.filter(item => !themedIds.has(item.id));
 
   return (
     <Card className={`bg-gray-950/95 backdrop-blur-md border-gray-600/50 ${className}`}>
@@ -79,26 +97,24 @@ export const MapLegend: React.FC<MapLegendProps> = ({
       <CardContent className="p-0 pb-2">
         <ScrollArea className="h-[400px] px-4">
           <div className="space-y-1 pt-0">
-            {/* Primary items */}
-            {primaryItems.map((item) => (
-              <LegendItemComponent
-                key={item.id}
-                item={item}
-                onToggleItem={onToggleItem}
-              />
-            ))}
-            
-            {/* Category items with expandable children */}
-            {categoryItems.map((item) => (
-              <LegendCategory
-                key={item.id}
-                item={item}
-                onToggleItem={onToggleItem}
-                expandedCategories={expandedCategories}
-                onCategoryToggle={handleCategoryToggle}
-              />
-            ))}
-            
+            {/* Tematiska sektioner — besläktade lager grupperade med rubrik. */}
+            {LEGEND_THEMES.map((theme) => {
+              const its = legendItems.filter(item => theme.ids.includes(item.id));
+              if (!its.length) return null;
+              return (
+                <div key={theme.label} className="pt-2 first:pt-0">
+                  <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{theme.label}</p>
+                  {its.map(renderItem)}
+                </div>
+              );
+            })}
+            {restItems.length > 0 && (
+              <div className="pt-2">
+                <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">Övrigt</p>
+                {restItems.map(renderItem)}
+              </div>
+            )}
+
             {isVikingMode && (
               <div className="pt-2 border-t border-gray-600/50 mt-2">
                 <p className="text-xs text-gray-300 leading-relaxed">
