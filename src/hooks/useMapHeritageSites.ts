@@ -93,6 +93,7 @@ const TYPE_COLOR: Record<string, string> = {
   'vårdträd': '#15803d',             // heligt träd — grön
   'grotta med tradition': '#4338ca', // grotta/håla (folklore) — indigo
   'Grotta/överhäng': '#4338ca',      // grotta/överhäng (arkeologisk) — indigo
+  'naturgrotta': '#4338ca',          // naturgrotta (Länsstyrelsen, ej RAÄ) — indigo
   'jätte-/trollplats': '#a21caf',    // övernaturligt — magenta
   'offerplats': '#b91c1c',           // offer — blodröd
   // Marinarkeologi
@@ -133,7 +134,7 @@ const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
   'fartygslämning': 'anchor', 'vrak med tradition': 'anchor',
   'spärranläggning': 'piles',
   'jätte-/trollplats': 'spark', 'offerplats': 'spark', 'plats med tradition': 'spark',
-  'grotta med tradition': 'cave', 'Grotta/överhäng': 'cave',
+  'grotta med tradition': 'cave', 'Grotta/överhäng': 'cave', 'naturgrotta': 'cave',
   'Källa med tradition': 'drop', 'vårdkase': 'flame', 'hällristning': 'spiral',
 };
 
@@ -142,7 +143,7 @@ const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
 const CATEGORY_COLOR: Record<string, string> = {
   kyrka: '#1c1917', kapell: '#1c1917', kloster: '#1c1917', kyrkoruin: '#1c1917', klosterruin: '#1c1917',
   'sten med tradition': '#7c3aed', 'plats med tradition': '#7c3aed', 'vårdträd': '#7c3aed',
-  'grotta med tradition': '#7c3aed', 'Grotta/överhäng': '#7c3aed', 'jätte-/trollplats': '#7c3aed', 'offerplats': '#7c3aed',
+  'grotta med tradition': '#7c3aed', 'Grotta/överhäng': '#7c3aed', 'naturgrotta': '#7c3aed', 'jätte-/trollplats': '#7c3aed', 'offerplats': '#7c3aed',
   'gravfält': '#78350f', 'stensättning': '#78350f', 'domarring': '#78350f', 'skeppssättning': '#78350f',
   'rest sten': '#78350f', 'dös': '#78350f', 'gånggrift': '#78350f', 'stenkammargrav': '#78350f', 'skeppsgrav': '#78350f',
   'fartygslämning': '#0369a1', 'vrak med tradition': '#0369a1', 'spärranläggning': '#0369a1',
@@ -213,7 +214,7 @@ const heritagePopup = (r: HeritageRow) => {
 // Grottor har ingen typ-kronologi (spänner mesolitikum→nutid) → per-OBJEKT tidsfilter
 // via deras textdatering (period). Odaterat (null) visas i alla perioder (döljer aldrig
 // det vi inte vet). Parsar "1500-tal", "1600–1700-tal", "1542–43", enstaka årtal.
-const CAVE_TYPES = new Set(['grotta med tradition', 'Grotta/överhäng']);
+const CAVE_TYPES = new Set(['grotta med tradition', 'Grotta/överhäng', 'naturgrotta']);
 const parsePeriodText = (t?: string | null): [number | null, number | null] => {
   if (!t) return [null, null];
   const s = t.toLowerCase();
@@ -243,7 +244,7 @@ const HERITAGE_TYPE_KEYS: Record<string, string | string[]> = {
   heritage_gransmarke: 'gränsmärke', heritage_vagmarke: 'vägmärke',
   // Folktradition & sägen (egen parent 'heritage_folklore'):
   heritage_sagensten: 'sten med tradition', heritage_vardtrad: 'vårdträd',
-  heritage_grotta: ['grotta med tradition', 'Grotta/överhäng'], heritage_jattetroll: 'jätte-/trollplats',
+  heritage_grotta: ['grotta med tradition', 'Grotta/överhäng', 'naturgrotta'], heritage_jattetroll: 'jätte-/trollplats',
   heritage_offerplats: 'offerplats', heritage_platstradition: 'plats med tradition',
   // Marinarkeologi (egen parent 'heritage_marine'):
   heritage_vrak: 'fartygslämning', heritage_vraktradition: 'vrak med tradition',

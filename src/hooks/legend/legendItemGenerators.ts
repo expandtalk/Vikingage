@@ -249,7 +249,7 @@ export const generateBasicInscriptionItems = (
   const folkloreChildren = [
     { id: 'heritage_sagensten', label: '🪨 Sägenstenar (namngivna)', color: '#a16207', count: 150, enabled: itemEnabled(enabledLegendItems, 'heritage_sagensten') },
     { id: 'heritage_platstradition', label: 'Platser med tradition', color: '#ca8a04', count: 176, enabled: itemEnabled(enabledLegendItems, 'heritage_platstradition') },
-    { id: 'heritage_grotta', label: '🕳️ Grottor & överhäng', color: '#4338ca', count: 109, enabled: itemEnabled(enabledLegendItems, 'heritage_grotta') },
+    { id: 'heritage_grotta', label: '🕳️ Grottor & överhäng', color: '#4338ca', count: 110, enabled: itemEnabled(enabledLegendItems, 'heritage_grotta') },
     { id: 'heritage_jattetroll', label: '👹 Jätte- & trollplatser', color: '#a21caf', count: 11, enabled: itemEnabled(enabledLegendItems, 'heritage_jattetroll') },
     { id: 'heritage_vardtrad', label: '🌳 Vårdträd', color: '#15803d', count: 7, enabled: itemEnabled(enabledLegendItems, 'heritage_vardtrad') },
     { id: 'heritage_offerplats', label: 'Offerplatser', color: '#b91c1c', count: 5, enabled: itemEnabled(enabledLegendItems, 'heritage_offerplats') },
