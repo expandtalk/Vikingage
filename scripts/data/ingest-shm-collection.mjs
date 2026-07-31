@@ -34,12 +34,22 @@ try {
     ostArt:col(h=>h.includes('artbedömning')), ostBen:col(h=>h.includes('benslag')), ostAlder:col(h=>h.includes('åldersbedömning')),
     ostSkada:col(h=>h.includes('skador')), ostKon:col(h=>h.includes('könsbest')) };
 
-  // Museum-registret: CSV-namn → museum_id (attribution).
-  const musRows=(await c.query('SELECT id, name FROM museums')).rows;
-  const findMuseum=(csvName)=>{ const n=(csvName||'').toLowerCase();
-    if(n.includes('myntkabinett')) return musRows.find(m=>/myntkabinett/i.test(m.name))?.id;
-    if(n.includes('historiska')) return musRows.find(m=>/historiska museet/i.test(m.name))?.id;
-    return null; };
+  // Museum-registret: distinkta CSV-museinamn → museum_id (find-or-create, så VARJE objekt
+  // attribueras till rätt museum — även Skoklosters slott, Livrustkammaren, Hallwylska m.fl.).
+  const distinctMus=[...new Set(rows.slice(1).map(r=>(r[ix.mus]||'').trim()).filter(Boolean))];
+  const musId={};
+  for(const nm of distinctMus){
+    const key=nm.toLowerCase();
+    // Alias-matchning först (ordföljd skiljer: "Ekonomiska museet - Kungliga myntkabinettet"
+    // vs "Kungliga myntkabinettet (Ekonomiska museet)") → undvik dubbletter.
+    let hit;
+    if(key.includes('myntkabinett')) hit=(await c.query("SELECT id FROM museums WHERE name ILIKE '%myntkabinett%' LIMIT 1")).rows[0];
+    else if(key.includes('historiska')) hit=(await c.query("SELECT id FROM museums WHERE name ILIKE '%historiska museet%' LIMIT 1")).rows[0];
+    if(!hit) hit=(await c.query("SELECT id FROM museums WHERE name ILIKE '%'||$1||'%' OR $1 ILIKE '%'||name||'%' ORDER BY length(name) LIMIT 1",[nm])).rows[0];
+    if(!hit && APPLY){ hit=(await c.query("INSERT INTO museums (name,museum_type,source,verified) VALUES ($1,'riks','SHM-export',false) RETURNING id",[nm])).rows[0]; console.log(`  + nytt museum: ${nm}`); }
+    if(hit) musId[nm]=hit.id;
+  }
+  const findMuseum=(csvName)=> musId[(csvName||'').trim()] || null;
 
   // Sockencentroid ur heritage_sites (approx koordinat).
   const cen=new Map();
