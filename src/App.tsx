@@ -43,6 +43,7 @@ const Kalmar = lazy(() => import("./pages/Kalmar"));
 const Staket = lazy(() => import("./pages/Staket"));
 const LegendStones = lazy(() => import("./pages/LegendStones"));
 const Oland = lazy(() => import("./pages/Oland"));
+const CentralPlaces = lazy(() => import("./pages/CentralPlaces"));
 const Maktsfarer = lazy(() => import("./pages/Maktsfarer"));
 const Greklandsfarare = lazy(() => import("./pages/Greklandsfarare"));
 const Langbardaland = lazy(() => import("./pages/Langbardaland"));
@@ -128,6 +129,8 @@ const App = () => (
                   <Route path="/angermanland" element={<Angermanland />} />
                   <Route path="/sv/oland" element={<Oland />} />
                   <Route path="/oland" element={<Oland />} />
+                  <Route path="/sv/centralplatser" element={<CentralPlaces />} />
+                  <Route path="/central-places" element={<CentralPlaces />} />
                   <Route path="/sv/maktsfarer" element={<Maktsfarer />} />
                   <Route path="/en/power-spheres" element={<Maktsfarer />} />
                   {/* Forskningssidor under /forskning/<namn> (konvention, Daniel 2026-07-28). /sv/-varianter kvar som alias. */}
