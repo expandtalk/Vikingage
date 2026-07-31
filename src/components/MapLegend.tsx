@@ -13,10 +13,13 @@ import { MapLegendProps } from './legend/types';
 // i stället för "alla lösa toggles, sedan alla kategorier" (Daniel: "ser rörigt ut").
 const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   { label: 'Runor', ids: ['runic_inscriptions', 'runestone_density', 'runbleck_only'] },
-  { label: 'Fornlämningar', ids: ['heritage_sites', 'heritage_stones', 'heritage_folklore', 'picture_stone_reuse'] },
+  { label: 'Gravar & fornlämningar', ids: ['heritage_sites', 'heritage_stones', 'picture_stone_reuse'] },
+  // Hednisk kult (gudar/Freja/offerplatser) + folktradition & sägen (sägenstenar, jätte-/troll,
+  // vårdträd, GROTTOR) hör ihop under tro/myt — skilt från kristna kyrkor.
+  { label: 'Kult, tro & myter', ids: ['religious_places', 'pagan_gods', 'heritage_folklore'] },
+  { label: 'Kyrkor & kristendom', ids: ['ecclesiastical_churches', 'heritage_kyrka', 'heritage_kapell', 'heritage_kloster', 'heritage_kyrkoruin'] },
   { label: 'Marint & farleder', ids: ['heritage_marine', 'maritime', 'stake_barriers', 'water_routes', 'paleo_shoreline'] },
   { label: 'Borgar & makt', ids: ['viking_fortresses', 'fort_territories', 'estates', 'thing_sites', 'viking_regions', 'folk_groups'] },
-  { label: 'Kyrkor & tro', ids: ['ecclesiastical_churches', 'heritage_kyrka', 'heritage_kapell', 'heritage_kloster', 'heritage_kyrkoruin', 'religious_places'] },
   { label: 'Mynt & fynd', ids: ['coins', 'solidus_die_links', 'archaeological_finds'] },
   { label: 'Vetenskap & tid', ids: ['adna_sites', 'species_introductions', 'germanic_timeline'] },
   { label: 'Kartor & ortnamn', ids: ['historical_maps', 'place_names'] },
