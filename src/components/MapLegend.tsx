@@ -22,7 +22,8 @@ const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   { label: 'Kyrkor & kristendom', ids: ['ecclesiastical_churches', 'heritage_kyrka', 'heritage_kapell', 'heritage_kloster', 'heritage_kyrkoruin'] },
   { label: 'Försvar & bevakning', ids: ['viking_fortresses', 'fort_territories', 'stake_barriers'] },
   { label: 'Makt & samhälle', ids: ['estates', 'thing_sites', 'viking_regions', 'folk_groups'] },
-  { label: 'Marint, vrak & farleder', ids: ['heritage_marine', 'maritime', 'water_routes', 'paleo_shoreline'] },
+  { label: 'Marinarkeologi', ids: ['heritage_marine', 'maritime'] },   // vrak, vraktradition, pålspärrar, noder, haverier
+  { label: 'Farleder & vatten', ids: ['water_routes', 'paleo_shoreline'] },
   { label: 'Mynt & fynd', ids: ['coins', 'solidus_die_links', 'archaeological_finds'] },
   { label: 'Museer & samlingar', ids: ['museums'] },
   { label: 'Vetenskap & tid', ids: ['adna_sites', 'species_introductions', 'germanic_timeline'] },
