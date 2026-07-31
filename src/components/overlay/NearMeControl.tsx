@@ -72,12 +72,29 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
 
   const locate = () => {
     if (!('geolocation' in navigator)) { setNearMeError('Platstjänst stöds inte i denna webbläsare'); return; }
+    // Geolokalisering kräver säker kontext (https). På http blockerar webbläsaren den helt —
+    // vanligaste orsaken på desktop. Ge tydligt besked i stället för generiskt "kunde inte hämta".
+    if (typeof window !== 'undefined' && window.isSecureContext === false) {
+      setNearMeError('Platstjänst kräver säker anslutning (https). Sidan verkar köras över http.');
+      return;
+    }
     setNearMeLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (p) => { try { localStorage.setItem(CONSENT_KEY, '1'); } catch { /* noop */ } setNearMePos(p.coords.latitude, p.coords.longitude, p.coords.accuracy); },
-      (err) => setNearMeError(err.code === err.PERMISSION_DENIED ? 'Platsåtkomst nekad — tillåt plats i webbläsarinställningarna' : 'Kunde inte hämta din position'),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    const ok = (p: GeolocationPosition) => {
+      try { localStorage.setItem(CONSENT_KEY, '1'); } catch { /* noop */ }
+      setNearMePos(p.coords.latitude, p.coords.longitude, p.coords.accuracy);
+    };
+    const fail = (err: GeolocationPositionError) => setNearMeError(
+      err.code === err.PERMISSION_DENIED ? 'Platsåtkomst nekad — tillåt plats i webbläsarinställningarna'
+      : err.code === err.POSITION_UNAVAILABLE ? 'Positionen kunde inte fastställas (ingen GPS/nätverksplats). Prova igen.'
+      : 'Tidsgränsen gick ut — försök igen.');
+    // Hög precision först (mobil-GPS); vid annat fel än nekad → fall tillbaka till nätverksläge
+    // (desktop saknar GPS → high-accuracy timeout/POSITION_UNAVAILABLE).
+    const attempt = (highAcc: boolean) => navigator.geolocation.getCurrentPosition(
+      ok,
+      (err) => { if (highAcc && err.code !== err.PERMISSION_DENIED) { attempt(false); return; } fail(err); },
+      { enableHighAccuracy: highAcc, timeout: highAcc ? 8000 : 15000, maximumAge: highAcc ? 0 : 300000 },
     );
+    attempt(true);
   };
 
   // Retur-besök: har man redan godkänt plats → auto-lokalisera + visa Near me direkt.
