@@ -57,7 +57,7 @@ export const ExcursionProse: React.FC<{ text: string; className?: string }> = ({
         n.kind === 'h2' ? (
           <h2 key={i} className="text-xl font-semibold text-gold mt-7 mb-2 first:mt-0">{linkify(n.text)}</h2>
         ) : (
-          <p key={i} className="text-muted-foreground leading-relaxed mb-3">
+          <p key={i} className="text-slate-200 leading-relaxed mb-3">
             {n.lines.map((l, j) => (
               <React.Fragment key={j}>{linkify(l)}{j < n.lines.length - 1 && <br />}</React.Fragment>
             ))}

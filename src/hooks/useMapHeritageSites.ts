@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
-import { overlapsPeriod } from '@/utils/germanicTimeline/periodRange';
+import { overlapsPeriod, periodYearRange } from '@/utils/germanicTimeline/periodRange';
 
 // VIEWPORT-servering (proof-of-concept för Steg 1). Till skillnad från övriga
 // kartlager laddar detta INTE allt — det frågar sites_in_bbox / sites_bbox_clusters
@@ -91,7 +91,8 @@ const TYPE_COLOR: Record<string, string> = {
   'sten med tradition': '#a16207',   // sägensten — amber-brun
   'plats med tradition': '#ca8a04',  // sägenplats — guld
   'vårdträd': '#15803d',             // heligt träd — grön
-  'grotta med tradition': '#4338ca', // grotta/håla — indigo
+  'grotta med tradition': '#4338ca', // grotta/håla (folklore) — indigo
+  'Grotta/överhäng': '#4338ca',      // grotta/överhäng (arkeologisk) — indigo
   'jätte-/trollplats': '#a21caf',    // övernaturligt — magenta
   'offerplats': '#b91c1c',           // offer — blodröd
   // Marinarkeologi
@@ -117,6 +118,7 @@ const GLYPH: Record<string, string> = {
   drop:   '<path d="M12 3C9 8 6.5 11 6.5 14.5a5.5 5.5 0 0 0 11 0C17.5 11 15 8 12 3z" fill="#fff"/>',
   flame:  '<path d="M13 3c.5 3.5 3.5 5 3.5 8.5a4.5 4.5 0 0 1-9 0c0-2 .8-3.2 1.8-4.2.1 1.2.8 2.2 1.9 2.2 1.4 0 1.3-2.4-.2-6.5z" fill="#fff"/>',
   spiral: '<path d="M12 12a1.7 1.7 0 1 1 1.9 1.7 3.6 3.6 0 0 1-5-3.4 5.6 5.6 0 0 1 9.4-3.6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>',
+  cave:   '<path d="M4 20v-6a8 8 0 0 1 16 0v6h-4.5v-5.5a3.5 3.5 0 0 0-7 0V20z" fill="#fff"/>',
 };
 const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
   kyrka: 'cross', kapell: 'cross', kloster: 'cross', kyrkoruin: 'cross', klosterruin: 'cross',
@@ -130,7 +132,8 @@ const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
   'vårdträd': 'tree',
   'fartygslämning': 'anchor', 'vrak med tradition': 'anchor',
   'spärranläggning': 'piles',
-  'jätte-/trollplats': 'spark', 'offerplats': 'spark', 'plats med tradition': 'spark', 'grotta med tradition': 'spark',
+  'jätte-/trollplats': 'spark', 'offerplats': 'spark', 'plats med tradition': 'spark',
+  'grotta med tradition': 'cave', 'Grotta/överhäng': 'cave',
   'Källa med tradition': 'drop', 'vårdkase': 'flame', 'hällristning': 'spiral',
 };
 
@@ -139,7 +142,7 @@ const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
 const CATEGORY_COLOR: Record<string, string> = {
   kyrka: '#1c1917', kapell: '#1c1917', kloster: '#1c1917', kyrkoruin: '#1c1917', klosterruin: '#1c1917',
   'sten med tradition': '#7c3aed', 'plats med tradition': '#7c3aed', 'vårdträd': '#7c3aed',
-  'grotta med tradition': '#7c3aed', 'jätte-/trollplats': '#7c3aed', 'offerplats': '#7c3aed',
+  'grotta med tradition': '#7c3aed', 'Grotta/överhäng': '#7c3aed', 'jätte-/trollplats': '#7c3aed', 'offerplats': '#7c3aed',
   'gravfält': '#78350f', 'stensättning': '#78350f', 'domarring': '#78350f', 'skeppssättning': '#78350f',
   'rest sten': '#78350f', 'dös': '#78350f', 'gånggrift': '#78350f', 'stenkammargrav': '#78350f', 'skeppsgrav': '#78350f',
   'fartygslämning': '#0369a1', 'vrak med tradition': '#0369a1', 'spärranläggning': '#0369a1',
@@ -207,7 +210,23 @@ const heritagePopup = (r: HeritageRow) => {
 
 // Legendnyckel → raa_type. Per-typ-kryssen i "Kulturlager"-kategorin styr vilka
 // typer som hämtas (sites_in_bbox tar p_types). Bak-kompat: 'heritage_sites'=true → alla.
-const HERITAGE_TYPE_KEYS: Record<string, string> = {
+// Grottor har ingen typ-kronologi (spänner mesolitikum→nutid) → per-OBJEKT tidsfilter
+// via deras textdatering (period). Odaterat (null) visas i alla perioder (döljer aldrig
+// det vi inte vet). Parsar "1500-tal", "1600–1700-tal", "1542–43", enstaka årtal.
+const CAVE_TYPES = new Set(['grotta med tradition', 'Grotta/överhäng']);
+const parsePeriodText = (t?: string | null): [number | null, number | null] => {
+  if (!t) return [null, null];
+  const s = t.toLowerCase();
+  const range = s.match(/(\d{3,4})\s*[–-]\s*(\d{3,4})/);            // "1600–1700"
+  if (range) return [Number(range[1]), Number(range[2])];
+  const century = s.match(/(\d{1,2})00-tal/);                       // "1500-tal", "1800-tal"
+  if (century) { const base = Number(century[1]) * 100; return [base, base + 99]; }
+  const yr = s.match(/\b(\d{3,4})\b/);                              // enstaka årtal
+  if (yr) return [Number(yr[1]), Number(yr[1])];
+  return [null, null];
+};
+
+const HERITAGE_TYPE_KEYS: Record<string, string | string[]> = {
   heritage_kyrka: 'kyrka', heritage_kapell: 'kapell', heritage_kloster: 'kloster',
   heritage_kyrkoruin: 'kyrkoruin', heritage_klosterruin: 'klosterruin',
   heritage_vardkase: 'vårdkase', heritage_dos: 'dös', heritage_ganggrift: 'gånggrift',
@@ -224,7 +243,7 @@ const HERITAGE_TYPE_KEYS: Record<string, string> = {
   heritage_gransmarke: 'gränsmärke', heritage_vagmarke: 'vägmärke',
   // Folktradition & sägen (egen parent 'heritage_folklore'):
   heritage_sagensten: 'sten med tradition', heritage_vardtrad: 'vårdträd',
-  heritage_grotta: 'grotta med tradition', heritage_jattetroll: 'jätte-/trollplats',
+  heritage_grotta: ['grotta med tradition', 'Grotta/överhäng'], heritage_jattetroll: 'jätte-/trollplats',
   heritage_offerplats: 'offerplats', heritage_platstradition: 'plats med tradition',
   // Marinarkeologi (egen parent 'heritage_marine'):
   heritage_vrak: 'fartygslämning', heritage_vraktradition: 'vrak med tradition',
@@ -254,7 +273,7 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
     : MARINE_KEYS.has(k) ? parentMarine : parentKultur;
   const types = Object.entries(HERITAGE_TYPE_KEYS)
     .filter(([k]) => enabledLegendItems[k] === true && parentOn(k))
-    .map(([, v]) => v)
+    .flatMap(([, v]) => (Array.isArray(v) ? v : [v]))   // en nyckel kan täcka flera raa_typer (t.ex. grottor)
     // Periodfilter: uteslut typer vars typokronologi inte överlappar vald period.
     .filter((v) => { const p = TYPE_PERIOD[v]; return !p || overlapsPeriod(selectedTimePeriod, p[0], p[1]); });
   const typesKey = types.join(',') || 'OFF';
@@ -286,7 +305,13 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
       if (!data) return;
 
       if (z >= ZOOM_INDIVIDUAL) {
+        const periodActive = !!periodYearRange(selectedTimePeriod);
         (data as any[]).forEach((r) => {
+          // Grottor: per-objekt textdatering-filter (döljer bara daterade som ligger utanför perioden).
+          if (periodActive && CAVE_TYPES.has(r.raa_type)) {
+            const [ps, pe] = parsePeriodText(r.period);
+            if (!overlapsPeriod(selectedTimePeriod, ps, pe)) return;
+          }
           L.marker([r.lat, r.lng], { icon: iconFor(r.raa_type) })
             .bindPopup(heritagePopup(r as HeritageRow))
             .addTo(layer);
@@ -318,5 +343,5 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
       if (timer) clearTimeout(timer);
       layer.clearLayers();
     };
-  }, [map, typesKey, isMapReady]);
+  }, [map, typesKey, isMapReady, selectedTimePeriod]);
 };

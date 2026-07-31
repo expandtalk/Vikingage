@@ -14,6 +14,7 @@ import { useVikingCities, getCategoryColor, getCategoryLabel } from '../hooks/us
 import { useSwedishHillforts } from '../hooks/useSwedishHillforts';
 import { FortressesCitiesMap } from '../components/fortresses/FortressesCitiesMap';
 import { FingerprintDialog } from '../components/forensics/FingerprintDialog';
+import { FortGoldTerritoryCard } from '../components/fortresses/FortGoldTerritoryCard';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Fortresses = () => {
@@ -267,6 +268,7 @@ const Fortresses = () => {
           </TabsList>
 
           <TabsContent value="hillforts" className="space-y-6">
+            <FortGoldTerritoryCard sv={sv} />
             <Card className="viking-card">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">

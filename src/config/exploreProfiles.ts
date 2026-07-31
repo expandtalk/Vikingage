@@ -216,6 +216,9 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
       "runic_inscriptions",
       "battle_sites",
       "beacon_sites",
+      "coins",              // mynt/guldfynd (solidi, denarer) — guld-lagret
+      "solidus_die_links",
+      "fort_territories",   // förskatte-borgterritorier (Öland)
     ),
     theme: "chronology",
     primaryLayers: ["archaeological_sites", "runic_inscriptions"],
@@ -244,6 +247,8 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
       "valdemar_route",
       "stake_barriers",
       "viking_roads",
+      "coins",              // guld-/silverflöden (solidi = den (post-)romerska guldekonomin)
+      "solidus_die_links",
     ),
     theme: "flow",
     primaryLayers: ["trade_routes", "viking_cities", "river_routes"],
@@ -306,7 +311,12 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
     description: { sv: "Farleder, hamnar, vrak och strandförskjutning", en: "Waterways, harbours, wrecks and shoreline shift" },
     icon: "anchor",
     basemap: "terrain",
-    layers: on("valdemar_route", "water_routes", "river_routes", "paleo_shoreline", "viking_cities", "beacon_sites"),
+    layers: on(
+      // Nya marinarkeologi-lagren (useMapMaritimeLayers)
+      "maritime", "maritime_nodes", "ship_losses", "fairways_modern", "fairways_historical", "hanseatic_cities",
+      // Befintliga relevanta lager
+      "valdemar_route", "water_routes", "river_routes", "paleo_shoreline", "viking_cities", "beacon_sites",
+    ),
     theme: "flow",
     primaryLayers: ["valdemar_route", "water_routes"],
     defaultPeriod: "all",
@@ -344,7 +354,7 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
     description: { sv: "Strandlinjer, berggrund och fornborgars terräng", en: "Shorelines, bedrock and hillfort terrain" },
     icon: "mountain",
     basemap: "terrain",
-    layers: on("paleo_shoreline", "viking_fortresses", "archaeological_sites", "river_routes"),
+    layers: on("paleo_shoreline", "viking_fortresses", "archaeological_sites", "river_routes", "fort_territories"),
     theme: "earth",
     primaryLayers: ["paleo_shoreline", "viking_fortresses"],
     defaultPeriod: "all",

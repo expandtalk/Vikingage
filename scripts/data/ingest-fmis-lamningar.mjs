@@ -34,12 +34,23 @@ const TYPES = [
   { term: 'tingsplats',      type: 'tingsplats',      re: /ting/i },
   // RAÄ klassar många tingsplatser som lämningstyp "Samlingsplats" → sök brett, behåll bara ting-ord.
   { term: 'samlingsplats',   type: 'tingsplats',      re: /tings?(plats|ställe|hög|kulle|backe|vall|sten|stad|åker)|\bting\b|tingv|tingstad/i },
+  // Maritima nod-/agrara typer (Trollskogen-klustret + haverier vid grund/hamnar).
+  { term: 'stensträng',      type: 'stensträng',        re: /stensträng/i },
+  { term: 'fossil åkermark', type: 'fossil åkermark',   re: /fossil\s*åker|åkermark/i },
+  { term: 'fartygslämning',  type: 'fartygslämning',    re: /fartygs.?\s?l(ä|a)mning|båtlämning/i },
+  { term: 'vrak',            type: 'vrak med tradition', re: /\bvrak\b/i },
+  // Grottor/överhäng — arkeologiska (boplats-/brukningsgrottor, stenålder→nyare tid).
+  // Skilt från 'grotta med tradition' (folkloregrottor). RAÄ-lämningstyp "Grotta/överhäng".
+  { term: 'grotta',          type: 'Grotta/överhäng',   re: /grott|överhäng|h(å|a)la\b/i },
+  { term: 'överhäng',        type: 'Grotta/överhäng',   re: /grott|överhäng/i },
 ];
 
 // Regioner: län (countyName) + valfritt landskaps- eller bbox-filter (post-filter på placeLabel/koord).
 const REGIONS = {
   oland:     { county: 'Kalmar',          landscape: 'Öland' },
   kalmar:    { county: 'Kalmar',          notLandscape: 'Öland' },       // Kalmar läns fastland (Småland)
+  grankullaviken: { county: 'Kalmar',     bbox: [16.98, 57.33, 17.20, 57.41] }, // Ölands norra udde + Trollskogen (naturhamn)
+  kalmarsund:     { county: 'Kalmar',     bbox: [16.20, 56.55, 16.55, 56.80] }, // Kalmar redd + Grimskär/Skansgrundet (sundet)
   stockholm: { county: 'Stockholm' },
   goteborg:  { county: '"Västra Götaland"', bbox: [11.5, 57.5, 12.4, 58.05] }, // Göteborgstrakten
   uppland:   { county: 'Uppsala',           bbox: [17.5, 59.5, 18.25, 59.95] }, // Långhundraleden/Broborg–Knivsta–Uppsala

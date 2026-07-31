@@ -1,7 +1,7 @@
 {
  "type": "FeatureCollection",
  "name": "broborg",
- "_kommentar": "Broborg vid Långhundraleden (ledsegmentet för kontext). Hönsgärde: UNGEFÄRLIGT läge vid byn på andra sidan borgberget. WGS84 [lng,lat].",
+ "_kommentar": "Broborg vid Långhundraleden (ledsegmentet för kontext). Verifierade koordinater: Broborg + Grimsahögen ur Wikidata P625 (Q29886005/Q29886007), Trefaldighetskällan ur RAÄ Fornsök (heritage_sites 'Källa med tradition'). Hönsgärde: UNGEFÄRLIGT läge vid byn på andra sidan borgberget. WGS84 [lng,lat].",
  "features": [
   {
    "type": "Feature",
@@ -12,18 +12,23 @@
   },
   {
    "type": "Feature",
-   "properties": { "type": "Fornborg", "raa": "Broborg (95×85 m) — förglasad ringmur, utkik/tull/signalplats; borgen reste sig ~40 m över vattnet" },
-   "geometry": { "type": "Point", "coordinates": [17.9516, 59.7556] }
+   "properties": { "type": "Fornborg", "label": "Broborg", "raa": "Broborg (95×85 m) — förglasad ringmur, utkik/tull/signalplats; borgen reste sig ~40 m över vattnet (Wikidata Q29886005, verifierad koord)" },
+   "geometry": { "type": "Point", "coordinates": [17.951568, 59.755571] }
   },
   {
    "type": "Feature",
-   "properties": { "type": "Gravfält", "raa": "Hönsgärde — järnåldersgravfält, 100+ gravar; trolig boplats vid nuvarande byn (ungefärligt läge)" },
+   "properties": { "type": "Gravhög", "label": "Grimsahögen", "raa": "Grimsahögen — gravhög vid ledens strand intill borgen, knuten till Grimsasägnen (Wikidata Q29886007, verifierad koord)" },
+   "geometry": { "type": "Point", "coordinates": [17.944708, 59.754877] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Helig källa", "label": "Trefaldighetskälla", "raa": "Trefaldighetskällan — offerkälla/källa med tradition nordväst om borgen (RAÄ Fornsök 'Källa med tradition', verifierad koord)" },
+   "geometry": { "type": "Point", "coordinates": [17.95395, 59.75662] }
+  },
+  {
+   "type": "Feature",
+   "properties": { "type": "Gravfält", "label": "Hönsgärde gravfält", "raa": "Hönsgärde — järnåldersgravfält, 100+ gravar; trolig boplats vid nuvarande byn (ungefärligt läge)" },
    "geometry": { "type": "Point", "coordinates": [17.9640, 59.7500] }
-  },
-  {
-   "type": "Feature",
-   "properties": { "type": "Gravhög", "raa": "Grimsahögen — gravhög intill borgen, namnbelagd sedan 1500-talet (sägnen om hövdingadottern Grimsa)" },
-   "geometry": { "type": "Point", "coordinates": [17.9490, 59.7570] }
   }
  ]
 }

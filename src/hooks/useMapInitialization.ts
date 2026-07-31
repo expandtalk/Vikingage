@@ -16,6 +16,9 @@ import { useReachProbeTriggers } from './map/useReachProbeTriggers';
 import { useMapSpeciesMarkers } from './map/useMapSpeciesMarkers';
 import { useMapElementMarkers } from './map/useMapElementMarkers';
 import { useMapRuler } from './map/useMapRuler';
+import { useMapNearMe } from './map/useMapNearMe';
+import { useMapMaritimeLayers } from './map/useMapMaritimeLayers';
+import { useMapFortTerritories } from './map/useMapFortTerritories';
 import { useMapPictureStones } from './map/useMapPictureStones';
 import { useMapCoins } from './map/useMapCoins';
 import { useMapAncestrySites } from './map/useMapAncestrySites';
@@ -212,6 +215,15 @@ export const useMapInitialization = ({
 
   // Punkt-till-punkt-linjal (2d).
   useMapRuler({ map: map.current, isMapReady: isMapReadyRef });
+
+  // "Near me": min position + sökradie + närhetsträffar (mobilt närhetsuppslag).
+  useMapNearMe({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Marinarkeologi: maritima noder (fingerprint-popup), haverier, farleder, Hansa.
+  useMapMaritimeLayers({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, safelyAddLayer });
+
+  // Förskatte-borgterritorier (Öland Voronoi) — hypotesgenererande lager.
+  useMapFortTerritories({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, safelyAddLayer });
 
   // Bildsten-spolia (picture_stone_reuse) — färg per Lindqvist-period, gate: legendknappen.
   useMapPictureStones({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });

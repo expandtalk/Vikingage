@@ -7,10 +7,13 @@ import { useDraggable } from '@/hooks/useDraggable';
 // Går att fälla ihop (✕ → pill) och flytta (dra i rubriken).
 const PRESETS: { sv: string; from: number; to: number }[] = [
   { sv: 'Vikingatid', from: 800, to: 1100 },
-  { sv: 'Medeltid', from: 1000, to: 1550 },
-  { sv: '1600–1800', from: 1600, to: 1800 },
-  { sv: '1800–2000', from: 1800, to: 2000 },
-  { sv: 'Alla', from: 700, to: 2025 },
+  { sv: 'Medeltid', from: 1100, to: 1550 },
+  { sv: '1600-tal', from: 1600, to: 1699 },
+  { sv: '1700-tal', from: 1700, to: 1799 },
+  { sv: '1800-tal', from: 1800, to: 1899 },
+  { sv: '1900-tal', from: 1900, to: 1999 },
+  { sv: '2000-tal', from: 2000, to: 2100 },
+  { sv: 'Alla', from: 700, to: 2100 },
 ];
 
 export const ChurchYearControl: React.FC = () => {

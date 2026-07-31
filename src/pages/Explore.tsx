@@ -48,8 +48,9 @@ const Explore = () => {
           <RunicExplorerSimple />
         </div>
 
-        {/* Egen isolerad nivå under kartan så AI-panelen aldrig överlappas av kart-lager. */}
-        <Tabs defaultValue="ai-analysis" className="w-full relative isolate">
+        {/* AI-analys/anteckningar = fotsektion, tydligt NEDANFÖR kartan (Daniel: låg inte
+            fel över linjal-/räckviddskontrollerna). Kraftig separator + egen isolate-nivå. */}
+        <Tabs defaultValue="ai-analysis" className="w-full relative isolate mt-12 pt-8 border-t border-border/60">
           <TabsList className={`grid w-full ${user ? 'grid-cols-2' : 'grid-cols-1'} mb-6 bg-card border border-border`}>
             <TabsTrigger value="ai-analysis" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{t.ai}</TabsTrigger>
             {user && (

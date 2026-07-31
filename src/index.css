@@ -112,6 +112,30 @@
   animation: slide-in-left 0.3s ease-out;
 }
 
+/* Läsbara, tavelliknande etiketter för namngivna lämningar på utflyktskartan.
+   Mörk text på ljus platta = hög kontrast (WCAG AA) mot både OSM-kakel och strandlinje. */
+.leaflet-tooltip.excursion-map-label {
+  background: rgba(255, 255, 255, 0.92);
+  color: #1c1917;
+  border: 1px solid rgba(28, 25, 23, 0.35);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
+.leaflet-tooltip.excursion-map-label::before { display: none; } /* ingen pil-triangel */
+/* Regionala "Historia längs leden"-noder: tystare etikett (bilburen översikt, blandade epoker). */
+.leaflet-tooltip.excursion-map-label--regional {
+  background: rgba(241, 245, 249, 0.85);
+  color: #334155;
+  font-weight: 500;
+  font-size: 11px;
+  border-color: rgba(51, 65, 85, 0.3);
+}
+
 /* Viking Age inspired map marker styles */
 .viking-map-markers {
   /* Authentic Viking Age colors for map elements */

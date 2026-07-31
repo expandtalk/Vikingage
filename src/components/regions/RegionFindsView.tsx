@@ -158,31 +158,46 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
     };
   }, []);
 
-  // Rita om markörer + zooma till aktiva fynd.
+  // Rita om markörer + zooma. ÖVERSIKT (inget valt): en proportionell cirkel per
+  // socken/härad vid dess tyngdpunkt, storlek = antal fynd (klustrat → läsbart, i st.f.
+  // tusentals enskilda punkter). VALT: enskilda runstensmarkörer (drill-in).
+  const coordsOf = (i: any): [number, number] | null => {
+    const lat = i?.coordinates?.lat ?? i?.latitude;
+    const lng = i?.coordinates?.lng ?? i?.longitude;
+    return lat && lng ? [lat, lng] : null;
+  };
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
     layerRef.current.clearLayers();
+    const pts: [number, number][] = [];
 
-    // Temporär undergrupp så addRunicInscriptionMarkers (som addTo(map)) hamnar i layer-gruppen.
-    const added = addRunicInscriptionMarkers(map, activeInscriptions, onResultClick);
-    added.forEach((m) => {
-      map.removeLayer(m);          // flytta från kartan till vår hanterade grupp
-      layerRef.current.addLayer(m);
-    });
+    if (selected) {
+      // Drill-in: enskilda runstenar i den valda regionen.
+      const added = addRunicInscriptionMarkers(map, activeInscriptions, onResultClick);
+      added.forEach((m) => { map.removeLayer(m); layerRef.current.addLayer(m); });
+      for (const i of activeInscriptions) { const p = coordsOf(i); if (p) pts.push(p); }
+    } else {
+      // Översikt: klustra per region → proportionell symbolkarta.
+      for (const r of regions) {
+        const cs = r.inscriptions.map(coordsOf).filter(Boolean) as [number, number][];
+        if (!cs.length) continue;
+        const lat = cs.reduce((s, p) => s + p[0], 0) / cs.length;
+        const lng = cs.reduce((s, p) => s + p[1], 0) / cs.length;
+        const radius = Math.min(30, 5 + Math.sqrt(r.count) * 2.2); // area ~ antal fynd
+        L.circleMarker([lat, lng], { radius, color: '#78350f', weight: 1, fillColor: '#eab308', fillOpacity: 0.55 })
+          .bindTooltip(`${r.name}${r.harad || r.landscape ? ` · ${r.harad || r.landscape}` : ''} — ${r.count} ${c.finds}`, { direction: 'top' })
+          .on('click', () => setSelected(r.key))
+          .addTo(layerRef.current);
+        pts.push([lat, lng]);
+      }
+    }
 
-    const pts = activeInscriptions
-      .map((i) => {
-        const lat = i?.coordinates?.lat ?? i?.latitude;
-        const lng = i?.coordinates?.lng ?? i?.longitude;
-        return lat && lng ? ([lat, lng] as [number, number]) : null;
-      })
-      .filter(Boolean) as [number, number][];
     if (pts.length > 0) {
       map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: selected ? 12 : 6 });
     }
     setTimeout(() => map.invalidateSize(), 100);
-  }, [activeInscriptions, selected, onResultClick]);
+  }, [regions, activeInscriptions, selected, onResultClick, c.finds]);
 
   return (
     <Card className="bg-white/10 backdrop-blur-md border-white/20">
@@ -282,6 +297,13 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
               {c.showing}: <span className="text-white font-medium">{selectedName ?? c.all}</span>{' '}
               <span className="text-slate-400">({activeInscriptions.length} {c.finds})</span>
             </div>
+            {!selected && (
+              <div className="text-slate-400 text-xs">
+                {sv
+                  ? 'Cirklarnas storlek = antal fynd. Klicka en cirkel (eller en rad i listan) för att zooma in i regionen.'
+                  : 'Circle size = number of finds. Click a circle (or a list row) to zoom into the region.'}
+              </div>
+            )}
             <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-white/10" />
           </div>
         </div>

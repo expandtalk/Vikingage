@@ -1,24 +1,58 @@
 {
  "type": "FeatureCollection",
  "name": "langhundraleden",
- "_kommentar": "Långhundraledens sträckning ur plattformens river_systems (Trälhavet–Uppsala, 5 stödpunkter, förenklad). Broborg ligger på ledens punkt 4 (verifierat läge). Hönsgärde gravfält: UNGEFÄRLIGT läge vid byn Hönsgärde på andra sidan borgberget — ej exakt georefererat. WGS84 [lng,lat].",
+ "_kommentar": "Långhundraledens sträckning ur river_systems (förenklad) PLUS två skikt från Lantmäteriets vandringstavlor vid Broborg. LOKALA lämningar (tier saknas): tavlan 'vandring i Husby-Långhundra'. REGIONALA noder (tier=regional): tavlan 'Historia längs Långhundraleden' — en bilburen översikt vars sevärdheter INTE är kronologiskt ortodoxa (spänner järnålder→medeltid→1700-tal, inkl. Linnés Hammarby). Den äkta leden upptäcks till fots eller med kanot. Alla koordinater verifierade: lokala + Grimsahögen ur Wikidata P625, Trefaldighetskällan + kyrkor/högar ur RAÄ Fornsök (heritage_sites), Mora stenar ur location_hypotheses, Linnés Hammarby ur Wikidata Q1669062. Broborg ritas som huvudpinnen (excursion.coords + mapLabel). WGS84 [lng,lat].",
  "features": [
   {
    "type": "Feature",
-   "properties": { "type": "Farled", "raa": "Långhundraleden — segelbar led Trälhavet→Uppsala. Vattennivån ca 500 e.Kr. låg 6–7 m högre än idag." },
+   "properties": { "type": "Farled", "raa": "Långhundraleden — segelbar led Trälhavet→Uppsala. Vattennivån ca 500 e.Kr. låg 6–7 m högre än idag; hela dalen nedanför Broborg var då en sjö (Lantmäteriets tavla: linjen för den åsdämda sjön ca 14 m ö.h.)." },
    "geometry": { "type": "LineString", "coordinates": [
      [18.3600, 59.4558], [18.3536, 59.5642], [18.2088, 59.5790], [17.9516, 59.7556], [17.7000, 59.8600]
    ] }
   },
-  {
-   "type": "Feature",
-   "properties": { "type": "Fornborg", "raa": "Broborg — förglasad ringmur (>1100 °C), kontrollpunkt och vårdkase-signalplats vid leden" },
-   "geometry": { "type": "Point", "coordinates": [17.9516, 59.7556] }
-  },
-  {
-   "type": "Feature",
-   "properties": { "type": "Gravfält", "raa": "Hönsgärde — järnåldersgravfält med 100+ gravar; bebyggelsen låg troligen vid nuvarande byn (ungefärligt läge)" },
-   "geometry": { "type": "Point", "coordinates": [17.9640, 59.7500] }
-  }
+
+  { "type": "Feature",
+    "properties": { "type": "Gravhög", "label": "Grimsahögen", "raa": "Grimsahögen — stor gravhög vid ledens strand nära vandringens parkering. Knuten till Grimsasägnen om hövdingadottern som brände borgen 'så att det syntes till Gamla Uppsala' (Wikidata Q29886007, verifierad koord)." },
+    "geometry": { "type": "Point", "coordinates": [17.944708, 59.754877] } },
+  { "type": "Feature",
+    "properties": { "type": "Helig källa", "label": "Trefaldighetskälla", "raa": "Trefaldighetskällan — offerkälla/källa med tradition strax nordväst om Broborg; besöktes vid trefaldighetshelgen för läkedom (RAÄ Fornsök 'Källa med tradition', verifierad koord)." },
+    "geometry": { "type": "Point", "coordinates": [17.95395, 59.75662] } },
+  { "type": "Feature",
+    "properties": { "type": "Gravfält", "label": "Hönsgärde gravfält", "raa": "Hönsgärde — järnåldersgravfält med 100+ gravar på andra sidan borgberget (UNGEFÄRLIGT läge, ej exakt georefererat)." },
+    "geometry": { "type": "Point", "coordinates": [17.9640, 59.7500] } },
+
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Gamla Uppsala", "raa": "Järnålder–vendeltid: rikets kult- och maktcentrum med kungshögarna — ledens övre mål. (Kungshögarna, RAÄ)" },
+    "geometry": { "type": "Point", "coordinates": [17.63401, 59.89985] } },
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Vaksala kyrka", "raa": "Medeltid (1100-tal): sockenkyrka i den bördiga Vaksalabygden." },
+    "geometry": { "type": "Point", "coordinates": [17.68636, 59.87600] } },
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Danmarks kyrka", "raa": "Medeltid: sockenkyrka i Danmarks socken sydost om Uppsala." },
+    "geometry": { "type": "Point", "coordinates": [17.74489, 59.83294] } },
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Funbo kyrka", "raa": "Medeltid: sockenkyrka vid Funbosjön längs ledens övre lopp." },
+    "geometry": { "type": "Point", "coordinates": [17.85552, 59.85596] } },
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Linnés Hammarby", "raa": "1700-tal: Carl von Linnés gård och sommarmuseum. En medvetet icke-vikingatida sevärdhet — tavlan 'Historia längs leden' spänner alla tidsåldrar (Wikidata Q1669062, verifierad koord)." },
+    "geometry": { "type": "Point", "coordinates": [17.77639, 59.8175] } },
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Mora stenar", "raa": "Medeltid: svearnas kungavalplats — här valdes och 'togs' kungen på Mora äng (skyddshus med samlade fragment, location_hypotheses)." },
+    "geometry": { "type": "Point", "coordinates": [17.78080, 59.79774] } },
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Lagga kyrka", "raa": "Medeltid: sockenkyrka nära Mora äng och kungavalplatsen." },
+    "geometry": { "type": "Point", "coordinates": [17.84002, 59.79686] } },
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Östuna kyrka", "raa": "Medeltid: sockenkyrka strax väster om Broborg längs leden." },
+    "geometry": { "type": "Point", "coordinates": [17.87906, 59.76372] } },
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Husby-Långhundra", "raa": "Husbyn = vikingatida/tidigmedeltida kungsgård (Uppsala öd) som gett bygden och leden namn; medeltida sockenkyrka." },
+    "geometry": { "type": "Point", "coordinates": [18.01754, 59.75068] } },
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Skepptuna (U 357)", "raa": "Vikingatid: runstenen U 357 vid Skepptuna kyrka — vittnesbörd om bygdens välstånd när leden band samman Uppsala med Östersjön." },
+    "geometry": { "type": "Point", "coordinates": [18.09306, 59.70889] } },
+  { "type": "Feature",
+    "properties": { "type": "Historia längs leden", "tier": "regional", "label": "Vassunda kyrka", "raa": "Medeltid: sockenkyrka — Broborg ligger i Vassunda socken." },
+    "geometry": { "type": "Point", "coordinates": [17.72931, 59.70478] } }
  ]
 }

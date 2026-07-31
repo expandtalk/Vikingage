@@ -5,15 +5,16 @@ import { useDraggable } from '@/hooks/useDraggable';
 // Liten hjälpruta som förklarar vad kartklustren betyder. Hopfälld pill som standard.
 // Två klustersystem finns: runstenar (grå ᛘ) och Kulturlager (färgad disk = familj).
 
-const FAMILIES: { color: string; label: string }[] = [
-  { color: '#1c1917', label: 'Kyrkligt (kyrka, kloster, ruin)' },
-  { color: '#7c3aed', label: 'Folktradition & sägen' },
-  { color: '#78350f', label: 'Gravar & monument' },
-  { color: '#0369a1', label: 'Marinarkeologi (vrak, spärrar)' },
-  { color: '#92600e', label: 'Vägar & stenar' },
-  { color: '#0ea5e9', label: 'Källor & vatten' },
-  { color: '#f59e0b', label: 'Vårdkasar' },
-  { color: '#9a3412', label: 'Hällristningar' },
+// keys = legend-lager som tänds när man klickar familjen (saknad key = no-op, ofarligt).
+const FAMILIES: { color: string; label: string; keys: string[] }[] = [
+  { color: '#1c1917', label: 'Kyrkligt (kyrka, kloster, ruin)', keys: ['ecclesiastical_churches'] },
+  { color: '#7c3aed', label: 'Folktradition & sägen', keys: ['heritage_kalla'] },
+  { color: '#78350f', label: 'Gravar & monument', keys: ['heritage_gravfalt', 'heritage_stensattning', 'heritage_dos', 'heritage_ganggrift', 'heritage_stenkammargrav', 'heritage_domarring', 'heritage_skeppssattning'] },
+  { color: '#0369a1', label: 'Marinarkeologi (vrak, spärrar)', keys: ['maritime', 'maritime_nodes', 'ship_losses', 'fairways_modern', 'stake_barriers'] },
+  { color: '#92600e', label: 'Vägar & stenar', keys: ['viking_roads'] },
+  { color: '#0ea5e9', label: 'Källor & vatten', keys: ['heritage_kalla'] },
+  { color: '#f59e0b', label: 'Vårdkasar', keys: ['heritage_vardkase', 'beacon_sites'] },
+  { color: '#9a3412', label: 'Hällristningar', keys: ['heritage_hallristning'] },
 ];
 
 const Dot: React.FC<{ color: string; children?: React.ReactNode }> = ({ color, children }) => (
@@ -22,9 +23,19 @@ const Dot: React.FC<{ color: string; children?: React.ReactNode }> = ({ color, c
   </span>
 );
 
-export const ClusterLegendControl: React.FC = () => {
+export const ClusterLegendControl: React.FC<{
+  onLegendToggle?: (id: string) => void;
+  enabledLayers?: Record<string, boolean>;
+}> = ({ onLegendToggle, enabledLayers }) => {
   const [collapsed, setCollapsed] = useState(true);
   const { rootRef, dragHandleProps, style } = useDraggable();
+  // Klick på en familj → tänd dess lager (aktivera de som är av). Andra klicket när alla
+  // är på → släck dem. Saknade keys ignoreras av onLegendToggle.
+  const clickFamily = (keys: string[]) => {
+    if (!onLegendToggle) return;
+    const anyOff = keys.some((k) => !enabledLayers?.[k]);
+    keys.forEach((k) => { const on = !!enabledLayers?.[k]; if (anyOff ? !on : on) onLegendToggle(k); });
+  };
 
   if (collapsed) {
     return (
@@ -66,14 +77,21 @@ export const ClusterLegendControl: React.FC = () => {
 
         <div className="border-t border-slate-700 pt-2">
           <div className="text-[10px] uppercase tracking-wide text-slate-500 mb-1.5">Familjefärger</div>
-          <div className="grid grid-cols-1 gap-1">
-            {FAMILIES.map((f) => (
-              <div key={f.label} className="flex items-center gap-2 text-[11px]">
-                <Dot color={f.color} />
-                <span>{f.label}</span>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 gap-0.5">
+            {FAMILIES.map((f) => {
+              const active = f.keys.some((k) => enabledLayers?.[k]);
+              return (
+                <button key={f.label} onClick={() => clickFamily(f.keys)}
+                  title="Klicka för att tända/släcka lagret på kartan"
+                  className={`flex items-center gap-2 text-[11px] text-left px-1 py-1 rounded transition-colors ${active ? 'bg-slate-700/60 text-white' : 'hover:bg-slate-800 text-slate-200'}`}>
+                  <Dot color={f.color} />
+                  <span className="flex-1">{f.label}</span>
+                  {active && <span className="text-[9px] text-emerald-300">på</span>}
+                </button>
+              );
+            })}
           </div>
+          <p className="text-[10px] text-slate-500 mt-1">Klicka en familj för att tända lagret.</p>
         </div>
 
         <p className="text-[10px] text-slate-500 leading-snug">

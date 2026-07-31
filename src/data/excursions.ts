@@ -46,6 +46,8 @@ export interface Excursion {
   fortressRegion?: string;
   /** Extra intressepunkter att markera på detaljkartan (t.ex. flera lämningar inom samma utflykt). */
   points?: { name: string; lat: number; lng: number; note?: string }[];
+  /** Permanent etikett på huvudpinnen (t.ex. "Broborg") — läses direkt på kartan som på en informationstavla. */
+  mapLabel?: string;
   /** feature_slug i location_hypotheses — tänder lägeshypotes-lagret (monument vs kandidatplatser). */
   hypothesesSlug?: string;
   /** source_uri för motsvarande heritage_sites-rad. Sätts när monumentet OCKSÅ finns i DB → heritage
@@ -145,12 +147,18 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
     region: 'Uppland (Trälhavet–Uppsala)',
     group: 'Uppland & Mälardalen',
     period: 'Järnålder–vikingatid',
-    coords: { lat: 59.55, lng: 18.05 },
+    // Förankrad vid Broborg/Husby-Långhundra — ledens kärna och det som Lantmäteriets
+    // vandringstavla + platsfotona visar. Kartans farled-linje ger hela sträckningen som kontext.
+    coords: { lat: 59.755571, lng: 17.951568 },
+    mapLabel: 'Broborg',
     sv: 'En forntida vattenled från Trälhavet vid Östersjön genom sjöar och åar upp mot Uppsala — kartan visar hela sträckningen. En pulsåder för transport och handel under järnålder och vikingatid, kantad av gravfält och runstenar; kring 500 e.Kr. låg vattnet 6–7 m högre än idag. Vid ledens övre lopp står runstenen U 357 vid Skepptuna kyrka — ett av flera vittnesbörd om bygdens välstånd när leden ännu band samman Uppsala med Östersjön. Vid ledens trängsta passage vakar fornborgen Broborg med sin förglasade mur — resande syntes på långt håll, och med vårdkasar (signaleldar på höjderna) kunde en varning nå Gamla Uppsala, 3–4 mil bort, på några minuter. På andra sidan borgberget ligger Hönsgärde med ett järnåldersgravfält om över 100 gravar; bebyggelsen låg troligen i anslutning till den nuvarande byn. Landhöjningen har sedan dess torrlagt delar av leden.',
     en: 'An ancient waterway from Trälhavet on the Baltic through lakes and streams up towards Uppsala — the map shows the full route. A transport and trade artery during the Iron Age and Viking Age, lined with grave fields and runestones; around AD 500 the water stood 6–7 m higher than today. On the upper reaches stands runestone U 357 by Skepptuna church — one of several witnesses to the district\'s prosperity when the route still linked Uppsala with the Baltic. At the narrowest passage the hillfort Broborg keeps watch with its vitrified wall — travellers were visible from afar, and with beacon fires (vårdkasar) on the heights a warning could reach Gamla Uppsala, 30–40 km away, within minutes. On the far side of the fort hill lies Hönsgärde with an Iron Age grave field of over 100 graves; the settlement probably lay by the present-day village. Land uplift has since dried out parts of the route.',
     monumentTypes: [
       { sv: 'Fornborg', en: 'Hillfort', color: '#ef4444' },
+      { sv: 'Gravhög', en: 'Burial mound', color: '#f97316' },
       { sv: 'Gravfält', en: 'Grave field', color: '#a855f7' },
+      { sv: 'Helig källa', en: 'Holy spring', color: '#22d3ee' },
+      { sv: 'Historia längs leden', en: 'History along the route', color: '#64748b' },
       { sv: 'Farled', en: 'Waterway', color: '#eab308' },
     ],
     tagline: {
@@ -178,13 +186,15 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
     region: 'Vassunda, Uppland',
     group: 'Uppland & Mälardalen',
     period: 'Vendeltid–vikingatid',
-    coords: { lat: 59.72, lng: 17.87 },
+    coords: { lat: 59.755571, lng: 17.951568 }, // verifierat läge (Wikidata Q29886005) — tidigare koord låg ~5 km fel
+    mapLabel: 'Broborg',
     sv: 'En av Upplands mest anmärkningsvärda fornborgar (95×85 m), på ett borgberg ~40 m över den forna Långhundraleden vid Stenby gård. Dubbla vallar: inre ringmur 300 m lång och 8–15 m bred, yttre vall 140 m, två ingångar. Det unika är den medvetet förglasade ringmuren — stenen har hettats till över 1 100 °C i boxliknande "ugnar" längs murens insida och smält samman till ett hårt, glänsande material (gnejs, granit, amfibolit); analyserna (Upplandsmuseet 1992, Arkeologerna 2018:127) visar byggnadsteknik, inte brand. Två byggfaser: grundad under folkvandringstid (kol 1982: ca 375–550), förglasad under vendeltid (kol 2017–18: ca 550–750). Härifrån kontrollerades farleden mot Gamla Uppsala — utkik, trolig tullplats och första länken i vårdkase-kedjan; muren måste ha glänst långt ut över vattnet. Grimsasägnen om hövdingadottern som brände borgen "så att det syntes till Gamla Uppsala" bevarar kanske ett eko av förglasningen. Bo Gräslund har föreslagit en koppling till Beowulfkvädets svear–götar-konflikter — en omdiskuterad hypotes, inte etablerad forskning. Intill ligger Grimsahögen och på andra sidan berget Hönsgärde gravfält (100+ gravar).',
     en: 'One of Uppland\'s most remarkable hillforts (95×85 m), on a crag ~40 m above the former Långhundraleden waterway at Stenby farm. Double ramparts: an inner ring wall 300 m long and 8–15 m wide, an outer bank of 140 m, two entrances. Its unique feature is the deliberately vitrified ring wall — stone heated above 1,100 °C in box-like "furnaces" along the wall\'s inner face until it fused into a hard, glassy mass (gneiss, granite, amphibolite); analyses (Upplandsmuseet 1992; Arkeologerna report 2018:127) show construction technique, not accidental fire. Two building phases: founded in the Migration Period (charcoal 1982: c. 375–550), vitrified in the Vendel Period (charcoal 2017–18: c. 550–750). From here the approach to Gamla Uppsala was controlled — lookout, likely toll point and first link in the beacon-fire chain; the wall must have gleamed far across the water. The Grimsa legend, of the chieftain\'s daughter who burned the fort "so it was seen all the way to Gamla Uppsala", may preserve an echo of the vitrification. Bo Gräslund has proposed a link to the Swede–Geat conflicts of Beowulf — a debated hypothesis, not established scholarship. Beside the fort lies the Grimsa mound, and beyond the hill the Hönsgärde grave field (100+ graves).',
     monumentTypes: [
       { sv: 'Fornborg', en: 'Hillfort', color: '#ef4444' },
-      { sv: 'Gravfält', en: 'Grave field', color: '#a855f7' },
       { sv: 'Gravhög', en: 'Burial mound', color: '#f97316' },
+      { sv: 'Gravfält', en: 'Grave field', color: '#a855f7' },
+      { sv: 'Helig källa', en: 'Holy spring', color: '#22d3ee' },
       { sv: 'Farled', en: 'Waterway', color: '#eab308' },
     ],
     tagline: {

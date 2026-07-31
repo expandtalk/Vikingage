@@ -99,6 +99,14 @@ export const KNOWN_LAYER_KEYS = [
   "viking_roads",
   "beacon_sites",
   "paleo_shoreline",
+  "fort_territories",   // förskatte-Voronoi-territorier kring Ölands fornborgar
+  // Marinarkeologi (useMapMaritimeLayers): noder, haverier, farleder, Hansa
+  "maritime",
+  "maritime_nodes",
+  "ship_losses",
+  "fairways_modern",
+  "fairways_historical",
+  "hanseatic_cities",
   "ecclesiastical_churches",
   // Historiska Lantmäteri-kartor (overlay-rastrar, opt-in) — se historicalMapLayers.ts
   "historical_maps",

@@ -15,7 +15,7 @@ import { LayoutContent } from './layout/LayoutContent';
 import { RegionFindsView } from '../regions/RegionFindsView';
 import { MobileDrawer } from '@/components/ui/mobile-drawer';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import { Filter, Map, BarChart3 } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ExplorerLayoutProps {
@@ -143,14 +143,14 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   const [isSearchMinimized, setIsSearchMinimized] = useState(false);
   const [isTimelineMinimized, setIsTimelineMinimized] = useState(false);
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
-  const [showLegendPanel, setShowLegendPanel] = useState(true); // Legend visas som standard
+  // Legenden visas som standard på desktop; på mobil startar den STÄNGD (bottom-sheet
+  // ska inte täcka kartan vid inladdning — öppnas via Teckenförklaring-knappen).
+  const [showLegendPanel, setShowLegendPanel] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isSearchResultsMinimized, setIsSearchResultsMinimized] = useState(false);
   
   // Mobile-specific state
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [mobileMapOpen, setMobileMapOpen] = useState(false);
-  const [mobileStatsOpen, setMobileStatsOpen] = useState(false);
 
   // Carver state management
   const handleCarverSelect = (carverId: string) => {
@@ -281,28 +281,16 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         />
       )}
 
-      {/* Gudakorten FÖRST i gods-fokus — bilderna är huvudinnehållet, kartan stöd */}
-      {currentFocus === 'gods' && (
-        <GodCardsGrid onFocusDeity={onFocusDeity} />
-      )}
+      {/* Gudakorten flyttade UNDER kartan i gods-fokus (Daniel: visa kartan först) — se efter LayoutContent. */}
 
       {/* Heliga källor & kultplatser: PLATSLISTAN i fokus (Frej/Freja först), klick zoomar kartan */}
       {currentFocus === 'cultSites' && (
         <CultSitesView onNavigate={mapNavigate ? (lat, lng, zoom) => mapNavigate(lat, lng, zoom ?? 12) : undefined} />
       )}
 
-      {/* Mobile Quick Actions */}
+      {/* Mobile Quick Actions — Stats borttaget på mobil (Daniel); "Filters" → "Intresse". */}
       {isMobile && (
         <div className="flex gap-2 justify-center mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setMobileStatsOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <BarChart3 className="h-4 w-4" />
-            Stats
-          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -310,16 +298,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
             className="flex items-center gap-2"
           >
             <Filter className="h-4 w-4" />
-            Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setMobileMapOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Map className="h-4 w-4" />
-            Map
+            Intresse {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Button>
         </div>
       )}
@@ -348,19 +327,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         </div>
       )}
 
-      {/* Mobile Drawers */}
-      <MobileDrawer
-        isOpen={mobileStatsOpen}
-        onClose={() => setMobileStatsOpen(false)}
-        title="Database Statistics"
-      >
-        <StatsSection
-          inscriptionsCount={inscriptionsCount}
-          totalInscriptions={totalInscriptions}
-          isVikingMode={false}
-          selectedTimePeriod="all"
-        />
-      </MobileDrawer>
+      {/* Mobile Drawers (Stats-lådan borttagen på mobil — Daniel) */}
 
       <MobileDrawer
         isOpen={mobileFiltersOpen}
@@ -432,7 +399,14 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         selectedTimePeriod={selectedTimePeriod}
         onInscriptionUpdate={onInscriptionUpdate}
       />
-      
+
+      {/* Gudakorten UNDER kartan i gods-fokus (Daniel: kartan först, bilderna som fördjupning) */}
+      {currentFocus === 'gods' && (
+        <div className="mt-6">
+          <GodCardsGrid onFocusDeity={onFocusDeity} />
+        </div>
+      )}
+
       {/* Timeline Module */}
       {shouldShowTimeline && (
         <div className="mt-6">

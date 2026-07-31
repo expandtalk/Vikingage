@@ -4,6 +4,7 @@ import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin } from "lucide-react";
 import { ARCHAEOLOGICAL_PERIODS } from "@/utils/archaeologicalFinds/periods";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 
 interface MapHeaderProps {
   isVikingMode: boolean;
@@ -50,6 +51,11 @@ export const MapHeader: React.FC<MapHeaderProps> = ({
   selectedTimePeriod = 'viking_age',
   totalInscriptions
 }) => {
+  // På mobil: dölj hela kartrubriken (titel "…Map" + platser/länder/inskrifter-badges)
+  // — tar onödig yta och stats behövs inte i fält (Daniel).
+  const isMobile = useIsMobile();
+  if (isMobile) return null;
+
   // Get correct period info based on selectedTimePeriod
   const periodInfo = getPeriodDisplayInfo(selectedTimePeriod);
   

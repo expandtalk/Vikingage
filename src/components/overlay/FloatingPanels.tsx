@@ -9,10 +9,14 @@ import { ProximityControl } from './ProximityControl';
 import { CustomPointsControl } from './CustomPointsControl';
 import { ElementSpotlightControl } from './ElementSpotlightControl';
 import { RulerControl } from './RulerControl';
+import { NearMeControl } from './NearMeControl';
 import { ChurchYearControl } from './ChurchYearControl';
 import { ClusterLegendControl } from './ClusterLegendControl';
 import { LegendItem } from '@/types/common';
 import { useLanguage } from "@/contexts/LanguageContext";
+import { MobileDrawer } from '@/components/ui/mobile-drawer';
+import { MapLegend } from '../MapLegend';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 
 interface FloatingPanelsProps {
   showFilters: boolean;
@@ -81,6 +85,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
 }) => {
   const { language } = useLanguage();
   const sv = language === 'sv';
+  const isMobile = useIsMobile();
   // Är arts-lagret påslaget? (Sök rekursivt i legend-träden.)
   const findEnabled = (items: LegendItem[] | undefined, id: string): boolean => {
     for (const it of items ?? []) {
@@ -90,6 +95,12 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
     return false;
   };
   const churchesOn = findEnabled(legendItems, 'ecclesiastical_churches');
+  // Platt {id: enabled}-karta ur legendträdet → Near me kan filtrera på intresseprofilen.
+  const enabledLayers: Record<string, boolean> = {};
+  const flattenEnabled = (items: LegendItem[] | undefined) => {
+    for (const it of items ?? []) { enabledLayers[it.id] = !!it.enabled; if (it.children) flattenEnabled(it.children); }
+  };
+  flattenEnabled(legendItems);
   return (
     <>
       <ProximityControl />
@@ -97,7 +108,8 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
       {churchesOn && <ChurchYearControl />}
       <ElementSpotlightControl />
       <RulerControl />
-      <ClusterLegendControl />
+      <NearMeControl enabledLayers={enabledLayers} />
+      <ClusterLegendControl onLegendToggle={onLegendToggle} enabledLayers={enabledLayers} />
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
       {onToggleLegend && !showLegend && (
         <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">
@@ -118,10 +130,24 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
         </div>
       )}
 
-      {/* Enda legenden: dragbar panel. Filtret ligger som en sektion INUTI legenden
+      {/* Mobil: legenden bor i en bottom-sheet (den dragbara desktop-panelen ligger
+          annars på x≈880 = utanför skärmen på en telefon). Stora tap-targets. */}
+      {isMobile && onLegendToggle && onToggleLegend && (
+        <MobileDrawer isOpen={showLegend} onClose={onToggleLegend} title={sv ? 'Teckenförklaring' : 'Legend'}>
+          <MapLegend
+            isVikingMode={isVikingMode}
+            legendItems={legendItems}
+            onToggleItem={onLegendToggle}
+            onShowAll={onShowAll}
+            onHideAll={onHideAll}
+          />
+        </MobileDrawer>
+      )}
+
+      {/* Desktop: den dragbara legenden. Filtret ligger som en sektion INUTI legenden
           (togglas av filter-ikonen i headern) — så det ligger parallellt med legenden
           och ärver panelens ogenomskinliga bakgrund. */}
-      {showLegend && onLegendToggle && onToggleLegend && (
+      {!isMobile && showLegend && onLegendToggle && onToggleLegend && (
         <DraggableLegend
           visible={showLegend}
           minimized={legendMinimized}

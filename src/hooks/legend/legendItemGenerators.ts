@@ -133,6 +133,24 @@ export const generateBasicInscriptionItems = (
     ],
   });
 
+  // Marinarkeologi — maritima noder, haverier, farleder (modern/historisk) + Hansa.
+  // Egen kategori; drivs av useMapMaritimeLayers. Allt AV som standard (tänds av profilen).
+  items.push({
+    id: 'maritime',
+    label: '⚓ Marinarkeologi',
+    color: '#0ea5e9',
+    count: 3 + 1 + 18 + 6 + 22,
+    enabled: itemEnabled(enabledLegendItems, 'maritime'),
+    type: 'category',
+    children: [
+      { id: 'maritime_nodes', label: '⚓ Hamnar/öar/grund (noder)', color: '#22d3ee', count: 3, enabled: itemEnabled(enabledLegendItems, 'maritime_nodes') },
+      { id: 'ship_losses', label: '🚢 Skeppshaverier', color: '#b91c1c', count: 1, enabled: itemEnabled(enabledLegendItems, 'ship_losses') },
+      { id: 'fairways_modern', label: '🌊 Moderna farleder', color: '#0ea5e9', count: 18, enabled: itemEnabled(enabledLegendItems, 'fairways_modern') },
+      { id: 'fairways_historical', label: '🏛️ Historiska leder (Valdemar/Hansa)', color: '#a855f7', count: 6, enabled: itemEnabled(enabledLegendItems, 'fairways_historical') },
+      { id: 'hanseatic_cities', label: '🏰 Hansastäder & Kontor', color: '#eab308', count: 22, enabled: itemEnabled(enabledLegendItems, 'hanseatic_cities') },
+    ],
+  });
+
   // 6. FORNBORGAR - sjätte prioritet
   items.push({
     id: 'viking_fortresses',
@@ -140,6 +158,16 @@ export const generateBasicInscriptionItems = (
     color: '#dc2626',
     count: dbStats?.totalFortresses || 49,
     enabled: itemEnabled(enabledLegendItems, 'viking_fortresses')
+  });
+
+  // Förskatte-borgterritorier (Öland): Voronoi kring fornborgarna = teoretiska
+  // upptagningsområden före socken/skatte-formen. AV som standard.
+  items.push({
+    id: 'fort_territories',
+    label: '⬡ Förskatte-territorier (Öland)',
+    color: '#f59e0b',
+    count: 22,
+    enabled: itemEnabled(enabledLegendItems, 'fort_territories')
   });
 
   // (Vårdkasar ligger under "Kulturlager" som heritage_vardkase — den fristående
@@ -221,7 +249,7 @@ export const generateBasicInscriptionItems = (
   const folkloreChildren = [
     { id: 'heritage_sagensten', label: '🪨 Sägenstenar (namngivna)', color: '#a16207', count: 150, enabled: itemEnabled(enabledLegendItems, 'heritage_sagensten') },
     { id: 'heritage_platstradition', label: 'Platser med tradition', color: '#ca8a04', count: 176, enabled: itemEnabled(enabledLegendItems, 'heritage_platstradition') },
-    { id: 'heritage_grotta', label: '🕳️ Grottor med tradition', color: '#4338ca', count: 21, enabled: itemEnabled(enabledLegendItems, 'heritage_grotta') },
+    { id: 'heritage_grotta', label: '🕳️ Grottor & överhäng', color: '#4338ca', count: 109, enabled: itemEnabled(enabledLegendItems, 'heritage_grotta') },
     { id: 'heritage_jattetroll', label: '👹 Jätte- & trollplatser', color: '#a21caf', count: 11, enabled: itemEnabled(enabledLegendItems, 'heritage_jattetroll') },
     { id: 'heritage_vardtrad', label: '🌳 Vårdträd', color: '#15803d', count: 7, enabled: itemEnabled(enabledLegendItems, 'heritage_vardtrad') },
     { id: 'heritage_offerplats', label: 'Offerplatser', color: '#b91c1c', count: 5, enabled: itemEnabled(enabledLegendItems, 'heritage_offerplats') },

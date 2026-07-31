@@ -3,6 +3,7 @@ import { InteractiveMap } from '../../InteractiveMap';
 import { SearchResultsPanel } from '../../search/SearchResultsPanel';
 import { MapLegend } from '../../MapLegend';
 import { FloatingPanels } from '../../overlay/FloatingPanels';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 
 interface LayoutContentProps {
   shouldShowMap: boolean;
@@ -95,6 +96,7 @@ export const LayoutContent: React.FC<LayoutContentProps> = ({
   selectedTimePeriod = 'all',
   onInscriptionUpdate
 }) => {
+  const isMobile = useIsMobile();
   const [legendMinimized, setLegendMinimized] = React.useState(false);
   const [legendPosition, setLegendPosition] = React.useState({ x: 880, y: 60 });
   const [legendSize, setLegendSize] = React.useState({ width: 340, height: 520 });
@@ -104,13 +106,14 @@ export const LayoutContent: React.FC<LayoutContentProps> = ({
 
   return (
     <div className="flex gap-6 relative">
-      {/* Map Section - Flexible width */}
+      {/* Map Section - Flexible width. På mobil: full-bleed (bryt ut ur container-padding
+          med negativ marginal) + hög karta som fyller skärmen. Desktop oförändrat. */}
       {shouldShowMap && (
-        <div className="flex-1 relative">
+        <div className={`flex-1 relative ${isMobile ? 'w-screen max-w-none ml-[calc(50%-50vw)] mr-[calc(50%-50vw)]' : ''}`}>
           <InteractiveMap
             inscriptions={mapInscriptions}
             onMarkerClick={onMarkerClick}
-            className="w-full h-[600px]"
+            className={isMobile ? 'w-full h-[78dvh]' : 'w-full h-[600px]'}
             isVikingMode={false}
             enabledLegendItems={enabledLegendItems}
             selectedPeriod="all"

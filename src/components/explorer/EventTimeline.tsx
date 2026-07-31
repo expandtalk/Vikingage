@@ -35,6 +35,8 @@ export const EventTimeline: React.FC<Props> = ({ selectedTimePeriod, mapNavigate
   const sv = language === 'sv';
   const { data: events = [] } = useHistoricalEvents();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Kollapsad som standard på mobil (Daniel) — tar annars mycket yta; öppnas med ett klick.
+  const [collapsed, setCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
   const { rows, rangeStart, rangeEnd, ticks } = useMemo(() => {
     const period = GERMANIC_TIME_PERIODS.find((p) => p.id === selectedTimePeriod);
@@ -75,15 +77,16 @@ export const EventTimeline: React.FC<Props> = ({ selectedTimePeriod, mapNavigate
 
   return (
     <div className="mt-4 viking-card rounded-lg p-4">
-      <div className="flex items-baseline justify-between mb-1">
+      <button type="button" onClick={() => setCollapsed((c) => !c)} className="w-full flex items-baseline justify-between mb-1 text-left">
         <h3 className="text-foreground font-semibold text-sm">
           {sv ? 'Händelser i tiden' : 'Events over time'}
         </h3>
         <span className="text-muted-foreground text-xs">
-          {rows.length} {sv ? 'händelser' : 'events'}
+          {collapsed ? '▸ ' : '▾ '}{rows.length} {sv ? 'händelser' : 'events'}
         </span>
-      </div>
+      </button>
 
+      {!collapsed && (<>
       {/* Vald händelse — namn/år/typ + länk till kartan */}
       <div className="h-10 mb-1 text-xs">
         {selected ? (
@@ -167,6 +170,7 @@ export const EventTimeline: React.FC<Props> = ({ selectedTimePeriod, mapNavigate
           ))}
         </div>
       </div>
+      </>)}
     </div>
   );
 };

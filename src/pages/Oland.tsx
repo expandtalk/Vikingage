@@ -12,6 +12,9 @@ import { OlandChristianizationEpochs } from '@/components/OlandChristianizationE
 import { ChurchConsolidationCard } from '@/components/placenames/ChurchConsolidationCard';
 import { MapPin, Route, AlertTriangle, Compass } from 'lucide-react';
 import { useOlandModel, type OlandPoint } from '@/hooks/useOlandModel';
+import { useSolidi } from '@/hooks/useSolidi';
+import { parseCoinCoord } from '@/hooks/useCoins';
+import { supabase } from '@/integrations/supabase/client';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 
@@ -42,10 +45,21 @@ const CONN_LINES: { name: string; coords: [number, number][] }[] = [
   { name: 'Ölands norra udde → Gotland', coords: [[57.355, 17.05], [57.45, 17.55]] },
 ];
 
-const OlandMap: React.FC<{ points: OlandPoint[]; showConnections: boolean }> = ({ points, showConnections }) => {
+const sb = supabase as unknown as { rpc: (fn: string, args?: any) => any };
+
+const OlandMap: React.FC<{
+  points: OlandPoint[];
+  showConnections: boolean;
+  solidi: { lat: number; lng: number; ruler: string | null; find_place: string | null; parish: string | null }[];
+  showSolidi: boolean;
+  showTerritories: boolean;
+}> = ({ points, showConnections, solidi, showSolidi, showTerritories }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const solidiRef = useRef<L.LayerGroup | null>(null);
+  const terrRef = useRef<L.LayerGroup | null>(null);
+  const terrGeoRef = useRef<any[] | null>(null);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   useShorelineOverlay(mapRef, shoreYear);
 
@@ -58,9 +72,52 @@ const OlandMap: React.FC<{ points: OlandPoint[]; showConnections: boolean }> = (
       .bindPopup('<b>Köpingsvik</b><br/><span style="font-size:11px">Öns dominerande vikingatida nod — 89 av 190 runstenar inom 4 km.</span>')
       .addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
+    solidiRef.current = L.layerGroup().addTo(map);
+    terrRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; layerRef.current = null; };
+    return () => { map.remove(); mapRef.current = null; layerRef.current = null; solidiRef.current = null; terrRef.current = null; };
   }, []);
+
+  // Solidi-lager (547 Öland-guldmynt) — små guldpunkter, oberoende av modell-punkterna.
+  useEffect(() => {
+    const layer = solidiRef.current; if (!layer) return;
+    layer.clearLayers();
+    if (!showSolidi) return;
+    solidi.forEach((s) => {
+      L.circleMarker([s.lat, s.lng], { radius: 2.5, color: '#78350f', weight: 0.5, fillColor: '#eab308', fillOpacity: 0.85 })
+        .bindPopup(`<b>${s.ruler || 'Solidus'}</b><br/><span style="font-size:11px;color:#666">${s.find_place || ''}${s.parish ? ` · ${s.parish} sn` : ''}</span>`)
+        .addTo(layer);
+    });
+  }, [solidi, showSolidi]);
+
+  // Borgterritorier (Voronoi) — hämtas en gång, cacheas i ref.
+  useEffect(() => {
+    const layer = terrRef.current; if (!layer) return;
+    let cancelled = false;
+    const draw = (rows: any[]) => {
+      if (cancelled) return;
+      layer.clearLayers();
+      if (!showTerritories) return;
+      for (const f of rows) {
+        let geom; try { geom = JSON.parse(f.geojson); } catch { continue; }
+        const style = f.dated
+          ? { color: '#b45309', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.08 }
+          : { color: '#64748b', weight: 1, dashArray: '4 4', fillColor: '#94a3b8', fillOpacity: 0.04 };
+        L.geoJSON(geom, { style: () => style as any })
+          .bindPopup(`<b>${f.fort_name}</b><br/><span style="font-size:11px">Teoretiskt borgterritorium (Voronoi, schematiskt)${f.dated ? `<br/>Daterad: ${f.period_start ?? ''}–${f.period_end ?? ''}` : '<br/><em>odaterad — vägs lägre</em>'}</span>`)
+          .addTo(layer);
+      }
+    };
+    if (terrGeoRef.current) { draw(terrGeoRef.current); return; }
+    if (!showTerritories) { layer.clearLayers(); return () => { cancelled = true; }; }
+    (async () => {
+      const { data } = await sb.rpc('oland_fort_territories');
+      if (cancelled || !data) return;
+      terrGeoRef.current = data as any[];
+      draw(data as any[]);
+    })();
+    return () => { cancelled = true; };
+  }, [showTerritories]);
 
   useEffect(() => {
     const layer = layerRef.current;
@@ -109,16 +166,30 @@ const Legend: React.FC<{ on: Record<string, boolean>; toggle: (k: string) => voi
       className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${on['connection'] !== false ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
       <span style={{ width: 14, height: 0, borderTop: '2px dashed #f59e0b', display: 'inline-block' }} /> Förbindelser
     </button>
+    <button type="button" onClick={() => toggle('solidi')}
+      className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${on['solidi'] ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
+      <span style={{ width: 10, height: 10, borderRadius: 9999, background: '#eab308', display: 'inline-block' }} /> Solidi (guldmynt)
+    </button>
+    <button type="button" onClick={() => toggle('territory')}
+      className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${on['territory'] ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
+      <span style={{ width: 12, height: 10, background: 'rgba(245,158,11,0.15)', border: '1.5px solid #b45309', display: 'inline-block' }} /> Borgterritorier
+    </button>
     <span className="inline-flex items-center gap-1 text-muted-foreground"><span style={{ width: 10, height: 10, borderRadius: 9999, border: '2px solid #f59e0b', display: 'inline-block' }} /> Köpingsvik-hub</span>
   </div>
 );
 
 const Oland = () => {
   const { data: points = [], isLoading } = useOlandModel();
+  const { data: allSolidi = [] } = useSolidi();
   const [on, setOn] = useState<Record<string, boolean>>({});
   const toggle = (k: string) => setOn((s) => ({ ...s, [k]: s[k] === false ? true : false }));
   const shown = points.filter((p) => on[p.kind] !== false);
   const count = (k: string) => points.filter((p) => p.kind === k).length;
+  // Öland-solidi med giltig koordinat (landscape = Öland).
+  const olandSolidi = React.useMemo(() => allSolidi
+    .filter((s) => (s.landscape || '').toLowerCase().includes('öland'))
+    .map((s) => { const co = parseCoinCoord(s.coordinates as any); return co ? { lat: co.lat, lng: co.lng, ruler: s.ruler, find_place: s.find_place, parish: s.parish } : null; })
+    .filter((x): x is NonNullable<typeof x> => !!x), [allSolidi]);
 
   return (
     <div className="min-h-screen viking-bg">
@@ -191,10 +262,17 @@ const Oland = () => {
         {isLoading ? (
           <p className="text-muted-foreground">Laddar kartan…</p>
         ) : (
-          <OlandMap points={shown} showConnections={on['connection'] !== false} />
+          <OlandMap
+            points={shown}
+            showConnections={on['connection'] !== false}
+            solidi={olandSolidi}
+            showSolidi={!!on['solidi']}
+            showTerritories={!!on['territory']}
+          />
         )}
         <p className="text-xs text-muted-foreground mt-3 opacity-80">
           {points.length} punkter: {count('runestone')} runstenar · {count('hillfort')} fornborgar · {count('church')} kyrkor · {count('find')} guld-/silverfynd · {count('fro_name')} Frö-namn.
+          {' '}Solidi-lagret rymmer {olandSolidi.length} individuella guldmynt (SHM CC BY).
           Källor: Samnordisk runtextdatabas; RAÄ/Fornsök; Historiska museet (guldfynd); Ortnamnsregistret.
         </p>
         <div className="pt-4">

@@ -10,7 +10,73 @@ import { Badge } from '@/components/ui/badge';
 import { Coins as CoinsIcon, MapPin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCoins, parseCoinCoord, type Coin } from '@/hooks/useCoins';
+import { useSolidi } from '@/hooks/useSolidi';
 import { MaktikonTimeline } from '@/components/coins/MaktikonTimeline';
+
+// Romerska/bysantinska solidi (SHM CC BY + Fischer): 1000+ individuella guldmynt, per landskap.
+// Jämförelse Öland↔Gotland + Diocletianus-värdering. Fyndplats sockennivå/by.
+const SolidiSection: React.FC<{ sv: boolean }> = ({ sv }) => {
+  const { data: solidi = [], isLoading } = useSolidi();
+  const mapRef = useRef<L.Map | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const layerRef = useRef<L.LayerGroup>(new L.LayerGroup());
+  const byLand = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const s of solidi) { const l = s.landscape || (sv ? '(okänt läge)' : '(unknown)'); m.set(l, (m.get(l) || 0) + 1); }
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [solidi, sv]);
+  const total = solidi.length;
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [57.2, 17], zoom: 6, scrollWheelZoom: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
+    layerRef.current.addTo(map); mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; };
+  }, []);
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    layerRef.current.clearLayers(); const pts: [number, number][] = [];
+    for (const s of solidi) {
+      const co = parseCoinCoord(s.coordinates as any); if (!co) continue; pts.push([co.lat, co.lng]);
+      L.circleMarker([co.lat, co.lng], { radius: 4, color: '#78350f', fillColor: '#eab308', fillOpacity: 0.7, weight: 1 })
+        .bindPopup(`<strong>${s.ruler || 'Solidus'}</strong>${s.find_place ? `<br/>${s.find_place}` : ''}${s.parish ? `, ${s.parish} sn` : ''}${s.landscape ? `<br/><em>${s.landscape}</em>` : ''}`)
+        .addTo(layerRef.current);
+    }
+    if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 7 });
+    setTimeout(() => map.invalidateSize(), 100);
+  }, [solidi]);
+
+  if (isLoading || total === 0) return null;
+  const grams = Math.round(total * 4.5), den = (total * 1000).toLocaleString('sv-SE'), modii = Math.round(total * 1000 / 100).toLocaleString('sv-SE');
+  return (
+    <section className="mb-8">
+      <h2 className="text-2xl font-semibold text-foreground mb-2 flex items-center gap-2">
+        <span className="inline-block w-3 h-3 rounded-full" style={{ background: '#eab308' }} />
+        {sv ? 'Romerska solidi (folkvandringstid)' : 'Roman solidi (Migration Period)'} <span className="text-muted-foreground text-base">({total})</span>
+      </h2>
+      <p className="text-muted-foreground text-sm mb-4 max-w-3xl">
+        {sv
+          ? `Individuella guldmynt (400–500-tal) ur SHM:s samlingar (CC BY 4.0) + Fischer. Fyndplats på socken-/bynivå. Summerat: ≈ ${grams} g guld ≈ ${den} denarer (Diocletianus) ≈ ${modii} modii vete. Öland och Gotland dominerar — jämför nedan.`
+          : `Individual gold coins (5th c.) from SHM (CC BY 4.0) + Fischer. Find-place at parish/village level. Total: ≈ ${grams} g gold ≈ ${den} denarii ≈ ${modii} modii of wheat.`}
+      </p>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-4">
+        <div ref={containerRef} className="w-full h-[420px] rounded-lg overflow-hidden border border-white/10" />
+        <div className="viking-card rounded-lg border border-border p-3">
+          <div className="text-sm font-semibold text-gold mb-2">{sv ? 'Solidi per landskap' : 'Solidi per province'}</div>
+          <ul className="space-y-1 text-sm max-h-[360px] overflow-y-auto">
+            {byLand.map(([land, n]) => (
+              <li key={land} className="flex justify-between gap-2">
+                <span className="text-slate-200 truncate">{land}</span>
+                <span className="text-amber-300 tabular-nums shrink-0">{n}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 const CATEGORY_LABEL: Record<string, { sv: string; en: string }> = {
   nordic_royal: { sv: 'Nordisk kunglig myntning', en: 'Nordic royal coinage' },
@@ -119,6 +185,8 @@ const Coins = () => {
             </div>
 
             <MaktikonTimeline coins={coins} />
+
+            <SolidiSection sv={sv} />
 
             {byCategory.map(({ key, coins: list }) => (
               <section key={key} className="mb-8">

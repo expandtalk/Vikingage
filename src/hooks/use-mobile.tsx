@@ -1,19 +1,3 @@
-import * as React from "react"
-
-const MOBILE_BREAKPOINT = 768
-
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
-
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
-
-  return !!isMobile
-}
+// Konsoliderad: useMediaQuery.ts är sanningskällan för brytpunkter (mobil ≤ 768 px).
+// Denna fil behålls bara som tunn re-export så äldre importer (t.ex. ui/sidebar) fortsätter fungera.
+export { useIsMobile } from '@/hooks/useMediaQuery';

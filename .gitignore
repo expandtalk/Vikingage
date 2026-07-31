@@ -43,3 +43,14 @@ docs/
 _tmp-*
 ~$*
 .claude/worktrees/
+
+# Genererade interop-dumpar (regenereras via export-dump.mjs)
+exports/*.geojson
+exports/*.ttl
+exports/elite_monuments.json
+exports/viking_cities.json
+exports/trade_route_points.json
+exports/tingsplatser.json
+exports/fornborgar_daterade.json
+exports/manifest.json
+scripts/data/_recon.log

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { useRuler, addRulerPoint, updateRulerPoint, rulerKm } from '@/hooks/useRuler';
+import { useRuler, addRulerPoint, updateRulerPoint, rulerKm, rulerCumKm } from '@/hooks/useRuler';
 import { setProbe, setProbeRadiusKm } from '@/hooks/useProximityProbe';
 
 // Ritar linjalens punkter + linje + avstånd, och fångar kartklick när linjalen är aktiv.
@@ -14,7 +14,7 @@ const lineToProbe = (a: { lat: number; lng: number }, b: { lat: number; lng: num
 };
 
 export const useMapRuler = ({ map, isMapReady }: Props) => {
-  const { active, pts } = useRuler();
+  const { active, mode, pts } = useRuler();
   const layerRef = useRef<L.LayerGroup | null>(null);
 
   // Klick-lyssnare på/av med linjalläget.
@@ -46,7 +46,22 @@ export const useMapRuler = ({ map, isMapReady }: Props) => {
         .addTo(layer);
       m.on('dragend', () => { const ll = m.getLatLng(); updateRulerPoint(i, ll.lat, ll.lng); });
     });
-    if (pts.length === 2) {
+    const kmLabel = (km: number) => L.divIcon({
+      className: 'ruler-label',
+      html: `<div style="background:#78350f;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer">${km.toFixed(1)} km</div>`,
+      iconSize: [0, 0] as unknown as L.PointExpression, iconAnchor: [0, 0],
+    });
+
+    if (mode === 'path' && pts.length >= 2) {
+      // Sträckläge: bana genom alla vertexer + kumulativ km-etikett vid varje punkt
+      // (motsvarar tavlans 0–2–4–…-skala). Total längd visas i linjalpanelen.
+      const cum = rulerCumKm(pts);
+      L.polyline(pts.map((p) => [p.lat, p.lng] as [number, number]), { color: '#f59e0b', weight: 2 }).addTo(layer);
+      pts.forEach((p, i) => {
+        if (i === 0) return; // startpunkt = 0 km, ingen etikett behövs
+        L.marker([p.lat, p.lng], { icon: kmLabel(cum[i]), interactive: false }).addTo(layer);
+      });
+    } else if (mode === 'simple' && pts.length === 2) {
       const km = rulerKm(pts[0], pts[1]);
       const toProbe = (e: L.LeafletMouseEvent) => { L.DomEvent.stop(e); lineToProbe(pts[0], pts[1], km); };
       L.polyline([[pts[0].lat, pts[0].lng], [pts[1].lat, pts[1].lng]], { color: '#f59e0b', weight: 2, dashArray: '6 4' })
@@ -54,16 +69,10 @@ export const useMapRuler = ({ map, isMapReady }: Props) => {
         .on('click', toProbe)
         .addTo(layer);
       const mid: [number, number] = [(pts[0].lat + pts[1].lat) / 2, (pts[0].lng + pts[1].lng) / 2];
-      L.marker(mid, {
-        icon: L.divIcon({
-          className: 'ruler-label',
-          html: `<div style="background:#78350f;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer">${km.toFixed(1)} km</div>`,
-          iconSize: [0, 0] as any, iconAnchor: [0, 0],
-        }),
-      }).on('click', toProbe).addTo(layer);
+      L.marker(mid, { icon: kmLabel(km) }).on('click', toProbe).addTo(layer);
     }
     return () => { layer.clearLayers(); };
-  }, [map, isMapReady, active, pts]);
+  }, [map, isMapReady, active, mode, pts]);
 
   useEffect(() => () => {
     try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }

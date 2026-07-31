@@ -211,8 +211,10 @@ const ExcursionDetail = () => {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors', maxZoom: 19,
     }).addTo(map);
-    L.circleMarker([lat, lng], { radius: 9, color: '#78350f', fillColor: '#eab308', fillOpacity: 0.9, weight: 2 })
+    const mainMarker = L.circleMarker([lat, lng], { radius: 9, color: '#78350f', fillColor: '#eab308', fillOpacity: 0.9, weight: 2 })
       .addTo(map).bindPopup(`<strong>${excursion.name}</strong>`);
+    // Permanent etikett på huvudpinnen (som på en informationstavla) när mapLabel är satt.
+    if (excursion.mapLabel) mainMarker.bindTooltip(excursion.mapLabel, { permanent: true, direction: 'right', offset: [10, 0], className: 'excursion-map-label' });
 
     // Extra intressepunkter (t.ex. skålgropsstenen + gravfältet i samma utflykt)
     const extraPts = excursion.points ?? [];
@@ -239,15 +241,31 @@ const ExcursionDetail = () => {
             ? { color: '#0ea5e9', weight: 4, opacity: 0.9 }          // vattenled = tjock blå linje (syns över strandlinjen)
             : { color: '#eab308', weight: 2, fillColor: '#eab308', fillOpacity: 0.12 },
           pointToLayer: (feature, latlng) => {
-            const typ = feature?.properties?.type ?? feature?.properties?.typ;
-            return L.circleMarker(latlng, { radius: 5, color: '#1c1917', weight: 1, fillColor: colorByType.get(norm(typ)) ?? '#94a3b8', fillOpacity: 0.85 });
+            const p = feature?.properties ?? {};
+            const typ = p.type ?? p.typ;
+            const labeled = !!p.label;
+            // Regionala noder ("Historia längs leden") ritas tystare än de lokala lämningarna.
+            const regional = p.tier === 'regional';
+            const marker = L.circleMarker(latlng, { radius: regional ? 4 : (labeled ? 7 : 5), color: regional ? '#334155' : '#1c1917', weight: 1, fillColor: colorByType.get(norm(typ)) ?? '#94a3b8', fillOpacity: regional ? 0.8 : 0.9 });
+            // Namngivna lämningar får en permanent, läsbar etikett (som Lantmäteriets vandringstavla).
+            if (labeled) marker.bindTooltip(p.label, { permanent: true, direction: 'right', offset: [8, 0], className: regional ? 'excursion-map-label excursion-map-label--regional' : 'excursion-map-label' });
+            return marker;
           },
           onEachFeature: (feature, lyr) => {
             const p = feature?.properties ?? {};
-            lyr.bindPopup(`<strong>${p.type ?? p.typ ?? 'Lämning'}</strong>${p.raa ? `<br/>${p.raa}` : ''}`);
+            lyr.bindPopup(`<strong>${p.label ?? p.type ?? p.typ ?? 'Lämning'}</strong>${p.raa ? `<br/>${p.raa}` : ''}`);
           },
         }).addTo(mapRef.current);
-        try { const b = layer.getBounds(); if (b.isValid()) mapRef.current.fitBounds(b, { padding: [30, 30], maxZoom: 17 }); } catch { /* punktlös */ }
+        // Fokusera kartan på de namngivna lämningarna (den lokala vandringsytan) + huvudpinnen så
+        // etiketterna blir läsbara — farled-linjen sträcker sig vidare som riktningskontext.
+        // Faller tillbaka till hela lagrets bounds om inga namngivna punkter finns.
+        try {
+          const named: [number, number][] = (geo.features ?? [])
+            .filter((f: any) => f?.geometry?.type === 'Point' && f?.properties?.label && f?.properties?.tier !== 'regional')
+            .map((f: any) => [f.geometry.coordinates[1], f.geometry.coordinates[0]]);
+          const focus = named.length ? L.latLngBounds([[lat, lng], ...named]) : layer.getBounds();
+          if (focus.isValid()) mapRef.current.fitBounds(focus, { padding: [55, 55], maxZoom: named.length ? 15 : 17 });
+        } catch { /* punktlös */ }
       })
       .catch(() => { /* ingen geodata */ });
 
@@ -359,7 +377,7 @@ const ExcursionDetail = () => {
 
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-foreground mb-1 flex items-center gap-3"><MapPin className="h-8 w-8 text-gold" />{excursion.name}</h1>
-          {excursion.tagline && <p className="text-gold/90 text-base font-medium mb-3 max-w-3xl">{sv ? excursion.tagline.sv : excursion.tagline.en}</p>}
+          {excursion.tagline && <p className="text-gold text-base font-medium mb-3 max-w-3xl">{sv ? excursion.tagline.sv : excursion.tagline.en}</p>}
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge variant="secondary" className="text-xs">{excursion.region}</Badge>
             <Badge variant="outline" className="text-xs flex items-center gap-1"><Calendar className="h-3 w-3" />{excursion.period}</Badge>
@@ -370,7 +388,7 @@ const ExcursionDetail = () => {
               {excursion.sections.map((s) => (
                 <section key={s.key}>
                   <h2 className="text-lg font-semibold text-gold mb-1">{sv ? s.titleSv : s.titleEn}</h2>
-                  <p className="text-muted-foreground leading-relaxed">{sv ? s.sv : s.en}</p>
+                  <p className="text-slate-200 leading-relaxed">{sv ? s.sv : s.en}</p>
                 </section>
               ))}
             </div>
@@ -403,6 +421,8 @@ const ExcursionDetail = () => {
                 {/* Jordbro-specifik förklaring — övriga utflykter får generisk legendtext */}
                 <p className="text-xs text-muted-foreground mb-3">{excursion.id === 'jordbro-gravfalt'
                   ? (sv ? 'Gravtyper enligt informationsskylten. Kartan visar gravfältets registrerade yta (RAÄ, CC0); de ~1000 enskilda gravarna finns inte som öppen geodata.' : 'Grave types per the information sign. The map shows the registered extent (RAÄ, CC0); the ~1000 individual graves are not open geodata.')
+                  : excursion.id === 'langhundraleden'
+                  ? (sv ? 'Två skikt som på informationstavlorna: de namngivna lämningarna kring Broborg (vandringsytan) och de grå "Historia längs leden"-noderna — en bilburen översikt vars sevärdheter spänner flera epoker (järnålder till Linnés 1700-tal), inte bara vikingatid. Zooma ut för att se hela leden. Den äkta leden upptäcks till fots eller med kanot — mät sträckan med linjalens Sträck-läge (km + dagsresor).' : 'Two layers, as on the information boards: the named remains around Broborg (the walking area) and the grey "history along the route" nodes — a drive-by overview whose sights span many periods (Iron Age to Linnaeus\'s 18th century), not only the Viking Age. Zoom out for the whole route. The real route is discovered on foot or by canoe — measure it with the ruler\'s Path mode (km + days of travel).')
                   : (sv ? 'Färgerna motsvarar kartans markörer.' : 'Colours correspond to the map markers.')}</p>
                 <ul className="space-y-2">
                   {excursion.monumentTypes.map((m) => (
