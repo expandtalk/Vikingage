@@ -59,6 +59,37 @@ så en stads "mörk historia" automatiskt visar dess avrättningar (Daniels prin
 4. **Personer/ätter** (§3) — Grip/Snakenborg som execution_events + noder.
 5. **Avrättning ↔ stad-koppling** (§5).
 
+## 6. Ölands vägnät över tid — diakront forsknings-labb (eget spår)
+Daniel: Öland löper 2 vägar (väst/öst) + tvärvägar; stenarna pekar mot ÖNS centralort (Borgholm),
+inte Stockholm; 1891 års vägreform + metersystemet vände/flyttade milstenar. *"Kan vi se de
+äldsta vägarna och följa dem över tiden med hjälp av vägstenar, milstenar, flygfoto?"*
+
+**Har idag:** 92 milstenar + 137 väghållningsstenar + 2 vägmärken på Öland (RAÄ, bara punkter),
+`viking_roads`/`road_waypoints`/`road_landmarks`, och `inscription_locations` (läges-historik-
+mönster: from_year/to_year/**moved_year**/certainty — samma som behövs för flyttade stenar).
+
+**Nyckelinsikt (som diakrona namnmodellen):** en vägsten är TID- och PLATS-bunden. Modell:
+- **Sten-metadata:** `stone_kind` (milsten | km-sten | väghållningssten | vägvisarsten), `target_place`
+  (Borgholm på Öland / Stockholm på fastlandet), `distance_value` + `unit` (mil→km), `inscription`
+  (initialer/gårdsnummer/år för väghållning), `era`.
+- **Läges-historik:** återanvänd `inscription_locations`-mönstret → `stone_locations` (original vs
+  nuvarande, `moved_year=1891`, orsak "km-reform: vänd + flyttad ~1 km"). Fångar Alböke/Köpings
+  vända milstenar + de saknade (Alböke–Köping, Bredsättra = 0).
+- **Väghållnings-sträckor:** varje bondes ansvarssträcka (lantmäteriets indelning efter markandel) →
+  segment kopplat till stenen (vem ansvarade). System till 1920-talet.
+- **Km-stenar mot Borgholm** (5/10/15) = radiellt distansnät mot centralort — sökbart "stenar mot X".
+
+**Diakron vägrekonstruktion (produkten):** lägg milstenar + väghållningsstenar + runstenar (originalläge
+via inscription_locations) + fornborgar (logistik-nät runt varje borg) + vådakasar + djupa vikar
+(hamnar, jfr norra Öland) + flygfoto → rekonstruera de äldsta vägarna och följ dem över tid. Datera
+väg-segment efter stenarna/features längs dem. Koppla [[oland-model]] (väst-korridoren) + [[maritime-node-fingerprint]].
+
+**Landskapsförändring:** reduktioner/landreformer geometriskt över tid; kristnandet + folkvandringstidens
+fornborgar omformade markanvändning/vägar. Egen tidsskiktad vy.
+
+**Källa:** Karl-Axel Björklund, "Milstolpar på Öland" (2002, 95 stenar inkl. Ölands museum/Solliden/
+Kaffetorpet). Ölands museum Himmelsberga har 2 milstenar (äldre huvudtyp, okänt ursprung).
+
 ## Källkritik
 - Blodbads-dödssiffror varierar mellan krönikor (Kalmar 1525 "1400" = Peder Svart) → lagra som spann + källa, aldrig som fakta.
 - Koordinater ur texterna (Klippholmen 58.27965/14.63448, Klosterholmen 57.19689/16.94073) verifieras mot karta innan ingest.
