@@ -90,6 +90,39 @@ fornborgar omformade markanvändning/vägar. Egen tidsskiktad vy.
 **Källa:** Karl-Axel Björklund, "Milstolpar på Öland" (2002, 95 stenar inkl. Ölands museum/Solliden/
 Kaffetorpet). Ölands museum Himmelsberga har 2 milstenar (äldre huvudtyp, okänt ursprung).
 
+## 7. Stenar med en berättelse — som entitet
+Daniel: *"Vi har stenar också som en entitet. De som har en berättelse kopplad till sig"* —
+t.ex. **Hwita/Vita sten** (gränssten, Stockholm). **Har:** stenen finns redan ("Vita sten,
+Brännkyrka 230:1", heritage_sites) + sägenstenar (`heritage_sagensten`, 150) + rik tema-vokabulär.
+**Saknas:** själva BERÄTTELSEN kopplad till stenen.
+**Design:** narrativ-lager via `theme_links` (polymorf) + `source_texts` (PD-berättelser) ELLER
+ett `story`/`narrative`-fält på en `storied_stones`-vy över namngivna stenar (sägenstenar +
+gränsstenar med historik). Kopplar "Stenar"-legendgruppen + [[tradition-stones-layer]]. Varje
+berättad sten blir ett stopp i stadsvandringarna (§8).
+
+## 8. Self-guided city walks / spökvandring — PRODUKT
+Daniel: self-guided walks (à la city-walks.info) + **spökvandring** (Stockholm Ghost Walk: mord,
+avrättningar, sjukdomar, legender i Gamla stan/Södermalm) + digital självguidad tur + nedladdningsbar
+PDF-karta. Kommersiellt gångbart (Ghost Walk: 247k besökare sedan 2008).
+
+**Har:** `excursions` (76) + rutt-punkt-mönster (`trade_route_points`/`valdemar_route_points`) +
+teman + Near me-rank + mörk historia (§1) + museer + berättade stenar (§7).
+**Design:** `walking_routes` (namn, tema [spökvandring/mörk historia/sevärt], stad, språk, längd/tid,
+PDF-karta-url) + `walk_stops` (ordnad sekvens, refererar BEFINTLIGA entiteter: avrättningsplatser,
+berättade stenar, mörk-historia-events, kyrkor/kyrkogårdar, museer) + per-stopp-berättelse.
+**Produkt:** printbar/mobil rutt-vy; "mörk historia"-tema drar avrättningar + blodbad + pest-platser
+automatiskt. Återanvänder allt: Near me (rutt = kurerad närhet), rank-signalerna, mörk historia.
+Detta binder ihop §1 (blodbad), §7 (stenar) och avrättningarna till en *upplevelse*.
+
+## 9. Vägvisare 1768 — historisk vägkälla
+Daniel har boken *"Vägvisare 1768"* (alla vägar i Sverige) att komplettera med. Som Biurman 1742
+([[map-raster-assets.md]]) — ingest som historisk vägkälla: vägar, avstånd, gästgiverier →
+kompletterar Öland-vägspåret (§6) + nationell vägrekonstruktion. Källa för hur vägnätet såg ut 1768.
+
+## 10. Gustav Vasa … (ofullständigt)
+Daniels sista rad bröts av ("Vi har Gustav Vass b…"). Troligen Gustav Vasa-brev / -register?
+**Ej tolkat** — inväntar förtydligande innan det läggs in.
+
 ## Källkritik
 - Blodbads-dödssiffror varierar mellan krönikor (Kalmar 1525 "1400" = Peder Svart) → lagra som spann + källa, aldrig som fakta.
 - Koordinater ur texterna (Klippholmen 58.27965/14.63448, Klosterholmen 57.19689/16.94073) verifieras mot karta innan ingest.
