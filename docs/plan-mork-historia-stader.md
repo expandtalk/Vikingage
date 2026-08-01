@@ -1,0 +1,65 @@
+# Plan — Mörk historia, förlorade städer & personer
+
+**Bakgrund:** genomgång av Daniels material (2026-08). Georef-planen för gamla Kalmar finns redan
+(`docs/kalmar/lantmateriet-georef-plan.md` — QGIS-arbete, ej kod). Resten nedan saknas.
+
+## 1. Mörk historia / blodbad — SAKNAS, HÖGST VÄRDE
+Daniel: *"Kalmar blodbad borde vara ett event — något som borde vara en enhet i databasen för
+ALLA städer. Mörka historier är populära stadsvandringar."* + *"Avrättningsplatser borde alltid
+vara en del av en stads mörka historia."*
+
+**Design:** `dark_history_events` (eller `historical_events` + `event_type` i {blodbad, massaker,
+avrättning, upplopp, brand} + `city`/`place`-koppling). Fält: namn, år, plats/stad, typ,
+antal_offer (spann), förövare, offer/målgrupp, kontext, koord, källa, wikidata_qid.
+
+**Seed (välbelagda, med källa — siffror flaggas som spann):**
+- Kalmar 1505 (slakt på råd/borgare), **Kalmar stormning 1525** (~1400 döda, Peder Svarts krönika —
+  flaggas osäker), **Kalmars senare blodbad 1599** (22 avrättade, hertig Karl, 16 maj)
+- Stockholms blodbad 1520, Linköpings blodbad 1600, Åbo/Viborgs blodbad 1599, Ronneby blodbad 1564
+- Slaget om Gotland 1321 (~1800), **Öland 1611** (13 avrättade, Kalmarkriget), Sandby borg-massakern
+  (~400-tal — finns redan som fornborg/oland-model)
+- Dackefejden (1542–43, koppla befintliga Dacke-lager)
+
+**Produkt:** "Mörk historia"-lager/tidslinje per stad → stadsvandringar. Koppla till avrättningar (§5).
+
+## 2. Förlorade / medeltida städer — SAKNAS
+Ingen tabell för städer som funnits och försvunnit.
+- **Mönsterås** — stadsprivilegier 1604 (Karl IX), bränd av danskar 1612 & 1677, blev köping under Kalmar.
+- **Hästholmen** (Vättern, S om Omberg) — en av rikets städer på 1300-talet, viktig Vätternhamn;
+  riddaren **Gerhard Snakenborg**s borg på Klippholmen (58.27965, 14.63448); "Birgitta-effekten"
+  (Vadstena tog över) → nedgång.
+
+**Design:** `historical_towns` (namn, koord, privilegie_år, status_över_tid: handelsplats→tingsplats→
+stad→köping, nedgångsorsak, källa). Seed Mönsterås + Hästholmen + fler bortglömda (ej i
+Nationalatlas/Ahlberg — Daniels poäng att de saknas i standardverk).
+
+## 3. Historiska personer / ätter — SAKNAS
+- **Gerhard Snakenborg** (Hästholmen-borgen, Albrekts man) — svar på Daniels fråga: **nej, finns ej**.
+- **Christopher Andersson Grip (Gyllengrip)** + **Johan Larsson Sparre** — avrättade Kalmar 1599 →
+  passar som `execution_events`-poster (`executed_person`-fältet finns). Grips grav (avhugget huvud)
+  på Kalmar gamla kyrkogård = konkret stadsvandrings-stopp.
+- Helena Snakenborg (hovdam Elisabet I) — nod i person-nätet.
+
+**Design:** person-koppling till events/platser (execution_events + ev. estates/holders). Ätterna
+Grip/Snakenborg som `historical_dynasties`-lika noder om vi vill.
+
+## 4. Klosterholmen (Öland) — SAKNAS
+Befäst medeltida storgård (RAÄ) / ev. Vasa-kungsgård, källarmurar kvar (57.19689, 16.94073),
+Hornssjön (avsnörd havsvik, vallgravar + kajplats). Även kallad Nackholm. → `heritage_sites`
+(kurerad, som naturgrottorna) + koppla [[oland-model]].
+
+## 5. Avrättningsplatser ↔ städer — KOPPLING SAKNAS
+`execution_events` finns (rikt schema) men är inte kopplat till städer. Lägg `city`/`town`-referens
+så en stads "mörk historia" automatiskt visar dess avrättningar (Daniels princip).
+
+## Byggordning (rekommenderad)
+1. **Mörk historia-domän** (§1) — störst, gäller alla städer, matar stadsvandringar. Seed blodbaden.
+2. **Klosterholmen** (§4) — snabb, källförd, koppar Öland-modellen.
+3. **Förlorade städer** (§2) — Mönsterås + Hästholmen + fler.
+4. **Personer/ätter** (§3) — Grip/Snakenborg som execution_events + noder.
+5. **Avrättning ↔ stad-koppling** (§5).
+
+## Källkritik
+- Blodbads-dödssiffror varierar mellan krönikor (Kalmar 1525 "1400" = Peder Svart) → lagra som spann + källa, aldrig som fakta.
+- Koordinater ur texterna (Klippholmen 58.27965/14.63448, Klosterholmen 57.19689/16.94073) verifieras mot karta innan ingest.
+- Georef-planen (steg 4) är QGIS/Daniel — ingen fabricerad murgeometri.
