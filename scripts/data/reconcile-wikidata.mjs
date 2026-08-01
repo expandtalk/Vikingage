@@ -19,6 +19,8 @@ const TABLE=(argv.find(a=>a.startsWith('--table='))||'').split('=')[1]||null;
 const LIMIT=Number((argv.find(a=>a.startsWith('--limit='))||'').split('=')[1])||0;
 const env=Object.fromEntries(readFileSync('./.env','utf8').split(/\r?\n/).filter(l=>l&&!l.startsWith('#')&&l.includes('=')).map(l=>{const i=l.indexOf('=');return[l.slice(0,i).trim(),l.slice(i+1).trim().replace(/^["']|["']$/g,'')]}));
 const c=new pg.Client({host:'aws-0-eu-north-1.pooler.supabase.com',port:5432,user:'postgres.mnuifmcjspeaauzehasj',password:env.SUPABASE_DB_PASSWORD,database:'postgres',ssl:{rejectUnauthorized:false}});await c.connect();
+let formErrWarned=false;
+const logFormErr=(e)=>{ if(!formErrWarned){ console.log('  ⚠ form-insert fel (visas en gång):', e.message); formErrWarned=true; } };
 const UA='VikingageBot/1.0 (https://www.vikingage.se; daniel.larsson@expandtalk.se)';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/stenen|runsten|borg|båtgravfält|\(.*?\)|[^a-z0-9åäö]/g,'').trim();
@@ -74,10 +76,10 @@ async function run(table, rows, opts={}){
           await c.query(`update place_names set name_authority='wikidata', normed_name=$2 where id=$1`,[r.id,m.label]);
           normed++;
           if(norm(m.label)!==norm(r.name)){  // OSM-stavningen bevaras som variant av SAMMA ort
-            await c.query(`insert into place_name_forms (place_id,place_name,attested_form,relation_kind,form_kind,source,language_layer,framework,verified)
+            await c.query(`insert into place_name_forms (pn_id,place_name,attested_form,relation_kind,form_kind,source,language_layer,framework,verified)
               values ($1,$2,$3,'same_place','osm_variant','osm','modern_svenska','god-ortnamnssed',false)
-              on conflict (place_id, lower(attested_form), coalesce(relation_kind,'')) do nothing`,
-              [r.id,m.label,r.name]).catch(()=>{});
+              on conflict (coalesce(place_id, pn_id), lower(attested_form), coalesce(relation_kind,'')) do nothing`,
+              [r.id,m.label,r.name]).catch(e=>logFormErr(e));
           }
         }
       }
@@ -90,10 +92,10 @@ async function run(table, rows, opts={}){
         if(!l || l===n || cand.dist>3) continue;
         if(l.includes(n) || n.includes(l)){
           const res=await c.query(`insert into place_name_forms
-            (place_id,place_name,attested_form,relation_kind,form_kind,source,language_layer,framework,external_ref,verified)
+            (pn_id,place_name,attested_form,relation_kind,form_kind,source,language_layer,framework,external_ref,verified)
             values ($1,$2,$3,'related_feature','wikidata_label','reconcile-wikidata','modern_svenska','namn-diakron',$4,false)
-            on conflict (place_id, lower(attested_form), coalesce(relation_kind,'')) do nothing`,
-            [r.id,r.name,cand.label,'https://www.wikidata.org/wiki/'+cand.qid]).catch(()=>({rowCount:0}));
+            on conflict (coalesce(place_id, pn_id), lower(attested_form), coalesce(relation_kind,'')) do nothing`,
+            [r.id,r.name,cand.label,'https://www.wikidata.org/wiki/'+cand.qid]).catch(e=>{logFormErr(e);return{rowCount:0};});
           related+=res.rowCount||0;
         }
       }
