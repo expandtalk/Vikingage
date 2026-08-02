@@ -19,6 +19,7 @@ import { useMapRuler } from './map/useMapRuler';
 import { useMapNearMe } from './map/useMapNearMe';
 import { useMapFieldNav } from './map/useMapFieldNav';
 import { useFieldNavGeolocation } from './map/useFieldNavGeolocation';
+import { useFieldNavTargetTriggers } from './map/useFieldNavTargetTriggers';
 import { useMapLayerViewport } from './map/useMapLayerViewport';
 import { useMapMaritimeLayers } from './map/useMapMaritimeLayers';
 import { useMapMuseums } from './map/useMapMuseums';
@@ -226,6 +227,9 @@ export const useMapInitialization = ({
   // Fältläge (steg 1: bil/vägföljning) — live-position + roterande riktningskägla, opt-in.
   useMapFieldNav({ map: map.current, isMapReady: isMapReadyRef });
   useFieldNavGeolocation();
+
+  // "Led mig hit": popup-knapp (mobil) + window.__fieldNavTarget-brygga → sätter fältläge-mål.
+  useFieldNavTargetTriggers({ map: map.current });
 
   // Per-lager zoom-avsikt (legendens "zooma hit"): punktlager in, farleder/rutter/floder ut.
   useMapLayerViewport({ map: map.current });
