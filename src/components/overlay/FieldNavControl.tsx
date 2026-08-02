@@ -1,13 +1,16 @@
 // src/components/overlay/FieldNavControl.tsx
 import React from 'react';
-import { Navigation2, LocateFixed, X } from 'lucide-react';
+import { Navigation2, LocateFixed, X, Compass } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import { useFieldNav, startFieldNav, stopFieldNav, setFieldNavFollowing } from '@/hooks/useFieldNav';
+import { useFieldNav, startFieldNav, stopFieldNav, setFieldNavFollowing, clearFieldNavTarget } from '@/hooks/useFieldNav';
+import { haversineKm, bearingDeg, compassPoint8 } from '@/utils/geoDistance';
 
 // Fältläge steg 1 (bil): opt-in live-följning med riktningskägla. Bara mobil (Daniel: "mobilläge").
 // Position/följning hanteras av useFieldNavGeolocation + useMapFieldNav; detta är på/av + status.
 const sourceLabel = (s: string | null | undefined) =>
   s === 'gps' ? 'GPS-kurs' : s === 'compass' ? 'Kompass' : 'Söker riktning…';
+const fmtDist = (km: number) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`);
+const UNCERTAINTY_FALLBACK = 'Leder till markörens utsatta läge — kontrollera markörens egen källa/precision.';
 
 // iOS 13+: enhetsorientering (kompass-fallback) kräver behörighet utlöst av en användargest.
 const requestCompassPermission = async () => {
@@ -19,7 +22,7 @@ const requestCompassPermission = async () => {
 
 export const FieldNavControl: React.FC = () => {
   const isMobile = useIsMobile();
-  const { active, pos, following, error } = useFieldNav();
+  const { active, pos, following, error, target } = useFieldNav();
   if (!isMobile) return null; // fältläget är ett mobilläge
 
   if (!active) {
@@ -58,6 +61,27 @@ export const FieldNavControl: React.FC = () => {
           <span className="text-slate-400 tabular-nums">
             {pos?.accuracy != null ? `±${Math.round(pos.accuracy)} m` : '…'}
           </span>
+        </div>
+      )}
+
+      {target && (
+        <div className="mt-2 rounded-lg border border-amber-500/40 bg-amber-500/5 p-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="min-w-0 text-sm text-amber-200 flex items-center gap-1">
+              <Compass className="h-4 w-4 shrink-0" /><span className="truncate">{target.label}</span>
+            </span>
+            <button onClick={clearFieldNavTarget}
+              className="shrink-0 text-[11px] text-slate-300 hover:text-white underline underline-offset-2"
+              style={{ minHeight: 40, paddingInline: 6 }}>Rensa mål</button>
+          </div>
+          {pos ? (
+            <div className="mt-1 text-xs text-amber-100 tabular-nums">
+              ≈ {fmtDist(haversineKm(pos, target))} · {compassPoint8(bearingDeg(pos, target))} ({Math.round(bearingDeg(pos, target))}°)
+            </div>
+          ) : (
+            <div className="mt-1 text-xs text-slate-400">Söker din position…</div>
+          )}
+          <div className="mt-1 text-[11px] text-slate-400">{target.uncertaintyNote ?? UNCERTAINTY_FALLBACK}</div>
         </div>
       )}
 
