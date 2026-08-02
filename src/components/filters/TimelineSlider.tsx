@@ -13,9 +13,13 @@ interface TimelineSliderProps {
   className?: string;
 }
 
-// Timeline ranges from 45000 BCE to 1066 CE
+// Timeline ranges from 45000 BCE to the end of the latest defined period (currently
+// "Modern tid", endYear 2100 — see GERMANIC_TIME_PERIODS). Derived from the data instead
+// of a second hardcoded literal so adding future periods doesn't silently clamp again.
+// Linear scale: extending the end by ~1000 years (1066 → 2100) against a start of
+// -45000 BCE is a ~2% range change — negligible compression of the deep-time periods.
 const TIMELINE_START = -45000;
-const TIMELINE_END = 1066;
+const TIMELINE_END = Math.max(...GERMANIC_TIME_PERIODS.map((p) => p.endYear));
 const TIMELINE_RANGE = TIMELINE_END - TIMELINE_START;
 
 // Key Viking events with navigation coordinates
