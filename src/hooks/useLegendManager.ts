@@ -10,6 +10,13 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { LEGEND_DEFAULTS } from './legend/itemEnabled';
 import type { LegendPreset } from '@/types/legend';
 
+// Persistensnyckel för "Kom ihåg min vy" (localStorage). Exporterad (inte lokal till hooken)
+// så LegendControls' "Återställ till profilens standard"-knapp rensar EXAKT samma nyckel —
+// en duplicerad literal där hade kunnat driva isär (v1→v2-bump missades i den andra filen).
+// Bumpad v1→v2: gamla sparade vyer var profil-först och skulle blanda in ett preset som
+// inte längre är basen (legenden/LEGEND_DEFAULTS är sanningskälla, se seed-effekten nedan).
+export const SAVED_VIEW_KEY = 'vikingage_saved_legend_view_v2';
+
 export const useLegendManager = (
   inscriptions: any[],
   isVikingMode: boolean,
@@ -38,10 +45,7 @@ export const useLegendManager = (
   // lager-synlighet — profil-presetet (roleLayerPreset) är INTE längre basen när ingen
   // focus är aktiv; default:ar i stället från LEGEND_DEFAULTS (profil styr fortf.
   // basemap/paneler/period). Focus (kort/deep-link) vinner alltid, så kuraterade vyer
-  // (resolveProfileLayers) inte skrivs över.
-  // Nyckel bumpad v1→v2: gamla sparade vyer var profil-först och skulle blanda in ett
-  // preset som inte längre är basen.
-  const SAVED_VIEW_KEY = 'vikingage_saved_legend_view_v2';
+  // (resolveProfileLayers) inte skrivs över. Nyckeln (SAVED_VIEW_KEY) är exporterad ovan.
   useEffect(() => {
     let saved: Record<string, boolean> | null = null;
     try { const raw = localStorage.getItem(SAVED_VIEW_KEY); if (raw) saved = JSON.parse(raw); } catch { /* privat läge */ }

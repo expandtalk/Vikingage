@@ -1,10 +1,11 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, RotateCcw, Check } from "lucide-react";
+import { SAVED_VIEW_KEY } from '@/hooks/useLegendManager';
 
-// Din vy sparas automatiskt (useLegendManager, samma nyckel). "Återställ" rensar den sparade
-// överstyrningen och läser om profilens standard — självständigt, utan prop-drilling genom kedjan.
-const SAVED_VIEW_KEY = 'vikingage_saved_legend_view_v1';
+// Din vy sparas automatiskt (useLegendManager, samma nyckel — importerad, inte duplicerad,
+// så de aldrig kan driva isär). "Återställ" rensar den sparade överstyrningen och läser om
+// profilens standard — självständigt, utan prop-drilling genom kedjan.
 const resetToProfileDefault = () => {
   try { localStorage.removeItem(SAVED_VIEW_KEY); } catch { /* privat läge */ }
   window.location.reload();
