@@ -3,6 +3,7 @@ import { Sparkles, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { analyzeInscriptionBySignum } from '@/services/aiService';
+import { useAuth } from '@/contexts/AuthContext';
 import type { RunicAnalysis } from '@/types/runic';
 
 // P5 graf-RAG-panel: analysen körs server-side mot kunskapsgrafens källmaterial
@@ -16,9 +17,23 @@ interface Props {
 type Result = RunicAnalysis & { contextCited?: string[]; caveats?: string[]; contextUsed?: boolean };
 
 export const AIAnalysisPanel: React.FC<Props> = ({ signum, sv }) => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // AI-analys endast för inloggade (Daniel) — utloggade ser en inloggningsuppmaning i stället.
+  if (!user) {
+    return (
+      <div className="rounded-lg border border-border p-4">
+        <p className="text-xs text-muted-foreground flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-gold" />
+          {sv ? 'AI-analys kräver inloggning.' : 'AI analysis requires sign-in.'}
+          <a href="/auth" className="text-gold underline">{sv ? 'Logga in' : 'Sign in'}</a>
+        </p>
+      </div>
+    );
+  }
 
   const run = async () => {
     setLoading(true);
