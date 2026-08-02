@@ -7,6 +7,7 @@ import { filterInscriptionsByLegend } from './useLegendManager/inscriptionFilter
 import { useFocusManager } from './useFocusManager';
 import { useChristianSites } from './useChristianSites';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { LEGEND_DEFAULTS } from './legend/itemEnabled';
 import type { LegendPreset } from '@/types/legend';
 
 export const useLegendManager = (
@@ -33,17 +34,32 @@ export const useLegendManager = (
     [enabledLegendItems, selectedTimePeriod]
   );
 
-  // "Kom ihåg min vy": spara/återställ legend-läget lokalt. När användaren INTE kommit
-  // via en focus-vy (kort/deep-link) och har en sparad vy → återställ den ovanpå profilen.
-  // Focus (kort) vinner alltid, så kuraterade vyer inte skrivs över.
-  const SAVED_VIEW_KEY = 'vikingage_saved_legend_view_v1';
+  // "Kom ihåg min vy": spara/återställ legend-läget lokalt. Legenden är sanningskälla för
+  // lager-synlighet — profil-presetet (roleLayerPreset) är INTE längre basen när ingen
+  // focus är aktiv; default:ar i stället från LEGEND_DEFAULTS (profil styr fortf.
+  // basemap/paneler/period). Focus (kort/deep-link) vinner alltid, så kuraterade vyer
+  // (resolveProfileLayers) inte skrivs över.
+  // Nyckel bumpad v1→v2: gamla sparade vyer var profil-först och skulle blanda in ett
+  // preset som inte längre är basen.
+  const SAVED_VIEW_KEY = 'vikingage_saved_legend_view_v2';
   useEffect(() => {
     let saved: Record<string, boolean> | null = null;
     try { const raw = localStorage.getItem(SAVED_VIEW_KEY); if (raw) saved = JSON.parse(raw); } catch { /* privat läge */ }
-    if (!currentFocus && saved && typeof saved === 'object') {
-      setEnabledLegendItems({ ...roleLayerPreset, ...saved });
-    } else {
+    if (currentFocus) {
+      // Focus bär sin kurerade override via resolveProfileLayers — behåll den oförändrad.
       setEnabledLegendItems({ ...roleLayerPreset });
+    } else if (saved && typeof saved === 'object') {
+      // Sparad vy vinner rakt av — profil-presetet ligger INTE längre under den.
+      setEnabledLegendItems({ ...saved });
+    } else {
+      // Ingen focus, ingen sparad vy: seeda EXPLICIT med LEGEND_DEFAULTS (inte ett tomt
+      // {}). Flera kart-hooks (t.ex. useMapHeritageSites) läser enabledLegendItems[key]
+      // === true / !== false RAKT AV på rå-staten — de går INTE via itemEnabled()s
+      // fallback. Ett tomt objekt hade osynliggjort opt-in-lager som ska vara PÅ som
+      // standard (t.ex. heritage_grotta) och hållit deras legend-kategori hopfälld
+      // (LegendCategory visar bara barn när kategorins enabled === true). Genom att
+      // seeda med LEGEND_DEFAULTS får både legend-UI:t och kart-hooksen samma sanning.
+      setEnabledLegendItems({ ...LEGEND_DEFAULTS });
     }
   }, [roleLayerPreset, currentFocus]);
 

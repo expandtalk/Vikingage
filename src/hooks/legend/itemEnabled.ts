@@ -67,6 +67,14 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
   heritage_dos: false,
   heritage_bildsten: false,
   heritage_labyrint: false, // stenlabyrinter/trojaborgar (RAÄ), mestadels odaterade/sena
+  heritage_grotta: true, // grottor & överhäng PÅ som standard (Äventyr-innehåll) — Daniel 2026-08-01
+  // Förälder-gate för "Folktradition & sägen" (heritage_grottas kategori). Måste vara PÅ
+  // här: useMapHeritageSites parentOn() läser enabledLegendItems.heritage_folklore RAKT AV
+  // (inte via itemEnabled), och LegendCategory visar bara barn när kategorins egen enabled
+  // är true (processLegendItems gör samma råa === true-koll för toppnivå-poster). Utan denna
+  // rad seedas grottan visserligen på kartan, men kategorin ligger hopfälld/otogglingsbar i
+  // legend-UI:t. Sätt INTE de andra folktros-barnen (jättar/offerplatser/vårdträd) true.
+  heritage_folklore: true,
 
   heritage_kyrka: false,
   heritage_kapell: false,
