@@ -480,6 +480,17 @@ export const generateBasicInscriptionItems = (
     children: estateChildren,
   });
 
+  // Spökvandring (Kalmar, pilot) — link-typ, ingen switch/räknare. Öppnar den publicerade
+  // mobilsidan i ny flik. Rubriceras under "Äventyr & upplevelser" (MapLegend.tsx
+  // LEGEND_THEMES). Href hämtad från src/pages/Kalmar.tsx (samma URL som promo-kortet där) —
+  // ska INTE hittas på.
+  items.push({
+    id: 'spokvandring_kalmar',
+    type: 'link',
+    label: '🕯️ Kalmar spökvandring (pilot)',
+    href: 'https://claude.ai/code/artifact/8ce236d2-f48a-46fa-9558-54bcf5cea2c0',
+  });
+
   // Add Christian sites if provided
   if (christianSites && christianSites.length > 0) {
     const christianItems = generateChristianSitesLegendItems(christianSites, t, enabledLegendItems);

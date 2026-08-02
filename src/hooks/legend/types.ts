@@ -14,10 +14,13 @@ export interface RunicInscription {
 export interface LegendItem {
   id: string;
   label: string;
-  color: string;
-  count: number;
-  enabled: boolean;
-  type?: 'primary' | 'category' | 'subcategory';
+  // color/count/enabled är valfria: link-typen (extern länk, t.ex. spökvandringen)
+  // har varken switch, räknare eller lagerfärg — bara etikett + href.
+  color?: string;
+  count?: number;
+  enabled?: boolean;
+  type?: 'primary' | 'category' | 'subcategory' | 'link';
+  href?: string;
   children?: LegendItem[];
 }
 

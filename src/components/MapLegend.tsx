@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Map, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Map, ToggleLeft, ToggleRight, ExternalLink } from 'lucide-react';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LegendItemComponent } from './legend/LegendItem';
 import { LegendCategory } from './legend/LegendCategory';
@@ -42,8 +42,7 @@ const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   { label: 'Museer & samlingar', ids: ['museums'] },
   { label: 'Vetenskap & tid', ids: ['cat_geo'] },
   { label: 'Kartor & ortnamn', ids: ['historical_maps'] },
-  // Task 4: spökvandringslänk läggs här
-  { label: 'Äventyr & upplevelser', ids: [] },
+  { label: 'Äventyr & upplevelser', ids: ['spokvandring_kalmar'] },
 ];
 
 export const MapLegend: React.FC<MapLegendProps> = ({
@@ -65,7 +64,10 @@ export const MapLegend: React.FC<MapLegendProps> = ({
     return sum + total;
   }, 0);
   
-  const allEnabled = legendItems.every(item => item.enabled);
+  // Länk-poster (t.ex. spökvandringen) har ingen enabled/switch — de ska inte räknas
+  // med i "alla på?"-bedömningen, annars låser en enda länk fast "Visa alla".
+  const toggleableItems = legendItems.filter(item => item.type !== 'link');
+  const allEnabled = toggleableItems.length > 0 && toggleableItems.every(item => item.enabled);
 
   const handleToggleAll = () => {
     if (allEnabled && onHideAll) {
@@ -88,6 +90,23 @@ export const MapLegend: React.FC<MapLegendProps> = ({
   const renderItem = (item: MapLegendProps['legendItems'][number]) => (
     item.type === 'category'
       ? <LegendCategory key={item.id} item={item} onToggleItem={onToggleItem} expandedCategories={expandedCategories} onCategoryToggle={handleCategoryToggle} />
+      : item.type === 'link'
+      ? (
+        // Länk-typ: ingen switch/räknare — öppnar href i ny flik. Stilkonsekvent med
+        // LegendItemComponents "på"-rad (bg-slate-800/90 + border), men klickbar hela raden.
+        <a
+          key={item.id}
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between gap-2 py-2 px-2 rounded-md bg-slate-800/90 border border-slate-600/50 shadow-sm text-gray-100 hover:bg-slate-700/90 hover:text-white transition-all duration-200"
+        >
+          <span className="text-xs flex-1 truncate leading-4 font-medium" title={item.label}>
+            {item.label}
+          </span>
+          <ExternalLink className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+        </a>
+      )
       : <LegendItemComponent key={item.id} item={item} onToggleItem={onToggleItem} />
   );
   const themedIds = new Set(LEGEND_THEMES.flatMap(t => t.ids));
