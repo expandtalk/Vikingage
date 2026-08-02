@@ -1,5 +1,5 @@
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import L from 'leaflet';
 import { useMapInstance } from './useMapInstance';
 import { useMapTileLayer } from './useMapTileLayer';
@@ -112,11 +112,14 @@ export const useMapInitialization = ({
   }, [map, isMapReady]);
 
   // Safe layer addition function
-  const safelyAddLayer = (layer: L.Layer): boolean => {
+  // useCallback (dep []) — annars nyskapas funktionen varje render och triggar
+  // (via useEffect-deps i lager-hooksen) en teardown+refetch-loop mot Supabase
+  // som fryser kartan när flera lager är på samtidigt.
+  const safelyAddLayer = useCallback((layer: L.Layer): boolean => {
     if (!map.current || !isMapReadyRef.current) {
       return false;
     }
-    
+
     try {
       map.current.addLayer(layer);
       return true;
@@ -124,7 +127,7 @@ export const useMapInitialization = ({
       console.error('Error adding layer:', error);
       return false;
     }
-  };
+  }, []);
 
   // Expose refresh function via callback
   useEffect(() => {

@@ -42,73 +42,78 @@ const getFortressIcon = (fortressType: string) => {
   }
 };
 
+// Skalade upp ~1.9× (2026-08): fornborgs-ikonerna var ≤24px, dvs. mindre än eller
+// lika med runstensmarkören (24×24) → gick inte att skilja fornborg från runsten på
+// kartan. Skalfaktorn väljs så att den MINSTA resulterande dimensionen (linear_defense
+// höjd 14 / coastal_defense 15) hamnar tydligt över 24, inte bara marginellt över.
+// Relativ storleksordning mellan undertyperna är oförändrad.
 const FORTRESS_CONFIGS = {
   ring_fortress: {
     color: '#8b4513', // Saddle brown - jordnära brun färg
-    size: { width: 16, height: 16 },
+    size: { width: 30, height: 30 },
     border: '2px solid white',
-    iconSize: [18, 18] as [number, number],
-    anchor: [9, 9] as [number, number],
+    iconSize: [34, 34] as [number, number],
+    anchor: [17, 17] as [number, number],
     label: 'Ring fortress',
     textColor: 'text-amber-700',
     bgColor: 'bg-amber-100'
   },
   hillfort: {
     color: '#a0522d', // Sienna - varm jordton
-    size: { width: 14, height: 14 },
+    size: { width: 27, height: 27 },
     border: '1px solid white',
-    iconSize: [16, 16] as [number, number],
-    anchor: [8, 8] as [number, number],
+    iconSize: [30, 30] as [number, number],
+    anchor: [15, 15] as [number, number],
     label: 'Hillfort',
     textColor: 'text-amber-700',
     bgColor: 'bg-amber-100'
   },
   longphort: {
     color: '#6b8e23', // Olive drab - mörk olivgrön
-    size: { width: 14, height: 14 },
+    size: { width: 27, height: 27 },
     border: '1px solid white',
-    iconSize: [16, 16] as [number, number],
-    anchor: [8, 8] as [number, number],
+    iconSize: [30, 30] as [number, number],
+    anchor: [15, 15] as [number, number],
     label: 'Longphort',
     textColor: 'text-green-700',
     bgColor: 'bg-green-100'
   },
   royal_center: {
     color: '#cd853f', // Peru - varm gyllenbrun
-    size: { width: 15, height: 15 },
+    size: { width: 29, height: 29 },
     border: '1px solid white',
-    iconSize: [17, 17] as [number, number],
-    anchor: [8.5, 8.5] as [number, number],
+    iconSize: [32, 32] as [number, number],
+    anchor: [16, 16] as [number, number],
     label: 'Royal center',
     textColor: 'text-yellow-700',
     bgColor: 'bg-yellow-100'
   },
   coastal_defense: {
     color: '#4682b4', // Steel blue - mörk stålblå
-    size: { width: 13, height: 13 },
+    size: { width: 25, height: 25 },
     border: '1px solid white',
-    iconSize: [15, 15] as [number, number],
-    anchor: [7.5, 7.5] as [number, number],
+    iconSize: [29, 29] as [number, number],
+    anchor: [14.5, 14.5] as [number, number],
     label: 'Coastal defense',
     textColor: 'text-blue-700',
     bgColor: 'bg-blue-100'
   },
   trading_post: {
     color: '#daa520', // Goldenrod - guldbrun för handelsplatser
-    size: { width: 15, height: 15 },
+    size: { width: 29, height: 29 },
     border: '1px solid white',
-    iconSize: [17, 17] as [number, number],
-    anchor: [8.5, 8.5] as [number, number],
+    iconSize: [32, 32] as [number, number],
+    anchor: [16, 16] as [number, number],
     label: 'Trading post',
     textColor: 'text-yellow-800',
     bgColor: 'bg-yellow-200'
   },
   linear_defense: {
     color: '#708090', // Slate gray - för linjära försvarsvallar
-    size: { width: 18, height: 12 },
+    size: { width: 34, height: 23 },
     border: '1px solid white',
-    iconSize: [20, 14] as [number, number],
-    anchor: [10, 7] as [number, number],
+    iconSize: [38, 27] as [number, number],
+    anchor: [19, 13.5] as [number, number],
     label: 'Linear defense',
     textColor: 'text-gray-700',
     bgColor: 'bg-gray-100'

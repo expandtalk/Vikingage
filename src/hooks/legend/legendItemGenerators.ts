@@ -137,7 +137,7 @@ export const generateBasicInscriptionItems = (
   // Egen kategori; drivs av useMapMaritimeLayers. Allt AV som standard (tänds av profilen).
   items.push({
     id: 'maritime',
-    label: '⚓ Marinarkeologi',
+    label: '⚓ Farleder, noder & Hansa',
     color: '#0ea5e9',
     count: 3 + 1 + 18 + 6 + 22,
     enabled: itemEnabled(enabledLegendItems, 'maritime'),
@@ -271,7 +271,7 @@ export const generateBasicInscriptionItems = (
     { id: 'heritage_sparr', label: '⛓️ Spärranläggningar (pålspärrar)', color: '#831843', count: 63, enabled: itemEnabled(enabledLegendItems, 'heritage_sparr') },
   ];
   items.push({
-    id: 'heritage_marine', label: '⚓ Marinarkeologi', color: '#0369a1',
+    id: 'heritage_marine', label: '⚓ Vrak & spärranläggningar (RAÄ)', color: '#0369a1',
     count: marineChildren.reduce((s, c) => s + c.count, 0),
     enabled: itemEnabled(enabledLegendItems, 'heritage_marine'),
     type: 'category', children: marineChildren,

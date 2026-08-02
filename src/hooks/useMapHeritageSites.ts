@@ -308,7 +308,12 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
 
       if (z >= ZOOM_INDIVIDUAL) {
         const periodActive = !!periodYearRange(selectedTimePeriod);
-        (data as any[]).forEach((r) => {
+        // Tak på enskilda markörer: datan är redan viewport-begränsad (sites_in_bbox),
+        // men om ALLA typer tänds samtidigt vid låg-men-över-tröskel-zoom kan raderna
+        // ändå bli tusentals → tusentals L.marker+bindPopup skapas synkront och fryser
+        // kartan. Rita de första 2500, hoppa över resten (ingen dataförlust i DB, bara
+        // ett render-tak).
+        (data as any[]).slice(0, 2500).forEach((r) => {
           // Grottor: per-objekt textdatering-filter (döljer bara daterade som ligger utanför perioden).
           if (periodActive && CAVE_TYPES.has(r.raa_type)) {
             const [ps, pe] = parsePeriodText(r.period);

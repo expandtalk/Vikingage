@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import { createPlaceMedallion } from '@/utils/map/placeMarker';
+import { registerLayerBounds } from '@/utils/map/layerViewport';
 
 // Marinarkeologi-lager (Kalmarsund-forskningen): maritima noder (hamn/ö/grund) med
 // FINGERPRINT-popup, skeppshaverier, farleder (moderna + historiska/Hansa) och
@@ -28,8 +29,11 @@ const NODE_STYLE: Record<string, { icon: string; color: string }> = {
 export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safelyAddLayer }: Props) => {
   const nodesRef = useRef<L.Layer | null>(null);
   const lossesRef = useRef<L.Layer | null>(null);
-  const fairwaysRef = useRef<L.Layer | null>(null);
+  const fairwaysRef = useRef<L.LayerGroup | null>(null);
   const hansaRef = useRef<L.Layer | null>(null);
+  // Spårar av→på-övergång så vi bara auto-zoomar ut när farledslagret PRECIS tänds.
+  const prevModern = useRef(false);
+  const prevHist = useRef(false);
 
   const onNodes = !!enabledLegendItems['maritime_nodes'];
   const onLosses = !!enabledLegendItems['ship_losses'];
@@ -80,7 +84,7 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
       if (cancelled || !data) return;
       const g = L.layerGroup();
       for (const w of data as any[]) {
-        L.marker([w.lat, w.lng], { icon: createPlaceMedallion({ color: '#b91c1c', icon: 'ship', label: '', size: 24, className: 'vp-medallion--wreck' }) })
+        L.marker([w.lat, w.lng], { icon: createPlaceMedallion({ color: '#b91c1c', icon: 'wreck', label: '', size: 24, className: 'vp-medallion--wreck' }) })
           .bindPopup(`<strong>${esc(w.name || 'Skeppslämning')}</strong><br/>Orsak: ${esc(w.cause)} <em>(${esc(w.cause_confidence)})</em>${w.cause_basis ? `<br/><span style="color:#666">${esc(w.cause_basis)}</span>` : ''}${w.depth_m != null ? `<br/>Djup: ${w.depth_m} m` : ''}`)
           .addTo(g);
       }
@@ -89,9 +93,15 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
     return () => { cancelled = true; if (lossesRef.current) { try { m.removeLayer(lossesRef.current); } catch { /* noop */ } lossesRef.current = null; } };
   }, [map, isMapReady, onLosses, safelyAddLayer]);
 
-  // 3) Farleder (moderna + historiska/Hansa) — GeoJSON via RPC, stil per fairway_kind
+  // 3) Farleder (moderna + historiska/Hansa) — GeoJSON via RPC, stil per fairway_kind.
+  // Ritas i egen pane 'fairways' (z-index 650 > markerPane 600) så vattenvägarna ligger ÖVER
+  // punktlagren (Daniel). Auto-zoomar ut till hela nätet när lagret precis tänds (rätt utzoomat läge).
   useEffect(() => {
     const m = map; if (!m || !isMapReady.current) return;
+    if (!m.getPane('fairways')) { m.createPane('fairways'); const p = m.getPane('fairways'); if (p) p.style.zIndex = '650'; }
+    // Av→på-övergång fångas synkront (effekten är async nedan).
+    const justEnabled = (onModern && !prevModern.current) || (onHist && !prevHist.current);
+    prevModern.current = onModern; prevHist.current = onHist;
     if (fairwaysRef.current) { try { m.removeLayer(fairwaysRef.current); } catch { /* noop */ } fairwaysRef.current = null; }
     if (!onModern && !onHist) return;
     let cancelled = false;
@@ -109,11 +119,20 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
           : (f.fairway_kind === 'hanseatic'
             ? { color: '#eab308', weight: 3, dashArray: '8 5' }
             : { color: '#a855f7', weight: 3, dashArray: '4 4' });
-        L.geoJSON(geom, { style: () => style as any })
+        L.geoJSON(geom, { pane: 'fairways', style: () => style as any })
           .bindPopup(`<strong>${esc(f.name || f.fairway_kind)}</strong><br/><em>${esc(f.period)}</em>${f.note ? `<br/><span style="color:#666;font-size:11px">${esc(f.note)}</span>` : ''}`)
           .addTo(g);
       }
-      if (safelyAddLayer(g)) fairwaysRef.current = g;
+      if (safelyAddLayer(g)) {
+        fairwaysRef.current = g;
+        // Registrera bounds så legendens "zooma hit" kan rama in nätet (båda id → samma grupp).
+        const getB = () => { try { const b = g.getBounds(); return b.isValid() ? b : null; } catch { return null; } };
+        registerLayerBounds('fairways_modern', getB);
+        registerLayerBounds('fairways_historical', getB);
+        if (justEnabled) {
+          try { const b = g.getBounds(); if (b.isValid()) m.flyToBounds(b, { maxZoom: 9, padding: [40, 40], duration: 0.8 }); } catch { /* noop */ }
+        }
+      }
     })();
     return () => { cancelled = true; if (fairwaysRef.current) { try { m.removeLayer(fairwaysRef.current); } catch { /* noop */ } fairwaysRef.current = null; } };
   }, [map, isMapReady, onModern, onHist, safelyAddLayer]);
