@@ -17,6 +17,9 @@ import { useMapSpeciesMarkers } from './map/useMapSpeciesMarkers';
 import { useMapElementMarkers } from './map/useMapElementMarkers';
 import { useMapRuler } from './map/useMapRuler';
 import { useMapNearMe } from './map/useMapNearMe';
+import { useMapFieldNav } from './map/useMapFieldNav';
+import { useFieldNavGeolocation } from './map/useFieldNavGeolocation';
+import { useMapLayerViewport } from './map/useMapLayerViewport';
 import { useMapMaritimeLayers } from './map/useMapMaritimeLayers';
 import { useMapMuseums } from './map/useMapMuseums';
 import { useMapFortTerritories } from './map/useMapFortTerritories';
@@ -219,6 +222,13 @@ export const useMapInitialization = ({
 
   // "Near me": min position + sökradie + närhetsträffar (mobilt närhetsuppslag).
   useMapNearMe({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Fältläge (steg 1: bil/vägföljning) — live-position + roterande riktningskägla, opt-in.
+  useMapFieldNav({ map: map.current, isMapReady: isMapReadyRef });
+  useFieldNavGeolocation();
+
+  // Per-lager zoom-avsikt (legendens "zooma hit"): punktlager in, farleder/rutter/floder ut.
+  useMapLayerViewport({ map: map.current });
 
   // Marinarkeologi: maritima noder (fingerprint-popup), haverier, farleder, Hansa.
   useMapMaritimeLayers({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, safelyAddLayer });
