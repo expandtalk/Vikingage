@@ -22,8 +22,16 @@ const positionIcon = (headingDeg: number | null) => {
   });
 };
 
+// Målmarkör för "Led mig hit" (amber). Egen färg/form så den inte förväxlas med min position.
+const targetIcon = () => L.divIcon({
+  className: 'field-nav-target',
+  iconSize: [26, 26],
+  iconAnchor: [13, 13],
+  html: `<div style="width:16px;height:16px;margin:5px;border-radius:9999px;background:#f59e0b;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)"></div>`,
+});
+
 export const useMapFieldNav = ({ map, isMapReady }: Props) => {
-  const { active, pos, following } = useFieldNav();
+  const { active, pos, following, target } = useFieldNav();
   const layerRef = useRef<L.LayerGroup | null>(null);
   const flownRef = useRef(false); // första fixen per session → zooma in en gång
 
@@ -60,8 +68,18 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
       try { map.panTo([pos.lat, pos.lng], { animate: true, duration: 0.4 }); } catch { /* noop */ }
     }
 
+    // "Led mig hit"-mål: amber markör + streckad ledlinje från min position till målet.
+    if (target) {
+      L.marker([target.lat, target.lng], { icon: targetIcon(), interactive: false, keyboard: false }).addTo(layer);
+      if (pos) {
+        L.polyline([[pos.lat, pos.lng], [target.lat, target.lng]], {
+          color: '#f59e0b', weight: 2, dashArray: '6 5', opacity: 0.85,
+        }).addTo(layer);
+      }
+    }
+
     return () => { layer.clearLayers(); };
-  }, [map, isMapReady, active, pos, following]);
+  }, [map, isMapReady, active, pos, following, target]);
 
   // Städa lagret när kartan byts/avmonteras.
   useEffect(() => () => {
