@@ -74,11 +74,14 @@ export const FieldNavControl: React.FC = () => {
               className="shrink-0 text-[11px] text-slate-300 hover:text-white underline underline-offset-2"
               style={{ minHeight: 40, paddingInline: 6 }}>Rensa mål</button>
           </div>
-          {pos ? (
-            <div className="mt-1 text-xs text-amber-100 tabular-nums">
-              ≈ {fmtDist(haversineKm(pos, target))} · {compassPoint8(bearingDeg(pos, target))} ({Math.round(bearingDeg(pos, target))}°)
-            </div>
-          ) : (
+          {pos ? (() => {
+            const brg = bearingDeg(pos, target);
+            return (
+              <div className="mt-1 text-xs text-amber-100 tabular-nums">
+                ≈ {fmtDist(haversineKm(pos, target))} · {compassPoint8(brg)} ({Math.round(brg)}°)
+              </div>
+            );
+          })() : (
             <div className="mt-1 text-xs text-slate-400">Söker din position…</div>
           )}
           <div className="mt-1 text-[11px] text-slate-400">{target.uncertaintyNote ?? UNCERTAINTY_FALLBACK}</div>

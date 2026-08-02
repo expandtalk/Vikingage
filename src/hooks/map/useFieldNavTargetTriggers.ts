@@ -12,7 +12,8 @@ const BTN_STYLE =
   'background:transparent;color:#f59e0b;cursor:pointer;font-size:11px';
 
 const leadTo = (lat: number, lng: number, label: string, uncertaintyNote?: string) => {
-  if (!getFieldNavSnapshot().active) startFieldNav();
+  const isMobileViewport = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+  if (!getFieldNavSnapshot().active && isMobileViewport) startFieldNav();
   setFieldNavTarget({ lat, lng, label, uncertaintyNote });
 };
 
@@ -49,7 +50,7 @@ export const useFieldNavTargetTriggers = ({ map }: { map: L.Map | null }) => {
       btn.type = 'button';
       btn.textContent = '🧭 Led mig hit';
       btn.style.cssText = BTN_STYLE;
-      btn.addEventListener('click', () => { leadTo(ll.lat, ll.lng, label); map.closePopup(popup); });
+      btn.addEventListener('click', (ev) => { ev.stopPropagation(); leadTo(ll.lat, ll.lng, label); map.closePopup(popup); });
       container.appendChild(btn);
     };
     map.on('popupopen', onPopupOpen);
