@@ -11,23 +11,39 @@ import { MapLegendProps } from './legend/types';
 
 // Tematisk ordning för legenden (mobil) — grupperar besläktade lager så listan blir läsbar
 // i stället för "alla lösa toggles, sedan alla kategorier" (Daniel: "ser rörigt ut").
+//
+// VIKTIGT: ids här måste vara TOPPNIVÅ-id:n ur den faktiska trädstrukturen som
+// generateBasicInscriptionItems (legendItemGenerators.ts) bygger — filtret nedan
+// (theme.ids.includes(item.id)) matchar bara på toppnivå, inte i children. Efter
+// "FULL KATEGORI-GRUPPERING"-steget i den filen är de riktiga toppnivå-id:na:
+// cat_runic, runbleck_only, cat_church, heritage_sites, heritage_folklore,
+// heritage_marine, religious_places, water_routes, cat_defense, cat_folk, cat_geo,
+// historical_maps, maritime, fort_territories, heritage_stones, museums, estates.
+// (Barn som t.ex. coins/thing_sites/place_names ligger nästlade under cat_geo/
+// heritage_sites och kan INTE placeras separat utan att ändra generatorlogiken —
+// se not i legendItemGenerators.ts vid cat_geo.)
 const LEGEND_THEMES: { label: string; ids: string[] }[] = [
-  { label: 'Runor', ids: ['runic_inscriptions', 'runestone_density', 'runbleck_only'] },
-  { label: 'Gravar & fornlämningar', ids: ['heritage_sites', 'picture_stone_reuse'] },
+  { label: 'Runor', ids: ['cat_runic', 'runbleck_only'] },
+  { label: 'Gravar & fornlämningar', ids: ['heritage_sites'] },
   // Egen sten-grupp (form): milstenar, gränsstenar, väghållnings-, bild- och sägenstenar (mytiska).
   { label: 'Stenar', ids: ['heritage_stones'] },
+  { label: 'Kyrkor & kristendom', ids: ['cat_church'] },
   // Hednisk kult (gudar/Freja/offerplatser) + folktradition & sägen (sägenstenar, jätte-/troll,
   // vårdträd, GROTTOR) hör ihop under tro/myt — skilt från kristna kyrkor.
-  { label: 'Kult, tro & myter', ids: ['religious_places', 'pagan_gods', 'heritage_folklore'] },
-  { label: 'Kyrkor & kristendom', ids: ['ecclesiastical_churches', 'heritage_kyrka', 'heritage_kapell', 'heritage_kloster', 'heritage_kyrkoruin'] },
-  { label: 'Försvar & bevakning', ids: ['viking_fortresses', 'fort_territories', 'stake_barriers'] },
-  { label: 'Makt & samhälle', ids: ['estates', 'thing_sites', 'viking_regions', 'folk_groups'] },
+  { label: 'Kult, tro & myter', ids: ['religious_places', 'heritage_folklore'] },
+  { label: 'Försvar & bevakning', ids: ['cat_defense', 'fort_territories'] },
+  { label: 'Makt & samhälle', ids: ['cat_folk', 'estates'] },
   { label: 'Marinarkeologi', ids: ['heritage_marine', 'maritime'] },   // vrak, vraktradition, pålspärrar, noder, haverier
-  { label: 'Farleder & vatten', ids: ['water_routes', 'paleo_shoreline'] },
-  { label: 'Mynt & fynd', ids: ['coins', 'solidus_die_links', 'archaeological_finds'] },
+  { label: 'Farleder & vatten', ids: ['water_routes'] },
+  // OBS: "Mynt & fynd" har inget eget toppnivå-id att peka på just nu — coins/
+  // solidus_die_links ligger nästlade i cat_geo (→ Vetenskap & tid nedan). Se not
+  // i legendItemGenerators.ts. Sektionen renderas tom tills det löses.
+  { label: 'Mynt & fynd', ids: [] },
   { label: 'Museer & samlingar', ids: ['museums'] },
-  { label: 'Vetenskap & tid', ids: ['adna_sites', 'species_introductions', 'germanic_timeline'] },
-  { label: 'Kartor & ortnamn', ids: ['historical_maps', 'place_names'] },
+  { label: 'Vetenskap & tid', ids: ['cat_geo'] },
+  { label: 'Kartor & ortnamn', ids: ['historical_maps'] },
+  // Task 4: spökvandringslänk läggs här
+  { label: 'Äventyr & upplevelser', ids: [] },
 ];
 
 export const MapLegend: React.FC<MapLegendProps> = ({
