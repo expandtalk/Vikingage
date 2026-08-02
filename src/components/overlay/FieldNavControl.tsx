@@ -56,7 +56,7 @@ export const FieldNavControl: React.FC = () => {
         <div className="mt-1 flex items-center justify-between gap-2 text-xs">
           <span className="text-emerald-300">{sourceLabel(pos?.headingSource)}</span>
           <span className="text-slate-400 tabular-nums">
-            {pos?.accuracy ? `±${Math.round(pos.accuracy)} m` : '…'}
+            {pos?.accuracy != null ? `±${Math.round(pos.accuracy)} m` : '…'}
           </span>
         </div>
       )}

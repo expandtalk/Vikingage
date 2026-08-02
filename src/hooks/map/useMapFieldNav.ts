@@ -46,8 +46,8 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
     if (!active || !pos) return;
 
     // GPS-noggrannhetsring (hederlighet: visa hur säker positionen är)
-    if (pos.accuracy) {
-      L.circle([pos.lat, pos.lng], { radius: pos.accuracy, color: '#2563eb', weight: 1, fillColor: '#2563eb', fillOpacity: 0.12, dashArray: '4 3' }).addTo(layer);
+    if (pos.accuracy != null) {
+      L.circle([pos.lat, pos.lng], { radius: pos.accuracy, color: '#2563eb', weight: 1, fillColor: '#2563eb', fillOpacity: 0.12, dashArray: '4 3', interactive: false }).addTo(layer);
     }
     // Position + riktningskägla (icke-interaktiv — ska inte fånga klick)
     L.marker([pos.lat, pos.lng], { icon: positionIcon(pos.headingDeg), interactive: false, keyboard: false }).addTo(layer);
@@ -65,7 +65,10 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
 
   // Städa lagret när kartan byts/avmonteras.
   useEffect(() => () => {
-    try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }
+    try {
+      if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current);
+      layerRef.current = null;
+    }
     catch { /* noop */ }
   }, [map]);
 };
