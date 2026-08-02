@@ -20,6 +20,7 @@ const Fortresses = lazy(() => import("./pages/Fortresses"));
 const FortressDetail = lazy(() => import("./pages/FortressDetail"));
 const Carvers = lazy(() => import("./pages/Carvers"));
 const RoyalChronicles = lazy(() => import("./pages/RoyalChronicles"));
+const Researchers = lazy(() => import("./pages/Researchers"));
 
 // These datasets are canonically the Explore focus views; the old standalone
 // routes redirect there (decision 2026-07-16: Explore is the single destination).
@@ -97,6 +98,8 @@ const App = () => (
                   <Route path="/sv/artefakter" element={<Artefacts />} />
                   <Route path="/sv/kungakronikor" element={<RoyalChronicles />} />
                   <Route path="/sv/borgar" element={<Fortresses />} />
+                  <Route path="/forskare" element={<Researchers />} />
+                  <Route path="/researchers" element={<Researchers />} />
 
                   {/* Consolidated to Explore focus views (EN + SV old paths redirect) */}
                   <Route path="/viking-names" element={<Navigate to="/explore?focus=names" replace />} />
