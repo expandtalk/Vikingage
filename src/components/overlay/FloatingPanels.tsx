@@ -10,6 +10,7 @@ import { CustomPointsControl } from './CustomPointsControl';
 import { ElementSpotlightControl } from './ElementSpotlightControl';
 import { RulerControl } from './RulerControl';
 import { NearMeControl } from './NearMeControl';
+import { FieldNavControl } from './FieldNavControl';
 import { ChurchYearControl } from './ChurchYearControl';
 import { ClusterLegendControl } from './ClusterLegendControl';
 import { LegendItem } from '@/types/common';
@@ -108,10 +109,11 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
           (Daniel). Dölj dem på mobil — Near me + teckenförklaringen räcker där. */}
       {!isMobile && <ProximityControl />}
       {!isMobile && <CustomPointsControl />}
-      {churchesOn && <ChurchYearControl />}
+      {!isMobile && churchesOn && <ChurchYearControl />}
       {!isMobile && <ElementSpotlightControl />}
       {!isMobile && <RulerControl />}
       <NearMeControl enabledLayers={enabledLayers} />
+      <FieldNavControl />
       {!isMobile && <ClusterLegendControl onLegendToggle={onLegendToggle} enabledLayers={enabledLayers} />}
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
       {onToggleLegend && !showLegend && (
