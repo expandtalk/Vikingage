@@ -120,9 +120,15 @@ const GLYPH: Record<string, string> = {
   flame:  '<path d="M13 3c.5 3.5 3.5 5 3.5 8.5a4.5 4.5 0 0 1-9 0c0-2 .8-3.2 1.8-4.2.1 1.2.8 2.2 1.9 2.2 1.4 0 1.3-2.4-.2-6.5z" fill="#fff"/>',
   spiral: '<path d="M12 12a1.7 1.7 0 1 1 1.9 1.7 3.6 3.6 0 0 1-5-3.4 5.6 5.6 0 0 1 9.4-3.6" stroke="#fff" stroke-width="1.9" fill="none" stroke-linecap="round"/>',
   cave:   '<path d="M4 20v-6a8 8 0 0 1 16 0v6h-4.5v-5.5a3.5 3.5 0 0 0-7 0V20z" fill="#fff"/>',
+  // Kapell: litet gavelhus med kors i nocken (skiljt från kyrkans rena kors).
+  chapel: '<path d="M7 20V10l5-3.6 5 3.6v10h-3.4v-4.4h-3.2V20z" fill="#fff"/><path d="M12 6.3V3M10.7 4.1h2.6" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/>',
+  // Avrättningsplats: galge (lodrätt stolpe, tvärarm, snara).
+  gallows:'<path d="M6.5 21V3.8H15" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.4 3.8v3.3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><circle cx="14.4" cy="9" r="1.7" stroke="#fff" stroke-width="1.3" fill="none"/>',
+  // Labyrint (trojaborg): koncentriska kvadrater med ingång underifrån.
+  labyrinth:'<rect x="4.5" y="4.5" width="15" height="15" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/><rect x="8.5" y="8.5" width="7" height="7" rx="1.2" stroke="#fff" stroke-width="1.5" fill="none"/><path d="M12 19.5v-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>',
 };
 const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
-  kyrka: 'cross', kapell: 'cross', kloster: 'cross', kyrkoruin: 'cross', klosterruin: 'cross',
+  kyrka: 'cross', kapell: 'chapel', kloster: 'cross', kyrkoruin: 'cross', klosterruin: 'cross',
   'vägmärke': 'sign', milstolpe: 'sign', 'väghållningssten': 'sign', 'gränsmärke': 'sign',
   'gravfält': 'mounds',
   'stensättning': 'ring', domarring: 'ring',
@@ -136,6 +142,7 @@ const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
   'jätte-/trollplats': 'spark', 'offerplats': 'spark', 'plats med tradition': 'spark',
   'grotta med tradition': 'cave', 'Grotta/överhäng': 'cave', 'naturgrotta': 'cave',
   'Källa med tradition': 'drop', 'vårdkase': 'flame', 'hällristning': 'spiral',
+  'labyrint': 'labyrinth', 'Avrättningsplats': 'gallows',
 };
 
 // KATEGORIFÄRG (familj) — diskens färg. Ikonen (TYPE_GLYPH) skiljer typ inom familjen.
@@ -151,6 +158,8 @@ const CATEGORY_COLOR: Record<string, string> = {
   'Källa med tradition': '#0ea5e9',
   'vårdkase': '#f59e0b',
   'hällristning': '#9a3412',
+  'labyrint': '#0d9488',
+  'Avrättningsplats': '#3f3f46',
 };
 const catColor = (t: string) => CATEGORY_COLOR[t] || TYPE_COLOR[t] || '#475569';
 
