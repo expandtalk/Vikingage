@@ -45,7 +45,13 @@ export const useMapSolidi = ({ map, enabledLegendItems, isMapReady, selectedTime
         if (!m) return;
         const lng = parseFloat(m[1]); const lat = parseFloat(m[2]);
         if (!isFinite(lat) || !isFinite(lng)) return;
-        if (!overlapsPeriod(selectedTimePeriod, r.issued_from, r.issued_to)) return;
+        // Solidi är per definition folkvandringstida guldmynt (~355–550 e.Kr., corpus-spannet).
+        // De flesta posterna är odaterade; overlapsPeriod visar odaterat i ALLA perioder, så utan
+        // fallback läcker de in i sten-/bronsåldern. Odaterade faller på OBJEKTKLASSENS belagda
+        // horisont (inte en gissning per mynt) → korrekt dolda i förhistorien, synliga i järnålder.
+        const solFrom = r.issued_from ?? 355;
+        const solTo = r.issued_to ?? 550;
+        if (!overlapsPeriod(selectedTimePeriod, solFrom, solTo)) return;
 
         // Stämpellänk-linjer till namngivna regioner i die_link_context.
         if (r.die_link_sides && r.die_link_context) {
