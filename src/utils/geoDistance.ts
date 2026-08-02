@@ -31,3 +31,21 @@ export const nearestWithin = <T>(
     .filter((x) => x.km <= radiusKm)
     .sort((a, b) => a.km - b.km)
     .slice(0, limit);
+
+// Initial bäring (grader medurs från norr, [0,360)) från a till b. Standard atan2-formeln.
+export function bearingDeg(a: LatLng, b: LatLng): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const phi1 = toRad(a.lat);
+  const phi2 = toRad(b.lat);
+  const dLambda = toRad(b.lng - a.lng);
+  const y = Math.sin(dLambda) * Math.cos(phi2);
+  const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLambda);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
+
+// 8-strecks kompassros på svenska (N i mitten av sitt sektorintervall).
+const COMPASS_8 = ['N', 'NÖ', 'Ö', 'SÖ', 'S', 'SV', 'V', 'NV'];
+export function compassPoint8(deg: number): string {
+  const norm = ((deg % 360) + 360) % 360;
+  return COMPASS_8[Math.round(norm / 45) % 8];
+}
