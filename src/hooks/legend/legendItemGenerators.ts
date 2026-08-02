@@ -582,14 +582,11 @@ export const generateBasicInscriptionItems = (
     // OBS: place_names (Ortnamn) ligger MEDVETET utanför cat_geo — den lyfts till egen
     // topp-nivå-post så den alltid går att stänga av med ETT klick (Daniel: namnelementen
     // svämmar över och "gick inte att stänga av" när de låg nästlade i en kategori).
-    // OBS (legend-taxonomi, MapLegend.tsx LEGEND_THEMES): den här gruppens barn spänner
-    // över flera intressen (Vetenskap & tid: adna_sites/species_introductions · Mynt & fynd:
-    // coins/solidus_die_links · Makt & samhälle: thing_sites · Farleder & vatten:
-    // paleo_shoreline) men är EN toppnivå-post → kan bara bo under EN rubrik utan att
-    // gruppindelningen ändras. Placerad under "Vetenskap & tid" (flest barn där); "Mynt &
-    // fynd" har därför inget eget toppnivå-id att peka på just nu. Framtida uppdelning i
-    // egna cat_*-grupper (utanför denna uppgifts scope) skulle lösa det.
-    group('cat_geo', '🔬 Vetenskap, tid & fynd', '#65a30d', ['species_introductions', 'picture_stone_reuse', 'coins', 'solidus_die_links', 'thing_sites', 'adna_sites', 'paleo_shoreline']),
+    // "Mynt & fynd" (cat_coins): coins/solidus_die_links utbrutna ur cat_geo till egen
+    // toppnivå-post (tidigare nästlade i cat_geo utan eget id → MapLegend.tsx
+    // LEGEND_THEMES-rubriken "Mynt & fynd" hade inget att peka på och renderades tom).
+    group('cat_coins', '🪙 Mynt & fynd', '#d4af37', ['coins', 'solidus_die_links']),
+    group('cat_geo', '🔬 Vetenskap & tid', '#65a30d', ['species_introductions', 'picture_stone_reuse', 'thing_sites', 'adna_sites', 'paleo_shoreline']),
     keep('historical_maps'),
   ];
   const grouped = ordered.filter(Boolean) as LegendItem[];

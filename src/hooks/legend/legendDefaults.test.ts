@@ -21,6 +21,10 @@ const DEFAULT_ENABLED: Record<string, boolean> = {
   cat_folk: true, folk_groups: true, viking_regions: false, cat_geo: true, place_names: false,
   species_introductions: false, picture_stone_reuse: false,
   coins: false, adna_sites: false, paleo_shoreline: false,
+  // cat_coins ("Mynt & fynd"): ny toppnivå-kategori — coins/solidus_die_links utbrutna ur
+  // cat_geo till egen grupp (se legendItemGenerators.ts). Wrapper-kategorier default-PÅ via
+  // group()/itemEnabled(..., true); ändrar INTE coins/solidus_die_links egna defaults (kvar AV).
+  cat_coins: true,
   // GIS-analyslager tillagt (runstenstäthet per härad) — medvetet AV som standard.
   runestone_density: false,
   // Maktsäten (ekonomihistorikerns lager) — medvetet AV som standard.
@@ -37,14 +41,27 @@ const DEFAULT_ENABLED: Record<string, boolean> = {
   heritage_gravfalt: false, heritage_stensattning: false, heritage_domarring: false,
   heritage_stenkammargrav: false, heritage_hallristning: false, heritage_trindyxa: false,
   heritage_skeppsgrav: false, heritage_kyrkoruin: false, heritage_vagmarke: false,
-  heritage_folklore: false, heritage_sagensten: false, heritage_vardtrad: false,
-  heritage_grotta: false, heritage_jattetroll: false, heritage_offerplats: false,
+  // heritage_folklore: förälder-gate PÅ (LEGEND_DEFAULTS, commit-historik), barnen kvar AV.
+  heritage_folklore: true, heritage_sagensten: false, heritage_vardtrad: false,
+  heritage_grotta: true, heritage_jattetroll: false, heritage_offerplats: false,
   heritage_platstradition: false, heritage_marine: false, heritage_vrak: false,
   heritage_vraktradition: false, heritage_sparr: false,
   // Historiska kartöverlägg + tingsplatser + solidus die-länkar — alla opt-in (AV).
   historical_maps: false, histmap_generalstab: false, histmap_haradsekonomiska: false,
   histmap_karta10k: false, histmap_relief: false, histmap_topo: false,
   thing_sites: false, solidus_die_links: false,
+  // PRE-EXISTING GAP (upptäckt vid testkörning för denna uppgift, ORELATERAT till
+  // cat_coins-ändringen ovan): dessa lager fanns redan i generatorn/LEGEND_DEFAULTS
+  // (marinarkeologi-lagret, museer, runbleck-filtret, spökvandrings-länken — tidigare
+  // commits) men saknades i detta golden-master-snapshot, så testet var redan rött innan
+  // denna uppgift påbörjades. Värdena nedan är verifierade mot faktisk
+  // generateBasicInscriptionItems-output (inte gissade).
+  maritime: false, maritime_nodes: false, ship_losses: false, fairways_modern: false,
+  fairways_historical: false, hanseatic_cities: false, museums: false, runbleck_only: false,
+  fort_territories: false,
+  // Länk-typ (spökvandringen) har ingen switch → enabled är alltid undefined, inte en
+  // riktig på/av-default.
+  spokvandring_kalmar: undefined as unknown as boolean,
 };
 
 const buildMap = () => {

@@ -17,11 +17,11 @@ import { MapLegendProps } from './legend/types';
 // (theme.ids.includes(item.id)) matchar bara på toppnivå, inte i children. Efter
 // "FULL KATEGORI-GRUPPERING"-steget i den filen är de riktiga toppnivå-id:na:
 // cat_runic, runbleck_only, cat_church, heritage_sites, heritage_folklore,
-// heritage_marine, religious_places, water_routes, cat_defense, cat_folk, cat_geo,
-// historical_maps, maritime, fort_territories, heritage_stones, museums, estates.
-// (Barn som t.ex. coins/thing_sites/place_names ligger nästlade under cat_geo/
-// heritage_sites och kan INTE placeras separat utan att ändra generatorlogiken —
-// se not i legendItemGenerators.ts vid cat_geo.)
+// heritage_marine, religious_places, water_routes, cat_defense, cat_folk, cat_coins,
+// cat_geo, historical_maps, maritime, fort_territories, heritage_stones, museums, estates.
+// (Barn som t.ex. thing_sites/place_names ligger nästlade under cat_geo/heritage_sites
+// och kan INTE placeras separat utan att ändra generatorlogiken. coins/solidus_die_links
+// flyttades UT ur cat_geo till egen cat_coins — se not i legendItemGenerators.ts.)
 const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   { label: 'Runor', ids: ['cat_runic', 'runbleck_only'] },
   { label: 'Gravar & fornlämningar', ids: ['heritage_sites'] },
@@ -35,10 +35,9 @@ const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   { label: 'Makt & samhälle', ids: ['cat_folk', 'estates'] },
   { label: 'Marinarkeologi', ids: ['heritage_marine', 'maritime'] },   // vrak, vraktradition, pålspärrar, noder, haverier
   { label: 'Farleder & vatten', ids: ['water_routes'] },
-  // OBS: "Mynt & fynd" har inget eget toppnivå-id att peka på just nu — coins/
-  // solidus_die_links ligger nästlade i cat_geo (→ Vetenskap & tid nedan). Se not
-  // i legendItemGenerators.ts. Sektionen renderas tom tills det löses.
-  { label: 'Mynt & fynd', ids: [] },
+  // Mynt & fynd: coins/solidus_die_links, nu egen toppnivå-kategori (cat_coins) —
+  // utbrutna ur cat_geo (se not i legendItemGenerators.ts).
+  { label: 'Mynt & fynd', ids: ['cat_coins'] },
   { label: 'Museer & samlingar', ids: ['museums'] },
   { label: 'Vetenskap & tid', ids: ['cat_geo'] },
   { label: 'Kartor & ortnamn', ids: ['historical_maps'] },
