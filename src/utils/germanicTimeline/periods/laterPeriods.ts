@@ -264,5 +264,83 @@ export const LATER_PERIODS: GermanicTimelinePeriod[] = [
         { name: 'Staraja Ladoga', lat: 60.0, lng: 32.3, significance: 'Första svenska handelsstation i Ryssland' }
       ]
     }
+  },
+
+  // Medeltid (1050-1520)
+  {
+    id: 'medieval',
+    name: 'Medeltid (1050-1520)',
+    nameEn: 'Middle Ages (1050-1520)',
+    startYear: 1050,
+    endYear: 1520,
+    description: 'Kristnandet fullbordas, Kalmarunionen (1397), medeltida kyrkobyggande.',
+    descriptionEn: 'Christianization completed, Kalmar Union (1397), medieval church building.',
+    color: '#7B5C3E',
+    keyFeatures: ['Kristnandet fullbordas', 'Kalmarunionen (1397)', 'Medeltida kyrkobyggande']
+  },
+
+  // Vasatid & stormakt (1520-1700)
+  {
+    id: 'vasa_greatpower',
+    name: 'Vasatid & stormakt (1520-1700)',
+    nameEn: 'Vasa Era & Great Power Period (1520-1700)',
+    startYear: 1520,
+    endYear: 1700,
+    description: 'Gustav Vasa, reformationen, stormaktstiden.',
+    descriptionEn: 'Gustav Vasa, the Reformation, the Swedish Empire era.',
+    color: '#B8860B',
+    keyFeatures: ['Gustav Vasa', 'Reformationen', 'Stormaktstiden']
+  },
+
+  // 1700-tal (1700-1799)
+  {
+    id: 'century_18',
+    name: '1700-tal (1700-1799)',
+    nameEn: '18th century (1700-1799)',
+    startYear: 1700,
+    endYear: 1799,
+    description: 'Frihetstiden och gustavianska tiden.',
+    descriptionEn: 'The Age of Liberty and the Gustavian era.',
+    color: '#5B7C99',
+    keyFeatures: ['Frihetstiden', 'Gustavianska tiden']
+  },
+
+  // 1800-tal (1800-1899)
+  {
+    id: 'century_19',
+    name: '1800-tal (1800-1899)',
+    nameEn: '19th century (1800-1899)',
+    startYear: 1800,
+    endYear: 1899,
+    description: 'Industrialisering, emigration, unionsupplösningen med Norge (1905).',
+    descriptionEn: 'Industrialization, emigration, dissolution of the union with Norway (1905).',
+    color: '#556B6B',
+    keyFeatures: ['Industrialisering', 'Emigration', 'Unionsupplösning (1905)']
+  },
+
+  // 1900-tal (1900-1999)
+  {
+    id: 'century_20',
+    name: '1900-tal (1900-1999)',
+    nameEn: '20th century (1900-1999)',
+    startYear: 1900,
+    endYear: 1999,
+    description: 'Världskrigens epok, folkhemmet, EU-medlemskap (1995).',
+    descriptionEn: 'Era of the world wars, the Swedish welfare state, EU membership (1995).',
+    color: '#3B6E8F',
+    keyFeatures: ['Världskrigen', 'Folkhemmet', 'EU-medlemskap (1995)']
+  },
+
+  // Modern tid (2000-2100)
+  {
+    id: 'modern',
+    name: 'Modern tid (2000-)',
+    nameEn: 'Modern era (2000-)',
+    startYear: 2000,
+    endYear: 2100,
+    description: '2000-talet och framåt.',
+    descriptionEn: '21st century and onward.',
+    color: '#2A9D8F',
+    keyFeatures: ['2000-talet och framåt']
   }
 ];

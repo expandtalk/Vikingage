@@ -10,6 +10,12 @@ export const PERIOD_RANGES: Record<string, { start: number; end: number }> = {
   migration_period: { start: 400, end: 550 },
   vendel_period: { start: 550, end: 793 },
   viking_age: { start: 793, end: 1066 },
+  medieval: { start: 1050, end: 1520 },
+  vasa_greatpower: { start: 1520, end: 1700 },
+  century_18: { start: 1700, end: 1799 },
+  century_19: { start: 1800, end: 1899 },
+  century_20: { start: 1900, end: 1999 },
+  modern: { start: 2000, end: 2100 },
 };
 
 // Äldsta kända runinskrifterna är från ~150 e.Kr. (urnordiska, äldre futhark).

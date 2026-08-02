@@ -9,7 +9,10 @@
 // Detta är en ren härledning ovanpå enabledLegendItems — rå-staten rörs inte, så
 // när användaren går tillbaka till vikingatid återställs alla lager-val.
 
-const FULL_PERIODS = new Set(['vendel_period', 'viking_age']);
+const FULL_PERIODS = new Set([
+  'vendel_period', 'viking_age',
+  'medieval', 'vasa_greatpower', 'century_18', 'century_19', 'century_20', 'modern',
+]);
 
 // Leaf-gate-nycklar som kartlager-hooksen faktiskt läser (inte display-kategorier).
 export const EARLY_ALLOWED_LAYERS = new Set<string>([
