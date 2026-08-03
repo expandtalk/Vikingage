@@ -14,7 +14,9 @@ interface Saint {
   name: string;
   life: string;
   note: string;
-  href?: string;   // egen sida om sådan finns
+  place?: string;      // konkret plats vi HAR i datan
+  href?: string;       // egen sida, eller djuplänk till kartan (?center=lat,lng&zoom=)
+  linkLabel?: string;  // default "Läs mer →"
 }
 const SAINTS: Saint[] = [
   {
@@ -32,6 +34,17 @@ const SAINTS: Saint[] = [
     name: 'Sankta Birgitta',
     life: 'Birgitta Birgersdotter, ca 1303–1373',
     note: 'Grundare av Birgittinorden och Vadstena kloster; kanoniserad 1391. Ett av Europas skyddshelgon. Hennes uppenbarelser (Revelationes) fick vidsträckt spridning. (Folkligt "S:t Britta".)',
+    place: 'Birgittakyrkan i Kalmar (grundad 1440, numera historisk)',
+    href: '/explore?center=56.6562,16.354&zoom=15',
+    linkLabel: 'Visa på kartan →',
+  },
+  {
+    name: 'Sankt Knut',
+    life: 'Knut den helige (Knut IV av Danmark), † 1086',
+    note: 'Danmarks skyddshelgon, populär vid Östersjön. Vid Gråborg på Öland ligger ruinen av det kapell som bar hans namn — en vallfarts- och marknadsplats invid en av öns stora fornborgar.',
+    place: 'Sankt Knuts kapell vid Gråborg, Öland (ruin, 1100-tal–ca 1560)',
+    href: '/explore?center=56.66792,16.60133&zoom=14',
+    linkLabel: 'Visa på kartan →',
   },
   {
     name: 'Sankt Sigfrid',
@@ -93,9 +106,10 @@ const Helgon = () => (
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground space-y-2">
               <p className="text-xs leading-relaxed">{s.note}</p>
+              {s.place && <p className="text-[11px] text-gold/80">📍 {s.place}</p>}
               {s.href && (
                 <Link to={s.href} className="text-gold hover:underline text-xs font-medium inline-block">
-                  Läs mer →
+                  {s.linkLabel ?? 'Läs mer →'}
                 </Link>
               )}
             </CardContent>
