@@ -9,6 +9,7 @@ import { useMapEriksgata } from './useMapEriksgata';
 import { useMapBeaconSites } from './useMapBeaconSites';
 import { useMapHeritageSites } from './useMapHeritageSites';
 import { useMapThingSites } from './useMapThingSites';
+import { useRunicTitles } from './map/useRunicTitles';
 import { useMapChurches } from './map/useMapChurches';
 import { useMapChristianSites } from './map/useMapChristianSites';
 import { useMapExperiences } from './map/useMapExperiences';
@@ -285,6 +286,9 @@ export const useMapInitialization = ({
 
   // Tingsplatser (thing_sites, Wildte 1926 m.fl.) — färg per tingstyp, gate: legendknappen.
   useMapThingSites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
+
+  // Runiska titlar (runic_title_occurrences) — sociala titlar på runstenar, gate: legendknappen.
+  useRunicTitles({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
 
   // aDNA-platser (archaeological_sites + genetic_individuals) — gate: legendknappen.
   useMapAncestrySites({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, selectedTimePeriod });

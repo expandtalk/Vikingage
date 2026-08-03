@@ -457,6 +457,16 @@ export const generateBasicInscriptionItems = (
     enabled: itemEnabled(enabledLegendItems, 'thing_sites')
   });
 
+  // Runiska titlar (runic_title_occurrences) — sociala titlar på runstenar, färg per rang-tier
+  // (kung→frigiven). Heuristiskt verifierade standalone-ord. AV som standard.
+  items.push({
+    id: 'runic_titles',
+    label: 'ᛦ Runiska titlar',
+    color: '#b91c1c',
+    count: dbStats?.layerCounts?.runicTitles ?? 150,
+    enabled: itemEnabled(enabledLegendItems, 'runic_titles')
+  });
+
   // aDNA-platser (arkeologiska platser med genetiska individer). AV som standard.
   items.push({
     id: 'adna_sites',
@@ -576,7 +586,7 @@ export const generateBasicInscriptionItems = (
   const fg = byId.get('folk_groups'); if (fg) { fg.label = 'Folkgrupper (karta)'; fg.count = dbStats?.totalFolkGroups ?? fg.count; }
 
   const ordered: (LegendItem | null)[] = [
-    group('cat_runic', 'ᛘ ' + t('runestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions', 'runestone_density']),
+    group('cat_runic', 'ᛘ ' + t('runestones'), '#ef4444', ['runic_inscriptions', 'foreign_inscriptions', 'runestone_density', 'runic_titles']),
     keep('runbleck_only'),
     catChurch,
     keep('heritage_sites'),
