@@ -9,7 +9,9 @@ import { getEnhancedCoordinates } from '@/utils/coordinateMappingEnhanced';
 import { CoordinatesWithZoom } from '@/types/common';
 import { COUNTRY_CENTERS, CITY_LOCATIONS, REGIONAL_CENTERS, REGION_NAME_TO_CODE } from '@/utils/locationConstants';
 import { InscriptionModal } from './InscriptionModal';
+import { ChurchHistoryModal } from './ChurchHistoryModal';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const ExplorerMain: React.FC = () => {
   const { shouldShowControls, shouldShowMap, shouldShowFilters, shouldShowTimeline } = useLayoutManager();
@@ -32,6 +34,36 @@ export const ExplorerMain: React.FC = () => {
     handleCloseModal,
     toast
   } = useExplorerState();
+
+  // Öppna den rika runstensmodalen från Near me/kart-popupen (window-bro). feature_id = runstenens
+  // uuid → hämta hela raden, parsa point-koordinaten och öppna via samma väg som en markörklick.
+  useEffect(() => {
+    (window as unknown as { __openInscriptionById?: (id: string) => void }).__openInscriptionById = async (id: string) => {
+      try {
+        const { data } = await supabase.from('runic_inscriptions').select('*').eq('id', id).maybeSingle();
+        if (!data) return;
+        let coordinates: { lat: number; lng: number } | undefined;
+        const raw = (data as { coordinates?: unknown }).coordinates;
+        if (typeof raw === 'string') {
+          const m = raw.match(/(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/); // point = (lng,lat)
+          if (m) coordinates = { lng: Number(m[1]), lat: Number(m[2]) };
+        }
+        handleMarkerClick({ ...(data as object), coordinates } as never);
+      } catch { /* noop */ }
+    };
+    return () => { try { delete (window as unknown as { __openInscriptionById?: unknown }).__openInscriptionById; } catch { /* noop */ } };
+  }, [handleMarkerClick]);
+
+  // Byggnadshistorik-modal (church_datings/BBR) — öppnas från kyrkopopuperna via window-bro.
+  // 'id:<uuid>' = ecclesiastical_sites-id (exakt); 'name:<namn>' = kurerad christian_sites-kyrka.
+  const [churchHistoryRef, setChurchHistoryRef] = React.useState<{ churchId?: string; churchName?: string; title?: string } | null>(null);
+  useEffect(() => {
+    (window as unknown as { __openChurchHistory?: (arg: string) => void }).__openChurchHistory = (arg: string) => {
+      if (arg.startsWith('id:')) setChurchHistoryRef({ churchId: arg.slice(3) });
+      else if (arg.startsWith('name:')) { const n = decodeURIComponent(arg.slice(5)); setChurchHistoryRef({ churchName: n, title: n }); }
+    };
+    return () => { try { delete (window as unknown as { __openChurchHistory?: unknown }).__openChurchHistory; } catch { /* noop */ } };
+  }, []);
 
   const {
     searchQuery,
@@ -316,6 +348,7 @@ export const ExplorerMain: React.FC = () => {
           onUpdate={handleInscriptionUpdate}
         />
       )}
+      <ChurchHistoryModal reference={churchHistoryRef} onClose={() => setChurchHistoryRef(null)} />
     </>
   );
 };

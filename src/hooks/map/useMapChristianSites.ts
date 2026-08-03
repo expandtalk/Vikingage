@@ -88,9 +88,10 @@ const popupHtml = (s: CSite) => {
   const notes = s.historical_notes
     ? `<div style="font-size:11px;color:#64748b;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #e2e8f0">${esc(s.historical_notes)}</div>`
     : '';
+  const histBtn = `<button type="button" onclick="window.__openChurchHistory&&window.__openChurchHistory('name:${encodeURIComponent(s.name)}')" style="margin-top:8px;padding:4px 8px;border:1px solid #b45309;border-radius:6px;background:transparent;color:#b45309;cursor:pointer;font-size:11px">Byggnadshistoria →</button>`;
   return `<div style="max-width:320px">
     <strong style="font-size:14px">${esc(s.name)}</strong>${s.name_en ? ` <span style="font-size:11px;color:#94a3b8;font-style:italic">${esc(s.name_en)}</span>` : ''}
-    <div style="margin:6px 0 2px">${badges.join('')}</div>${years}${place}${desc}${notes}
+    <div style="margin:6px 0 2px">${badges.join('')}</div>${years}${place}${desc}${notes}${histBtn}
   </div>`;
 };
 
