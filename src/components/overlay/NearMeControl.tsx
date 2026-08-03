@@ -13,6 +13,7 @@ import {
 import { useNearbyAlongRoute } from '@/hooks/useNearbyAlongRoute';
 import { geocode, route as computeRoute } from '@/services/routing';
 import { setDrivingMode } from '@/hooks/useDrivingMode';
+import { startFieldNav, stopFieldNav } from '@/hooks/useFieldNav';
 
 // Svenska etiketter + färg per feature_type ur nearby_features (fallback = råtypen).
 const TYPE_LABEL: Record<string, { sv: string; color: string }> = {
@@ -119,9 +120,14 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   };
   // Städa bort rutten när Near me stängs/avmonteras (annars ligger den kvar på kartan).
   useEffect(() => () => clearRoadtrip(), []);
-  // Billäge: map-first-läget slås på när man kör (bil-läge + öppet). Strippar chrome + zoomar in.
-  useEffect(() => { setDrivingMode(open && mode === 'car'); }, [open, mode]);
-  useEffect(() => () => setDrivingMode(false), []);
+  // Billäge: map-first-läget slås på när man kör (bil-läge + öppet). Strippar chrome + zoomar in
+  // + startar Följ färd (live-position + riktningskägla; GPS-kurs räcker i bil, ingen kompassgest).
+  useEffect(() => {
+    const on = open && mode === 'car';
+    setDrivingMode(on);
+    if (on) startFieldNav(); else stopFieldNav();
+  }, [open, mode]);
+  useEffect(() => () => { setDrivingMode(false); stopFieldNav(); }, []);
   const activeMode = TRAVEL_MODES.find((m) => m.key === mode) ?? TRAVEL_MODES[0];
 
   const { data, isFetching } = useNearbyFeatures(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);

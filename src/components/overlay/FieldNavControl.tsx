@@ -2,6 +2,7 @@
 import React from 'react';
 import { Navigation2, LocateFixed, X, Compass } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { useDrivingMode } from '@/hooks/useDrivingMode';
 import { useFieldNav, startFieldNav, stopFieldNav, setFieldNavFollowing, clearFieldNavTarget } from '@/hooks/useFieldNav';
 import { haversineKm, bearingDeg, compassPoint8 } from '@/utils/geoDistance';
 
@@ -22,8 +23,12 @@ const requestCompassPermission = async () => {
 
 export const FieldNavControl: React.FC = () => {
   const isMobile = useIsMobile();
+  const driving = useDrivingMode();
   const { active, pos, following, error, target } = useFieldNav();
   if (!isMobile) return null; // fältläget är ett mobilläge
+  // I billäget körs följningen av Near me ("Kör") och kartan visar riktningskäglan; den egna
+  // Följ färd-kontrollen döljs så vi inte får två paneler över kartan (Near me = enda ytan).
+  if (driving) return null;
 
   if (!active) {
     return (
@@ -40,7 +45,7 @@ export const FieldNavControl: React.FC = () => {
 
   return (
     <div
-      className="absolute bottom-20 right-4 z-[1055] w-[min(90%,320px)] bg-slate-900 border border-slate-600 rounded-xl shadow-2xl p-3"
+      className="absolute bottom-20 right-4 z-[1055] w-[min(90%,320px)] bg-slate-900/90 backdrop-blur-md border border-slate-600 rounded-xl shadow-2xl p-3"
       style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
     >
       <div className="flex items-center justify-between">

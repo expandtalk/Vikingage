@@ -115,13 +115,17 @@ export const useMapNearMe = ({ map, isMapReady }: Props) => {
     layer.clearLayers();
     if (!open || !pos) return;
 
-    // Sökradie (visar området listan täcker)
-    L.circle([pos.lat, pos.lng], { radius: radiusKm * 1000, color: '#38bdf8', weight: 1, fillColor: '#38bdf8', fillOpacity: 0.06 }).addTo(layer);
-    // GPS-noggrannhetsring
-    if (pos.accuracy) L.circle([pos.lat, pos.lng], { radius: pos.accuracy, color: '#2563eb', weight: 1, fillColor: '#2563eb', fillOpacity: 0.12, dashArray: '4 3' }).addTo(layer);
-    // Min position
-    L.circleMarker([pos.lat, pos.lng], { radius: 7, color: '#ffffff', weight: 2, fillColor: '#2563eb', fillOpacity: 1 })
-      .bindTooltip('Du är här', { direction: 'top' }).addTo(layer);
+    // I billäget ritar Följ färd-käglan min live-position; hoppa över den stora 40 km-radien,
+    // noggrannhetsringen och den statiska pricken (annars två positionsmarkörer + fult radie-lock).
+    if (!driving) {
+      // Sökradie (visar området listan täcker)
+      L.circle([pos.lat, pos.lng], { radius: radiusKm * 1000, color: '#38bdf8', weight: 1, fillColor: '#38bdf8', fillOpacity: 0.06 }).addTo(layer);
+      // GPS-noggrannhetsring
+      if (pos.accuracy) L.circle([pos.lat, pos.lng], { radius: pos.accuracy, color: '#2563eb', weight: 1, fillColor: '#2563eb', fillOpacity: 0.12, dashArray: '4 3' }).addTo(layer);
+      // Min position
+      L.circleMarker([pos.lat, pos.lng], { radius: 7, color: '#ffffff', weight: 2, fillColor: '#2563eb', fillOpacity: 1 })
+        .bindTooltip('Du är här', { direction: 'top' }).addTo(layer);
+    }
     // Träffmarkörer
     (results ?? []).forEach((f) => {
       L.circleMarker([f.lat, f.lng], { radius: 5, color: '#0c4a6e', weight: 1, fillColor: '#22d3ee', fillOpacity: 0.9 })
@@ -129,7 +133,7 @@ export const useMapNearMe = ({ map, isMapReady }: Props) => {
         .addTo(layer);
     });
     return () => { layer.clearLayers(); };
-  }, [map, isMapReady, open, pos, radiusKm, results]);
+  }, [map, isMapReady, open, pos, radiusKm, results, driving]);
 
   useEffect(() => () => {
     try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); }
