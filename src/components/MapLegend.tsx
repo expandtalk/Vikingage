@@ -7,6 +7,7 @@ import { Map, ToggleLeft, ToggleRight, ExternalLink } from 'lucide-react';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LegendItemComponent } from './legend/LegendItem';
 import { LegendCategory } from './legend/LegendCategory';
+import { MapsControl } from './legend/MapsControl';
 import { MapLegendProps } from './legend/types';
 
 // Tematisk ordning för legenden (mobil) — grupperar besläktade lager så listan blir läsbar
@@ -143,10 +144,18 @@ export const MapLegend: React.FC<MapLegendProps> = ({
             {LEGEND_THEMES.map((theme) => {
               const its = legendItems.filter(item => theme.ids.includes(item.id));
               if (!its.length) return null;
+              // "Kartor"-temat får en dedikerad kontroll: bakgrundskarta (radio) + historiska
+              // kartor (opacitet + Färg/Gråskala + zoom-notis) i st.f. vanliga toggles.
+              const isMaps = theme.ids.includes('historical_maps');
+              const histChildren = isMaps
+                ? (its.find(i => i.id === 'historical_maps')?.children ?? []).map(c => ({ id: c.id, label: c.label, enabled: !!c.enabled }))
+                : [];
               return (
                 <div key={theme.label} className="pt-2 first:pt-0">
                   <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{theme.label}</p>
-                  {its.map(renderItem)}
+                  {isMaps
+                    ? <MapsControl historicalChildren={histChildren} onToggleItem={onToggleItem} />
+                    : its.map(renderItem)}
                 </div>
               );
             })}

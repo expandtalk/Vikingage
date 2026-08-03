@@ -11,6 +11,7 @@ import { useMapHeritageSites } from './useMapHeritageSites';
 import { useMapThingSites } from './useMapThingSites';
 import { useMapChurches } from './map/useMapChurches';
 import { useMapChristianSites } from './map/useMapChristianSites';
+import { useMapOverlaySettings } from './useMapOverlaySettings';
 import { useMapProximityProbe } from './map/useMapProximityProbe';
 import { useMapHistoricalOverlays } from './map/useMapHistoricalOverlays';
 import { useReachProbeTriggers } from './map/useReachProbeTriggers';
@@ -141,10 +142,13 @@ export const useMapInitialization = ({
     }
   }, [onRefreshRivers]);
 
+  // Användarvald bakgrundskarta vinner över profilens default (Kartor-sektionens radio).
+  const { basemapOverride } = useMapOverlaySettings();
+
   // Add tile layer with proper parameters
   useMapTileLayer({
     map: map.current,
-    basemap: activeProfile.basemap,
+    basemap: basemapOverride ?? activeProfile.basemap,
     enabledLegendItems,
     isMapReady: isMapReadyRef,
     mapContainer,
