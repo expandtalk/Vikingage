@@ -38,8 +38,8 @@ const SAINTS: Saint[] = [
     life: 'Birgitta Birgersdotter, ca 1303–1373',
     year: 1373,
     note: 'Grundare av Birgittinorden och Vadstena kloster; kanoniserad 1391. Ett av Europas skyddshelgon. Hennes uppenbarelser (Revelationes) fick vidsträckt spridning. (Folkligt "S:t Britta".)',
-    place: 'Birgittakyrkan i Kalmar (grundad 1440, numera historisk)',
-    href: '/explore?center=56.6562,16.354&zoom=15',
+    place: 'Birgittakyrkan i Kalmar (omtalad 1440-talet; vid Tullskolan/Systraströmmen, Gamla stan — approx.)',
+    href: '/explore?center=56.65972,16.34822&zoom=16',
     linkLabel: 'Visa på kartan →',
   },
   {
