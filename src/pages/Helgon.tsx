@@ -14,6 +14,7 @@ interface Saint {
   name: string;
   life: string;
   note: string;
+  year: number;        // representativt år (död/verksamhet) — BARA för sortering, ej visat
   place?: string;      // konkret plats vi HAR i datan
   href?: string;       // egen sida, eller djuplänk till kartan (?center=lat,lng&zoom=)
   linkLabel?: string;  // default "Läs mer →"
@@ -22,17 +23,20 @@ const SAINTS: Saint[] = [
   {
     name: 'Sankt Olof (Olav den helige)',
     life: 'Olav Haraldsson, † Stiklestad 1030',
+    year: 1030,
     note: 'Norges kung och sjöfararnas skyddshelgon. En av Nordens starkaste kulter — kyrkor, offerkällor och pilgrimsvägar mot graven i Nidaros. Egen sida med kyrkoruin, Mälaren-seglingen och källkritik.',
     href: '/sv/sankt-olof',
   },
   {
     name: 'Sankt Erik (Erik den helige)',
     life: 'Erik Jedvardsson, kung, † enligt traditionen 1160',
+    year: 1160,
     note: 'Sveriges skyddshelgon. Enligt Erikslegenden (nedtecknad senare) dräpt i Uppsala; hans reliker vilar i Uppsala domkyrka. Legendens historiska kärna är omdiskuterad — märks som legend.',
   },
   {
     name: 'Sankta Birgitta',
     life: 'Birgitta Birgersdotter, ca 1303–1373',
+    year: 1373,
     note: 'Grundare av Birgittinorden och Vadstena kloster; kanoniserad 1391. Ett av Europas skyddshelgon. Hennes uppenbarelser (Revelationes) fick vidsträckt spridning. (Folkligt "S:t Britta".)',
     place: 'Birgittakyrkan i Kalmar (grundad 1440, numera historisk)',
     href: '/explore?center=56.6562,16.354&zoom=15',
@@ -41,6 +45,7 @@ const SAINTS: Saint[] = [
   {
     name: 'Sankt Knut',
     life: 'Knut den helige (Knut IV av Danmark), † 1086',
+    year: 1086,
     note: 'Danmarks skyddshelgon, populär vid Östersjön. Vid Gråborg på Öland ligger ruinen av det kapell som bar hans namn — en vallfarts- och marknadsplats invid en av öns stora fornborgar.',
     place: 'Sankt Knuts kapell vid Gråborg, Öland (ruin, 1100-tal–ca 1560)',
     href: '/explore?center=56.66792,16.60133&zoom=14',
@@ -49,6 +54,7 @@ const SAINTS: Saint[] = [
   {
     name: 'Sankt Sigfrid',
     life: 'Missionsbiskop, 1000-tal',
+    year: 1020,
     note: 'Knuten till Växjö och kristnandet av Småland/Värend. Enligt legenden döpte han Olof Skötkonung i Husaby — en legenduppgift, inte ett fast belägg. Växjös helgon: S:t Sigfrids sjukhus har rötter i ett helgeandshus vid domkyrkan, belagt redan 1318 (Länsstyrelsen Kronoberg).',
     place: 'Husaby, Västergötland — dopplatsen (kungsgård & källa)',
     href: '/explore?center=58.5667,13.2833&zoom=14',
@@ -57,21 +63,25 @@ const SAINTS: Saint[] = [
   {
     name: 'Sankt Eskil',
     life: 'Engelsk missionsbiskop, martyr, 1000-tal',
+    year: 1080,
     note: 'Verkade i Södermanland; enligt traditionen stenad vid Strängnäs/Tuna. Gav namn åt Eskilstuna.',
   },
   {
     name: 'Sankt David av Munktorp',
     life: 'Missionär, 1000-/1100-tal',
+    year: 1100,
     note: 'Knuten till kristnandet av Västmanland; vördad vid Munktorp.',
   },
   {
     name: 'Sankt Botvid',
     life: 'Svensk lekmannamissionär, † ca 1120',
+    year: 1120,
     note: 'Sörmländsk helgonkult; gav namn åt Botkyrka. Enligt legenden dräpt av en frigiven träl.',
   },
   {
     name: 'Sankta Helena (Elin) av Skövde',
     life: '1100-tal',
+    year: 1155,
     note: 'Västgötsk helgonkvinna, vördad i Skövde; en av få inhemska kvinnliga helgon före Birgitta.',
   },
 ];
@@ -101,7 +111,7 @@ const Helgon = () => (
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {SAINTS.map((s) => (
+        {[...SAINTS].sort((a, b) => b.year - a.year).map((s) => (
           <Card key={s.name} className="viking-card">
             <CardHeader className="pb-2">
               <CardTitle className="text-base text-gold">{s.name}</CardTitle>
