@@ -7,6 +7,8 @@ import { PageMeta } from '../components/PageMeta';
 // /podcast — egen sida för podcasten (flyttad från startsidan). Ljudberättelser om vikingatiden.
 const PodcastPromotion = lazy(() =>
   import('../components/welcome/PodcastPromotion').then((m) => ({ default: m.PodcastPromotion })));
+const RecommendedPodcasts = lazy(() =>
+  import('../components/podcast/RecommendedPodcasts').then((m) => ({ default: m.RecommendedPodcasts })));
 
 const Podcast = () => (
   <div className="min-h-screen viking-bg">
@@ -22,6 +24,9 @@ const Podcast = () => (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
       <Suspense fallback={<div className="h-32 animate-pulse bg-white/10 rounded-lg" />}>
         <PodcastPromotion />
+      </Suspense>
+      <Suspense fallback={null}>
+        <RecommendedPodcasts />
       </Suspense>
     </main>
     <Footer />
