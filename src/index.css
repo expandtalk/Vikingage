@@ -204,6 +204,18 @@
 .leaflet-marker-icon.vp-medallion--royal { z-index: 9500 !important; }
 .leaflet-marker-icon.monumental-stone { z-index: 9600 !important; }
 
+/* Kompakt kartattribution. På mobil kollapsas den långa kreditraden till en tappbar
+   "ⓘ Kartdata"-chip (licenskravet uppfyllt men tar inte över kartan). Tap → full text. */
+.leaflet-control-attribution { font-size: 10px; }
+@media (max-width: 640px) {
+  .leaflet-control-attribution { max-width: 80vw; line-height: 1.35; }
+  .leaflet-control-attribution.attribution-collapsed { font-size: 0; }
+  .leaflet-control-attribution.attribution-collapsed::after {
+    content: "ⓘ Kartdata & licens";
+    font-size: 10px; color: #0369a1; cursor: pointer;
+  }
+}
+
 /* Fältlägets positionsmarkör: blå prick + roterande riktningskägla (norr-upp-karta). */
 .field-nav-cone .fn-wrap { position: relative; width: 44px; height: 44px; }
 .field-nav-cone .fn-dot {

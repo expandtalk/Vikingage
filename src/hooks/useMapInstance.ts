@@ -44,6 +44,22 @@ export const useMapInstance = ({ isVikingMode }: UseMapInstanceProps) => {
 
     map.current = mapInstance;
 
+    // Attribution: "Leaflet"-länken är frivillig → bort. OSM/CARTO/Lantmäteri-krediten
+    // KVARSTÅR (licenskrav). På små skärmar kollapsas den långa kreditraden
+    // ("häradsekonomiska karta …") till en liten "ⓘ Kartdata"-chip som fälls ut vid tap —
+    // kravet uppfyllt men texten tar inte över kartan (Daniel: "lång och onödig text på mobil").
+    mapInstance.attributionControl.setPrefix(false);
+    const attribEl = mapInstance.attributionControl.getContainer();
+    if (attribEl && window.matchMedia('(max-width: 640px)').matches) {
+      attribEl.classList.add('attribution-collapsed');
+      attribEl.addEventListener('click', (e) => {
+        const t = e.target as HTMLElement;
+        if (t.tagName === 'A') return; // låt licenslänkarna fungera
+        L.DomEvent.stop(e);
+        attribEl.classList.toggle('attribution-collapsed');
+      });
+    }
+
     return () => {
       if (map.current) {
         map.current.remove();

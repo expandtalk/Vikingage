@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { LocateFixed, Loader2, X, Navigation, Sparkles } from 'lucide-react';
+import { LocateFixed, Loader2, X, Navigation, Sparkles, Minus, ChevronUp } from 'lucide-react';
 import {
   useNearMe, openNearMe, closeNearMe, setNearMeLocating, setNearMePos,
   setNearMeError, setNearMeRadiusKm, setNearMeResults, type NearMeFeature,
@@ -91,6 +91,9 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   const [mode, setMode] = useState('foot');
   // Kryssruta: spara samtycket (auto-lokalisera vid återbesök) bara om ikryssad. Default på.
   const [remember, setRemember] = useState(true);
+  // Minimera-läge: fäll ihop panelen till bara rubrikraden (behåll position/träffar) — Daniel
+  // ville kunna få undan Near me på desktop utan att stänga och tappa sin lokalisering.
+  const [minimized, setMinimized] = useState(false);
   const activeMode = TRAVEL_MODES.find((m) => m.key === mode) ?? TRAVEL_MODES[0];
 
   const { data, isFetching } = useNearbyFeatures(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
@@ -196,11 +199,23 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
     >
       <div className="sm:hidden mx-auto mt-2 h-1 w-10 rounded-full bg-slate-600" aria-hidden="true" />
       <div className="flex items-center justify-between px-4 py-2.5">
-        <span className="text-white text-sm font-semibold flex items-center gap-2"><Navigation className="h-4 w-4 text-sky-400" />Near me</span>
-        <button onClick={closeNearMe} aria-label="Stäng" className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
-          <X className="h-5 w-5" />
-        </button>
+        <span className="text-white text-sm font-semibold flex items-center gap-2">
+          <Navigation className="h-4 w-4 text-sky-400" />Near me
+          {minimized && pos && !error && <span className="text-slate-400 font-normal text-xs">· {isFetching ? '…' : `${rows.length} objekt`}</span>}
+        </span>
+        <div className="flex items-center">
+          <button onClick={() => setMinimized((m) => !m)} aria-label={minimized ? 'Expandera' : 'Minimera'} title={minimized ? 'Expandera' : 'Minimera'} className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
+            {minimized ? <ChevronUp className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
+          </button>
+          <button onClick={closeNearMe} aria-label="Stäng" className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
+            <X className="h-5 w-5" />
+          </button>
+        </div>
       </div>
+
+      {!minimized && (
+      <>
+      {/* MINIMIZE_BODY_START */}
 
       <div className="px-4 pb-2">
         {locating ? (
@@ -362,6 +377,9 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
             </ul>
           )}
         </div>
+      )}
+      {/* MINIMIZE_BODY_END */}
+      </>
       )}
     </div>
   );
