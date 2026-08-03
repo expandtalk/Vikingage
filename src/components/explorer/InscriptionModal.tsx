@@ -28,6 +28,18 @@ interface InscriptionModalProps {
   onUpdate?: (updatedInscription: RunicInscription) => void;
 }
 
+// Ristar-attribution → läsbar etikett (Rundatas 'attributed'/'signed' m.fl.).
+const ATTR_LABEL = (a: string, sv: boolean): string => {
+  const m: Record<string, [string, string]> = {
+    attributed: ['attribuerad', 'attributed'],
+    signed: ['signerad', 'signed'],
+    signature: ['signerad', 'signed'],
+    school: ['skola', 'school'],
+  };
+  const hit = m[a];
+  return hit ? (sv ? hit[0] : hit[1]) : a;
+};
+
 const DetailItem = ({ label, value }: { label: string, value: React.ReactNode }) => {
   if (!value || (Array.isArray(value) && value.length === 0)) return null;
   return (
@@ -53,6 +65,8 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
         translationSv: 'Översättning (SV)', translationEn: 'Översättning (EN)', translationOther: 'Översättning',
         dating: 'Datering', rundataDating: 'Rundata-datering', material: 'Material', objectType: 'Objekttyp',
         currentLocation: 'Nuvarande plats', dimensions: 'Mått', runeType: 'Runtyp', styleGroup: 'Stilgrupp', meter: 'Versmått',
+        carver: 'Ristare', crossForm: 'Korsform / ikonografi', christianFormula: 'Kristen formel', datingTermini: 'Datering (termini)',
+        provenance: 'Proveniens', origSite: 'Ursprunglig plats', currSite: 'Nuvarande plats', viewKsamsok: 'Visa i K-samsök / SRDB ↗',
         condition: 'Skick', scholarly: 'Forskarnoter', context: 'Historisk kontext', paleo: 'Paleografiska noter',
         sources: 'Källor & externa länkar', unknownTitle: 'Okänd titel', unknownAuthor: 'Okänd författare',
         images: 'Bilder från arkiv', loadingImages: 'Laddar bilder…', noImages: 'Inga bilder i arkiven.',
@@ -66,6 +80,8 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
         translationSv: 'Translation (SV)', translationEn: 'Translation (EN)', translationOther: 'Translation',
         dating: 'Dating', rundataDating: 'Rundata dating', material: 'Material', objectType: 'Object type',
         currentLocation: 'Current location', dimensions: 'Dimensions', runeType: 'Rune type', styleGroup: 'Style group', meter: 'Poetic metre',
+        carver: 'Carver', crossForm: 'Cross form / iconography', christianFormula: 'Christian formula', datingTermini: 'Dating (termini)',
+        provenance: 'Provenance', origSite: 'Original site', currSite: 'Current location', viewKsamsok: 'View in K-samsök / SRDB ↗',
         condition: 'Condition', scholarly: 'Scholarly notes', context: 'Historical context', paleo: 'Paleographic notes',
         sources: 'Sources & external links', unknownTitle: 'Unknown title', unknownAuthor: 'Unknown author',
         images: 'Images from archives', loadingImages: 'Loading images…', noImages: 'No images found in archives.',
@@ -171,6 +187,60 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
             <DetailItem label={L.runeType} value={rune_type} />
             <DetailItem label={L.styleGroup} value={style_group} />
             <DetailItem label={L.meter} value={meter ? <MeterBadge meter={meter} sv={sv} /> : null} />
+
+            {/* Ikonografi + ristare + kristen formel + dateringstermini (ur runic_inscriptions per id) */}
+            <DetailItem
+              label={L.carver}
+              value={extendedData?.rich?.carver
+                ? `${extendedData.rich.carver}${extendedData.rich.carver_attribution ? ` (${ATTR_LABEL(extendedData.rich.carver_attribution, sv)})` : ''}`
+                : null}
+            />
+            <DetailItem
+              label={L.crossForm}
+              value={extendedData?.rich?.has_cross
+                ? `${extendedData.rich.cross_count ?? ''} ${sv ? 'kors' : 'cross'}${extendedData.rich.cross_forms ? ` — ${extendedData.rich.cross_forms}` : ''}`.trim()
+                : null}
+            />
+            <DetailItem label={L.christianFormula} value={extendedData?.rich?.christian_invocation} />
+            <DetailItem
+              label={L.datingTermini}
+              value={(extendedData?.rich?.dating_tpq || extendedData?.rich?.dating_taq)
+                ? `${extendedData.rich.dating_tpq ?? '?'}–${extendedData.rich.dating_taq ?? '?'} ${sv ? 'e.Kr.' : 'CE'}`
+                : null}
+            />
+
+            {/* Proveniens: ursprunglig vs nuvarande plats (stenen kan vara flyttad, t.ex. → Skansen) */}
+            {extendedData?.locations && extendedData.locations.length > 0 && (
+              <div className="py-2 border-b border-white/10">
+                <dt className="font-semibold text-slate-300 mb-1">{L.provenance}</dt>
+                <dd className="space-y-1">
+                  {extendedData.locations.map((loc, i) => (
+                    <div key={i} className="text-white text-sm">
+                      <span className="text-slate-400">
+                        {loc.role === 'original' ? L.origSite : loc.role === 'current' ? L.currSite : loc.role}:{' '}
+                      </span>
+                      {[loc.place_name, loc.parish].filter(Boolean).join(', ') || '—'}
+                      {loc.lat != null && loc.lng != null ? ` (${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)})` : ''}
+                      {loc.certainty ? <span className="text-slate-500"> · {loc.certainty}</span> : null}
+                      {loc.note ? <span className="block text-slate-500 text-xs">{loc.note}</span> : null}
+                    </div>
+                  ))}
+                </dd>
+              </div>
+            )}
+
+            {/* K-samsök / SRDB — den kanoniska externa posten (kulturarvsdata.se) */}
+            {extendedData?.rich?.k_samsok_uri && (
+              <DetailItem
+                label="K-samsök / SRDB"
+                value={
+                  <a href={extendedData.rich.k_samsok_uri} target="_blank" rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300 hover:underline break-all">
+                    {L.viewKsamsok}
+                  </a>
+                }
+              />
+            )}
             <DetailItem label={L.condition} value={condition_notes} />
             <DetailItem label={L.scholarly} value={<p className="whitespace-pre-wrap">{scholarly_notes}</p>} />
             <DetailItem label={L.context} value={<p className="whitespace-pre-wrap">{historical_context}</p>} />

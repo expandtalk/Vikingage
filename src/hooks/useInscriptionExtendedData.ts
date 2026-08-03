@@ -19,9 +19,38 @@ export interface Translation {
   translation: string;
 }
 
+// Proveniens: en runsten kan ha flyttats — ursprunglig (role='original') vs nuvarande
+// (role='current') plats. Källa: inscription_locations (jfr runestone-location-history).
+export interface InscriptionLocationRow {
+  role: string;
+  place_name: string | null;
+  parish: string | null;
+  lat: number | null;
+  lng: number | null;
+  certainty: string | null;
+  moved_year: number | null;
+  note: string | null;
+}
+
+// Rika visningsfält som inte alltid följer med huvudlistans inscription-objekt (ristare,
+// korsform/ikonografi, kristen formel, dateringstermini, k-samsök) → hämtas per id.
+export interface InscriptionRich {
+  carver: string | null;
+  carver_attribution: string | null;
+  cross_forms: string | null;
+  has_cross: boolean | null;
+  cross_count: number | null;
+  christian_invocation: string | null;
+  dating_tpq: number | null;
+  dating_taq: number | null;
+  k_samsok_uri: string | null;
+  socken: string | null;
+  harad: string | null;
+}
+
 const fetchExtendedData = async (inscriptionId: string | null) => {
   if (!inscriptionId) {
-    return { images: [], datings: [], sources: [], translations: [], additionalCoordinates: [] };
+    return { images: [], datings: [], sources: [], translations: [], additionalCoordinates: [], locations: [], rich: null };
   }
 
   // UUIDs from the main table need to be converted to a bytea representation 
@@ -29,12 +58,14 @@ const fetchExtendedData = async (inscriptionId: string | null) => {
   const hexId = inscriptionId.replace(/-/g, '');
   const byteaId = hexToBytea(hexId);
 
-  const [imageLinksRes, datingRes, translationsRes, additionalCoordsRes, inscriptionMediaRes] = await Promise.all([
+  const [imageLinksRes, datingRes, translationsRes, additionalCoordsRes, inscriptionMediaRes, locationsRes, richRes] = await Promise.all([
     supabase.from('imagelinks').select('imagelink').eq('objectid', byteaId),
     supabase.from('dating').select('dating').eq('objectid', byteaId),
     supabase.from('translations').select('text, teitext, language, translation').eq('inscriptionid', byteaId),
     supabase.from('additional_coordinates').select('latitude, longitude, source, notes, confidence').eq('inscription_id', inscriptionId),
-    supabase.from('inscription_media').select('media_url, media_type, description, photographer').eq('inscription_id', inscriptionId)
+    supabase.from('inscription_media').select('media_url, media_type, description, photographer').eq('inscription_id', inscriptionId),
+    supabase.from('inscription_locations').select('role, place_name, parish, lat, lng, certainty, moved_year, note').eq('inscription_id', inscriptionId).order('seq'),
+    supabase.from('runic_inscriptions').select('carver, carver_attribution, cross_forms, has_cross, cross_count, christian_invocation, dating_tpq, dating_taq, k_samsok_uri, socken, harad').eq('id', inscriptionId).maybeSingle()
   ]);
 
   if (imageLinksRes.error) {
@@ -61,6 +92,8 @@ const fetchExtendedData = async (inscriptionId: string | null) => {
   const translations = translationsRes.data || [];
   const additionalCoordinates = additionalCoordsRes.data || [];
   const mediaFiles = inscriptionMediaRes.data || [];
+  const locations = (locationsRes.data || []) as InscriptionLocationRow[];
+  const rich = (richRes.data || null) as InscriptionRich | null;
 
   // --- New logic for sources and URIs ---
 
@@ -72,10 +105,10 @@ const fetchExtendedData = async (inscriptionId: string | null) => {
 
   if (osError) {
     console.error('Error fetching object sources:', osError);
-    return { images, datings, sources: [], translations, additionalCoordinates };
+    return { images, datings, sources: [], translations, additionalCoordinates, locations, rich };
   }
   if (!objectSources || objectSources.length === 0) {
-    return { images, datings, sources: [], translations, additionalCoordinates };
+    return { images, datings, sources: [], translations, additionalCoordinates, locations, rich };
   }
   const sourceIds = objectSources.map(os => os.sourceid);
 
@@ -138,7 +171,7 @@ const fetchExtendedData = async (inscriptionId: string | null) => {
   })).filter(s => s.uris.length > 0) // Only show sources that have URIs
   : [];
 
-  return { images, datings, sources, translations, additionalCoordinates };
+  return { images, datings, sources, translations, additionalCoordinates, locations, rich };
 };
 
 export const useInscriptionExtendedData = (inscriptionId: string | null) => {
