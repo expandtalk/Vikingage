@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { useNearMe, setNearMePos } from '@/hooks/useNearMe';
+import { useDrivingMode } from '@/hooks/useDrivingMode';
 
 // Ritar "Near me"-lagret på kartan: min position (blå prick + noggrannhetsring),
 // sökradie-cirkel och träffmarkörer. Läser store; ritar inget förrän position finns.
@@ -35,6 +36,7 @@ const detailButton = (featureType?: string | null, featureId?: string | null): s
 
 export const useMapNearMe = ({ map, isMapReady }: Props) => {
   const { open, pos, radiusKm, results } = useNearMe();
+  const driving = useDrivingMode();
   const layerRef = useRef<L.LayerGroup | null>(null);
 
   // Flyg-till + öppna popup (VAR + VAD) för listobjekt (används av NearMeControl).
@@ -99,10 +101,12 @@ export const useMapNearMe = ({ map, isMapReady }: Props) => {
     if (flownRef.current === key) return;
     flownRef.current = key;
     try {
+      // Billäge (bil): zooma IN på min plats (körnära), inte ut till hela 40 km-radien.
+      if (driving) { map.flyTo([pos.lat, pos.lng], 13, { duration: 0.8 }); return; }
       const b = L.circle([pos.lat, pos.lng], { radius: radiusKm * 1000 }).getBounds();
       map.flyToBounds(b, { maxZoom: 14, padding: [40, 40], duration: 0.8 });
     } catch { try { map.flyTo([pos.lat, pos.lng], 13, { duration: 0.8 }); } catch { /* noop */ } }
-  }, [map, isMapReady, open, pos, radiusKm]);
+  }, [map, isMapReady, open, pos, radiusKm, driving]);
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;

@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Brain, LogIn } from "lucide-react";
+import { useDrivingMode } from "@/hooks/useDrivingMode";
 
 const Explore = () => {
   const { user, loading } = useAuth();
@@ -23,6 +24,8 @@ const Explore = () => {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
   const [aiOpen, setAiOpen] = useState(false);
+  // Billäge (Near me "Kör"): strippa forsknings-chrome, maximera kartan.
+  const driving = useDrivingMode();
 
   if (loading || roleLoading) {
     return (
@@ -41,20 +44,19 @@ const Explore = () => {
   return (
     <div className="min-h-screen viking-bg">
       <Header />
-      <Breadcrumbs />
+      {!driving && <Breadcrumbs />}
 
-      <main className="container mx-auto px-4 py-8">
+      <main className={`container mx-auto px-4 ${driving ? 'py-2' : 'py-8'}`}>
         {/* Main Explorer. `relative isolate` = eget stacking-context så kartans flytande
             paneler (absolute, z-[1100]) inte kan bläda ut och lägga sig över innehållet under
             (Daniel: AI-kortet/texten doldes av ett lager). Ingen overflow-hidden — skulle
             klippa Leaflet-popups. */}
-        <div className="mb-8 relative isolate">
+        <div className={`${driving ? 'mb-0' : 'mb-8'} relative isolate`}>
           <RunicExplorerSimple />
         </div>
 
-        {/* AI-analys/anteckningar = fotsektion, tydligt NEDANFÖR kartan. På mobil hopfälld bakom
-            en knapp så den inte dominerar den lilla skärmen (Daniel). */}
-        {isMobile && !aiOpen ? (
+        {/* AI-analys/anteckningar = fotsektion. Döljs helt i billäget (Daniel: behöver ej visas). */}
+        {driving ? null : isMobile && !aiOpen ? (
           <div className="mt-12 pt-8 border-t border-border/60">
             <button
               onClick={() => setAiOpen(true)}
@@ -107,7 +109,7 @@ const Explore = () => {
         )}
       </main>
 
-      <Footer />
+      {!driving && <Footer />}
     </div>
   );
 };

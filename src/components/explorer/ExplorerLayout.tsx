@@ -15,6 +15,7 @@ import { LayoutContent } from './layout/LayoutContent';
 import { RegionFindsView } from '../regions/RegionFindsView';
 import { MobileDrawer } from '@/components/ui/mobile-drawer';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { useDrivingMode } from '@/hooks/useDrivingMode';
 import { Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -137,11 +138,14 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   const { currentFocus, clearFocus } = useFocusManager();
   const isExplorerMode = activePreset === 'explore';
   const isMobile = useIsMobile();
+  const driving = useDrivingMode(); // billäge: strippa tidslinje/händelselinje/intresse-knapp
   
   // Module state management
   const [selectedCarverId, setSelectedCarverId] = useState<string | null>(null);
   const [isSearchMinimized, setIsSearchMinimized] = useState(false);
-  const [isTimelineMinimized, setIsTimelineMinimized] = useState(false);
+  // Kondenserad (minimerad) som standard på mobil (Daniel) — tidslinjen tar annars mycket
+  // yta över kartan; öppnas med ett klick. Desktop startar expanderad.
+  const [isTimelineMinimized, setIsTimelineMinimized] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
   // Legenden visas som standard på desktop; på mobil startar den STÄNGD (bottom-sheet
   // ska inte täcka kartan vid inladdning — öppnas via Teckenförklaring-knappen).
@@ -288,8 +292,9 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         <CultSitesView onNavigate={mapNavigate ? (lat, lng, zoom) => mapNavigate(lat, lng, zoom ?? 12) : undefined} />
       )}
 
-      {/* Mobile Quick Actions — Stats borttaget på mobil (Daniel); "Filters" → "Intresse". */}
-      {isMobile && (
+      {/* Mobile Quick Actions — Stats borttaget på mobil (Daniel); "Filters" → "Intresse".
+          Döljs i billäget (map-first). */}
+      {isMobile && !driving && (
         <div className="flex gap-2 justify-center mb-4">
           <Button
             variant="outline"
@@ -407,8 +412,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         </div>
       )}
 
-      {/* Timeline Module */}
-      {shouldShowTimeline && (
+      {/* Timeline Module — döljs i billäget (map-first). */}
+      {shouldShowTimeline && !driving && (
         <div className="mt-6">
           <TimelineModule
             selectedPeriod={selectedTimePeriod}
@@ -421,8 +426,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
       )}
 
       {/* Eventlinjen: händelser kronologiskt (ej kartnålar). Klick → panorera kartan
-          till centralorten. Filtreras på vald period; döljer sig om inga händelser. */}
-      <EventTimeline selectedTimePeriod={selectedTimePeriod} mapNavigate={mapNavigate} />
+          till centralorten. Döljs i billäget (Daniel: events över time behöver ej visas). */}
+      {!driving && <EventTimeline selectedTimePeriod={selectedTimePeriod} mapNavigate={mapNavigate} />}
 
     </div>
   );

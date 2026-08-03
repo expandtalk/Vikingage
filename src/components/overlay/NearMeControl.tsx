@@ -12,6 +12,7 @@ import {
 } from '@/hooks/useRoadtrip';
 import { useNearbyAlongRoute } from '@/hooks/useNearbyAlongRoute';
 import { geocode, route as computeRoute } from '@/services/routing';
+import { setDrivingMode } from '@/hooks/useDrivingMode';
 
 // Svenska etiketter + färg per feature_type ur nearby_features (fallback = råtypen).
 const TYPE_LABEL: Record<string, { sv: string; color: string }> = {
@@ -118,6 +119,9 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   };
   // Städa bort rutten när Near me stängs/avmonteras (annars ligger den kvar på kartan).
   useEffect(() => () => clearRoadtrip(), []);
+  // Billäge: map-first-läget slås på när man kör (bil-läge + öppet). Strippar chrome + zoomar in.
+  useEffect(() => { setDrivingMode(open && mode === 'car'); }, [open, mode]);
+  useEffect(() => () => setDrivingMode(false), []);
   const activeMode = TRAVEL_MODES.find((m) => m.key === mode) ?? TRAVEL_MODES[0];
 
   const { data, isFetching } = useNearbyFeatures(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
@@ -291,7 +295,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
 
   return (
     <div
-      className="absolute inset-x-0 bottom-0 sm:inset-x-auto sm:right-4 sm:bottom-4 sm:w-96 z-[1055] bg-slate-900 border-t sm:border border-slate-600 sm:rounded-lg rounded-t-2xl shadow-2xl flex flex-col"
+      className="absolute inset-x-0 bottom-0 sm:inset-x-auto sm:right-4 sm:bottom-4 sm:w-96 z-[1055] bg-slate-900/90 backdrop-blur-md border-t sm:border border-slate-600 sm:rounded-lg rounded-t-2xl shadow-2xl flex flex-col"
       style={{ maxHeight: '62vh', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="sm:hidden mx-auto mt-2 h-1 w-10 rounded-full bg-slate-600" aria-hidden="true" />
