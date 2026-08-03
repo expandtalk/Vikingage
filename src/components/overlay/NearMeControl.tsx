@@ -276,7 +276,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
             {mode === 'car' && (
               <form onSubmit={(e) => { e.preventDefault(); goRoadtrip(); }} className="mt-2">
                 <div className="flex gap-1">
-                  <input value={destQuery} onChange={(e) => setDestQuery(e.target.value)} placeholder="Kör till… (t.ex. Tullinge)"
+                  <input value={destQuery} onChange={(e) => setDestQuery(e.target.value)} placeholder="Kör till… (ort eller adress)"
                     className="flex-1 min-w-0 px-2 py-1.5 rounded border border-slate-700 bg-slate-800 text-slate-100 text-xs placeholder:text-slate-500" style={{ minHeight: 36 }} />
                   <button type="submit" disabled={!destQuery.trim() || rtStatus === 'searching'}
                     className="shrink-0 px-3 rounded bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium disabled:opacity-50 flex items-center justify-center" style={{ minHeight: 36, minWidth: 56 }}>
