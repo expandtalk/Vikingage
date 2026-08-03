@@ -193,7 +193,7 @@ const EXTRA_LINKS: NavLink[] = [
   },
   {
     pathEn: '/prices', pathSv: '/prices',
-    labelSv: 'Priser', labelEn: 'Prices',
+    labelSv: 'Priskalkylator', labelEn: 'Price calculator',
     descSv: 'Diocletianus prisedikt (301 e.Kr.) — romerska priser omräknade.',
     descEn: "Diocletian's Price Edict (301 AD) — Roman prices converted.",
     icon: Scale, category: 'history',

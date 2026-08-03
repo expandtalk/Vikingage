@@ -33,7 +33,7 @@ const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   // vårdträd, GROTTOR) hör ihop under tro/myt — skilt från kristna kyrkor.
   { label: 'Kult, tro & myter', ids: ['religious_places', 'heritage_folklore'] },
   { label: 'Försvar & bevakning', ids: ['cat_defense', 'fort_territories'] },
-  { label: 'Makt & samhälle', ids: ['cat_folk', 'estates'] },
+  { label: 'Makt & samhälle', ids: ['cat_folk', 'estates', 'heritage_avrattning'] },
   // Marinarkeologi inkl. farleder/vattenvägar (Daniel: slå ihop farleder med marinarkeologi).
   { label: 'Marinarkeologi', ids: ['heritage_marine', 'maritime', 'water_routes'] },   // vrak, vraktradition, pålspärrar, noder, haverier + farleder
   // Mynt & fynd: coins/solidus_die_links, nu egen toppnivå-kategori (cat_coins) —
@@ -42,7 +42,7 @@ const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   { label: 'Museer & samlingar', ids: ['museums'] },
   { label: 'Vetenskap & tid', ids: ['cat_geo'] },
   { label: 'Kartor & ortnamn', ids: ['historical_maps'] },
-  { label: 'Äventyr & upplevelser', ids: ['spokvandring_kalmar'] },
+  { label: 'Äventyr & upplevelser', ids: ['spokvandring_kalmar', 'heritage_grotta'] },
 ];
 
 export const MapLegend: React.FC<MapLegendProps> = ({

@@ -142,7 +142,7 @@ const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
   'jätte-/trollplats': 'spark', 'offerplats': 'spark', 'plats med tradition': 'spark',
   'grotta med tradition': 'cave', 'Grotta/överhäng': 'cave', 'naturgrotta': 'cave',
   'Källa med tradition': 'drop', 'vårdkase': 'flame', 'hällristning': 'spiral',
-  'labyrint': 'labyrinth', 'Avrättningsplats': 'gallows',
+  'labyrint': 'labyrinth', 'Avrättningsplats': 'gallows', 'Galgplats/galgbacke': 'gallows',
 };
 
 // KATEGORIFÄRG (familj) — diskens färg. Ikonen (TYPE_GLYPH) skiljer typ inom familjen.
@@ -258,6 +258,8 @@ const HERITAGE_TYPE_KEYS: Record<string, string | string[]> = {
   // Marinarkeologi (egen parent 'heritage_marine'):
   heritage_vrak: 'fartygslämning', heritage_vraktradition: 'vrak med tradition',
   heritage_sparr: 'spärranläggning',
+  // Avrättnings- & galgplatser som eget lager (Daniel) — galg-glyf, oberoende av Kulturlager-parenten.
+  heritage_avrattning: ['Avrättningsplats', 'Galgplats/galgbacke'],
 };
 // Typ-nycklar som hör till "Stenar"-kategorin (parent 'heritage_stones') i st.f.
 // "Kulturlager" (parent 'heritage_sites'). heritage_bildsten flyttad hit i legenden.
@@ -279,7 +281,7 @@ export const useMapHeritageSites = ({ map, enabledLegendItems, isMapReady, selec
   const parentStone = enabledLegendItems.heritage_stones !== false;
   const parentFolklore = enabledLegendItems.heritage_folklore !== false;
   const parentMarine = enabledLegendItems.heritage_marine !== false;
-  const parentOn = (k: string) => STONE_KEYS.has(k) ? parentStone
+  const parentOn = (k: string) => k === 'heritage_avrattning' ? true : STONE_KEYS.has(k) ? parentStone
     : FOLKLORE_KEYS.has(k) ? parentFolklore
     : MARINE_KEYS.has(k) ? parentMarine : parentKultur;
   const types = Object.entries(HERITAGE_TYPE_KEYS)

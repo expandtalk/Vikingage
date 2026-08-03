@@ -262,6 +262,9 @@ export const generateBasicInscriptionItems = (
     enabled: itemEnabled(enabledLegendItems, 'heritage_folklore'),
     type: 'category', children: folkloreChildren,
   });
+  // Grottor speglas ÄVEN som toppnivå-post (samma toggle-id) så de kan visas under
+  // "Äventyr & upplevelser" — utöver att ligga kvar under Folktradition & sägen (Daniel).
+  items.push({ id: 'heritage_grotta', label: '🕳️ Grottor & överhäng', color: '#4338ca', count: 142, enabled: itemEnabled(enabledLegendItems, 'heritage_grotta') });
 
   // "Marinarkeologi" — vrak/fartygslämningar ur heritage_sites (RAÄ "Fartygs-/båtlämning").
   // Egen parent 'heritage_marine'. 'vrak med tradition' = namngivet/historik i beskrivningen.
@@ -282,6 +285,8 @@ export const generateBasicInscriptionItems = (
   items.push({ id: 'heritage_kapell', label: 'Kapell', color: '#db2777', count: 275, enabled: itemEnabled(enabledLegendItems, 'heritage_kapell') });
   items.push({ id: 'heritage_kloster', label: 'Kloster (RAÄ)', color: '#c026d3', count: 94, enabled: itemEnabled(enabledLegendItems, 'heritage_kloster') });
   items.push({ id: 'heritage_kyrkoruin', label: '✝️ Kyrkoruiner', color: '#9f1239', count: 38, enabled: itemEnabled(enabledLegendItems, 'heritage_kyrkoruin') });
+  // Avrättnings- & galgplatser — eget togglebart lager (RAÄ Fornsök, galg-glyf). Default av.
+  items.push({ id: 'heritage_avrattning', label: '⚖️ Avrättnings- & galgplatser', color: '#7f1d1d', count: 469, enabled: itemEnabled(enabledLegendItems, 'heritage_avrattning') });
 
   // Historiska Lantmäteri-kartor (overlay-rastrar, opt-in) — togglebara, opacitets-styrda.
   // Tiles serveras statiskt från FTP; lagren visar inget förrän tiles laddats upp.
