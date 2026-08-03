@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { LocateFixed, Loader2, X, Navigation, Sparkles, Minus, ChevronUp } from 'lucide-react';
+import { LocateFixed, Loader2, X, Navigation, Sparkles, Minus, ChevronUp, Compass } from 'lucide-react';
 import {
   useNearMe, openNearMe, closeNearMe, setNearMeLocating, setNearMePos,
   setNearMeError, setNearMeRadiusKm, setNearMeResults, type NearMeFeature,
@@ -12,7 +12,7 @@ import {
 } from '@/hooks/useRoadtrip';
 import { useNearbyAlongRoute } from '@/hooks/useNearbyAlongRoute';
 import { geocode, route as computeRoute } from '@/services/routing';
-import { setDrivingMode } from '@/hooks/useDrivingMode';
+import { setDrivingMode, useCourseUp, setCourseUp } from '@/hooks/useDrivingMode';
 import { startFieldNav, stopFieldNav } from '@/hooks/useFieldNav';
 
 // Svenska etiketter + färg per feature_type ur nearby_features (fallback = råtypen).
@@ -103,6 +103,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   const [minimized, setMinimized] = useState(false);
   // Roadtrip (bil-läge): skriv ett mål → geokoda → rita bilrutt. Store ⇄ useMapRoadtrip.
   const { dest, route, status: rtStatus, error: rtError } = useRoadtrip();
+  const courseUp = useCourseUp();
   const [destQuery, setDestQuery] = useState('');
   const goRoadtrip = async () => {
     const q = destQuery.trim();
@@ -365,6 +366,13 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                 onChange={(e) => setNearMeRadiusKm(Number(e.target.value))} className="flex-1 accent-sky-500 cursor-pointer" aria-label="Sökradie i kilometer" />
               <span className="text-slate-400 whitespace-nowrap">{isFetching ? '…' : `${rows.length} objekt`}</span>
             </div>
+            {/* Färd upp / Norr upp — kartrotation i billäget (rotation passar inte alla). */}
+            {mode === 'car' && (
+              <button type="button" onClick={() => setCourseUp(!courseUp)}
+                className="mt-2 w-full flex items-center justify-center gap-2 py-1.5 rounded border border-slate-700 text-slate-200 text-[11px] hover:bg-slate-800" style={{ minHeight: 34 }}>
+                <Compass className="h-3.5 w-3.5" /> {courseUp ? 'Färd upp (roterar) — tryck för Norr upp' : 'Norr upp — tryck för Färd upp'}
+              </button>
+            )}
             {/* Roadtrip: skriv ett mål → geokodad bilrutt ritas på kartan (bil-läge). */}
             {mode === 'car' && (
               <form onSubmit={(e) => { e.preventDefault(); goRoadtrip(); }} className="mt-2">
