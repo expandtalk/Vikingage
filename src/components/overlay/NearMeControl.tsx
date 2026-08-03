@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { LocateFixed, Loader2, X, Navigation, Sparkles } from 'lucide-react';
 import {
   useNearMe, openNearMe, closeNearMe, setNearMeLocating, setNearMePos,
-  setNearMeError, setNearMeRadiusKm, setNearMeResults,
+  setNearMeError, setNearMeRadiusKm, setNearMeResults, type NearMeFeature,
 } from '@/hooks/useNearMe';
 import { useNearbyFeatures } from '@/hooks/useNearbyFeatures';
 import { useNearbyRanked } from '@/hooks/useNearbyRanked';
@@ -39,14 +39,28 @@ const LAYER_FOR: Record<string, string | null> = {
 const fmtDist = (km: number) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`);
 // Klick på ett listobjekt: flyg dit + öppna popup (VAR + VAD). __nearMeFlyTo sätts av useMapNearMe.
 const flyTo = (
-  f: { lat: number; lng: number; distance_km: number },
+  f: { lat: number; lng: number; distance_km: number; parish?: string | null; source_uri?: string | null; feature_type?: string; feature_id?: string },
   name: string,
   typeSv: string,
 ) =>
-  (window as unknown as { __nearMeFlyTo?: (a: number, b: number, l?: string, t?: string, d?: string) => void })
-    .__nearMeFlyTo?.(f.lat, f.lng, name, typeSv, fmtDist(f.distance_km));
-// Färdsätt → radie (samma logik som linjalens dagsresa, men en promenad härifrån).
-const MODES: [string, number][] = [['Gående 5 km', 5], ['Cykel 15 km', 15], ['Bil 40 km', 40]];
+  (window as unknown as { __nearMeFlyTo?: (a: number, b: number, l?: string, t?: string, d?: string, p?: string | null, u?: string | null, ft?: string | null, fi?: string | null) => void })
+    .__nearMeFlyTo?.(f.lat, f.lng, name, typeSv, fmtDist(f.distance_km), f.parish ?? undefined, f.source_uri ?? undefined, f.feature_type, f.feature_id);
+// Färdsätt → radie-INTERVALL (min/default/max) + snabbstopp. Skalan byter KARAKTÄR med färdsättet:
+// gående = tät närzon (koncentriska band), bil = regional översikt. Bara mobil (Daniel).
+interface TravelMode { key: string; label: string; min: number; def: number; max: number; step: number; stops: number[] }
+const TRAVEL_MODES: TravelMode[] = [
+  { key: 'foot', label: 'Gående', min: 0.1, def: 5,  max: 5,   step: 0.1, stops: [0.1, 0.2, 0.5, 1, 2, 3, 4, 5] },
+  { key: 'bike', label: 'Cykel',  min: 1,   def: 3,  max: 30,  step: 1,   stops: [3, 5, 10, 15, 20, 25, 30] },
+  { key: 'car',  label: 'Bil',    min: 40,  def: 40, max: 500, step: 10,  stops: [40, 50, 100, 200, 300, 400, 500] },
+];
+// Koncentriska bandkanter i gång-läget (meter): "Inom 100 m", "100–200 m", … regelbunden skala.
+const FOOT_BAND_EDGES_M = [100, 200, 500, 1000, 2000, 3000, 4000, 5000];
+const fmtKm = (km: number) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km} km`);
+const fmtM = (m: number) => (m < 1000 ? `${m} m` : `${m / 1000} km`);
+const bandLabel = (lo: number, hi: number) => (lo === 0 ? `Inom ${fmtM(hi)}` : `${fmtM(lo)}–${fmtM(hi)}`);
+// Zooma kartan så FLERA objekt ryms (klick på kategori-/bandrubrik) — satt av useMapNearMe.
+const fitFeatures = (items: { lat: number; lng: number }[]) =>
+  (window as unknown as { __nearMeFitFeatures?: (p: { lat: number; lng: number }[]) => void }).__nearMeFitFeatures?.(items);
 const CONSENT_KEY = 'nearme_consent';
 const consented = () => { try { return localStorage.getItem(CONSENT_KEY) === '1'; } catch { return false; } };
 
@@ -60,14 +74,32 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // Grupperad lista: en kollapsbar sektion per typ (Runstenar, Gravar, Kyrkor…).
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const toggleGroup = (t: string) => setOpenGroups((p) => { const n = new Set(p); n.has(t) ? n.delete(t) : n.add(t); return n; });
+  // Valt färdsätt styr radie-intervallet + hur listan presenteras (band / typ / översikt).
+  const [mode, setMode] = useState('foot');
+  // Kryssruta: spara samtycket (auto-lokalisera vid återbesök) bara om ikryssad. Default på.
+  const [remember, setRemember] = useState(true);
+  const activeMode = TRAVEL_MODES.find((m) => m.key === mode) ?? TRAVEL_MODES[0];
 
   const { data, isFetching } = useNearbyFeatures(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
   const { data: ranked = [] } = useNearbyRanked(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
   // Filtrera på intresseprofilen (dölj typer vars lager är avslaget).
   const showByInterest = (t: string) => { const k = LAYER_FOR[t]; return k == null ? true : enabledLayers?.[k] !== false; };
-  const rows = (data ?? []).filter((f: any) => showByInterest(f.feature_type));
-  // "Mest sevärt nära dig" — topp ur rank-RPC:n (avstånd + signifikans + graf-auktoritet).
-  const topRanked = ranked.filter((f) => showByInterest(f.feature_type)).slice(0, 6);
+  const rows = (data ?? []).filter((f: any) => showByInterest(f.feature_type)) as NearMeFeature[];
+  // "Mest sevärt nära dig" — topp ur rank-RPC:n. Bil-läget leder med fler (översikten).
+  const topRanked = ranked.filter((f) => showByInterest(f.feature_type)).slice(0, mode === 'car' ? 12 : 6);
+  // Bil-översikt: antal per typ (störst först) — klick zoomar till alla objekt av den typen.
+  const carGroups = Object.entries(rows.reduce<Record<string, NearMeFeature[]>>((acc, f) => { (acc[groupKeyOf(f)] ||= []).push(f); return acc; }, {})).sort((a, b) => b[1].length - a[1].length);
+  // Gående: bucketa raderna i koncentriska avståndsband upp till vald radie.
+  const footBands = (() => {
+    const edges = FOOT_BAND_EDGES_M.filter((e) => e <= radiusKm * 1000 + 1);
+    if (edges.length === 0 || edges[edges.length - 1] < radiusKm * 1000 - 1) edges.push(Math.round(radiusKm * 1000));
+    const bands = edges.map((hi, i) => ({ lo: i === 0 ? 0 : edges[i - 1], hi, items: [] as NearMeFeature[] }));
+    for (const f of rows) {
+      const m = f.distance_km * 1000;
+      (bands.find((bd) => m <= bd.hi + 1e-6) ?? bands[bands.length - 1])?.items.push(f);
+    }
+    return bands.filter((b) => b.items.length > 0);
+  })();
   useEffect(() => { setNearMeResults(rows, isFetching); }, [data, isFetching, enabledLayers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const locate = () => {
@@ -80,7 +112,8 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
     }
     setNearMeLocating(true);
     const ok = (p: GeolocationPosition) => {
-      try { localStorage.setItem(CONSENT_KEY, '1'); } catch { /* noop */ }
+      // Spara samtycket bara om användaren kryssat "kom ihåg" — annars gäller det bara denna gång.
+      if (remember) { try { localStorage.setItem(CONSENT_KEY, '1'); } catch { /* noop */ } }
       setNearMePos(p.coords.latitude, p.coords.longitude, p.coords.accuracy);
     };
     const fail = (err: GeolocationPositionError) => setNearMeError(
@@ -116,6 +149,10 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
           >
             <LocateFixed className="h-6 w-6" />Near me — vad finns omkring mig?
           </button>
+          <label className="mt-2 flex items-center justify-center gap-2 text-xs text-white/90 bg-slate-900/80 rounded-lg px-3 py-1.5 backdrop-blur-md cursor-pointer select-none">
+            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="accent-sky-500" />
+            Kom ihåg mitt val (lokalisera automatiskt vid återbesök)
+          </label>
           <p className="mt-2 text-xs text-white/90 bg-slate-900/80 rounded-lg px-3 py-1.5 backdrop-blur-md">
             Visar runstenar, gravar, kyrkor & fornlämningar inom {radiusKm} km från dig. Din plats används bara här — vi följer dig inte.
           </p>
@@ -157,17 +194,25 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
           </div>
         ) : pos ? (
           <>
-            {/* Färdsätts-chips (räckvidd som en resa härifrån) */}
+            {/* Färdsätt — sätter radie-intervallet (Gående nära, Bil långt) */}
             <div className="flex gap-1 mb-2">
-              {MODES.map(([label, km]) => (
+              {TRAVEL_MODES.map((m) => (
+                <button key={m.key} onClick={() => { setMode(m.key); setNearMeRadiusKm(m.def); }}
+                  className={`flex-1 py-1.5 rounded border text-[11px] transition-colors ${mode === m.key ? 'bg-sky-500/20 border-sky-500 text-sky-200' : 'border-slate-700 text-slate-300 hover:bg-slate-800'}`}
+                  style={{ minHeight: 36 }}>{m.label}</button>
+              ))}
+            </div>
+            {/* Snabbstopp för valt färdsätt (regelbunden skala) */}
+            <div className="flex flex-wrap gap-1 mb-2">
+              {activeMode.stops.map((km) => (
                 <button key={km} onClick={() => setNearMeRadiusKm(km)}
-                  className={`flex-1 py-1.5 rounded border text-[11px] transition-colors ${radiusKm === km ? 'bg-sky-500/20 border-sky-500 text-sky-200' : 'border-slate-700 text-slate-300 hover:bg-slate-800'}`}
-                  style={{ minHeight: 36 }}>{label}</button>
+                  className={`px-2 py-1 rounded border text-[10px] transition-colors ${Math.abs(radiusKm - km) < 1e-6 ? 'bg-sky-500/25 border-sky-500 text-sky-100' : 'border-slate-700 text-slate-400 hover:bg-slate-800'}`}
+                  style={{ minHeight: 32 }}>{fmtKm(km)}</button>
               ))}
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-sky-300 whitespace-nowrap">Radie: {radiusKm < 1 ? `${Math.round(radiusKm * 1000)} m` : `${radiusKm.toFixed(1)} km`}</span>
-              <input type="range" min={0.2} max={40} step={0.2} value={radiusKm}
+              <span className="text-sky-300 whitespace-nowrap">Radie: {fmtDist(radiusKm)}</span>
+              <input type="range" min={activeMode.min} max={activeMode.max} step={activeMode.step} value={radiusKm}
                 onChange={(e) => setNearMeRadiusKm(Number(e.target.value))} className="flex-1 accent-sky-500 cursor-pointer" aria-label="Sökradie i kilometer" />
               <span className="text-slate-400 whitespace-nowrap">{isFetching ? '…' : `${rows.length} objekt`}</span>
             </div>
@@ -207,33 +252,84 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
             </div>
           )}
           {rows.length === 0 && !isFetching ? (
-            <p className="text-slate-400 text-sm text-center py-6">Inget registrerat inom {radiusKm < 1 ? `${Math.round(radiusKm * 1000)} m` : `${radiusKm.toFixed(1)} km`}. Dra ut radien.</p>
-          ) : (
+            <p className="text-slate-400 text-sm text-center py-6">Inget registrerat inom {fmtDist(radiusKm)}. Dra ut radien.</p>
+          ) : mode === 'car' ? (
+            /* Bil: översikt — rankat leder ovan, här antal per typ. Klick zoomar till alla av typen. */
+            <div className="space-y-1">
+              <div className="px-1 text-[10px] uppercase tracking-wide text-slate-400">Antal per typ (närmaste {rows.length}) — tryck för att zooma dit</div>
+              <div className="flex flex-wrap gap-1 px-1">
+                {carGroups.map(([key, items]) => {
+                  const info = groupInfo(key, items[0].feature_type === 'heritage');
+                  return (
+                    <button key={key} onClick={() => fitFeatures(items)} title="Zooma till dessa"
+                      className="flex items-center gap-1 px-2 py-1 rounded border border-slate-700 hover:bg-slate-800" style={{ minHeight: 36 }}>
+                      <span className={`text-xs font-medium ${info.color}`}>{info.sv}</span>
+                      <span className="text-[11px] text-slate-400 tabular-nums">{items.length}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-slate-500 px-1 pt-1">Bil-läget visar de mest sevärda + antal (närmaste {rows.length}). Byt till Cykel/Gående för fullständig lista.</p>
+            </div>
+          ) : mode === 'foot' ? (
+            /* Gående: koncentriska avståndsband ("Inom 100 m", "100–200 m", …). Rubrikklick zoomar till bandet. */
             <ul className="space-y-1">
-              {/* Gruppera per typ — heritage delas upp per lämningstyp (Gravfält, Stensättning…),
-                  så typordet står EN gång som Versal-rubrik med antal. Radklick flyger dit + popup. */}
-              {(Object.entries(rows.reduce<Record<string, typeof rows>>((acc, f) => { (acc[groupKeyOf(f)] ||= []).push(f); return acc; }, {}))
-                .sort((a, b) => b[1].length - a[1].length)).map(([key, items]) => {
+              {footBands.map(({ lo, hi, items }) => {
+                const key = `band-${hi}`;
+                const isOpen = openGroups.has(key);
+                return (
+                  <li key={key}>
+                    <button onClick={() => { toggleGroup(key); fitFeatures(items); }} className="w-full flex items-center justify-between px-2.5 rounded bg-slate-800/60 hover:bg-slate-800" style={{ minHeight: 44 }}>
+                      <span className="text-sm font-medium text-sky-200">{isOpen ? '▾' : '▸'} {bandLabel(lo, hi)}</span>
+                      <span className="text-xs text-slate-400 tabular-nums">{items.length}</span>
+                    </button>
+                    {isOpen && (
+                      <ul className="mt-0.5 ml-2 border-l border-slate-700 pl-1">
+                        {items.slice(0, 60).map((f, i) => {
+                          const isHer = f.feature_type === 'heritage';
+                          const name = isHer ? (heritageName(f.label) || capFirst(heritageType(f.label))) : f.label;
+                          const typeSv = isHer ? capFirst(heritageType(f.label)) : typeInfo(f.feature_type).sv;
+                          return (
+                            <li key={`${f.feature_id}-${i}`}>
+                              <button onClick={() => flyTo(f, name, typeSv)} title="Visa på kartan" className="w-full flex items-center justify-between gap-2 text-left px-2 rounded hover:bg-slate-800" style={{ minHeight: 40 }}>
+                                <span className="min-w-0">
+                                  <span className="block truncate text-sm text-slate-200">{name}</span>
+                                  <span className="block truncate text-[11px] text-slate-500">{typeSv}{f.parish ? ` · ${f.parish} sn` : ''}</span>
+                                </span>
+                                <span className="shrink-0 tabular-nums text-xs text-sky-300">{fmtDist(f.distance_km)}</span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                        {items.length > 60 && <li className="text-[11px] text-slate-500 px-2 py-1">… {items.length - 60} till</li>}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            /* Cykel: gruppera per typ. Rubrikklick fäller ut OCH zoomar till flera av typen. */
+            <ul className="space-y-1">
+              {carGroups.map(([key, items]) => {
                 const isHeritage = items[0].feature_type === 'heritage';
                 const info = groupInfo(key, isHeritage);
                 const isOpen = openGroups.has(key);
                 return (
                   <li key={key}>
-                    <button onClick={() => toggleGroup(key)} className="w-full flex items-center justify-between px-2.5 rounded bg-slate-800/60 hover:bg-slate-800" style={{ minHeight: 44 }}>
+                    <button onClick={() => { toggleGroup(key); fitFeatures(items); }} className="w-full flex items-center justify-between px-2.5 rounded bg-slate-800/60 hover:bg-slate-800" style={{ minHeight: 44 }}>
                       <span className={`text-sm font-medium ${info.color}`}>{isOpen ? '▾' : '▸'} {info.sv}</span>
                       <span className="text-xs text-slate-400 tabular-nums">{items.length}</span>
                     </button>
                     {isOpen && (
                       <ul className="mt-0.5 ml-2 border-l border-slate-700 pl-1">
                         {items.slice(0, 60).map((f, i) => {
-                          // Namngivna objekt visar sitt namn; namnlösa lämningar visar bara ordningsnr
-                          // (typordet står redan i rubriken → ingen upprepning).
                           const name = isHeritage ? heritageName(f.label) : f.label;
                           const shown = name || `#${i + 1}`;
                           return (
                             <li key={`${f.feature_id}-${i}`}>
                               <button onClick={() => flyTo(f, name || info.sv, info.sv)} title="Visa på kartan" className="w-full flex items-center justify-between gap-2 text-left px-2 rounded hover:bg-slate-800" style={{ minHeight: 40 }}>
-                                <span className={`min-w-0 truncate text-sm ${name ? 'text-slate-200' : 'text-slate-400'}`}>{shown}</span>
+                                <span className={`min-w-0 truncate text-sm ${name ? 'text-slate-200' : 'text-slate-400'}`}>{shown}{f.parish ? <span className="text-slate-500"> · {f.parish} sn</span> : null}</span>
                                 <span className="shrink-0 tabular-nums text-xs text-sky-300">{fmtDist(f.distance_km)}</span>
                               </button>
                             </li>
