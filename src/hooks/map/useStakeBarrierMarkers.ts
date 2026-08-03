@@ -135,39 +135,14 @@ export const addStakeBarrierMarkers = (
     const marker = L.marker([barrier.coordinates.lat, barrier.coordinates.lng], {
       icon: iconForZoom(barrier, map.getZoom()),
     })
-      .bindPopup(`
-        <div style="background: rgba(30, 41, 59, 0.98) !important; color: white !important; padding: 14px; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.4); border: 3px solid #475569; backdrop-filter: blur(6px); min-width: 280px;">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <div style="width: 36px; height: 36px; border-radius: 50%; border: 2px solid #475569; background: rgba(71, 85, 105, 0.95); display: flex; align-items: center; justify-content: center; font-size: 16px;">
-              <span style="color: #ffffff;">🛡️</span>
-            </div>
-            <div>
-              <h3 style="font-weight: bold; font-size: 16px; color: #ffffff !important; margin: 0;">${barrier.name}</h3>
-              <p style="font-size: 12px; color: rgba(255,255,255,0.7) !important; margin: 2px 0 0 0;">Försvarshinder</p>
-            </div>
-          </div>
-          
-          <div style="margin-bottom: 12px;">
-            <p style="color: rgba(255,255,255,0.9) !important; font-size: 13px; line-height: 1.5; margin: 0;">${barrier.description}</p>
-          </div>
-          
-          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
-            <span style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: rgba(71, 85, 105, 0.8); color: #ffffff !important; border: 1px solid #475569;">
-              🛡️ Undervattenshinder
-            </span>
-            <span style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: rgba(139, 69, 19, 0.6); color: #ffffff !important; border: 1px solid #8B4513;">
-              ⚔️ Vikingatiden
-            </span>
-          </div>
-          
-          <div style="padding-top: 12px; border-top: 1px solid rgba(75, 85, 99, 0.5);">
-            <p style="font-size: 11px; color: rgba(255,255,255,0.6) !important; margin: 0;">Strategisk försvarsposition från 800-1000-talen</p>
-          </div>
-        </div>
-      `, {
-        maxWidth: 320,
-        className: 'stake-barrier-popup'
-      });
+      .bindPopup(
+        `<div style="min-width:170px">
+          <strong>${barrier.name}</strong>
+          <div style="font-size:12px;color:#0369a1;margin-top:2px">Spärranläggning · vikingatid</div>
+          <div style="font-size:11px;color:#475569;margin-top:4px;line-height:1.45">${barrier.description}</div>
+        </div>`,
+        { maxWidth: 260 }
+      );
 
     map.addLayer(marker);
     markers.push(marker);
