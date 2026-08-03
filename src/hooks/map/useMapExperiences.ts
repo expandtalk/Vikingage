@@ -29,6 +29,8 @@ const CAT: Record<string, { sv: string; color: string }> = {
   attraktion: { sv: 'Attraktion', color: '#db2777' },
   cafe: { sv: 'Café', color: '#b45309' },
   turistbyra: { sv: 'Turistbyrå', color: '#f59e0b' },
+  svampplockning: { sv: 'Svampplockning', color: '#a16207' },
+  fagelskadning: { sv: 'Fågelskådning', color: '#0891b2' },
 };
 const catInfo = (c: string) => CAT[c] ?? { sv: c, color: '#64748b' };
 

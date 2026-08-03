@@ -6,6 +6,7 @@ import {
 } from '@/hooks/useNearMe';
 import { useNearbyFeatures } from '@/hooks/useNearbyFeatures';
 import { useNearbyRanked } from '@/hooks/useNearbyRanked';
+import { useNearbyExperiences } from '@/hooks/useNearbyExperiences';
 
 // Svenska etiketter + färg per feature_type ur nearby_features (fallback = råtypen).
 const TYPE_LABEL: Record<string, { sv: string; color: string }> = {
@@ -19,6 +20,18 @@ const TYPE_LABEL: Record<string, { sv: string; color: string }> = {
   coin: { sv: 'Myntfynd', color: 'text-yellow-300' },
   cult_site: { sv: 'Kultplats', color: 'text-fuchsia-300' },
   maritime_node: { sv: 'Maritim nod', color: 'text-cyan-300' },
+  // Upplevelser (experiences) — säsongsfiltrerade via nearby_experiences.
+  badplats: { sv: 'Badplats', color: 'text-sky-300' },
+  camping: { sv: 'Camping', color: 'text-emerald-300' },
+  vandringsled: { sv: 'Vandringsled', color: 'text-amber-300' },
+  utsiktsplats: { sv: 'Utsiktsplats', color: 'text-violet-300' },
+  simhall: { sv: 'Simhall', color: 'text-cyan-300' },
+  golfbana: { sv: 'Golfbana', color: 'text-lime-300' },
+  attraktion: { sv: 'Attraktion', color: 'text-pink-300' },
+  cafe: { sv: 'Café', color: 'text-orange-300' },
+  turistbyra: { sv: 'Turistbyrå', color: 'text-amber-300' },
+  svampplockning: { sv: 'Svampplockning', color: 'text-amber-300' },
+  fagelskadning: { sv: 'Fågelskådning', color: 'text-cyan-300' },
 };
 const capFirst = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const typeInfo = (t: string) => TYPE_LABEL[t] ?? { sv: capFirst(t), color: 'text-slate-300' };
@@ -82,9 +95,12 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
 
   const { data, isFetching } = useNearbyFeatures(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
   const { data: ranked = [] } = useNearbyRanked(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
+  // Säsongsfiltrerade upplevelser (badplatser m.fl.) merge:as in i listan — RPC:n filtrerar på månad.
+  const { data: exp = [] } = useNearbyExperiences(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
   // Filtrera på intresseprofilen (dölj typer vars lager är avslaget).
   const showByInterest = (t: string) => { const k = LAYER_FOR[t]; return k == null ? true : enabledLayers?.[k] !== false; };
-  const rows = (data ?? []).filter((f: any) => showByInterest(f.feature_type)) as NearMeFeature[];
+  const rows = [...(data ?? []), ...exp].filter((f: any) => showByInterest(f.feature_type))
+    .sort((a, b) => a.distance_km - b.distance_km) as NearMeFeature[];
   // "Mest sevärt nära dig" — topp ur rank-RPC:n. Bil-läget leder med fler (översikten).
   const topRanked = ranked.filter((f) => showByInterest(f.feature_type)).slice(0, mode === 'car' ? 12 : 6);
   // Bil-översikt: antal per typ (störst först) — klick zoomar till alla objekt av den typen.
@@ -100,7 +116,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
     }
     return bands.filter((b) => b.items.length > 0);
   })();
-  useEffect(() => { setNearMeResults(rows, isFetching); }, [data, isFetching, enabledLayers]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setNearMeResults(rows, isFetching); }, [data, exp, isFetching, enabledLayers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const locate = () => {
     if (!('geolocation' in navigator)) { setNearMeError('Platstjänst stöds inte i denna webbläsare'); return; }
