@@ -19,7 +19,8 @@ export type ProfileId =
   | "osteolog"
   | "marine"
   | "church"
-  | "geologist";
+  | "geologist"
+  | "adventure";
 
 export type TimePeriod = "all" | "viking_age";
 
@@ -56,6 +57,7 @@ export const PROFILE_IDS: ProfileId[] = [
   "marine",
   "church",
   "geologist",
+  "adventure",
 ];
 
 /** Legacy localStorage-id:n (pre-refaktor-roster) → nya id:n. */
@@ -366,6 +368,27 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
       filters: { visible: true },
     },
   },
+  {
+    id: "adventure",
+    sortOrder: 10,
+    label: { sv: "Äventyr", en: "Adventure" },
+    description: { sv: "Grottor, fornborgar, berg & spökvandringar", en: "Caves, hillforts, mountains & ghost walks" },
+    icon: "mountain",
+    basemap: "terrain",
+    // Grottor (heritage_grotta) tänds via LEGEND_DEFAULTS (på som standard) → syns i denna profil.
+    // Här tänds topp-lagren: fornborgar (berg), vårdkasar, arkeologi, runstenar.
+    layers: on("viking_fortresses", "beacon_sites", "archaeological_sites", "runic_inscriptions"),
+    theme: "earth",
+    primaryLayers: ["viking_fortresses", "archaeological_sites"],
+    defaultPeriod: "all",
+    showTimeline: true,
+    panels: {
+      legend: { visible: true },
+      results: { visible: false },
+      search: { visible: false },
+      filters: { visible: true, emphasis: "minimized" },
+    },
+  },
 ];
 
 /** Fokus-overrides ovanpå ett löst lager-preset (flyttat från rolePresets). */
@@ -407,9 +430,14 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         // Tunga punktlager som annars begraver vattenlinjerna (Daniel: "döljs av alla ikoner").
         heritage_sites: false,
         ecclesiastical_churches: false,
-        maritime: false,
-        maritime_nodes: false,
-        ship_losses: false,
+        // Daniel: rivers-vyn ska tända farleder + maritima noder + hansa + vrak.
+        // (Spärranläggningar = stake_barriers, redan true ovan.)
+        maritime: true,
+        maritime_nodes: true,
+        fairways_modern: true,
+        fairways_historical: true,
+        hanseatic_cities: true,
+        ship_losses: true,
         coins: false,
         beacon_sites: false,
       });
