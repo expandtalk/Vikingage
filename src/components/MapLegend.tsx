@@ -33,8 +33,8 @@ const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   { label: 'Kult, tro & myter', ids: ['religious_places', 'heritage_folklore'] },
   { label: 'Försvar & bevakning', ids: ['cat_defense', 'fort_territories'] },
   { label: 'Makt & samhälle', ids: ['cat_folk', 'estates'] },
-  { label: 'Marinarkeologi', ids: ['heritage_marine', 'maritime'] },   // vrak, vraktradition, pålspärrar, noder, haverier
-  { label: 'Farleder & vatten', ids: ['water_routes'] },
+  // Marinarkeologi inkl. farleder/vattenvägar (Daniel: slå ihop farleder med marinarkeologi).
+  { label: 'Marinarkeologi', ids: ['heritage_marine', 'maritime', 'water_routes'] },   // vrak, vraktradition, pålspärrar, noder, haverier + farleder
   // Mynt & fynd: coins/solidus_die_links, nu egen toppnivå-kategori (cat_coins) —
   // utbrutna ur cat_geo (se not i legendItemGenerators.ts).
   { label: 'Mynt & fynd', ids: ['cat_coins'] },
