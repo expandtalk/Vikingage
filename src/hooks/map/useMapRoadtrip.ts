@@ -18,8 +18,10 @@ const flagIcon = (label: string) => L.divIcon({
   iconSize: [0, 0], iconAnchor: [0, 26],
 });
 
+const dist = (km: number) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`);
+
 export const useMapRoadtrip = ({ map, isMapReady }: Props) => {
-  const { dest, route } = useRoadtrip();
+  const { dest, route, corridor } = useRoadtrip();
   const layerRef = useRef<L.LayerGroup | null>(null);
   const fitRef = useRef<string | null>(null);
 
@@ -32,6 +34,13 @@ export const useMapRoadtrip = ({ map, isMapReady }: Props) => {
 
     L.polyline(route.coords, { color: '#0f172a', weight: 8, opacity: 0.35, lineJoin: 'round' }).addTo(layer);
     L.polyline(route.coords, { color: '#2563eb', weight: 4, opacity: 0.95, lineJoin: 'round' }).addTo(layer);
+
+    // Sevärt längs vägen (korridor): gula prickar med omvägsavstånd. Klick → flyg dit-bron.
+    (corridor ?? []).forEach((f) => {
+      L.circleMarker([f.lat, f.lng], { radius: 5, color: '#78350f', weight: 1, fillColor: '#f59e0b', fillOpacity: 0.95 })
+        .bindPopup(`<strong>${esc(f.label)}</strong><br/><span style="font-size:11px;color:#666">${esc(f.rank_reason)} · ${dist(f.detour_km)} från vägen</span>`)
+        .addTo(layer);
+    });
     L.marker([dest.lat, dest.lng], { icon: flagIcon(dest.label) }).addTo(layer);
 
     const key = `${dest.lat.toFixed(4)},${dest.lng.toFixed(4)}:${route.coords.length}`;
@@ -40,7 +49,7 @@ export const useMapRoadtrip = ({ map, isMapReady }: Props) => {
       try { map.flyToBounds(L.latLngBounds(route.coords), { padding: [50, 50], maxZoom: 13, duration: 0.8 }); } catch { /* noop */ }
     }
     return () => { layer.clearLayers(); };
-  }, [map, isMapReady, dest, route]);
+  }, [map, isMapReady, dest, route, corridor]);
 
   useEffect(() => () => {
     try { if (layerRef.current && map?.hasLayer(layerRef.current)) map.removeLayer(layerRef.current); } catch { /* noop */ }

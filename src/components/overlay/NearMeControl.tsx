@@ -8,8 +8,9 @@ import { useNearbyFeatures } from '@/hooks/useNearbyFeatures';
 import { useNearbyRanked } from '@/hooks/useNearbyRanked';
 import { useNearbyExperiences } from '@/hooks/useNearbyExperiences';
 import {
-  useRoadtrip, setRoadtripSearching, setRoadtripResult, setRoadtripError, clearRoadtrip,
+  useRoadtrip, setRoadtripSearching, setRoadtripResult, setRoadtripCorridor, setRoadtripError, clearRoadtrip,
 } from '@/hooks/useRoadtrip';
+import { useNearbyAlongRoute } from '@/hooks/useNearbyAlongRoute';
 import { geocode, route as computeRoute } from '@/services/routing';
 
 // Svenska etiketter + färg per feature_type ur nearby_features (fallback = råtypen).
@@ -131,6 +132,41 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
     .sort((a, b) => a.distance_km - b.distance_km) as NearMeFeature[];
   // "Mest sevärt nära dig" — topp ur rank-RPC:n. Bil-läget leder med fler (översikten).
   const topRanked = ranked.filter((f) => showByInterest(f.feature_type)).slice(0, mode === 'car' ? 12 : 6);
+
+  // Korridorsökning: sevärt LÄNGS VÄGEN (bara bil-läge + aktiv rutt). Skickar de påslagna
+  // lagertyperna (intresse/legend) till RPC:n; resultatet ordnas som en resväg (frac_along).
+  const CORRIDOR_TYPES = ['runestone', 'church', 'cult_site', 'estate', 'museum', 'heritage', 'maritime_node'];
+  const { data: corridorData } = useNearbyAlongRoute(mode === 'car' ? route?.coords : null, CORRIDOR_TYPES.filter(showByInterest));
+  useEffect(() => { setRoadtripCorridor(corridorData ?? []); }, [corridorData]);
+  const corridorList = [...(corridorData ?? [])].sort((a, b) => a.frac_along - b.frac_along);
+
+  // Kom-ihåg riktig GPS-startpunkt (för "↩ Min plats" + "Kör hem"). Sätts bara vid äkta locate.
+  const homePosRef = useRef<{ lat: number; lng: number } | null>(null);
+  const hoppedAway = !!(pos && homePosRef.current &&
+    (Math.abs(pos.lat - homePosRef.current.lat) > 1e-6 || Math.abs(pos.lng - homePosRef.current.lng) > 1e-6));
+  // Klick på sevärdhet → flytta referenspunkten dit (utforska härifrån) + fäll ihop panelen så
+  // kartan tar hela skärmen. useMapNearMe flyger dit; nearby räknas om från nya punkten.
+  const hopTo = (lat: number, lng: number) => { setNearMePos(lat, lng, 0); setMinimized(true); };
+  const backToMyLocation = () => { const h = homePosRef.current; if (h) setNearMePos(h.lat, h.lng, 0); };
+  // "Kör hem": bilrutt från nuvarande position tillbaka till startpunkten.
+  const goHome = async () => {
+    const h = homePosRef.current; if (!h || !pos) return;
+    setRoadtripSearching();
+    try {
+      const r = await computeRoute(pos, h);
+      if (!r) { setRoadtripError('Kunde inte beräkna vägen hem.'); return; }
+      setRoadtripResult({ lat: h.lat, lng: h.lng, label: 'Min startpunkt' }, r);
+    } catch (e) { setRoadtripError(e instanceof Error ? e.message : 'Fel vid vägen hem.'); }
+  };
+  // Klick på "sevärt längs vägen" → flyg dit + fäll ihop panelen (karta fullskärm).
+  const flyToAlong = (f: { lat: number; lng: number; label: string; feature_type: string; feature_id: string; detour_km: number }) => {
+    (window as unknown as { __nearMeFlyTo?: (a: number, b: number, l?: string, t?: string, d?: string, p?: string | null, u?: string | null, ft?: string | null, fi?: string | null) => void })
+      .__nearMeFlyTo?.(f.lat, f.lng, f.label, typeInfo(f.feature_type).sv, `${fmtDist(f.detour_km)} från vägen`, undefined, undefined, f.feature_type, f.feature_id);
+    setMinimized(true);
+  };
+  // Efter att en rutt beräknats (mål angivet) → fäll ihop panelen så kartan tar hela skärmen.
+  const prevRtStatusRef = useRef(rtStatus);
+  useEffect(() => { if (rtStatus === 'done' && prevRtStatusRef.current !== 'done') setMinimized(true); prevRtStatusRef.current = rtStatus; }, [rtStatus]);
   // Bil-översikt: antal per typ (störst först) — klick zoomar till alla objekt av den typen.
   const carGroups = Object.entries(rows.reduce<Record<string, NearMeFeature[]>>((acc, f) => { (acc[groupKeyOf(f)] ||= []).push(f); return acc; }, {})).sort((a, b) => b[1].length - a[1].length);
   // Gående: bucketa raderna i koncentriska avståndsband upp till vald radie.
@@ -158,6 +194,8 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
     const ok = (p: GeolocationPosition) => {
       // Spara samtycket bara om användaren kryssat "kom ihåg" — annars gäller det bara denna gång.
       if (remember) { try { localStorage.setItem(CONSENT_KEY, '1'); } catch { /* noop */ } }
+      // Riktig GPS-position = "startpunkt/hem" (för "↩ Min plats" + "Kör hem").
+      homePosRef.current = { lat: p.coords.latitude, lng: p.coords.longitude };
       setNearMePos(p.coords.latitude, p.coords.longitude, p.coords.accuracy);
     };
     const fail = (err: GeolocationPositionError) => setNearMeError(
@@ -250,6 +288,12 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
           </div>
         ) : pos ? (
           <>
+            {/* Utforskade man sig bort från sin GPS-plats (klick på sevärdhet) → väg tillbaka. */}
+            {hoppedAway && (
+              <button onClick={backToMyLocation} className="mb-2 w-full text-[11px] text-sky-200 bg-sky-500/10 border border-sky-500/40 rounded py-1.5 hover:bg-sky-500/20" style={{ minHeight: 34 }}>
+                ↩ Tillbaka till min plats
+              </button>
+            )}
             {/* Färdsätt — sätter radie-intervallet (Gående nära, Bil långt) */}
             <div className="flex gap-1 mb-2">
               {TRAVEL_MODES.map((m) => (
@@ -290,6 +334,12 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                     <button type="button" onClick={() => { clearRoadtrip(); setDestQuery(''); }} className="shrink-0 text-slate-400 hover:text-white underline">Rensa</button>
                   </div>
                 )}
+                {homePosRef.current && hoppedAway && (
+                  <button type="button" onClick={goHome} disabled={rtStatus === 'searching'}
+                    className="mt-1 w-full py-1.5 rounded border border-emerald-600/50 text-emerald-200 text-[11px] hover:bg-emerald-600/15 disabled:opacity-50" style={{ minHeight: 34 }}>
+                    🏠 Kör hem (till startpunkten)
+                  </button>
+                )}
               </form>
             )}
           </>
@@ -300,6 +350,31 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
 
       {pos && !error && (
         <div className="flex-1 overflow-y-auto px-2 pb-3">
+          {/* Sevärt LÄNGS VÄGEN — korridorsökning, visas när en bilrutt är aktiv. Ordnad som resväg. */}
+          {mode === 'car' && route && corridorList.length > 0 && (
+            <div className="mb-3">
+              <div className="px-1 mb-1 text-[10px] uppercase tracking-wide text-amber-300/90">🏁 Sevärt längs vägen ({corridorList.length})</div>
+              <ul className="space-y-0.5">
+                {corridorList.map((f) => {
+                  const isHer = f.feature_type === 'heritage';
+                  const name = isHer ? (heritageName(f.label) || capFirst(heritageType(f.label))) : f.label;
+                  return (
+                    <li key={`along-${f.feature_id}`}>
+                      <button onClick={() => flyToAlong(f)} title="Visa på kartan"
+                        className="w-full flex items-center justify-between gap-2 text-left px-2 rounded hover:bg-slate-800" style={{ minHeight: 40 }}>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm text-slate-200">{name}</span>
+                          <span className="block truncate text-[11px] text-amber-300/70">{f.rank_reason}</span>
+                        </span>
+                        <span className="shrink-0 tabular-nums text-xs text-amber-300/80" title="omväg från vägen">{fmtDist(f.detour_km)}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="border-t border-slate-700/60 mt-2" />
+            </div>
+          )}
           {topRanked.length > 0 && (
             <div className="mb-3">
               <div className="flex items-center gap-1 px-1 mb-1 text-[10px] uppercase tracking-wide text-amber-300/90">
@@ -309,14 +384,14 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                 {topRanked.map((f) => {
                   const isHer = f.feature_type === 'heritage';
                   const name = isHer ? (heritageName(f.label) || capFirst(heritageType(f.label))) : f.label;
-                  const typeSv = isHer ? capFirst(heritageType(f.label)) : typeInfo(f.feature_type).sv;
                   return (
                     <li key={`top-${f.feature_id}`}>
-                      <button onClick={() => flyTo(f, name, typeSv)} title="Visa på kartan"
+                      {/* Klick → flytta referenspunkten hit (utforska härifrån), Daniel. */}
+                      <button onClick={() => hopTo(f.lat, f.lng)} title="Utforska härifrån"
                         className="w-full flex items-center justify-between gap-2 text-left px-2 rounded bg-amber-500/5 hover:bg-amber-500/15" style={{ minHeight: 44 }}>
                         <span className="min-w-0">
                           <span className="block truncate text-sm text-slate-100">{name}</span>
-                          <span className="block truncate text-[11px] text-amber-300/80">{f.rank_reason}</span>
+                          <span className="block truncate text-[11px] text-amber-300/80">{f.rank_reason} · utforska härifrån →</span>
                         </span>
                         <span className="shrink-0 tabular-nums text-xs text-sky-300">{fmtDist(f.distance_km)}</span>
                       </button>
