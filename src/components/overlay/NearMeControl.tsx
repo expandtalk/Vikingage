@@ -96,10 +96,12 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   const { data, isFetching } = useNearbyFeatures(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
   const { data: ranked = [] } = useNearbyRanked(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
   // Säsongsfiltrerade upplevelser (badplatser m.fl.) merge:as in i listan — RPC:n filtrerar på månad.
-  const { data: exp = [] } = useNearbyExperiences(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
+  // OBS: INGEN default (= []) här — det skapar ny array-referens varje render, och eftersom exp
+  // ligger i useEffect-deps nedan gav det en oändlig render-loop (React #185). undefined är stabil.
+  const { data: exp } = useNearbyExperiences(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
   // Filtrera på intresseprofilen (dölj typer vars lager är avslaget).
   const showByInterest = (t: string) => { const k = LAYER_FOR[t]; return k == null ? true : enabledLayers?.[k] !== false; };
-  const rows = [...(data ?? []), ...exp].filter((f: any) => showByInterest(f.feature_type))
+  const rows = [...(data ?? []), ...(exp ?? [])].filter((f: any) => showByInterest(f.feature_type))
     .sort((a, b) => a.distance_km - b.distance_km) as NearMeFeature[];
   // "Mest sevärt nära dig" — topp ur rank-RPC:n. Bil-läget leder med fler (översikten).
   const topRanked = ranked.filter((f) => showByInterest(f.feature_type)).slice(0, mode === 'car' ? 12 : 6);
