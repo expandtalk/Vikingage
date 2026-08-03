@@ -33,7 +33,7 @@ export const useMapFortTerritories = ({ map, enabledLegendItems, isMapReady, saf
           ? { color: '#b45309', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.10 }
           : { color: '#64748b', weight: 1, dashArray: '4 4', fillColor: '#94a3b8', fillOpacity: 0.05 };
         L.geoJSON(geom, { style: () => style as any })
-          .bindPopup(`<strong>${f.fort_name}</strong><br/>Teoretiskt borgterritorium (Voronoi, schematiskt)${f.dated ? `<br/>Daterad: ${f.period_start ?? ''}–${f.period_end ?? ''}` : '<br/><em>odaterad — territoriet vägs lägre</em>'}`)
+          .bindPopup(`<strong>${f.fort_name}</strong><br/>Teoretiskt borgterritorium (Voronoi, schematiskt)${f.dated ? `<br/>Daterad: ${f.period_start ?? ''}–${f.period_end ?? ''}` : '<br/><em>odaterad — territoriet vägs lägre</em>'}<br/><a href="/fortresses" style="font-size:11px;color:#0ea5e9">Läs mer om fornborgar →</a>`)
           .addTo(g);
       }
       if (safelyAddLayer(g)) ref.current = g;

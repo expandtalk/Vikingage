@@ -36,7 +36,7 @@ export const useMapElementMarkers = ({ map, isMapReady }: Props) => {
       rows.forEach((r) => {
         if (r.lat == null || r.lng == null) return;
         L.circleMarker([r.lat, r.lng], { radius: 5, color: '#78350f', weight: 1, fillColor: '#fbbf24', fillOpacity: 0.9 })
-          .bindPopup(`<strong>${esc(r.name)}</strong><br/><span style="font-size:11px;color:#64748b">led: ${esc(key)}${r.element_category ? ` · ${esc(r.element_category)}` : ''}</span>`)
+          .bindPopup(`<strong>${esc(r.name)}</strong><br/><span style="font-size:11px;color:#64748b">Ortnamnsled: ${esc(key)}${r.element_category ? ` · ${esc(r.element_category)}` : ''}</span><br/><a href="/sv/ortnamn" style="font-size:11px;color:#0ea5e9">Om ortnamnsleden →</a>`)
           .addTo(layer);
       });
       setSpotlight({ key, count: rows.length });

@@ -59,7 +59,7 @@ export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAdd
         const marker = L.circleMarker(w.ll, {
           radius: isBorder ? 6 : 5, color: '#7c2d12', weight: 2,
           fillColor: isBorder ? '#f59e0b' : '#d97706', fillOpacity: 0.95,
-        }).bindPopup(`<strong>${w.name}</strong>`);
+        }).bindPopup(`<strong>${w.name}</strong><br/><span style="font-size:11px;color:#78350f">${isBorder ? 'Landskapsgräns på Eriksgatan' : 'Anhalt/etapp på Eriksgatan'}</span>`);
         if (safelyAddLayer(marker)) layersRef.current.push(marker);
       });
 

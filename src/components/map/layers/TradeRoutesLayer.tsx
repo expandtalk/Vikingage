@@ -130,6 +130,10 @@ export const TradeRoutesLayer: React.FC<TradeRoutesLayerProps> = ({
             coord.nameEn && language === 'en' ? coord.nameEn : coord.name,
             { permanent: false, direction: 'top' }
           );
+          marker.bindPopup(
+            `<div style="min-width:160px"><strong>${coord.nameEn && language === 'en' ? coord.nameEn : coord.name}</strong><br/>`
+            + `<span style="font-size:12px;color:#64748b">${language === 'sv' ? 'Handelsstad' : 'Trading city'} · ${language === 'sv' ? route.name : route.nameEn}</span></div>`
+          );
 
           layerGroup.addLayer(marker);
         }
@@ -148,6 +152,10 @@ export const TradeRoutesLayer: React.FC<TradeRoutesLayerProps> = ({
           portageMarker.bindTooltip(
             `⚓ ${coord.nameEn && language === 'en' ? coord.nameEn : coord.name}`,
             { permanent: false, direction: 'top' }
+          );
+          portageMarker.bindPopup(
+            `<div style="min-width:180px"><strong>⚓ ${coord.nameEn && language === 'en' ? coord.nameEn : coord.name}</strong><br/>`
+            + `<span style="font-size:12px;color:#64748b">${language === 'sv' ? 'Portage (dragställe mellan vatten)' : 'Portage (overland haul between waters)'} · ${language === 'sv' ? route.name : route.nameEn}</span></div>`
           );
 
           layerGroup.addLayer(portageMarker);

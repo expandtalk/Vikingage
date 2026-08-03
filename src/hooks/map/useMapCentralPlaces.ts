@@ -37,7 +37,7 @@ export const useMapCentralPlaces = ({ map, enabledLegendItems, isMapReady }: Pro
       (cp.data ?? []).forEach((g: any) => {
         L.circleMarker([g.lat, g.lng], { radius: 8, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.25, pane: 'markerPane' })
           .bindTooltip(g.name, { permanent: true, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
-          .bindPopup(`<b>${g.name}</b><br/><span style="font-size:11px">Centralort${g.confidence ? ` · ${g.confidence}` : ''}</span>${g.source ? `<br/><span style="font-size:10px;color:#94a3b8">Källa: ${g.source}</span>` : ''}`)
+          .bindPopup(`<b>${g.name}</b><br/><span style="font-size:11px">Centralort${g.confidence ? ` · ${g.confidence}` : ''}</span>${g.source ? `<br/><span style="font-size:10px;color:#94a3b8">Källa: ${g.source}</span>` : ''}<br/><a href="/sv/angermanland" style="font-size:11px;color:#0ea5e9">Läs mer →</a>`)
           .addTo(layer);
       });
       (cpn.data ?? []).forEach((n: any) => {
