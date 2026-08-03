@@ -26,6 +26,8 @@ import {
   Tag,
   CalendarClock,
   Share2,
+  Headphones,
+  Cross,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -51,7 +53,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { routes } from '@/config/routes';
 
-type Category = 'inscriptions' | 'places' | 'history' | 'science';
+type Category = 'inscriptions' | 'places' | 'themes' | 'history' | 'science';
 
 interface NavLink {
   pathEn: string;
@@ -66,10 +68,11 @@ interface NavLink {
   authOnly?: boolean;
 }
 
-const CATEGORY_ORDER: Category[] = ['inscriptions', 'places', 'history', 'science'];
+const CATEGORY_ORDER: Category[] = ['inscriptions', 'places', 'themes', 'history', 'science'];
 const CATEGORY_LABELS: Record<Category, { sv: string; en: string }> = {
   inscriptions: { sv: 'Runinskrifter', en: 'Inscriptions' },
   places: { sv: 'Platser & kartor', en: 'Places & maps' },
+  themes: { sv: 'Teman & orter', en: 'Themes & places' },
   history: { sv: 'Historia', en: 'History' },
   science: { sv: 'Vetenskap', en: 'Science' },
 };
@@ -216,6 +219,49 @@ const EXTRA_LINKS: NavLink[] = [
     descEn: 'All gallows and execution sites in Sweden plus dated executions, with a time slider and evidence grading.',
     icon: Landmark, category: 'history',
   },
+  // Teman & orter — de tvåspråkiga forsknings-/regionsidorna + helgon-hubben.
+  {
+    pathEn: '/kalmar', pathSv: '/sv/kalmar',
+    labelSv: 'Kalmar', labelEn: 'Kalmar',
+    descSv: 'Kalmar och Kalmarsund — centralorter, slott och sund över tid.',
+    descEn: 'Kalmar and the Kalmar Strait — central places, castle and sound over time.',
+    icon: Castle, category: 'themes',
+  },
+  {
+    pathEn: '/oland', pathSv: '/sv/oland',
+    labelSv: 'Öland', labelEn: 'Öland',
+    descSv: 'Ölands vikingatida vägnät, centralplatser och kyrkor.',
+    descEn: "Öland's Viking-age road network, central places and churches.",
+    icon: Landmark, category: 'themes',
+  },
+  {
+    pathEn: '/angermanland', pathSv: '/sv/angermanland',
+    labelSv: 'Ångermanland', labelEn: 'Ångermanland',
+    descSv: 'Centralorter och kolonisation i Ångermanland.',
+    descEn: 'Central places and colonisation in Ångermanland.',
+    icon: Compass, category: 'themes',
+  },
+  {
+    pathEn: '/staket', pathSv: '/sv/staket',
+    labelSv: 'Stäket & Mälaren', labelEn: 'Stäket & Lake Mälaren',
+    descSv: 'Mälaren som havsvik — var seglade Olav 1007? DEM-strandlinje.',
+    descEn: 'Lake Mälaren as a sea bay — where did Olav sail in 1007?',
+    icon: Waves, category: 'themes',
+  },
+  {
+    pathEn: '/en/saint-olav', pathSv: '/sv/sankt-olof',
+    labelSv: 'Sankt Olof', labelEn: 'Saint Olav',
+    descSv: 'Helgonet Olav: kyrkoruin, seglingen, kult och Nidaros.',
+    descEn: 'Saint Olav: church ruin, the voyage, cult and Nidaros.',
+    icon: Church, category: 'themes',
+  },
+  {
+    pathEn: '/en/saints', pathSv: '/sv/helgon',
+    labelSv: 'Helgon', labelEn: 'Saints',
+    descSv: 'Nordens helgon — Olof, Erik, Birgitta m.fl., med källkritik.',
+    descEn: 'The saints of the North — Olav, Erik, Birgitta and more.',
+    icon: Cross, category: 'themes',
+  },
 ];
 
 const home: NavLink = {
@@ -239,6 +285,14 @@ const game: NavLink = {
   icon: Swords,
 };
 
+const podcast: NavLink = {
+  pathEn: '/podcast', pathSv: '/podcast',
+  labelSv: 'Podcast', labelEn: 'Podcast',
+  descSv: 'Ljudberättelser om runstenar, sagor och myter.',
+  descEn: 'Audio stories about runestones, sagas and myths.',
+  icon: Headphones,
+};
+
 /** Single source of truth for the app's navigation links, in both languages. */
 const useNavLinks = (): NavLink[] => {
   const routeLinks: NavLink[] = routes.map((route) => {
@@ -256,7 +310,7 @@ const useNavLinks = (): NavLink[] => {
     };
   });
 
-  return [home, game, ...routeLinks, ...EXTRA_LINKS, profile];
+  return [home, game, podcast, ...routeLinks, ...EXTRA_LINKS, profile];
 };
 
 const useResolveLink = () => {
@@ -360,6 +414,7 @@ export const Navigation: React.FC = () => {
         })}
 
         {directLink(game)}
+        {directLink(podcast)}
       </NavigationMenuList>
     </NavigationMenu>
   );

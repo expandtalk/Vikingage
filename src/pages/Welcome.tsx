@@ -10,7 +10,6 @@ import { useWelcomeLocalizedText } from '@/hooks/useWelcomeLocalizedText';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 // Lazy load components that are not immediately visible
-const PodcastPromotion = lazy(() => import('../components/welcome/PodcastPromotion').then(module => ({ default: module.PodcastPromotion })));
 const WelcomeFooter = lazy(() => import('../components/welcome/WelcomeFooter').then(module => ({ default: module.WelcomeFooter })));
 
 const Welcome = () => {
@@ -80,11 +79,6 @@ const Welcome = () => {
       <ViewLauncherGrid dbStats={displayStats} />
 
       {/* Podcasten näst sist — precis före footern */}
-      <section className="container mx-auto px-4 py-8">
-        <Suspense fallback={<div className="h-32 animate-pulse bg-white/10 rounded-lg" />}>
-          <PodcastPromotion />
-        </Suspense>
-      </section>
 
       <Suspense fallback={<div className="h-16 animate-pulse bg-white/10 rounded-lg mx-4" />}>
         <WelcomeFooter />
