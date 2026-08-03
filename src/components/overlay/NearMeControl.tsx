@@ -7,6 +7,10 @@ import {
 import { useNearbyFeatures } from '@/hooks/useNearbyFeatures';
 import { useNearbyRanked } from '@/hooks/useNearbyRanked';
 import { useNearbyExperiences } from '@/hooks/useNearbyExperiences';
+import {
+  useRoadtrip, setRoadtripSearching, setRoadtripResult, setRoadtripError, clearRoadtrip,
+} from '@/hooks/useRoadtrip';
+import { geocode, route as computeRoute } from '@/services/routing';
 
 // Svenska etiketter + färg per feature_type ur nearby_features (fallback = råtypen).
 const TYPE_LABEL: Record<string, { sv: string; color: string }> = {
@@ -94,6 +98,25 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // Minimera-läge: fäll ihop panelen till bara rubrikraden (behåll position/träffar) — Daniel
   // ville kunna få undan Near me på desktop utan att stänga och tappa sin lokalisering.
   const [minimized, setMinimized] = useState(false);
+  // Roadtrip (bil-läge): skriv ett mål → geokoda → rita bilrutt. Store ⇄ useMapRoadtrip.
+  const { dest, route, status: rtStatus, error: rtError } = useRoadtrip();
+  const [destQuery, setDestQuery] = useState('');
+  const goRoadtrip = async () => {
+    const q = destQuery.trim();
+    if (!q || !pos) return;
+    setRoadtripSearching();
+    try {
+      const g = await geocode(q);
+      if (!g) { setRoadtripError(`Hittade ingen plats för "${q}" i Sverige.`); return; }
+      const r = await computeRoute(pos, g);
+      if (!r) { setRoadtripError('Kunde inte beräkna en bilrutt dit.'); return; }
+      setRoadtripResult({ lat: g.lat, lng: g.lng, label: g.label }, r);
+    } catch (e) {
+      setRoadtripError(e instanceof Error ? e.message : 'Något gick fel vid ruttberäkningen.');
+    }
+  };
+  // Städa bort rutten när Near me stängs/avmonteras (annars ligger den kvar på kartan).
+  useEffect(() => () => clearRoadtrip(), []);
   const activeMode = TRAVEL_MODES.find((m) => m.key === mode) ?? TRAVEL_MODES[0];
 
   const { data, isFetching } = useNearbyFeatures(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
@@ -207,7 +230,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
           <button onClick={() => setMinimized((m) => !m)} aria-label={minimized ? 'Expandera' : 'Minimera'} title={minimized ? 'Expandera' : 'Minimera'} className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
             {minimized ? <ChevronUp className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
           </button>
-          <button onClick={closeNearMe} aria-label="Stäng" className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
+          <button onClick={() => { clearRoadtrip(); closeNearMe(); }} aria-label="Stäng" className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -249,6 +272,26 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                 onChange={(e) => setNearMeRadiusKm(Number(e.target.value))} className="flex-1 accent-sky-500 cursor-pointer" aria-label="Sökradie i kilometer" />
               <span className="text-slate-400 whitespace-nowrap">{isFetching ? '…' : `${rows.length} objekt`}</span>
             </div>
+            {/* Roadtrip: skriv ett mål → geokodad bilrutt ritas på kartan (bil-läge). */}
+            {mode === 'car' && (
+              <form onSubmit={(e) => { e.preventDefault(); goRoadtrip(); }} className="mt-2">
+                <div className="flex gap-1">
+                  <input value={destQuery} onChange={(e) => setDestQuery(e.target.value)} placeholder="Kör till… (t.ex. Tullinge)"
+                    className="flex-1 min-w-0 px-2 py-1.5 rounded border border-slate-700 bg-slate-800 text-slate-100 text-xs placeholder:text-slate-500" style={{ minHeight: 36 }} />
+                  <button type="submit" disabled={!destQuery.trim() || rtStatus === 'searching'}
+                    className="shrink-0 px-3 rounded bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium disabled:opacity-50 flex items-center justify-center" style={{ minHeight: 36, minWidth: 56 }}>
+                    {rtStatus === 'searching' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Kör dit'}
+                  </button>
+                </div>
+                {rtError && <p className="mt-1 text-[11px] text-rose-300">{rtError}</p>}
+                {route && dest && rtStatus === 'done' && (
+                  <div className="mt-1 flex items-center justify-between gap-2 text-[11px]">
+                    <span className="text-sky-200 truncate">🏁 {dest.label} · {route.distanceKm.toFixed(0)} km · ~{Math.round(route.durationMin)} min</span>
+                    <button type="button" onClick={() => { clearRoadtrip(); setDestQuery(''); }} className="shrink-0 text-slate-400 hover:text-white underline">Rensa</button>
+                  </div>
+                )}
+              </form>
+            )}
           </>
         ) : (
           <button onClick={locate} className="w-full py-2.5 rounded bg-sky-600/90 hover:bg-sky-600 text-white text-sm font-medium" style={{ minHeight: 44 }}>Hämta min position</button>

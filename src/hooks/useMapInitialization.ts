@@ -20,6 +20,7 @@ import { useMapSpeciesMarkers } from './map/useMapSpeciesMarkers';
 import { useMapElementMarkers } from './map/useMapElementMarkers';
 import { useMapRuler } from './map/useMapRuler';
 import { useMapNearMe } from './map/useMapNearMe';
+import { useMapRoadtrip } from './map/useMapRoadtrip';
 import { useMapFieldNav } from './map/useMapFieldNav';
 import { useFieldNavGeolocation } from './map/useFieldNavGeolocation';
 import { useFieldNavWakeLock } from './map/useFieldNavWakeLock';
@@ -249,6 +250,9 @@ export const useMapInitialization = ({
 
   // "Near me": min position + sökradie + närhetsträffar (mobilt närhetsuppslag).
   useMapNearMe({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Roadtrip-läge (bil): ritar geokodad bilrutt + målmarkör. Store matas av NearMeControl.
+  useMapRoadtrip({ map: map.current, isMapReady: isMapReadyRef });
 
   // Fältläge (steg 1: bil/vägföljning) — live-position + roterande riktningskägla, opt-in.
   useMapFieldNav({ map: map.current, isMapReady: isMapReadyRef });
