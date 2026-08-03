@@ -167,6 +167,42 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // Efter att en rutt beräknats (mål angivet) → fäll ihop panelen så kartan tar hela skärmen.
   const prevRtStatusRef = useRef(rtStatus);
   useEffect(() => { if (rtStatus === 'done' && prevRtStatusRef.current !== 'done') setMinimized(true); prevRtStatusRef.current = rtStatus; }, [rtStatus]);
+
+  // Fallback utan GPS (nekad plats/desktop): skriv in en plats (geokoda) eller släpp en nål på
+  // kartan → sätter referenspunkten så nearby/korridor/roadtrip funkar ändå (Daniel).
+  const [manualQuery, setManualQuery] = useState('');
+  const [manualBusy, setManualBusy] = useState(false);
+  const geocodeToPos = async () => {
+    const q = manualQuery.trim(); if (!q) return;
+    setManualBusy(true);
+    try {
+      const g = await geocode(q);
+      if (!g) { setNearMeError(`Hittade ingen plats för "${q}".`); return; }
+      setNearMePos(g.lat, g.lng, 0);
+    } catch { setNearMeError('Kunde inte slå upp platsen.'); }
+    finally { setManualBusy(false); }
+  };
+  const pickOnMap = () => { (window as unknown as { __nearMePickLocation?: () => void }).__nearMePickLocation?.(); setMinimized(true); };
+  // Första etablerade positionen (GPS/geokod/nål) blir "startpunkt/hem" för ↩ och Kör hem.
+  useEffect(() => { if (pos && !homePosRef.current) homePosRef.current = { lat: pos.lat, lng: pos.lng }; }, [pos]);
+
+  // Manuell-position-block (återanvänds i nekad-läget + föreläget innan man lokaliserat).
+  const manualBlock = (
+    <div className="mt-2">
+      <p className="text-[11px] text-slate-400 mb-1">Eller välj plats manuellt:</p>
+      <div className="flex gap-1">
+        <input value={manualQuery} onChange={(e) => setManualQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') geocodeToPos(); }}
+          placeholder="Skriv ort eller adress" className="flex-1 min-w-0 px-2 py-1.5 rounded border border-slate-700 bg-slate-800 text-slate-100 text-xs placeholder:text-slate-500" style={{ minHeight: 36 }} />
+        <button type="button" onClick={geocodeToPos} disabled={!manualQuery.trim() || manualBusy}
+          className="shrink-0 px-3 rounded bg-sky-600 hover:bg-sky-500 text-white text-xs disabled:opacity-50 flex items-center justify-center" style={{ minHeight: 36, minWidth: 56 }}>
+          {manualBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Använd'}
+        </button>
+      </div>
+      <button type="button" onClick={pickOnMap} className="mt-1 w-full py-1.5 rounded border border-slate-600 text-slate-200 text-[11px] hover:bg-slate-800" style={{ minHeight: 34 }}>
+        📍 Släpp en nål på kartan
+      </button>
+    </div>
+  );
   // Bil-översikt: antal per typ (störst först) — klick zoomar till alla objekt av den typen.
   const carGroups = Object.entries(rows.reduce<Record<string, NearMeFeature[]>>((acc, f) => { (acc[groupKeyOf(f)] ||= []).push(f); return acc; }, {})).sort((a, b) => b[1].length - a[1].length);
   // Gående: bucketa raderna i koncentriska avståndsband upp till vald radie.
@@ -282,9 +318,12 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
         {locating ? (
           <div className="flex items-center gap-2 text-sky-300 text-sm py-2"><Loader2 className="h-4 w-4 animate-spin" />Hämtar din position…</div>
         ) : error ? (
-          <div className="flex items-center justify-between gap-2 text-rose-300 text-sm py-2">
-            <span>{error}</span>
-            <button onClick={locate} className="shrink-0 px-2.5 py-1.5 rounded border border-rose-500/50 text-rose-200 hover:bg-rose-500/15" style={{ minHeight: 40 }}>Försök igen</button>
+          <div className="py-2">
+            <div className="flex items-center justify-between gap-2 text-rose-300 text-sm">
+              <span>{error}</span>
+              <button onClick={locate} className="shrink-0 px-2.5 py-1.5 rounded border border-rose-500/50 text-rose-200 hover:bg-rose-500/15" style={{ minHeight: 40 }}>Försök igen</button>
+            </div>
+            {manualBlock}
           </div>
         ) : pos ? (
           <>
@@ -344,7 +383,10 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
             )}
           </>
         ) : (
-          <button onClick={locate} className="w-full py-2.5 rounded bg-sky-600/90 hover:bg-sky-600 text-white text-sm font-medium" style={{ minHeight: 44 }}>Hämta min position</button>
+          <div>
+            <button onClick={locate} className="w-full py-2.5 rounded bg-sky-600/90 hover:bg-sky-600 text-white text-sm font-medium" style={{ minHeight: 44 }}>Hämta min position</button>
+            {manualBlock}
+          </div>
         )}
       </div>
 
