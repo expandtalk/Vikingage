@@ -287,6 +287,8 @@ export const generateBasicInscriptionItems = (
   items.push({ id: 'heritage_kyrkoruin', label: '✝️ Kyrkoruiner', color: '#9f1239', count: 38, enabled: itemEnabled(enabledLegendItems, 'heritage_kyrkoruin') });
   // Avrättnings- & galgplatser — eget togglebart lager (RAÄ Fornsök, galg-glyf). Default av.
   items.push({ id: 'heritage_avrattning', label: '⚖️ Avrättnings- & galgplatser', color: '#7f1d1d', count: 469, enabled: itemEnabled(enabledLegendItems, 'heritage_avrattning') });
+  // Lokalguide/upplevelser (experiences: badplatser m.fl.) — säsongsmedvetet lager, default av.
+  items.push({ id: 'experiences', label: '🏖️ Bad & upplevelser', color: '#0ea5e9', count: 57, enabled: itemEnabled(enabledLegendItems, 'experiences') });
 
   // Historiska Lantmäteri-kartor (overlay-rastrar, opt-in) — togglebara, opacitets-styrda.
   // Tiles serveras statiskt från FTP; lagren visar inget förrän tiles laddats upp.

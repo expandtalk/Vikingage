@@ -11,6 +11,7 @@ import { useMapHeritageSites } from './useMapHeritageSites';
 import { useMapThingSites } from './useMapThingSites';
 import { useMapChurches } from './map/useMapChurches';
 import { useMapChristianSites } from './map/useMapChristianSites';
+import { useMapExperiences } from './map/useMapExperiences';
 import { useMapOverlaySettings } from './useMapOverlaySettings';
 import { useMapProximityProbe } from './map/useMapProximityProbe';
 import { useMapHistoricalOverlays } from './map/useMapHistoricalOverlays';
@@ -212,6 +213,13 @@ export const useMapInitialization = ({
   // för försvunna kyrkor). Gate: periodtogglarna (default PÅ). Detta var det saknade
   // renderingslagret — ChristianSiteMarker fanns men monterades aldrig.
   useMapChristianSites({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+  });
+
+  // Lokalguide/upplevelser (experiences: badplatser m.fl.) — säsongsmedvetet lager.
+  useMapExperiences({
     map: map.current,
     enabledLegendItems,
     isMapReady: isMapReadyRef,

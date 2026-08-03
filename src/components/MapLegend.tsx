@@ -42,7 +42,7 @@ const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   { label: 'Museer & samlingar', ids: ['museums'] },
   { label: 'Vetenskap & tid', ids: ['cat_geo'] },
   { label: 'Kartor & ortnamn', ids: ['historical_maps'] },
-  { label: 'Äventyr & upplevelser', ids: ['spokvandring_kalmar', 'heritage_grotta'] },
+  { label: 'Äventyr & upplevelser', ids: ['spokvandring_kalmar', 'heritage_grotta', 'experiences'] },
 ];
 
 export const MapLegend: React.FC<MapLegendProps> = ({
