@@ -1,7 +1,7 @@
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { generateBasicInscriptionItems } from './legend/legendItemGenerators';
-import { scopeLayersByPeriod } from './legend/layerPeriodScope';
+import { scopeLayersByPeriod, isEarlyPeriod, EARLY_DEFAULT_ON } from './legend/layerPeriodScope';
 import { processLegendItems } from './legend/legendItemProcessor';
 import { filterInscriptionsByLegend } from './useLegendManager/inscriptionFilters';
 import { useFocusManager } from './useFocusManager';
@@ -72,6 +72,32 @@ export const useLegendManager = (
     if (Object.keys(enabledLegendItems).length === 0) return;
     try { localStorage.setItem(SAVED_VIEW_KEY, JSON.stringify(enabledLegendItems)); } catch { /* quota/privat */ }
   }, [enabledLegendItems]);
+
+  // Djuptidens kärninnehåll (megaliter, folkgrupper, mynt, solidi …) seedas som DEFAULT PÅ
+  // EN gång när man byter IN i en förhistorisk period — så kartan inte blir tom. Detta
+  // ERSÄTTER den gamla scope-force:en (som gjorde lagren otogglingsbara). Skillnaden: här är
+  // det bara ett utgångsläge — avbockning skriver rå-staten och sitter kvar (ref-vakt gör att
+  // vi bara seedar vid FAKTISKT periodbyte, inte varje render). Lämnar man djuptid återställs
+  // nycklarna till sina globala defaults så de inte läcker in i vendel/vikingatid.
+  const lastSeededPeriodRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (lastSeededPeriodRef.current === selectedTimePeriod) return;
+    const wasEarly = isEarlyPeriod(lastSeededPeriodRef.current ?? undefined);
+    lastSeededPeriodRef.current = selectedTimePeriod;
+    if (isEarlyPeriod(selectedTimePeriod)) {
+      setEnabledLegendItems(prev => {
+        const next = { ...prev };
+        for (const k of EARLY_DEFAULT_ON) next[k] = true;
+        return next;
+      });
+    } else if (wasEarly) {
+      setEnabledLegendItems(prev => {
+        const next = { ...prev };
+        for (const k of EARLY_DEFAULT_ON) next[k] = LEGEND_DEFAULTS[k] ?? false;
+        return next;
+      });
+    }
+  }, [selectedTimePeriod]);
   
   console.log(`🎭 Legend Manager Debug (UPDATED):`);
   console.log(`  - Total inscriptions received: ${inscriptions.length}`);

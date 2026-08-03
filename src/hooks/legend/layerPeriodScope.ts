@@ -74,8 +74,12 @@ export const scopeLayersByPeriod = (
   for (const k of Object.keys(enabled)) {
     scoped[k] = EARLY_ALLOWED_LAYERS.has(k) ? enabled[k] : false;
   }
-  // Tänd djuptidens kärninnehåll så kartan visar något (annars: runstenar dolda, inget kvar).
-  for (const k of EARLY_DEFAULT_ON) scoped[k] = true;
+  // OBS: djuptidens kärninnehåll (EARLY_DEFAULT_ON: megaliter, folkgrupper, mynt …) tänds
+  // INTE längre HÄR. Att tvinga på dem varje render gjorde dem OTOGGLINGSBARA (Daniel: "kan
+  // inte stänga av dösar/hällristningar/trindyxor/skeppssättningar/Kulturlager") — det bröt
+  // legendens grundinvariant (itemEnabled.ts: ett lager ska ALDRIG bli otogglingsbart). De
+  // seedas i stället EN gång vid periodbytet in i djuptid (useLegendManager) som ett
+  // utgångsläge användaren sedan kan stänga av. scope får bara MASKA bort, aldrig tvinga på.
   for (const k of FORCE_OFF_OPT_OUT) {
     if (!EARLY_ALLOWED_LAYERS.has(k)) scoped[k] = false;
   }
