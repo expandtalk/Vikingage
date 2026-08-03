@@ -32,7 +32,7 @@ const LEGEND_THEMES: { label: string; ids: string[] }[] = [
   // Hednisk kult (gudar/Freja/offerplatser) + folktradition & sägen (sägenstenar, jätte-/troll,
   // vårdträd, GROTTOR) hör ihop under tro/myt — skilt från kristna kyrkor.
   { label: 'Kult, tro & myter', ids: ['religious_places', 'heritage_folklore'] },
-  { label: 'Försvar & bevakning', ids: ['cat_defense', 'fort_territories'] },
+  { label: 'Försvar & bevakning', ids: ['cat_defense', 'fort_territories', 'beacon_sites'] },
   { label: 'Makt & samhälle', ids: ['cat_folk', 'estates', 'heritage_avrattning'] },
   // Marinarkeologi inkl. farleder/vattenvägar (Daniel: slå ihop farleder med marinarkeologi).
   { label: 'Marinarkeologi', ids: ['heritage_marine', 'maritime', 'water_routes'] },   // vrak, vraktradition, pålspärrar, noder, haverier + farleder

@@ -163,6 +163,38 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     if (pts.length && !fittedRef.current) { map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 12 }); fittedRef.current = true; }
   }, [places, harbor, coins, canEdit, onMove]);
 
+  // Medeltida stadsmuren (fort_at-RPC, evidensklass-färgad) — samma data som /sv/kalmar-stadsmur,
+  // ritad vid ~1400 (peak medeltid). Eget lager så den inte rensas vid ortnamns-omritning.
+  const wallRef = useRef<L.LayerGroup | null>(null);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await (supabase.rpc as unknown as (fn: string, a: Record<string, unknown>) => Promise<{ data: { features: any[] } | null; error: unknown }>)(
+        'fort_at', { p_year: 1400, p_site: 'Kalmar gamla stad', p_min_certainty: 0.01 });
+      if (cancelled || error || !data?.features?.length || !mapRef.current) return;
+      if (wallRef.current) { try { map.removeLayer(wallRef.current); } catch { /* noop */ } }
+      const grp = L.layerGroup();
+      const EV: Record<string, { color: string; dash?: string }> = {
+        uppmatt: { color: '#22c55e' }, gravd_punkt: { color: '#14b8a6' }, bevarat_ovan_mark: { color: '#16a34a' },
+        interpolerad: { color: '#eab308', dash: '8 6' }, hypotetisk: { color: '#94a3b8', dash: '2 8' },
+      };
+      for (const f of data.features) {
+        const p = f.properties || {};
+        const ev = EV[p.evidence_class ?? ''] ?? EV.hypotetisk;
+        const opacity = 0.25 + 0.75 * (p.certainty ?? 1);
+        L.geoJSON(f.geometry, {
+          style: { color: ev.color, weight: 3, opacity, dashArray: ev.dash },
+          pointToLayer: (_ft, ll) => L.circleMarker(ll, { radius: 5, color: '#1c1917', weight: 1, fillColor: ev.color, fillOpacity: opacity }),
+        }).bindPopup(`<b>${p.name ?? 'Stadsmur'}</b> <span style="font-size:10px;color:#888">medeltida stadsmur (~1400)</span>${p.span ? `<br/><span style="font-size:11px;color:#666">${p.span}</span>` : ''}`).addTo(grp);
+      }
+      grp.addTo(map);
+      wallRef.current = grp;
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div>
       <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
@@ -271,6 +303,29 @@ const Kalmar = () => {
             de äldsta <strong>breven</strong> och <strong>fynden</strong>.
           </p>
         </div>
+
+        {/* SPÖKVANDRING (Äventyr-pilot) — länk till den publicerade mobilsidan */}
+        <a
+          href="https://claude.ai/code/artifact/8ce236d2-f48a-46fa-9558-54bcf5cea2c0"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block mb-4 rounded-lg"
+        >
+          <Card className="viking-card border-amber-700/40 hover:border-amber-500/60 transition-colors">
+            <CardContent className="py-4 flex items-center gap-3">
+              <span className="text-2xl" aria-hidden="true">🕯️</span>
+              <div className="min-w-0 flex-1">
+                <div className="text-gold font-semibold flex items-center gap-2">
+                  Kalmar spökvandring
+                  <span className="text-[10px] uppercase tracking-wide bg-amber-500/15 text-amber-300 rounded px-1.5 py-0.5">Pilot</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  En mörk kvällsvandring genom Gamla stan &amp; Slottsfjärden — 5 stopp med navigation. Öppnas i mobilen. →
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </a>
 
         {/* KARTA */}
         <Card className="viking-card mb-4">
@@ -431,6 +486,37 @@ const Kalmar = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* ORTNAMNET KALMAR — etymologi (belagt + hypotes) */}
+        <Card className="viking-card mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-gold">
+              <ScrollText className="h-5 w-5" /> Ortnamnet Kalmar — <em>kalm</em> + <em>mar</em>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>
+              <strong className="text-foreground">Belagt (SOL / Wikipedia):</strong> Kalmar (fsv.{' '}
+              <em>Kalmarnar</em>) innehåller <em>kalm</em> — sydsvenskt dialektord för 'stenröse,
+              stenanhopning' — och <em>mar</em> 'grund vik'. Alltså{' '}
+              <em>"den grunda viken vid stenrösena / den steniga marken"</em>. Traditionellt syftar
+              viken på <strong>Kalmarsund</strong>.
+            </p>
+            <p>
+              <strong className="text-amber-300">Hypotes (Daniel Larsson, under utredning):</strong>{' '}
+              den avsedda <em>maren</em> kan vara en mer lokal vik än hela sundet. Kandidater:{' '}
+              <strong>Västa sjön</strong>, <strong>Långviken</strong> eller <strong>Stensö</strong>{' '}
+              (fiskläge + kanal — namnet bär självt <em>sten</em>). <em>Ej belagt</em>; namnen är ännu
+              inte i ortregistret — nästa steg är att pröva dem mot SOL/Isof och strandförskjutningen.
+            </p>
+            <p>
+              <strong className="text-foreground">Parallell:</strong> samma bildning återkommer i{' '}
+              <strong>Kalmar socken, Håbo härad (Uppland)</strong> — en vik vid Mälaren (näset{' '}
+              <em>Kalmarnäs</em>) med ~17 steniga lämningar (rösen/stensättningar) intill. Två Kalmar,
+              samma recept: grund vik + stenig mark.
+            </p>
+          </CardContent>
+        </Card>
 
         {/* STATUS */}
         <Card className="viking-card mb-4 border-amber-600/40">

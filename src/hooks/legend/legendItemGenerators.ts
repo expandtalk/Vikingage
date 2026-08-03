@@ -170,8 +170,16 @@ export const generateBasicInscriptionItems = (
     enabled: itemEnabled(enabledLegendItems, 'fort_territories')
   });
 
-  // (Vårdkasar ligger under "Kulturlager" som heritage_vardkase — den fristående
-  //  beacon_sites-knappen togs bort för att undvika dubblett.)
+  // Vårdkasar (beacon_sites) — RAÄ-lämningar (K-samsök, källmärkta raa/lamning) + plats för
+  // Daniels manuella inprickning längs Kalmarkusten/Öland. Fristående lager under "Försvar &
+  // bevakning". heritage_vardkase i Kulturlager är AV som standard → ingen dubbelvisning i praktiken.
+  items.push({
+    id: 'beacon_sites',
+    label: '🔥 Vårdkasar (böte)',
+    color: '#b45309',
+    count: dbStats?.layerCounts?.beaconSites ?? 340,
+    enabled: itemEnabled(enabledLegendItems, 'beacon_sites')
+  });
 
   // Kulturarv (spatialt) — viewport-laddat lager (Steg 1). Skalar till obegränsat
   // antal punkter; laddar bara det som är i vyn via sites_in_bbox. AV som standard.
@@ -595,6 +603,7 @@ export const generateBasicInscriptionItems = (
     keep('religious_places'),
     keep('water_routes'), // Vägar ligger nu som undergrupp inuti water_routes
     group('cat_defense', '🏰 ' + t('fortresses'), '#dc2626', ['viking_fortresses', 'viking_cities', 'stake_barriers']),
+    keep('beacon_sites'), // egen toppnivå-post; renderas under temat "Försvar & bevakning" (MapLegend)
     group('cat_folk', '🛡️ ' + t('peoplesAndRegions'), '#8b5cf6', ['germanic_timeline', 'folk_groups', 'viking_regions', 'thing_sites']),
     // OBS: place_names (Ortnamn) ligger MEDVETET utanför cat_geo — den lyfts till egen
     // topp-nivå-post så den alltid går att stänga av med ETT klick (Daniel: namnelementen

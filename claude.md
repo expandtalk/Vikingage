@@ -14,6 +14,25 @@ Viking Age är en omfattande plattform för runologisk forskning och analys av s
 - **Administratörspanel**: Omfattande verktyg för datahantering och import
 - **Flera språk**: Stöd för svenska och engelska
 
+## Hederlighet & källkritik — INGEN GISSNING (VIKTIGT, gäller allt arbete)
+
+Detta är en **forskningsplattform**. Trovärdigheten är hela produkten. Därför:
+
+- **Gissa ALDRIG och fyll ALDRIG i luckor med egna antaganden som om de vore fakta.** Det gäller
+  historiska uppgifter, ortnamnsetymologier, dateringar, koordinater, personer, händelser, växt-/
+  artnamn — allt.
+- **Om något inte är verifierat: säg det rakt ut.** Skriv "osäkert", "obelagt", "kräver verifiering"
+  eller ställ en fråga — hellre än att leverera en plausibel gissning.
+- **Verifiera mot källa innan påstående:** primärkälla / Wikidata (P625 för koordinater) / RAÄ Fornsök
+  / SOL 2003 / Isof Ortnamnsregistret / Linnés reseskildringar etc. Ange källan.
+- **Koordinater aldrig ur minnet** (1–6 km fel) — verifiera eller markera approximativ.
+- **Skilj FAKTA från SÄGEN.** Sägner/folktro får redovisas — men *som* sägen, tydligt märkt, gärna med
+  källkritiken bredvid (t.ex. "sägnen säger X; Linné identifierade det som Y").
+- Om användaren påpekar en gissning: **erkänn den direkt, dra tillbaka den, och gå till källa** — börja
+  inte försvara eller ersätta med en ny gissning.
+
+Kort: **belagt eller markerat obelagt — aldrig påhittat.**
+
 ## Teknisk Stack
 
 ### Frontend

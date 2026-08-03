@@ -58,6 +58,7 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
   estates_handelsplats: true,
   estates_ovrigt: true,
   stake_barriers: false,
+  beacon_sites: false, // vårdkasar (RAÄ + manuell komplettering), fristående lager under Försvar & bevakning
   viking_regions: false,
   religious_places: false, // (golden master: kategorin är AV som standard i live-generatorn)
   // Kulturlager-barn (viewport-laddade, tunga) — tänd en typ i taget

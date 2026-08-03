@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Crosshair } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { getIconForLegendItem } from './utils';
@@ -60,6 +61,18 @@ export const LegendItemComponent: React.FC<LegendItemProps> = ({
         )}
       </div>
       <div className="flex items-center gap-2 ml-2">
+        {/* Zooma kartan till lagrets "rätta" läge (punktlager in, farleder/rutter ut). Bara när på. */}
+        {item.enabled && (
+          <button
+            type="button"
+            onClick={() => (window as unknown as { __focusLayerViewport?: (id: string) => void }).__focusLayerViewport?.(item.id)}
+            title="Zooma till lagret"
+            aria-label="Zooma till lagret"
+            className="text-slate-400 hover:text-sky-300 p-0.5 flex-shrink-0"
+          >
+            <Crosshair className="h-3.5 w-3.5" />
+          </button>
+        )}
         <Switch
           id={`legend-${item.id}`}
           checked={item.enabled}

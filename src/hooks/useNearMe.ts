@@ -8,6 +8,7 @@ export interface NearMePos { lat: number; lng: number; accuracy: number }
 export interface NearMeFeature {
   feature_type: string; feature_id: string; label: string;
   lat: number; lng: number; distance_km: number;
+  parish?: string | null; source_uri?: string | null; // heritage: socken + Fornsök/kulturarvsdata-id
 }
 interface State {
   open: boolean;

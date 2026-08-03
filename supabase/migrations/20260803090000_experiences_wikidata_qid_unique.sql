@@ -1,0 +1,14 @@
+-- Unik constraint på experiences.wikidata_qid.
+-- Krävs för idempotent upsert (ON CONFLICT (wikidata_qid)) i den återanvändbara
+-- Wikidata-ingest-pipelinen (scripts/data/ingest-wikidata-features.mjs).
+-- experiences.wikidata_qid saknade unik constraint sedan tidigare (till skillnad
+-- från bays.wikidata_qid som redan hade UNIQUE). Tabellen var tom vid migreringen
+-- (0 rader), så ingen dedup-konflikt.
+--
+-- OBS: en plain UNIQUE constraint (ej partiellt index) valdes eftersom Postgres
+-- unique constraints redan tillåter multipla NULL-värden (NULL <> NULL i unik-
+-- kontrollen) — ett partiellt "WHERE wikidata_qid IS NOT NULL"-index provades
+-- först men Postgres ON CONFLICT-inferens matchar inte partiella index om inte
+-- samma WHERE-predikat upprepas i ON CONFLICT-satsen, vilket supabase-js
+-- .upsert() inte stödjer.
+ALTER TABLE public.experiences ADD CONSTRAINT experiences_wikidata_qid_key UNIQUE (wikidata_qid);

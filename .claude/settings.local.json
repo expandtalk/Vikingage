@@ -74,7 +74,16 @@
       "Bash(curl -s \"https://kulturarvsdata.se/ksamsok/api?x-api=test&method=search&hitsPerPage=1&query=$\\(node -e \"console.log\\(encodeURIComponent\\('\\(text=\\\\\"avrättning\\\\\" OR text=\\\\\"galgbacke\\\\\"\\) AND text=\\\\\"Kalmar\\\\\" AND thumbnailExists=j'\\)\\)\"\\)\" -H 'User-Agent: VikingageBot/1.0')",
       "WebFetch(domain:en.wikipedia.org)",
       "WebFetch(domain:sok.riksarkivet.se)",
-      "Bash(awk '/broborg/{f=1} f{print NR\": \"$0} f&&/^  \\\\},/{c++; if\\(c>=1\\)exit}' src/data/excursions.ts)"
+      "Bash(awk '/broborg/{f=1} f{print NR\": \"$0} f&&/^  \\\\},/{c++; if\\(c>=1\\)exit}' src/data/excursions.ts)",
+      "Bash(xargs grep -ln \"\\\\.description\\\\|\\\\.findType\")",
+      "Bash(npx vitest *)",
+      "Bash(git stash *)",
+      "Bash(bash __TRACKED_VAR__/scripts/sdd-workspace docs/superpowers/plans/2026-08-02-faltlage-steg1-bil-vagfoljning.md)",
+      "Bash(echo \"EXIT:$?\")",
+      "WebFetch(domain:alltpaoland.se)",
+      "WebFetch(domain:minnen.se)",
+      "WebFetch(domain:sv.wikipedia.org)",
+      "Bash(echo \"=== TSC EXIT: $? ===\")"
     ]
   }
 }

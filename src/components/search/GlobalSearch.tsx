@@ -157,8 +157,9 @@ const GoFurther: React.FC<{ hit: Hit; onGo: (route: string) => void; sv: boolean
   );
 };
 
-// variant 'icon' = liten förstoringsglas-ikon (toppnav på övriga sidor);
-// 'hero' = stor Google-lik sökruta (startsidan, före korten). Samma dialog.
+// variant 'icon' = liten förstoringsglas-ikon (toppnav på övriga sidor) → öppnar dialog (⌘K);
+// 'hero' = stor Google-lik sökruta (startsidan) → RIKTIGT inline-fält, träffarna fälls ut under
+// (ingen modal — man skriver direkt i rutan). Samma sök-logik för båda.
 export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant = 'icon' }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -176,8 +177,14 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
   // Starkaste träffen — driver "Gå vidare"-sektionen (dess graf-grannar).
   const [topEntity, setTopEntity] = useState<Hit | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Hero-varianten: inline-fält + utfällbar träfflista (ingen dialog).
+  const heroWrapRef = useRef<HTMLDivElement>(null);
+  const [heroActive, setHeroActive] = useState(false);
 
   useEffect(() => {
+    // ⌘K öppnar dialogen — bara ikon-varianten i toppnav. Hero-varianten söker inline,
+    // så den registrerar INGEN genväg (annars skulle open-toggling nolla hero-frågan).
+    if (variant === 'hero') return;
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -186,7 +193,17 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, []);
+  }, [variant]);
+
+  // Stäng hero-dropdownen vid klick utanför.
+  useEffect(() => {
+    if (!heroActive) return;
+    const onDown = (e: MouseEvent) => {
+      if (heroWrapRef.current && !heroWrapRef.current.contains(e.target as Node)) setHeroActive(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [heroActive]);
 
   useEffect(() => {
     if (open) {
@@ -271,7 +288,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
     return () => clearTimeout(t);
   }, [query, theme]);
 
-  const go = useCallback((route: string) => { setOpen(false); navigate(route); }, [navigate]);
+  const go = useCallback((route: string) => { setOpen(false); setHeroActive(false); navigate(route); }, [navigate]);
   const total = groups.reduce((n, g) => n + g.rows.length, 0);
 
   // Grounded RAG-svar via edge-funktionen search-answer (källfört, inga påhitt).
@@ -292,32 +309,170 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
     }
   }, [query, sv]);
 
-  return (
-    <>
-      {variant === 'hero' ? (
+  // Delad träfflista — samma innehåll i hero-dropdownen och i dialogen.
+  const resultsList = (
+    <div className="max-h-[60vh] overflow-y-auto text-left">
+      {/* AI-svar (grounded RAG) — knapp när man skrivit en fråga, sedan källfört svar */}
+      {!theme && query.trim().length >= 3 && (
+        <div className="border-b border-slate-800 px-4 py-3">
+          {!aiAnswer && !aiLoading && (
+            <button
+              onClick={askAI}
+              className="flex items-center gap-2 text-sm text-amber-200 hover:text-amber-100"
+            >
+              <Sparkles className="h-4 w-4 text-amber-400" />
+              {sv ? `Fråga AI: “${query.trim()}”` : `Ask AI: “${query.trim()}”`}
+            </button>
+          )}
+          {aiLoading && (
+            <div className="flex items-center gap-2 text-sm text-slate-400">
+              <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
+              {sv ? 'AI läser källorna…' : 'AI reading the sources…'}
+            </div>
+          )}
+          {aiAnswer && (
+            <div className="text-sm text-slate-200">
+              <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+                <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
+              </div>
+              <p className="whitespace-pre-wrap leading-relaxed">{aiAnswer}</p>
+              {aiSources.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {aiSources.map((s, i) => {
+                    const meta = META[s.entity_type];
+                    if (!meta) return null;
+                    return (
+                      <button
+                        key={s.entity_id + i}
+                        onClick={() => go(meta.route(s))}
+                        className="rounded border border-slate-600 px-1.5 py-0.5 text-[11px] text-slate-300 hover:border-amber-500/50 hover:text-amber-100"
+                      >
+                        [{i + 1}] {s.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="mt-1.5 text-[10px] text-slate-500">
+                {sv ? 'AI-genererat ur källorna nedan — verifiera via länkarna.' : 'AI-generated from the sources below — verify via the links.'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Aktivt tema: banner med rensa-knapp */}
+      {theme && (() => {
+        const TIcon = themeIcon(theme);
+        return (
+          <div className="flex items-center justify-between border-b border-slate-800 bg-slate-800/40 px-4 py-2">
+            <div className="flex items-center gap-2 text-sm text-amber-100">
+              <TIcon className="h-4 w-4 text-amber-400" />
+              {sv ? theme.name : (theme.name_en ?? theme.name)}
+              <span className="text-xs text-slate-500">{sv ? '— graf + tematiskt sök' : '— graph + thematic search'}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              {theme.slug && (
+                <button onClick={() => go(`/tema/${theme.slug}`)} className="text-xs font-medium text-amber-300 hover:text-amber-100">
+                  {sv ? 'Visa hela temat →' : 'View full theme →'}
+                </button>
+              )}
+              <button onClick={() => setTheme(null)} className="text-slate-400 hover:text-white" aria-label={sv ? 'Rensa tema' : 'Clear theme'}>
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {((query.trim().length >= 2) || theme) && !loading && total === 0 && (
+        <div className="p-6 text-center text-sm text-slate-400">
+          {sv ? 'Inga träffar för' : 'No matches for'} “{theme ? (sv ? theme.name : theme.name_en ?? theme.name) : query}”
+        </div>
+      )}
+
+      {groups.map((g) => {
+        const Icon = g.icon;
+        return (
+          <div key={g.type} className="py-1">
+            <div className="flex items-center gap-1.5 px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              <Icon className="h-3 w-3" /> {sv ? g.labelSv : g.labelEn}
+              <span className="text-slate-600">· {g.rows.length}</span>
+            </div>
+            {g.rows.map((row) => (
+              <button
+                key={row.key}
+                onClick={() => go(row.route)}
+                className="flex w-full items-start gap-3 px-4 py-2 text-left hover:bg-amber-500/10"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-amber-100 truncate">{row.title}</span>
+                    {row.subtitle && <span className="text-xs text-slate-400 truncate">· {row.subtitle}</span>}
+                  </div>
+                  {row.snippet && <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{row.snippet}</p>}
+                </div>
+              </button>
+            ))}
+          </div>
+        );
+      })}
+
+      {topEntity && !theme && <GoFurther hit={topEntity} onGo={go} sv={sv} />}
+
+      {query.trim().length >= 2 && groups.some((g) => g.type === 'inscription') && (
         <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label={sv ? 'Sök' : 'Search'}
-          className="w-full max-w-xl mx-auto flex items-center gap-3 rounded-full bg-white border border-slate-200 shadow-lg hover:shadow-xl px-5 py-3.5 text-left transition-shadow"
+          onClick={() => go(`/explore?searchQuery=${enc(query.trim())}`)}
+          className="flex w-full items-center gap-2 border-t border-slate-800 px-4 py-2.5 text-left text-xs text-slate-400 hover:bg-slate-800/50"
         >
-          <Search className="h-5 w-5 text-slate-400 shrink-0" />
-          <span className="flex-1 text-base text-slate-500 truncate">
-            {sv ? 'Sök allt — runsten, ort, socken, gud, kung, mynt…' : 'Search everything — runestone, place, parish, god, king, coin…'}
-          </span>
-          <kbd className="hidden sm:inline rounded border border-slate-300 bg-slate-100 px-1.5 text-[10px] text-slate-500">⌘K</kbd>
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label={sv ? 'Sök allt' : 'Search everything'}
-          title={sv ? 'Sök allt (⌘K)' : 'Search everything (⌘K)'}
-          className="flex items-center justify-center h-9 w-9 rounded-full border border-slate-600 bg-slate-800/60 text-slate-400 hover:border-amber-500/50 hover:text-slate-200 transition-colors"
-        >
-          <Search className="h-4 w-4" />
+          <CornerDownLeft className="h-3.5 w-3.5" />
+          {sv ? `Visa alla runinskrifter för “${query}” på kartan` : `Show all inscriptions for “${query}” on the map`}
         </button>
       )}
+    </div>
+  );
+
+  // HERO: riktigt inline-sökfält. Man skriver direkt i rutan; träffarna fälls ut under.
+  if (variant === 'hero') {
+    const showDropdown = heroActive && (query.trim().length >= 2 || !!theme);
+    return (
+      <div ref={heroWrapRef} className="relative w-full max-w-xl mx-auto">
+        <div className="flex items-center gap-3 rounded-full bg-white border border-slate-200 shadow-lg hover:shadow-xl focus-within:shadow-xl px-5 py-3.5 transition-shadow">
+          <Search className="h-5 w-5 text-slate-400 shrink-0" />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); if (e.target.value) setTheme(null); }}
+            onFocus={() => setHeroActive(true)}
+            aria-label={sv ? 'Sök' : 'Search'}
+            placeholder={sv
+              ? 'Sök allt — runsten, ort, socken, gud, kung, mynt…'
+              : 'Search everything — runestone, place, parish, god, king, coin…'}
+            className="flex-1 min-w-0 bg-transparent text-base text-slate-800 placeholder-slate-400 outline-none"
+          />
+          {loading && <Loader2 className="h-4 w-4 animate-spin text-amber-500 shrink-0" />}
+        </div>
+        {showDropdown && (
+          <div className="absolute left-0 right-0 z-[60] mt-2 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden">
+            {resultsList}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ICON: förstoringsglas i toppnav → dialog (även ⌘K).
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={sv ? 'Sök allt' : 'Search everything'}
+        title={sv ? 'Sök allt (⌘K)' : 'Search everything (⌘K)'}
+        className="flex items-center justify-center h-9 w-9 rounded-full border border-slate-600 bg-slate-800/60 text-slate-400 hover:border-amber-500/50 hover:text-slate-200 transition-colors"
+      >
+        <Search className="h-4 w-4" />
+      </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="p-0 gap-0 overflow-hidden bg-slate-900 border-slate-700 max-w-2xl top-[12%] translate-y-0">
@@ -334,126 +489,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
             />
             {loading && <Loader2 className="h-4 w-4 animate-spin text-amber-400 shrink-0" />}
           </div>
-
-          <div className="max-h-[60vh] overflow-y-auto">
-            {/* AI-svar (grounded RAG) — knapp när man skrivit en fråga, sedan källfört svar */}
-            {!theme && query.trim().length >= 3 && (
-              <div className="border-b border-slate-800 px-4 py-3">
-                {!aiAnswer && !aiLoading && (
-                  <button
-                    onClick={askAI}
-                    className="flex items-center gap-2 text-sm text-amber-200 hover:text-amber-100"
-                  >
-                    <Sparkles className="h-4 w-4 text-amber-400" />
-                    {sv ? `Fråga AI: “${query.trim()}”` : `Ask AI: “${query.trim()}”`}
-                  </button>
-                )}
-                {aiLoading && (
-                  <div className="flex items-center gap-2 text-sm text-slate-400">
-                    <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
-                    {sv ? 'AI läser källorna…' : 'AI reading the sources…'}
-                  </div>
-                )}
-                {aiAnswer && (
-                  <div className="text-sm text-slate-200">
-                    <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
-                      <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
-                    </div>
-                    <p className="whitespace-pre-wrap leading-relaxed">{aiAnswer}</p>
-                    {aiSources.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {aiSources.map((s, i) => {
-                          const meta = META[s.entity_type];
-                          if (!meta) return null;
-                          return (
-                            <button
-                              key={s.entity_id + i}
-                              onClick={() => go(meta.route(s))}
-                              className="rounded border border-slate-600 px-1.5 py-0.5 text-[11px] text-slate-300 hover:border-amber-500/50 hover:text-amber-100"
-                            >
-                              [{i + 1}] {s.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                    <p className="mt-1.5 text-[10px] text-slate-500">
-                      {sv ? 'AI-genererat ur källorna nedan — verifiera via länkarna.' : 'AI-generated from the sources below — verify via the links.'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Aktivt tema: banner med rensa-knapp */}
-            {theme && (() => {
-              const TIcon = themeIcon(theme);
-              return (
-                <div className="flex items-center justify-between border-b border-slate-800 bg-slate-800/40 px-4 py-2">
-                  <div className="flex items-center gap-2 text-sm text-amber-100">
-                    <TIcon className="h-4 w-4 text-amber-400" />
-                    {sv ? theme.name : (theme.name_en ?? theme.name)}
-                    <span className="text-xs text-slate-500">{sv ? '— graf + tematiskt sök' : '— graph + thematic search'}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {theme.slug && (
-                      <button onClick={() => go(`/tema/${theme.slug}`)} className="text-xs font-medium text-amber-300 hover:text-amber-100">
-                        {sv ? 'Visa hela temat →' : 'View full theme →'}
-                      </button>
-                    )}
-                    <button onClick={() => setTheme(null)} className="text-slate-400 hover:text-white" aria-label={sv ? 'Rensa tema' : 'Clear theme'}>
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {((query.trim().length >= 2) || theme) && !loading && total === 0 && (
-              <div className="p-6 text-center text-sm text-slate-400">
-                {sv ? 'Inga träffar för' : 'No matches for'} “{theme ? (sv ? theme.name : theme.name_en ?? theme.name) : query}”
-              </div>
-            )}
-
-            {groups.map((g) => {
-              const Icon = g.icon;
-              return (
-                <div key={g.type} className="py-1">
-                  <div className="flex items-center gap-1.5 px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    <Icon className="h-3 w-3" /> {sv ? g.labelSv : g.labelEn}
-                    <span className="text-slate-600">· {g.rows.length}</span>
-                  </div>
-                  {g.rows.map((row) => (
-                    <button
-                      key={row.key}
-                      onClick={() => go(row.route)}
-                      className="flex w-full items-start gap-3 px-4 py-2 text-left hover:bg-amber-500/10"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-amber-100 truncate">{row.title}</span>
-                          {row.subtitle && <span className="text-xs text-slate-400 truncate">· {row.subtitle}</span>}
-                        </div>
-                        {row.snippet && <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{row.snippet}</p>}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              );
-            })}
-
-            {topEntity && !theme && <GoFurther hit={topEntity} onGo={go} sv={sv} />}
-
-            {query.trim().length >= 2 && groups.some((g) => g.type === 'inscription') && (
-              <button
-                onClick={() => go(`/explore?searchQuery=${enc(query.trim())}`)}
-                className="flex w-full items-center gap-2 border-t border-slate-800 px-4 py-2.5 text-left text-xs text-slate-400 hover:bg-slate-800/50"
-              >
-                <CornerDownLeft className="h-3.5 w-3.5" />
-                {sv ? `Visa alla runinskrifter för “${query}” på kartan` : `Show all inscriptions for “${query}” on the map`}
-              </button>
-            )}
-          </div>
+          {resultsList}
         </DialogContent>
       </Dialog>
     </>
