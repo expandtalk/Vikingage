@@ -36,11 +36,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   return (
     <section className="relative overflow-hidden min-h-[calc(70vh-50px)] lg:min-h-[calc(80vh-50px)]">
       <div className="absolute inset-0">
-        <img 
-          src="/images/viking-hero.png"
-          alt="Three Viking warriors with traditional armor, helmets and shields"
-          className="w-full h-full object-cover object-center"
-          style={{ objectPosition: 'center 30%' }}
+        <img
+          src="/excursion-photos/karlevistenen/karlevistenen-oland.jpg"
+          alt="Runsten med rödmålade runor i öländskt landskap"
+          className="w-full h-full object-cover"
+          style={{ objectPosition: 'center 38%' }}
         />
         <div className="absolute inset-0 bg-black/60"></div>
       </div>
