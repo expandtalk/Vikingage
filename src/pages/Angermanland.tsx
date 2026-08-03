@@ -133,7 +133,7 @@ const Angermanland = () => {
     (supabase.from('ortnamn_enrichment_results') as any).select('*').eq('region', 'Ångermanland').maybeSingle()
       .then(({ data }: { data: Record<string, number | string | null> | null }) => setEnrich(data));
   }, []);
-  // Agnetas SOL-diff (förberedd, obeslutad — hon äger besluten).
+  // Agneta Nyholms SOL-diff (förberedd, obeslutad — hon äger besluten).
   const [solDiff, setSolDiff] = useState<Record<string, string>[]>([]);
   useEffect(() => {
     (supabase.from('ortnamn_sol_comparison') as any).select('*').like('owner', 'Agneta%')
@@ -189,7 +189,7 @@ const Angermanland = () => {
                 })}
               </div>
               <AngMap groups={groups} on={on} />
-              <p className="text-xs text-muted-foreground mt-2 opacity-75"><strong>Data:</strong> <code>central_places</code> + <code>central_place_names</code> (Agnetas forskning, SWEREF99 TM → WGS84; verifierad mot Länsstyrelsen/RAÄ <em>Y 24</em>). <strong>Färg</strong> = kategori (lila = sakralt, blått = makt, guld = centralort). <strong>Fylld ring</strong> = kärna (starkast belägg), tunn = utvidgad hypotes. Klicka en punkt för källa, tolkning + belägg-år.</p>
+              <p className="text-xs text-muted-foreground mt-2 opacity-75"><strong>Data:</strong> <code>central_places</code> + <code>central_place_names</code> (Agneta Nyholms forskning, SWEREF99 TM → WGS84; verifierad mot Länsstyrelsen/RAÄ <em>Y 24</em>). <strong>Färg</strong> = kategori (lila = sakralt, blått = makt, guld = centralort). <strong>Fylld ring</strong> = kärna (starkast belägg), tunn = utvidgad hypotes. Klicka en punkt för källa, tolkning + belägg-år.</p>
             </CardContent>
           </Card>
         )}
@@ -266,7 +266,7 @@ const Angermanland = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
-            <p><strong className="text-foreground">Finns:</strong> {groups.length} centralorter och {totalNames} kluster-namn, klassade efter namnled (sakralt/makt), evidensnivå (kärna/utvidgad) och tolkning. <strong className="text-foreground">Nu koordinatsatta</strong> (SWEREF99 TM ur Agnetas forskning, transformerade till WGS84).</p>
+            <p><strong className="text-foreground">Finns:</strong> {groups.length} centralorter och {totalNames} kluster-namn, klassade efter namnled (sakralt/makt), evidensnivå (kärna/utvidgad) och tolkning. <strong className="text-foreground">Nu koordinatsatta</strong> (SWEREF99 TM ur Agneta Nyholms forskning, transformerade till WGS84).</p>
             <p><strong className="text-foreground">Verifierat mot auktoritativ källa:</strong> Länsstyrelsen Västernorrland / RAÄ:s riksintressebeskrivning <em>Nora-Rossvik [Y 24]</em> bekräftar Nora som en av Ångermanlands tätaste järnåldersbygder, storhögar vid Nora prästbord, Holshögen och <strong>fyra vikingatida silverskatter</strong> (bl.a. Frök med 373 silvermynt) — nu inlagda som källförda fynd.</p>
             <p><strong className="text-amber-300">Källkritik (viktigt):</strong> mainstream ortnamnsforskning (Länsstyrelsen/RAÄ; Vikstrand, <em>Gudarnas platser</em> 2001) läser flera av klustrets namn annorlunda än kulttolkningen: <em>-om/-um</em>-namn (Nora, Torrom, Salom, Grötom) som "hem/gård" (~år 0), och <em>-sta</em>-namn (Ärsta) som "plats + personnamn". <strong>Centralorts-statusen är belagd; flera enskilda kult-etymologier (Ross/häst, Härna/Fröja, Ed/ed, Hammar/ting) är omtvistade</strong> och ska läsas som hypotes.</p>
             <p><strong className="text-foreground">Saknas (nästa steg):</strong> en karta direkt på sidan (koordinaterna finns nu men renderas inte här ännu); baslinjetest per landskap; belägg-år för många namn.</p>
@@ -339,7 +339,8 @@ const Angermanland = () => {
         )}
 
         <p className="text-xs text-muted-foreground mt-6 opacity-75">
-          Forskning: <strong>Agneta</strong> — ortnamnskluster i Ångermanlands vikingatida centralorter (se{' '}
+          Forskning: <strong>Agneta Nyholm</strong> (Sofiainstitutet, Härnösand) — ortnamnskluster i
+          Ångermanlands vikingatida centralorter (se{' '}
           <Link to="/forskare" className="text-gold hover:underline">forskare &amp; källor</Link>). Metoden
           (namnledskatalog, hypotestestare) delas med{' '}
           <Link to="/sv/ortnamn" className="text-gold hover:underline">ortnamnssidan</Link>.
