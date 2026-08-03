@@ -48,6 +48,10 @@ export const MARKER_ICONS: Record<string, string> = {
   menhir: '<path d="M9 21V6c0-2 6-2 6 0v15"/><path d="M6 21h12"/>',
   fort: '<path d="M4 21V9l2.7 1.7L9.3 7l2.7 3.7L14.7 7l2.6 3.7L20 9v12"/><path d="M3 21h18"/>',
   church: '<path d="M12 3v3.5M10.4 4.8h3.2"/><path d="M6 21V11l6-4.2 6 4.2v10"/><path d="M4 21h16"/><path d="M10.5 21v-4h3v4"/>',
+  // Försvunnen/riven kyrka (kyrkorester/ruin/arkeologisk): brutna murstumpar utan tak +
+  // lutande kors. Skiljer sig avsiktligt från 'church' (hel, gavlad) för "byggnaden borta,
+  // platsen syns ännu". Ritas grå (colorFor) för ytterligare kontrast mot stående kyrka.
+  church_ruin: '<path d="M4 21h16"/><path d="M7 21V9l2.2 2.2"/><path d="M15 21v-9l2.2 2.2V21"/><path d="M12 4l1 2.4"/><path d="M11.2 5.6l2.4-.7"/>',
   scales: '<path d="M12 4v16"/><path d="M6 8h12"/><path d="M6 8 4 13h4z"/><path d="M18 8l-2 5h4z"/><path d="M9 20h6"/>',
   people: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.5 3-5 6-5s6 1.5 6 5"/><path d="M16 6a3 3 0 0 1 0 6"/><path d="M17 15c2.5.4 4 2 4 5"/>',
   amphora: '<path d="M9 3h6"/><path d="M9 3c0 2-2 2-2 5s2 3 2 6c0 3 6 3 6 0 0-3 2-3 2-6s-2-3-2-5"/><path d="M8 21h8"/>',

@@ -10,6 +10,7 @@ import { useMapBeaconSites } from './useMapBeaconSites';
 import { useMapHeritageSites } from './useMapHeritageSites';
 import { useMapThingSites } from './useMapThingSites';
 import { useMapChurches } from './map/useMapChurches';
+import { useMapChristianSites } from './map/useMapChristianSites';
 import { useMapProximityProbe } from './map/useMapProximityProbe';
 import { useMapHistoricalOverlays } from './map/useMapHistoricalOverlays';
 import { useReachProbeTriggers } from './map/useReachProbeTriggers';
@@ -198,6 +199,15 @@ export const useMapInitialization = ({
 
   // Rikt kyrkolager (ecclesiastical_sites: byggår/stift/socken/härad/ruin + Commons-bild).
   useMapChurches({
+    map: map.current,
+    enabledLegendItems,
+    isMapReady: isMapReadyRef,
+  });
+
+  // Kurerat kyrkolager (christian_sites: rik per-kyrka-berättelse m. källor + egen glyf
+  // för försvunna kyrkor). Gate: periodtogglarna (default PÅ). Detta var det saknade
+  // renderingslagret — ChristianSiteMarker fanns men monterades aldrig.
+  useMapChristianSites({
     map: map.current,
     enabledLegendItems,
     isMapReady: isMapReadyRef,
