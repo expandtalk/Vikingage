@@ -62,9 +62,9 @@ const flyTo = (
 // gående = tät närzon (koncentriska band), bil = regional översikt. Bara mobil (Daniel).
 interface TravelMode { key: string; label: string; min: number; def: number; max: number; step: number; stops: number[] }
 const TRAVEL_MODES: TravelMode[] = [
-  { key: 'foot', label: 'Gående', min: 0.1, def: 5,  max: 5,   step: 0.1, stops: [0.1, 0.2, 0.5, 1, 2, 3, 4, 5] },
-  { key: 'bike', label: 'Cykel',  min: 1,   def: 3,  max: 30,  step: 1,   stops: [3, 5, 10, 15, 20, 25, 30] },
-  { key: 'car',  label: 'Bil',    min: 40,  def: 40, max: 500, step: 10,  stops: [40, 50, 100, 200, 300, 400, 500] },
+  { key: 'foot', label: 'Gå',    min: 0.1, def: 5,  max: 5,   step: 0.1, stops: [0.1, 0.2, 0.5, 1, 2, 3, 4, 5] },
+  { key: 'bike', label: 'Cykla', min: 1,   def: 3,  max: 30,  step: 1,   stops: [3, 5, 10, 15, 20, 25, 30] },
+  { key: 'car',  label: 'Kör',   min: 40,  def: 40, max: 500, step: 10,  stops: [40, 50, 100, 200, 300, 400, 500] },
 ];
 // Koncentriska bandkanter i gång-läget (meter): "Inom 100 m", "100–200 m", … regelbunden skala.
 const FOOT_BAND_EDGES_M = [100, 200, 500, 1000, 2000, 3000, 4000, 5000];
