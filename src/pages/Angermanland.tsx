@@ -339,7 +339,9 @@ const Angermanland = () => {
         )}
 
         <p className="text-xs text-muted-foreground mt-6 opacity-75">
-          Källa: Forskningsdokument (Daniel 2026). Metoden delar namnledskatalog och hypotestestare med{' '}
+          Forskning: <strong>Agneta</strong> — ortnamnskluster i Ångermanlands vikingatida centralorter (se{' '}
+          <Link to="/forskare" className="text-gold hover:underline">forskare &amp; källor</Link>). Metoden
+          (namnledskatalog, hypotestestare) delas med{' '}
           <Link to="/sv/ortnamn" className="text-gold hover:underline">ortnamnssidan</Link>.
         </p>
       </main>
