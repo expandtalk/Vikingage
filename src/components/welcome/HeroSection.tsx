@@ -40,7 +40,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           src="/excursion-photos/karlevistenen/karlevistenen-oland.jpg"
           alt="Runsten med rödmålade runor i öländskt landskap"
           className="w-full h-full object-cover"
-          style={{ objectPosition: 'center 38%' }}
+          style={{ objectPosition: 'center 58%' }}
         />
         <div className="absolute inset-0 bg-black/60"></div>
       </div>

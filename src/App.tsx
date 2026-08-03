@@ -45,6 +45,7 @@ const Staket = lazy(() => import("./pages/Staket"));
 const SanktOlof = lazy(() => import("./pages/SanktOlof"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Helgon = lazy(() => import("./pages/Helgon"));
+const Vetenskapsmetodik = lazy(() => import("./pages/Vetenskapsmetodik"));
 const LegendStones = lazy(() => import("./pages/LegendStones"));
 const Runes = lazy(() => import("./pages/Runes"));
 const Oland = lazy(() => import("./pages/Oland"));
@@ -171,6 +172,9 @@ const App = () => (
                   <Route path="/sv/helgon" element={<Helgon />} />
                   <Route path="/en/saints" element={<Helgon />} />
                   <Route path="/helgon" element={<Helgon />} />
+                  <Route path="/vetenskapsmetodik" element={<Vetenskapsmetodik />} />
+                  <Route path="/sv/vetenskapsmetodik" element={<Vetenskapsmetodik />} />
+                  <Route path="/methodology" element={<Vetenskapsmetodik />} />
                   <Route path="/sv/runor" element={<Runes />} />
                   <Route path="/en/runes" element={<Runes />} />
                   <Route path="/runor" element={<Runes />} />

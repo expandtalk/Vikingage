@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export const Footer: React.FC = () => {
@@ -24,6 +25,14 @@ export const Footer: React.FC = () => {
               Expandtalk
             </a>
             . {text[language] || text.en}
+          </p>
+          <p className="mt-2">
+            <Link
+              to="/vetenskapsmetodik"
+              className="text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              {language === 'en' ? 'Scientific methodology' : 'Vetenskapsmetodik'}
+            </Link>
           </p>
         </div>
       </div>
