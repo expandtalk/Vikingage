@@ -49,7 +49,10 @@ const SAINTS: Saint[] = [
   {
     name: 'Sankt Sigfrid',
     life: 'Missionsbiskop, 1000-tal',
-    note: 'Knuten till Växjö och kristnandet av Småland/Värend. Enligt legenden döpte han Olof Skötkonung i Husaby — en legenduppgift, inte ett fast belägg.',
+    note: 'Knuten till Växjö och kristnandet av Småland/Värend. Enligt legenden döpte han Olof Skötkonung i Husaby — en legenduppgift, inte ett fast belägg. Växjös helgon: S:t Sigfrids sjukhus har rötter i ett helgeandshus vid domkyrkan, belagt redan 1318 (Länsstyrelsen Kronoberg).',
+    place: 'Husaby, Västergötland — dopplatsen (kungsgård & källa)',
+    href: '/explore?center=58.5667,13.2833&zoom=14',
+    linkLabel: 'Visa på kartan →',
   },
   {
     name: 'Sankt Eskil',
