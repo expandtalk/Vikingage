@@ -1,8 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import { createPlaceMedallion } from '@/utils/map/placeMarker';
 import { registerLayerBounds } from '@/utils/map/layerViewport';
+
+// Punktlagren (noder/vrak/hansa) zoom-gate:as: dolda i översikt, dyker upp vid inzoomning
+// (Daniel: rivers-vyn "för mycket objekt ovanpå"). Farlederna (linjer) visas på alla zoom.
+const POINT_MIN_ZOOM = 8;
 
 // Marinarkeologi-lager (Kalmarsund-forskningen): maritima noder (hamn/ö/grund) med
 // FINGERPRINT-popup, skeppshaverier, farleder (moderna + historiska/Hansa) och
@@ -41,11 +45,20 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
   const onHist = !!enabledLegendItems['fairways_historical'];
   const onHansa = !!enabledLegendItems['hanseatic_cities'];
 
+  // Zoom-gate för punktlagren: sant först när man zoomat in ≥ POINT_MIN_ZOOM.
+  const [zoomOk, setZoomOk] = useState(true);
+  useEffect(() => {
+    const m = map; if (!m) return;
+    const upd = () => setZoomOk(m.getZoom() >= POINT_MIN_ZOOM);
+    upd(); m.on('zoomend', upd);
+    return () => { m.off('zoomend', upd); };
+  }, [map]);
+
   // 1) Maritima noder + fingerprint-popup
   useEffect(() => {
     const m = map; if (!m || !isMapReady.current) return;
     if (nodesRef.current) { try { m.removeLayer(nodesRef.current); } catch { /* noop */ } nodesRef.current = null; }
-    if (!onNodes) return;
+    if (!onNodes || !zoomOk) return;
     let cancelled = false;
     (async () => {
       const { data } = await sb.from('maritime_nodes').select('name,node_type,lat,lng,natural_harbor,shelter_index,enclosure,folklore_note,hazard_note,shoreline_note');
@@ -71,13 +84,13 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
       if (safelyAddLayer(g)) nodesRef.current = g;
     })();
     return () => { cancelled = true; if (nodesRef.current) { try { m.removeLayer(nodesRef.current); } catch { /* noop */ } nodesRef.current = null; } };
-  }, [map, isMapReady, onNodes, safelyAddLayer]);
+  }, [map, isMapReady, onNodes, zoomOk, safelyAddLayer]);
 
   // 2) Skeppshaverier
   useEffect(() => {
     const m = map; if (!m || !isMapReady.current) return;
     if (lossesRef.current) { try { m.removeLayer(lossesRef.current); } catch { /* noop */ } lossesRef.current = null; }
-    if (!onLosses) return;
+    if (!onLosses || !zoomOk) return;
     let cancelled = false;
     (async () => {
       const { data } = await sb.from('ship_losses').select('name,lat,lng,cause,cause_confidence,cause_basis,ship_type,depth_m');
@@ -91,7 +104,7 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
       if (safelyAddLayer(g)) lossesRef.current = g;
     })();
     return () => { cancelled = true; if (lossesRef.current) { try { m.removeLayer(lossesRef.current); } catch { /* noop */ } lossesRef.current = null; } };
-  }, [map, isMapReady, onLosses, safelyAddLayer]);
+  }, [map, isMapReady, onLosses, zoomOk, safelyAddLayer]);
 
   // 3) Farleder (moderna + historiska/Hansa) — GeoJSON via RPC, stil per fairway_kind.
   // Ritas i egen pane 'fairways' (z-index 650 > markerPane 600) så vattenvägarna ligger ÖVER
@@ -141,7 +154,7 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
   useEffect(() => {
     const m = map; if (!m || !isMapReady.current) return;
     if (hansaRef.current) { try { m.removeLayer(hansaRef.current); } catch { /* noop */ } hansaRef.current = null; }
-    if (!onHansa) return;
+    if (!onHansa || !zoomOk) return;
     let cancelled = false;
     (async () => {
       const { data } = await sb.from('hanseatic_cities').select('name,name_modern,lat,lng,role,kontor_name');
@@ -158,5 +171,5 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
       if (safelyAddLayer(g)) hansaRef.current = g;
     })();
     return () => { cancelled = true; if (hansaRef.current) { try { m.removeLayer(hansaRef.current); } catch { /* noop */ } hansaRef.current = null; } };
-  }, [map, isMapReady, onHansa, safelyAddLayer]);
+  }, [map, isMapReady, onHansa, zoomOk, safelyAddLayer]);
 };
