@@ -136,6 +136,13 @@ const explore: NavLink = {
 const EXTRA_LINKS: NavLink[] = [
   explore,
   {
+    pathEn: '/en/runes', pathSv: '/sv/runor',
+    labelSv: 'Runor & futharken', labelEn: 'Runes & the futhark',
+    descSv: 'Vad runor är, yngre och äldre futharken, hur man läser en runsten — och hela runstenskorpusen på kartan.',
+    descEn: 'What runes are, the Younger and Elder Futhark, how to read a runestone — and the whole runestone corpus on the map.',
+    icon: Scroll, category: 'inscriptions',
+  },
+  {
     pathEn: '/excursions', pathSv: '/excursions',
     labelSv: 'Utflykter', labelEn: 'Excursions',
     descSv: 'Platser att besöka på riktigt — hällristningar, gravhögar och fornborgar.',

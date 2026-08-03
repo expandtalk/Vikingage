@@ -46,6 +46,7 @@ const SanktOlof = lazy(() => import("./pages/SanktOlof"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Helgon = lazy(() => import("./pages/Helgon"));
 const LegendStones = lazy(() => import("./pages/LegendStones"));
+const Runes = lazy(() => import("./pages/Runes"));
 const Oland = lazy(() => import("./pages/Oland"));
 const CentralPlaces = lazy(() => import("./pages/CentralPlaces"));
 const SiteIndex = lazy(() => import("./pages/SiteIndex"));
@@ -170,6 +171,10 @@ const App = () => (
                   <Route path="/sv/helgon" element={<Helgon />} />
                   <Route path="/en/saints" element={<Helgon />} />
                   <Route path="/helgon" element={<Helgon />} />
+                  <Route path="/sv/runor" element={<Runes />} />
+                  <Route path="/en/runes" element={<Runes />} />
+                  <Route path="/runor" element={<Runes />} />
+                  <Route path="/runes" element={<Runes />} />
                   <Route path="/sv/legendstenar" element={<LegendStones />} />
                   <Route path="/en/legend-stones" element={<LegendStones />} />
                   <Route path="/legendstenar" element={<LegendStones />} />
