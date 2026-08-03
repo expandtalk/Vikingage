@@ -36,6 +36,10 @@ const NAMES = rawNames.split(',').map(s => s.trim()).filter(Boolean);
 const CHURCH_NAMES = NAMES.length ? NAMES : DEFAULT_NAMES;
 const MAXCAND = Number((argv.find(a => a.startsWith('--max-cand=')) || '').split('=')[1]) || 12;
 const SLEEP = Number((argv.find(a => a.startsWith('--sleep=')) || '').split('=')[1]) || 300;
+const ALL = argv.includes('--all');                 // iterera HELA ecclesiastical_sites
+const REFRESH = argv.includes('--refresh');          // bearbeta även kyrkor som redan har rader
+const LIMIT = Number((argv.find(a => a.startsWith('--limit=')) || '').split('=')[1]) || 0;
+const OFFSET = Number((argv.find(a => a.startsWith('--offset=')) || '').split('=')[1]) || 0;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const env = Object.fromEntries(
@@ -153,17 +157,35 @@ async function main() {
   });
   await client.connect();
   try {
-    console.log(`Kyrkor: ${CHURCH_NAMES.length} | Läge: ${APPLY ? 'APPLY' : 'DRY-RUN'} | max-cand ${MAXCAND}\n`);
-    let evTotal = 0, churchesOk = 0;
-    for (const cname of CHURCH_NAMES) {
-      const cr = await client.query(
-        `SELECT id, name, parish, municipality, county, landscape FROM ecclesiastical_sites WHERE lower(name)=lower($1) LIMIT 1`, [cname]);
-      if (!cr.rows[0]) { console.log(`  ⚠ ${cname}: saknas i ecclesiastical_sites — hoppar`); continue; }
-      const church = cr.rows[0];
+    // Kyrkolista: --all = hela ecclesiastical_sites (m. --limit/--offset); annars namnlistan.
+    let churches = [];
+    if (ALL) {
+      // Exkludera redan gjorda kyrkor på SQL-nivå (om ej --refresh) → varje batch plockar nästa
+      // ogjorda; batch-drivern kan köra om skriptet med färsk anslutning tills 0 kvarstår.
+      const skipDone = REFRESH ? '' : 'AND id NOT IN (SELECT church_id FROM church_datings)';
+      const q = `SELECT id,name,parish,municipality,county,landscape FROM ecclesiastical_sites
+                 WHERE lat IS NOT NULL AND name IS NOT NULL ${skipDone} ORDER BY name OFFSET ${OFFSET}${LIMIT ? ` LIMIT ${LIMIT}` : ''}`;
+      churches = (await client.query(q)).rows;
+    } else {
+      for (const cname of CHURCH_NAMES) {
+        const cr = await client.query(`SELECT id,name,parish,municipality,county,landscape FROM ecclesiastical_sites WHERE lower(name)=lower($1) LIMIT 1`, [cname]);
+        if (cr.rows[0]) churches.push(cr.rows[0]); else console.log(`  ⚠ ${cname}: saknas i ecclesiastical_sites`);
+      }
+    }
+    // Resume: hoppa kyrkor som redan har rader (om ej --refresh) → jobbet är återstartbart.
+    const done = new Set();
+    if (!REFRESH) for (const r of (await client.query(`SELECT DISTINCT church_id FROM church_datings`)).rows) done.add(r.church_id);
+    console.log(`Kyrkor: ${churches.length} | Läge: ${APPLY ? 'APPLY' : 'DRY-RUN'} | hoppar redan gjorda: ${done.size}\n`);
+
+    let evTotal = 0, churchesOk = 0, processed = 0, skipped = 0, errors = 0;
+    for (const church of churches) {
+      processed++;
+      if (!REFRESH && done.has(church.id)) { skipped++; continue; }
+      try {
       const j = await ksamsok(`itemType="byggnad" and text="${church.name}"`, MAXCAND);
       const recs = j?.result?.records || [];
       const cands = pickBbr(recs, church).slice(0, 5);
-      if (!cands.length) { console.log(`  ✗ ${church.name}: ingen matchande BBR-post av ${recs.length} kandidater`); await sleep(SLEEP); continue; }
+      if (!cands.length) { if (!ALL) console.log(`  ✗ ${church.name}: ingen matchande BBR-post`); await sleep(SLEEP); continue; }
       // BBR-modell: anläggning (kyrkomiljö) hasPart byggnad(er); de rika eventen (arkitekt/faser)
       // bor på BYGGNADS-posterna. Följ hasPart en nivå så vi når dem även när sökningen bara gav
       // anläggningen. Kö med dedup + tak, så det inte skenar.
@@ -187,10 +209,14 @@ async function main() {
         await sleep(SLEEP);
       }
       merged.sort((a, b) => (a.year_from || 9999) - (b.year_from || 9999));
-      const place = (cands[0].placeLabel || '?').replace(/\s+/g, ' ').trim();
-      console.log(`  ${church.name} (${place}): ${merged.length} strukturerade händelser ur ${cands.length} BBR-poster`);
-      merged.slice(0, 12).forEach(e => console.log(`     · ${e.year_from || '?'}${e.year_to && e.year_to !== e.year_from ? '–' + e.year_to : ''} [${e.event_type}]${e.building_part ? ' ' + e.building_part : ''} ${e.event_label}${e.architect ? '  · ' + e.architect : ''}`));
       if (merged.length) churchesOk++;
+      if (!ALL) {
+        const place = (cands[0].placeLabel || '?').replace(/\s+/g, ' ').trim();
+        console.log(`  ${church.name} (${place}): ${merged.length} strukturerade händelser ur ${fetched.size} BBR-poster`);
+        merged.slice(0, 12).forEach(e => console.log(`     · ${e.year_from || '?'}${e.year_to && e.year_to !== e.year_from ? '–' + e.year_to : ''} [${e.event_type}]${e.building_part ? ' ' + e.building_part : ''} ${e.event_label}${e.architect ? '  · ' + e.architect : ''}`));
+      } else if (merged.length) {
+        console.log(`  ✓ ${church.name}: ${merged.length}`);
+      }
 
       if (APPLY) {
         for (const e of merged) {
@@ -208,9 +234,11 @@ async function main() {
           evTotal++;
         }
       } else { evTotal += merged.length; }
+      } catch (e) { errors++; console.log(`  ! ${church.name}: fel — ${String((e && e.message) || e).slice(0, 140)}`); }
+      if (ALL && processed % 50 === 0) console.log(`   … ${processed}/${churches.length} · m.event ${churchesOk} · event ${evTotal} · fel ${errors}`);
       await sleep(SLEEP);
     }
-    console.log(`\n=== ${APPLY ? 'APPLY klar' : 'DRY-RUN'} === kyrkor med händelser: ${churchesOk}, händelser ${APPLY ? 'skrivna' : 'funna'}: ${evTotal}`);
+    console.log(`\n=== ${APPLY ? 'APPLY klar' : 'DRY-RUN'} === bearbetade ${processed} (hoppade ${skipped}), kyrkor m. händelser ${churchesOk}, händelser ${APPLY ? 'skrivna' : 'funna'} ${evTotal}, fel ${errors}`);
     if (!APPLY) console.log('Kör med --apply för att skriva.');
   } finally { await client.end(); }
 }
