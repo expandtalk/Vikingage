@@ -39,11 +39,17 @@ describe('minSignificanceForSpeed', () => {
 
 describe('gateBySpeed', () => {
   it('drops features below the speed-derived significance threshold', () => {
-    const hi = f('hi', 0.05, 0.1); hi.significance = 5;
-    const lo = f('lo', 0.05, 0.2); lo.significance = 1;
-    const kept = gateBySpeed([hi, lo], 30); // fast → only high significance
+    const hi = f('hi', 0.05, 0.1); hi.significance = 0.9;
+    const lo = f('lo', 0.05, 0.2); lo.significance = 0.3;
+    const kept = gateBySpeed([hi, lo], 30); // fast → threshold 0.7, only high significance
     expect(kept.map((x) => x.feature_id)).toContain('hi');
     expect(kept.map((x) => x.feature_id)).not.toContain('lo');
     expect(gateBySpeed([hi, lo], null)).toHaveLength(2); // still → keep all
+  });
+
+  it('is inclusive at the boundary: significance == threshold is kept', () => {
+    const boundary = f('boundary', 0.05, 0.1); boundary.significance = 0.7;
+    const kept = gateBySpeed([boundary], 30); // threshold at 30 m/s is exactly 0.7
+    expect(kept.map((x) => x.feature_id)).toContain('boundary');
   });
 });
