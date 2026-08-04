@@ -157,10 +157,15 @@ const GoFurther: React.FC<{ hit: Hit; onGo: (route: string) => void; sv: boolean
   );
 };
 
+// Startförslag i hero-sökrutan — visas direkt när fältet fokuseras (innan man skrivit klart),
+// så man får idéer om vad som finns att söka på.
+const SUGGESTIONS_SV = ['runsten', 'Rökstenen', 'Karlevistenen', 'guld', 'Öland', 'Birka', 'Oden', 'Tor', 'Gustav Vasa', 'runor', 'Sigtuna', 'fornborg'];
+const SUGGESTIONS_EN = ['runestone', 'Rök stone', 'gold', 'Öland', 'Birka', 'Odin', 'Thor', 'runes', 'gods', 'Sigtuna', 'Gotland', 'hillfort'];
+
 // variant 'icon' = liten förstoringsglas-ikon (toppnav på övriga sidor) → öppnar dialog (⌘K);
 // 'hero' = stor Google-lik sökruta (startsidan) → RIKTIGT inline-fält, träffarna fälls ut under
 // (ingen modal — man skriver direkt i rutan). Samma sök-logik för båda.
-export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant = 'icon' }) => {
+export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?: (active: boolean) => void }> = ({ variant = 'icon', onActiveChange }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const sv = language === 'sv';
@@ -204,6 +209,12 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
   }, [heroActive]);
+
+  // Signalera "söker"-läge uppåt så HeroSection kan kollapsa intro-texten och ge resultaten plats.
+  useEffect(() => {
+    if (variant !== 'hero') return;
+    onActiveChange?.(heroActive && (query.trim().length >= 2 || !!theme));
+  }, [variant, heroActive, query, theme, onActiveChange]);
 
   useEffect(() => {
     if (open) {
@@ -434,9 +445,9 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
 
   // HERO: riktigt inline-sökfält. Man skriver direkt i rutan; träffarna fälls ut under.
   if (variant === 'hero') {
-    const showDropdown = heroActive && (query.trim().length >= 2 || !!theme);
+    const hasResults = query.trim().length >= 2 || !!theme;
     return (
-      <div ref={heroWrapRef} className="relative w-full max-w-xl mx-auto">
+      <div ref={heroWrapRef} className={`relative w-full mx-auto transition-all ${hasResults ? 'max-w-3xl' : 'max-w-xl'}`}>
         <div className="flex items-center gap-3 rounded-full bg-white border border-slate-200 shadow-lg hover:shadow-xl focus-within:shadow-xl px-5 py-3.5 transition-shadow">
           <Search className="h-5 w-5 text-slate-400 shrink-0" />
           <input
@@ -452,9 +463,26 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero' }> = ({ variant 
           />
           {loading && <Loader2 className="h-4 w-4 animate-spin text-amber-500 shrink-0" />}
         </div>
-        {showDropdown && (
+        {heroActive && (
           <div className="absolute left-0 right-0 z-[60] mt-2 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden">
-            {resultsList}
+            {hasResults ? resultsList : (
+              <div className="p-3">
+                <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  {sv ? 'Förslag' : 'Suggestions'}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(sv ? SUGGESTIONS_SV : SUGGESTIONS_EN).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => { setTheme(null); setQuery(s); inputRef.current?.focus(); }}
+                      className="rounded-full border border-slate-600 px-3 py-1 text-sm text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

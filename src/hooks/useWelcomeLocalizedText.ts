@@ -6,7 +6,7 @@ export const useWelcomeLocalizedText = () => {
 
   const localizedTexts = {
     sv: {
-      heroTitle: "Sök det Nordiska Arvet",
+      heroTitle: "Sök Viking Age",
       heroDescription: "Upptäck tusentals runstenar, vikingatida platser och fornnordisk historia genom vår kunskapsgraf och AI-databas.",
       skipIntro: "Hoppa över introduktion",
       runestones: "Runstenar",
@@ -27,7 +27,7 @@ export const useWelcomeLocalizedText = () => {
       language: "sv"
     },
     en: {
-      heroTitle: "Search the Nordic Heritage",
+      heroTitle: "Search Viking Age",
       heroDescription: "Discover thousands of runestones, Viking Age sites and Old Norse history through our knowledge graph and AI database.",
       skipIntro: "Skip introduction",
       runestones: "Runestones",
