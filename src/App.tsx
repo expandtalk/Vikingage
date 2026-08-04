@@ -42,6 +42,8 @@ const EconomicHistory = lazy(() => import("./pages/EconomicHistory"));
 const Angermanland = lazy(() => import("./pages/Angermanland"));
 const Kalmar = lazy(() => import("./pages/Kalmar"));
 const Staket = lazy(() => import("./pages/Staket"));
+const GotaLandsvag = lazy(() => import("./pages/GotaLandsvag"));
+const Kyrkor = lazy(() => import("./pages/Kyrkor"));
 const SanktOlof = lazy(() => import("./pages/SanktOlof"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Helgon = lazy(() => import("./pages/Helgon"));
@@ -164,6 +166,10 @@ const App = () => (
                   <Route path="/kalmar" element={<Kalmar />} />
                   <Route path="/sv/staket" element={<Staket />} />
                   <Route path="/en/staket" element={<Staket />} />
+                  <Route path="/sv/gota-landsvag" element={<GotaLandsvag />} />
+                  <Route path="/en/gota-landsvag" element={<GotaLandsvag />} />
+                  <Route path="/sv/kyrkor" element={<Kyrkor />} />
+                  <Route path="/en/churches" element={<Kyrkor />} />
                   <Route path="/staket" element={<Staket />} />
                   <Route path="/sv/sankt-olof" element={<SanktOlof />} />
                   <Route path="/en/saint-olav" element={<SanktOlof />} />

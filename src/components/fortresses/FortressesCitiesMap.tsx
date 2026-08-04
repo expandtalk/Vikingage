@@ -48,18 +48,33 @@ interface SwedishHillfort {
   description?: string;
 }
 
+interface SimplePlace {
+  id: string;
+  name: string;
+  coordinates: { lat: number; lng: number };
+  period?: string;
+  landscape?: string;
+  municipality?: string;
+}
+
 interface FortressesCitiesMapProps {
   fortresses: VikingFortress[];
   cities: VikingCity[];
   hillforts?: SwedishHillfort[];
+  medievalCastles?: SimplePlace[];
+  beacons?: SimplePlace[];
   onLocationClick?: (location: VikingFortress | VikingCity | SwedishHillfort, type: 'fortress' | 'city' | 'hillfort') => void;
   highlightedLocation?: { id: string; type: 'fortress' | 'city' | 'hillfort' } | null;
   showFortresses: boolean;
   showCities: boolean;
   showHillforts?: boolean;
+  showMedieval?: boolean;
+  showBeacons?: boolean;
   onToggleFortresses: () => void;
   onToggleCities: () => void;
   onToggleHillforts?: () => void;
+  onToggleMedieval?: () => void;
+  onToggleBeacons?: () => void;
 }
 
 // Fortress marker configurations
@@ -84,25 +99,34 @@ const CITY_CONFIGS: { [key: string]: { color: string; icon: string } } = {
 
 // Swedish hillfort marker configuration
 const HILLFORT_CONFIG = { color: '#8B4513', icon: '🏔️' };
+// Medeltidsborg + vårdkase (försvarskommunikation)
+const MEDIEVAL_CONFIG = { color: '#7b3f00', icon: '🏰' };
+const BEACON_CONFIG = { color: '#e25822', icon: '🔥' };
 
 export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
   fortresses,
   cities,
   hillforts = [],
+  medievalCastles = [],
+  beacons = [],
   onLocationClick,
   highlightedLocation,
   showFortresses,
   showCities,
   showHillforts = true,
+  showMedieval = true,
+  showBeacons = false,
   onToggleFortresses,
   onToggleCities,
-  onToggleHillforts = () => {}
+  onToggleHillforts = () => {},
+  onToggleMedieval = () => {},
+  onToggleBeacons = () => {}
 }) => {
   const { language } = useLanguage();
   const sv = language === 'sv';
   const M = sv
-    ? { interactiveMap: 'Interaktiv karta', fortifications: 'Befästningar', cities: 'Centra', hillforts: 'Fornborgar', showAll: 'Visa alla', legend: 'Förklaring' }
-    : { interactiveMap: 'Interactive map', fortifications: 'Fortifications', cities: 'Centres', hillforts: 'Hillforts', showAll: 'Show all', legend: 'Legend' };
+    ? { interactiveMap: 'Interaktiv karta', fortifications: 'Befästningar', cities: 'Centra', hillforts: 'Fornborgar', medieval: 'Medeltidsborgar', beacons: 'Vårdkasar', showAll: 'Visa alla', legend: 'Förklaring' }
+    : { interactiveMap: 'Interactive map', fortifications: 'Fortifications', cities: 'Centres', hillforts: 'Hillforts', medieval: 'Medieval castles', beacons: 'Beacons', showAll: 'Show all', legend: 'Legend' };
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
@@ -207,6 +231,40 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
     return marker;
   };
 
+  // Enkel markör för medeltidsborgar / vårdkasar
+  const createSimpleMarker = (
+    place: SimplePlace,
+    cfg: { color: string; icon: string },
+    kindLabel: string
+  ) => {
+    const size = 26;
+    const icon = L.divIcon({
+      html: `
+        <div style="
+          background: ${cfg.color};
+          width: ${size}px; height: ${size}px;
+          border-radius: 50%; border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          display: flex; align-items: center; justify-content: center;
+          font-size: ${size * 0.5}px; color: white;
+        ">${cfg.icon}</div>`,
+      className: 'simple-fort-marker',
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
+    });
+    const marker = L.marker([place.coordinates.lat, place.coordinates.lng], { icon });
+    marker.bindPopup(`
+      <div class="p-3 max-w-sm">
+        <h3 class="font-bold text-base text-gray-800">${place.name || ''}</h3>
+        <div class="mt-2 flex flex-wrap gap-1">
+          <span class="inline-block px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded">${kindLabel}</span>
+          ${place.period ? `<span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">${place.period}</span>` : ''}
+          ${place.municipality ? `<span class="inline-block px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded">${place.municipality}</span>` : ''}
+        </div>
+      </div>`);
+    return marker;
+  };
+
   // Create custom marker
   const createCustomMarker = (
     location: VikingFortress | VikingCity, 
@@ -305,7 +363,21 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
         hillfortClusterRef.current.addLayer(marker);
       });
     }
-  }, [fortresses, cities, hillforts, showFortresses, showCities, showHillforts, highlightedLocation, onLocationClick]);
+
+    // Add medieval-castle markers
+    if (showMedieval && medievalCastles) {
+      medievalCastles.forEach(castle => {
+        markersRef.current.addLayer(createSimpleMarker(castle, MEDIEVAL_CONFIG, sv ? 'Medeltidsborg' : 'Medieval castle'));
+      });
+    }
+
+    // Add beacon (vårdkase) markers
+    if (showBeacons && beacons) {
+      beacons.forEach(beacon => {
+        markersRef.current.addLayer(createSimpleMarker(beacon, BEACON_CONFIG, sv ? 'Vårdkase' : 'Beacon'));
+      });
+    }
+  }, [fortresses, cities, hillforts, medievalCastles, beacons, showFortresses, showCities, showHillforts, showMedieval, showBeacons, highlightedLocation, onLocationClick]);
 
   // Zoom to location function
   const zoomToLocation = (location: VikingFortress | VikingCity) => {
@@ -379,6 +451,30 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
                     {hillforts.length}
                   </Badge>
                   {M.hillforts}
+                </Button>
+              )}
+
+              {medievalCastles && medievalCastles.length > 0 && (
+                <Button
+                  variant={showMedieval ? "default" : "outline"}
+                  size="sm"
+                  onClick={onToggleMedieval}
+                  className="text-xs"
+                >
+                  <Badge variant="secondary" className="mr-1">{medievalCastles.length}</Badge>
+                  {M.medieval}
+                </Button>
+              )}
+
+              {beacons && beacons.length > 0 && (
+                <Button
+                  variant={showBeacons ? "default" : "outline"}
+                  size="sm"
+                  onClick={onToggleBeacons}
+                  className="text-xs"
+                >
+                  <Badge variant="secondary" className="mr-1">{beacons.length}</Badge>
+                  {M.beacons}
                 </Button>
               )}
 

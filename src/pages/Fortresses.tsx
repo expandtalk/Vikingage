@@ -8,10 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
 import { MapPin, Calendar, Castle, Shield, Users, Ruler, Building, Anchor, Crown } from "lucide-react";
 import { useVikingFortresses } from '../hooks/useVikingFortresses';
 import { useVikingCities, getCategoryColor, getCategoryLabel } from '../hooks/useVikingCities';
 import { useSwedishHillforts } from '../hooks/useSwedishHillforts';
+import { useFornborgInge } from '../hooks/useFornborgInge';
+import { useBeaconSites } from '../hooks/useBeaconSites';
+import { useMedievalCastles } from '../hooks/useMedievalCastles';
+import { useFortificationFinds } from '../hooks/useFortificationFinds';
 import { FortressesCitiesMap } from '../components/fortresses/FortressesCitiesMap';
 import { FingerprintDialog } from '../components/forensics/FingerprintDialog';
 import { FortGoldTerritoryCard } from '../components/fortresses/FortGoldTerritoryCard';
@@ -62,6 +67,10 @@ const Fortresses = () => {
   const { fortresses, isLoading: fortressesLoading, error: fortressesError } = useVikingFortresses(true);
   const { data: cities, isLoading: citiesLoading, error: citiesError } = useVikingCities(true);
   const { hillforts, isLoading: hillfortsLoading, error: hillfortsError } = useSwedishHillforts(true);
+  const { ingeByFort } = useFornborgInge(true);
+  const { beacons } = useBeaconSites(true);
+  const { castles: medievalCastles } = useMedievalCastles(true);
+  const { findsByFort } = useFortificationFinds(true);
   const [selectedFortressType, setSelectedFortressType] = useState<string>('all');
   const [selectedCityCategory, setSelectedCityCategory] = useState<string>('all');
   const [selectedLandscape, setSelectedLandscape] = useState<string>('all');
@@ -69,7 +78,13 @@ const Fortresses = () => {
   const [selectedCityRegion, setSelectedCityRegion] = useState<string>('all');
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [showHillforts, setShowHillforts] = useState(true);
-  const [hillfortSort, setHillfortSort] = useState<'landscape' | 'age' | 'runestones'>('landscape');
+  const [hillfortSort, setHillfortSort] = useState<'landscape' | 'age' | 'runestones' | 'inge' | 'height'>('landscape');
+  const [onlyNearInge, setOnlyNearInge] = useState(false);
+  const [fortFunc, setFortFunc] = useState<string>('all');            // funktionsfacet
+  const [soilFilter, setSoilFilter] = useState<string>('all');        // jordmånsfacet
+  const [onlyOnHeight, setOnlyOnHeight] = useState(false);            // läge: byggd på höjd
+  const [periodRange, setPeriodRange] = useState<[number, number]>([-3000, 1400]); // tidsslider (år)
+  const [includeUndated, setIncludeUndated] = useState(true);
 
   // Grov åldersrank ur period-texten (odaterade sist). Neolitikum → medeltid.
   const eraRank = (p?: string): number => {
@@ -88,12 +103,40 @@ const Fortresses = () => {
   const sortHillforts = (arr: typeof hillforts) => {
     if (hillfortSort === 'age') return [...arr].sort((a, b) => eraRank(a.period) - eraRank(b.period) || a.name.localeCompare(b.name));
     if (hillfortSort === 'runestones') return [...arr].sort((a, b) => (b.nearby_runestones ?? -1) - (a.nearby_runestones ?? -1) || a.name.localeCompare(b.name));
+    if (hillfortSort === 'inge') return [...arr].sort((a, b) => {
+      const da = ingeByFort.get(a.id)?.inge_distance_m ?? Infinity;
+      const db = ingeByFort.get(b.id)?.inge_distance_m ?? Infinity;
+      return da - db || a.name.localeCompare(b.name);
+    });
+    if (hillfortSort === 'height') return [...arr].sort((a, b) =>
+      (b.rel_height_m ?? -Infinity) - (a.rel_height_m ?? -Infinity) || a.name.localeCompare(b.name));
     return arr; // 'landscape' = hookens ordning (landskap, namn)
   };
+
+  // Fornborgslistans filter: landskap + -inge + funktion + tidsperiod (odaterade via toggle).
+  const yearFmt = (y: number) => (y < 0 ? `${Math.abs(y)} f.Kr.` : `${y} e.Kr.`);
+  const overlapsPeriod = (h: typeof hillforts[number]) => {
+    if (h.period_start == null) return includeUndated;
+    const end = h.period_end ?? h.period_start;
+    return h.period_start <= periodRange[1] && end >= periodRange[0];
+  };
+  const matchesFunction = (h: typeof hillforts[number]) =>
+    fortFunc === 'all' ? true : fortFunc === 'none' ? !h.fort_function : h.fort_function === fortFunc;
+  const visibleHillforts = sortHillforts(
+    hillforts
+      .filter(h => selectedLandscape === 'all' || h.landscape === selectedLandscape)
+      .filter(h => !onlyNearInge || ((ingeByFort.get(h.id)?.inge_distance_m ?? Infinity) <= 2000))
+      .filter(matchesFunction)
+      .filter(h => soilFilter === 'all' || h.soil_fertility === soilFilter)
+      .filter(h => !onlyOnHeight || h.on_height === true)
+      .filter(overlapsPeriod)
+  );
 
   // Map state
   const [showFortresses, setShowFortresses] = useState(true);
   const [showCities, setShowCities] = useState(true);
+  const [showMedieval, setShowMedieval] = useState(true);
+  const [showBeacons, setShowBeacons] = useState(false);
   const [highlightedLocation, setHighlightedLocation] = useState<{ id: string; type: 'fortress' | 'city' | 'hillfort' } | null>(null);
 
   const fortressTypes = [
@@ -239,15 +282,21 @@ const Fortresses = () => {
           <FortressesCitiesMap
             fortresses={fortresses}
             cities={cities || []}
-            hillforts={hillforts}
+            hillforts={visibleHillforts}
+            medievalCastles={medievalCastles}
+            beacons={beacons}
             onLocationClick={handleLocationClick}
             highlightedLocation={highlightedLocation}
             showFortresses={showFortresses}
             showCities={showCities}
             showHillforts={showHillforts}
+            showMedieval={showMedieval}
+            showBeacons={showBeacons}
             onToggleFortresses={() => setShowFortresses(!showFortresses)}
             onToggleCities={() => setShowCities(!showCities)}
             onToggleHillforts={() => setShowHillforts(!showHillforts)}
+            onToggleMedieval={() => setShowMedieval(!showMedieval)}
+            onToggleBeacons={() => setShowBeacons(!showBeacons)}
           />
         </div>
 
@@ -328,13 +377,71 @@ const Fortresses = () => {
 
             <div className="flex flex-wrap items-center gap-2 mt-3">
               <span className="text-xs text-muted-foreground">{sv ? 'Sortera:' : 'Sort:'}</span>
-              {([['landscape', sv ? 'Landskap' : 'Landscape'], ['age', sv ? 'Ålder' : 'Age'], ['runestones', sv ? 'Runstenar i närheten' : 'Nearby runestones']] as const).map(([key, label]) => (
+              {([['landscape', sv ? 'Landskap' : 'Landscape'], ['age', sv ? 'Ålder' : 'Age'], ['runestones', sv ? 'Runstenar i närheten' : 'Nearby runestones'], ['inge', sv ? '-inge-bygd' : '-inge settlement'], ['height', sv ? 'Läge (höjd)' : 'Position (height)']] as const).map(([key, label]) => (
                 <Button key={key} variant={hillfortSort === key ? 'default' : 'outline'} size="sm" onClick={() => setHillfortSort(key)}>{label}</Button>
               ))}
+              <Button
+                variant={onlyNearInge ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setOnlyNearInge(v => !v)}
+                title={sv ? 'Visa bara fornborgar inom 2 km från ett -inge-namn (gammal bebyggelse)' : 'Show only hillforts within 2 km of an -inge name'}
+              >
+                {sv ? 'Endast nära -inge (≤2 km)' : 'Only near -inge (≤2 km)'}
+              </Button>
+            </div>
+
+            {/* Funktionsfacet (försvar vs handel & skatt). Evidensbaserad — mestadels oklassificerad än. */}
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className="text-xs text-muted-foreground">{sv ? 'Funktion:' : 'Function:'}</span>
+              {([['all', sv ? 'Alla' : 'All'], ['defense', sv ? 'Försvar' : 'Defense'], ['control_trade', sv ? 'Handel & skatt' : 'Trade & tax'], ['none', sv ? 'Oklassificerad' : 'Unclassified']] as const).map(([key, label]) => {
+                const n = key === 'all' ? hillforts.length : key === 'none' ? hillforts.filter(h => !h.fort_function).length : hillforts.filter(h => h.fort_function === key).length;
+                return (
+                  <Button key={key} variant={fortFunc === key ? 'default' : 'outline'} size="sm" onClick={() => setFortFunc(key)}>
+                    {label}<Badge variant="secondary" className="ml-1">{n}</Badge>
+                  </Button>
+                );
+              })}
+            </div>
+
+            {/* Jordmån & läge (SGU-jordart + DEM-prominens). Fylls av sample-fort-terrain.mjs. */}
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className="text-xs text-muted-foreground">{sv ? 'Jordmån:' : 'Soil:'}</span>
+              {([['all', sv ? 'Alla' : 'All'], ['bördig', sv ? 'Bördig' : 'Fertile'], ['moderat', sv ? 'Moderat' : 'Moderate'], ['mager', sv ? 'Mager' : 'Poor'], ['våtmark', sv ? 'Våtmark' : 'Wetland']] as const).map(([key, label]) => {
+                const n = key === 'all' ? hillforts.length : hillforts.filter(h => h.soil_fertility === key).length;
+                return (
+                  <Button key={key} variant={soilFilter === key ? 'default' : 'outline'} size="sm" onClick={() => setSoilFilter(key)}>
+                    {label}<Badge variant="secondary" className="ml-1">{n}</Badge>
+                  </Button>
+                );
+              })}
+              <Button
+                variant={onlyOnHeight ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setOnlyOnHeight(v => !v)}
+                title={sv ? 'Byggd på höjd (prominens ≥12 m över omgivningen, DEM)' : 'Built on a height (≥12 m prominence, DEM)'}
+              >
+                {sv ? 'På höjd' : 'On height'}<Badge variant="secondary" className="ml-1">{hillforts.filter(h => h.on_height === true).length}</Badge>
+              </Button>
+            </div>
+
+            {/* Tidsslider — baserad på belagda dateringar (C14/typologi). */}
+            <div className="mt-3 p-3 rounded border border-border">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                <span>{sv ? 'Tidsperiod' : 'Time period'}: {yearFmt(periodRange[0])} – {yearFmt(periodRange[1])}</span>
+                <Button variant={includeUndated ? 'default' : 'outline'} size="sm" onClick={() => setIncludeUndated(v => !v)}>
+                  {sv ? 'Inkl. odaterade' : 'Incl. undated'}
+                </Button>
+              </div>
+              <Slider min={-3000} max={1400} step={10} value={periodRange} onValueChange={(v) => setPeriodRange([v[0], v[1]])} className="w-full" />
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {sv
+                  ? 'Bygger på belagda dateringar (C14/typologi) — endast ~23 borgar är daterade; övriga räknas som odaterade och styrs av knappen ovan.'
+                  : 'Based on documented datings (C14/typology) — only ~23 forts are dated; the rest count as undated, toggled above.'}
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortHillforts(selectedLandscape === 'all' ? hillforts : hillforts.filter(h => h.landscape === selectedLandscape)).map((hillfort) => (
+              {visibleHillforts.map((hillfort) => (
                 <Card
                   key={hillfort.id}
                   className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
@@ -367,6 +474,46 @@ const Fortresses = () => {
                       {hillfort.status === 'confirmed' && (
                         <Badge variant="default" className="text-xs bg-green-600">
                           {L.confirmed}
+                        </Badge>
+                      )}
+                      {ingeByFort.get(hillfort.id)?.nearest_inge && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-amber-500/40 text-amber-200"
+                          title={sv
+                            ? 'Närmaste -inge-namn (gammal bebyggelse, ofta äldre järnålder). Bygdkoppling — samlokalisering ≤2 km är en hypotes, inte en datering av borgen.'
+                            : 'Nearest -inge settlement name (often Early Iron Age). Landscape association — co-location ≤2 km is a hypothesis, not a dating of the fort.'}
+                        >
+                          -inge: {ingeByFort.get(hillfort.id)!.nearest_inge} ({Math.round(ingeByFort.get(hillfort.id)!.inge_distance_m ?? 0)} m)
+                        </Badge>
+                      )}
+                      {hillfort.fort_function && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-sky-500/40 text-sky-200"
+                          title={sv ? 'Belagd funktion (evidensbaserad klassning)' : 'Documented function (evidence-based)'}
+                        >
+                          {hillfort.fort_function === 'defense' ? (sv ? 'Försvar' : 'Defense')
+                            : hillfort.fort_function === 'control_trade' ? (sv ? 'Handel & skatt' : 'Trade & tax')
+                            : hillfort.fort_function}
+                        </Badge>
+                      )}
+                      {hillfort.soil_fertility && !['ingen_täckning', 'okänd'].includes(hillfort.soil_fertility) && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-lime-600/40 text-lime-200"
+                          title={hillfort.soil_jordart ? `SGU jordart: ${hillfort.soil_jordart}` : undefined}
+                        >
+                          {hillfort.soil_fertility}
+                        </Badge>
+                      )}
+                      {hillfort.on_height && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-stone-500/40 text-stone-200"
+                          title={hillfort.rel_height_m != null ? `+${Math.round(hillfort.rel_height_m)} m över omgivningen (DEM-prominens)` : undefined}
+                        >
+                          {sv ? 'På höjd' : 'On height'}{hillfort.rel_height_m != null ? ` +${Math.round(hillfort.rel_height_m)} m` : ''}
                         </Badge>
                       )}
                     </div>
@@ -423,6 +570,22 @@ const Fortresses = () => {
 
                     {expandedCard === `hillfort-${hillfort.id}` && (
                       <div className="pt-2 border-t border-border space-y-2">
+                        {(findsByFort.get(hillfort.id)?.length ?? 0) > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-foreground mb-1">{sv ? 'Fynd & datering' : 'Finds & dating'}:</p>
+                            <ul className="text-xs text-muted-foreground space-y-1">
+                              {findsByFort.get(hillfort.id)!.map((f, i) => (
+                                <li key={i}>
+                                  <span className="text-sky-300">{f.find_type}</span>
+                                  {f.c14_raw ? ` ${f.c14_raw}` : ''}
+                                  {f.label ? ` — ${f.label}` : ''}
+                                  {f.description ? `: ${f.description}` : ''}
+                                  {f.source_ref ? ` (${f.source_ref})` : ''}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                         {hillfort.dating_basis && (
                           <p className="text-xs text-muted-foreground">
                             <strong>{sv ? 'Dateringsgrund' : 'Dating basis'}:</strong> {hillfort.dating_basis}

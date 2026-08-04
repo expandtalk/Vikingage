@@ -18,6 +18,14 @@ export interface SwedishHillfort {
   description?: string;
   status: string;
   period?: string;
+  period_start?: number;
+  period_end?: number;
+  fort_function?: string;
+  elevation_m?: number;
+  rel_height_m?: number;
+  on_height?: boolean;
+  soil_jordart?: string;
+  soil_fertility?: string;
   dating_basis?: string;
   dating_confidence?: string;
   dating_source?: string;
