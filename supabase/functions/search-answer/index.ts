@@ -52,10 +52,19 @@ Deno.serve(async (req) => {
     const query = String(q ?? '').trim();
     if (query.length < 3) return json({ error: 'Skriv en fråga (minst 3 tecken).' }, 400);
 
+    const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+    // 0. CACHE: normalisera frågan; finns svaret cachat returnera direkt (noll tokens, ingen
+    //    embed/sök/graf/LLM). Delad cache mellan alla besökare → vanliga frågor blir gratis+snabba.
+    const qnorm = query.toLowerCase().replace(/\s+/g, ' ').replace(/[?.!]+$/, '').trim();
+    try {
+      const { data: cached } = await supabase.from('qa_cache')
+        .select('answer,sources').eq('question_norm', qnorm).eq('language', language).maybeSingle();
+      if (cached?.answer) return json({ answer: cached.answer, sources: cached.sources ?? [], cached: true });
+    } catch { /* cache best-effort — miss faller igenom till generering */ }
+
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     if (!OPENROUTER_API_KEY) return json({ error: 'API configuration error' }, 500);
-
-    const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
     // 1. Embedda frågan + hybrid-retrieval.
     // deno-lint-ignore no-explicit-any
@@ -134,6 +143,14 @@ Deno.serve(async (req) => {
     const result = await resp.json();
     const answer = result.choices?.[0]?.message?.content;
     if (!answer) return json({ error: 'Svaret kunde inte tolkas — försök igen' }, 502);
+
+    // Spara i cachen så framtida identiska frågor blir gratis + direkta (best-effort).
+    try {
+      await supabase.from('qa_cache').upsert(
+        { question_norm: qnorm, language, answer, sources,
+          model: Deno.env.get('SEARCH_ANSWER_MODEL') || 'moonshotai/kimi-k3', updated_at: new Date().toISOString() },
+        { onConflict: 'question_norm,language' });
+    } catch { /* cache-skrivning best-effort */ }
 
     return json({ answer, sources });
   } catch (e) {
