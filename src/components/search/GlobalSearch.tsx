@@ -4,12 +4,20 @@ import {
   Search, Loader2, CornerDownLeft, BookOpen, Hammer, MapPin, Church,
   Castle, Crown, Users2, Coins as CoinsIcon, Users, Sparkles, X, Cross, Skull,
   Compass, Swords, Shield, Heart, Ship, PawPrint, Dog, Network, ScrollText,
+  AlertTriangle, ExternalLink, Info,
   type LucideIcon,
 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEntityNeighbors } from '@/hooks/useEntityNeighbors';
+import { useEntityFacets } from '@/hooks/useEntityFacets';
+import { useOffTopicSenses } from '@/hooks/useOffTopicSenses';
+
+// Facett-ikoner (entity_facets.icon = strängnamn) → lucide-komponent.
+const FACET_ICON: Record<string, LucideIcon> = {
+  AlertTriangle, Coins: CoinsIcon, MapPin, ExternalLink, Shield, ScrollText, Church, Castle, Crown, Ship, Compass,
+};
 
 // Federerat global-sök (toppnav, Ctrl/Cmd+K) — P4-arkitekturen:
 // EN rankad server-RPC (search_v1: exakt signum + trigram + FTS, viktad RRF)
@@ -132,15 +140,32 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
 // destinationschips (kung → dynasti + kungsgårdar osv). Grannarna hämtas via
 // graph_neighborhood och mappas till destinationer i entityDestinations-configen.
 const GoFurther: React.FC<{ hit: Hit; onGo: (route: string) => void; sv: boolean }> = ({ hit, onGo, sv }) => {
-  const { data } = useEntityNeighbors(hit.entity_id);
-  if (!data.length) return null;
+  const { data: neighbors } = useEntityNeighbors(hit.entity_id);
+  const { data: facets } = useEntityFacets(hit.entity_type, hit.entity_id);
+  if (!neighbors.length && !facets.length) return null;
   return (
     <div className="border-t border-slate-800 px-4 py-3">
       <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
         {sv ? 'Gå vidare' : 'Explore further'}
       </div>
       <div className="flex flex-wrap gap-2">
-        {data.slice(0, 12).map((n, i) => {
+        {/* Kurerade facetter först (entity_facets, prior-ordnade). Extern länk = <a>, intern = onGo. */}
+        {facets.map((f) => {
+          const Icon = (f.icon && FACET_ICON[f.icon]) || Network;
+          const label = sv ? f.label_sv : f.label_en;
+          const cls = 'inline-flex items-center gap-1.5 rounded-full border border-amber-600/40 bg-amber-500/5 px-3 py-1 text-sm text-amber-100 hover:border-amber-500/70';
+          return f.is_external ? (
+            <a key={f.facet_key} href={f.destination} target="_blank" rel="noopener noreferrer" className={cls}>
+              <Icon className="h-3.5 w-3.5 text-amber-400" /> {label} <ExternalLink className="h-3 w-3 opacity-60" />
+            </a>
+          ) : (
+            <button key={f.facet_key} onClick={() => onGo(f.destination)} className={cls}>
+              <Icon className="h-3.5 w-3.5 text-amber-400" /> {label}
+            </button>
+          );
+        })}
+        {/* KG-grannar därefter (graph_neighborhood) */}
+        {neighbors.slice(0, 12).map((n, i) => {
           const Icon = n.destination.icon;
           return (
             <button
@@ -152,6 +177,30 @@ const GoFurther: React.FC<{ hit: Hit; onGo: (route: string) => void; sv: boolean
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+};
+
+// Homonym "vid sidan": off-topic betydelser av söksträngen (our_domain=false), avmarkerade.
+// Vi hävdar vår mening i träffarna; detta noterar bara "menade du X? — fokuserar vi inte på".
+const SideSenses: React.FC<{ query: string; sv: boolean }> = ({ query, sv }) => {
+  const { data } = useOffTopicSenses(query);
+  if (!data.length) return null;
+  return (
+    <div className="border-b border-slate-800 bg-slate-800/30 px-4 py-2">
+      <div className="flex items-start gap-2 text-[11px] text-slate-400">
+        <Info className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-500" />
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="text-slate-500">{sv ? 'Vid sidan:' : 'Aside:'}</span>
+          {data.map((s, i) => (
+            <span key={i} className="text-slate-400">
+              <span className="text-slate-300">{sv ? s.sense_label_sv : s.sense_label_en}</span>
+              {(sv ? s.note_sv : s.note_en) && <span className="text-slate-500"> — {sv ? s.note_sv : s.note_en}</span>}
+              {i < data.length - 1 && <span className="text-slate-600"> ·</span>}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -323,6 +372,8 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   // Delad träfflista — samma innehåll i hero-dropdownen och i dialogen.
   const resultsList = (
     <div className="max-h-[60vh] overflow-y-auto text-left">
+      {/* Homonym vid sidan — off-topic betydelser (Tor Browser etc.), avmarkerade */}
+      <SideSenses query={query} sv={sv} />
       {/* AI-svar (grounded RAG) — knapp när man skrivit en fråga, sedan källfört svar */}
       {!theme && query.trim().length >= 3 && (
         <div className="border-b border-slate-800 px-4 py-3">

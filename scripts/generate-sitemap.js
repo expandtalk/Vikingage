@@ -41,6 +41,14 @@ const routes = [
   { path: '/en/execution-sites', priority: 0.7 },
   { path: '/sv/slaktforskning', priority: 0.8 },
   { path: '/en/genealogy', priority: 0.7 },
+  // Heritage-/kunskapssidor som saknades i sitemap (SEO-mål)
+  { path: '/sv/sandby-borg', priority: 0.9 },
+  { path: '/en/sandby-borg', priority: 0.8 },
+  { path: '/sv/gota-landsvag', priority: 0.8 },
+  { path: '/en/gota-landsvag', priority: 0.7 },
+  { path: '/sv/kyrkor', priority: 0.8 },
+  { path: '/sv/runor', priority: 0.9 },
+  { path: '/en/runes', priority: 0.8 },
 ];
 
 const baseUrl = 'https://vikingage.se';
