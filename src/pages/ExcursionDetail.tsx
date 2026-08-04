@@ -12,7 +12,7 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Badge } from '@/components/ui/badge';
 import { MeterBadge } from '@/components/inscription/MeterBadge';
-import { MapPin, Calendar, Compass, ArrowLeft, ExternalLink, Scroll, User, BookOpen, Crown, Navigation, Sparkles, Landmark } from 'lucide-react';
+import { MapPin, Calendar, Compass, ArrowLeft, ExternalLink, Scroll, BookOpen, Crown, Navigation, Sparkles, Landmark } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EXCURSIONS } from '@/data/excursions';
 import { supabase } from '@/integrations/supabase/client';
@@ -89,6 +89,22 @@ const ExcursionDetail = () => {
         carvers: { name: string; attribution: string; certainty: boolean }[];
         edda: { title: string; relation: string; notes: string | null }[];
       };
+    },
+  });
+
+  // Historisk kontext hämtas separat — get_excursion_detail returnerar den inte, och den
+  // (480 tecken för Öl 1) visades aldrig på sidan. Frontend-only, ingen DB-ändring.
+  const { data: stoneExtra } = useQuery({
+    queryKey: ['excursion-stone-extra', excursion?.signum],
+    enabled: !!excursion?.signum,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('runic_inscriptions')
+        .select('historical_context')
+        .eq('signum', excursion!.signum!)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { historical_context: string | null } | null;
     },
   });
 
@@ -365,6 +381,15 @@ const ExcursionDetail = () => {
     </section>
   );
 
+  // Underrubrik + brödtext i runstensblocket — riktig typografisk hierarki (h3 i guld),
+  // ersätter de gamla pyttesmå uppercase-etiketterna.
+  const StoneField: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+    <div>
+      <h3 className="text-base font-semibold text-gold mb-2">{label}</h3>
+      {children}
+    </div>
+  );
+
   return (
     <div className="min-h-screen viking-bg">
       <PageMeta title={`${excursion.name} — Utflykt`} titleEn={`${excursion.name} — Excursion`}
@@ -484,6 +509,73 @@ const ExcursionDetail = () => {
           </section>
         )}
 
+        {/* RUNSTENEN — framträdande, fullbrett block direkt efter bilderna, med riktiga
+            underrubriker. Lyft ur den gamla trånga bottengridden (Daniel: "typografiskt fel"). */}
+        {stone && (
+          <section className="viking-card rounded-lg border border-border p-6 mb-6 max-w-3xl">
+            <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
+              <Scroll className="h-6 w-6 text-gold" />{sv ? 'Runstenen' : 'The runestone'} {stone.signum}
+            </h2>
+            {[stone.dating, stone.meter && (sv ? `versmått: ${stone.meter}` : `metre: ${stone.meter}`)].filter(Boolean).length > 0 && (
+              <p className="text-sm text-muted-foreground mb-6">
+                {[stone.dating, stone.meter && (sv ? `versmått: ${stone.meter}` : `metre: ${stone.meter}`)].filter(Boolean).join(' · ')}
+              </p>
+            )}
+
+            <div className="space-y-6">
+              {stone.transliteration && (
+                <StoneField label={sv ? 'Translitteration' : 'Transliteration'}>
+                  <div className="p-3 bg-black/20 rounded font-mono text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">{stone.transliteration}</div>
+                </StoneField>
+              )}
+              {(stone.translation_sv || stone.translation_en) && (
+                <StoneField label={sv ? 'Översättning' : 'Translation'}>
+                  <blockquote className="border-l-2 border-gold/50 pl-4 text-lg italic text-slate-200 leading-relaxed">
+                    {(sv ? stone.translation_sv : stone.translation_en) || stone.translation_sv || stone.translation_en}
+                  </blockquote>
+                </StoneField>
+              )}
+              {stone.carvers.length > 0 && (
+                <StoneField label={sv ? 'Ristare' : 'Carver(s)'}>
+                  <ul className="space-y-1">
+                    {stone.carvers.map((c, i) => (
+                      <li key={i} className="text-sm text-foreground flex items-center gap-2">
+                        {c.name}
+                        <Badge variant="outline" className="text-[10px]">{(ATTR_LABEL[c.attribution]?.[sv ? 'sv' : 'en']) ?? c.attribution}{!c.certainty ? (sv ? ', osäker' : ', uncertain') : ''}</Badge>
+                      </li>
+                    ))}
+                  </ul>
+                </StoneField>
+              )}
+              {stone.edda.length > 0 && (
+                <StoneField label={sv ? 'Litterära kopplingar' : 'Literary links'}>
+                  <ul className="space-y-0.5">
+                    {stone.edda.map((e, i) => (
+                      <li key={i} className="text-sm text-muted-foreground">{e.title} <span className="text-muted-foreground/60">({e.relation})</span></li>
+                    ))}
+                  </ul>
+                </StoneField>
+              )}
+              {stone.scholarly_notes && (
+                <StoneField label={sv ? 'Forskningsnoter' : 'Scholarly notes'}>
+                  <p className="text-[15px] text-slate-300 leading-relaxed whitespace-pre-wrap">{stone.scholarly_notes}</p>
+                </StoneField>
+              )}
+              {stoneExtra?.historical_context && (
+                <StoneField label={sv ? 'Historisk kontext' : 'Historical context'}>
+                  <p className="text-[15px] text-slate-300 leading-relaxed whitespace-pre-wrap">{stoneExtra.historical_context}</p>
+                </StoneField>
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-border/60">
+              <Link to={`/inscription/${encodeURIComponent(stone.signum)}`} className="inline-flex items-center gap-1 text-sm text-gold hover:underline">
+                <ExternalLink className="h-3.5 w-3.5" />{sv ? 'Läs hela inskriften i runregistret' : 'Read the full inscription record'}
+              </Link>
+            </div>
+          </section>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Sevärdheter inom räckvidd (features_near, reglerbar radie) */}
           {nearbyDb && nearbyDb.length > 0 && (
@@ -505,50 +597,6 @@ const ExcursionDetail = () => {
               <p className="text-[11px] text-muted-foreground/70 mt-2">{sv ? 'Ur RAÄ Fornsök + kyrkor (fågelvägen). Justera radien ovanför kartan. Klicka för att öppna på huvudkartan.' : 'From the heritage register + churches. Adjust the radius above the map.'}</p>
             </Section>
           )}
-          {/* Runsten */}
-          {stone && (
-            <Section icon={<Scroll className="h-5 w-5 text-gold" />} title={`${sv ? 'Om runstenen' : 'About the runestone'} ${stone.signum}`}>
-              {stone.transliteration && (
-                <div className="mb-3">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{sv ? 'Translitteration' : 'Transliteration'}</div>
-                  <div className="p-3 bg-black/20 rounded font-mono text-sm text-slate-200 whitespace-pre-wrap">{stone.transliteration}</div>
-                </div>
-              )}
-              {(stone.translation_sv || stone.translation_en) && (
-                <p className="text-sm text-muted-foreground italic mb-3">"{(sv ? stone.translation_sv : stone.translation_en) || stone.translation_sv || stone.translation_en}"</p>
-              )}
-              {stone.carvers.length > 0 && (
-                <div className="mb-3">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1 flex items-center gap-1"><User className="h-3 w-3" />{sv ? 'Ristare' : 'Carver(s)'}</div>
-                  <ul className="space-y-1">
-                    {stone.carvers.map((c, i) => (
-                      <li key={i} className="text-sm text-foreground flex items-center gap-2">
-                        {c.name}
-                        <Badge variant="outline" className="text-[10px]">{(ATTR_LABEL[c.attribution]?.[sv ? 'sv' : 'en']) ?? c.attribution}{!c.certainty ? (sv ? ', osäker' : ', uncertain') : ''}</Badge>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {stone.edda.length > 0 && (
-                <div className="mb-3">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{sv ? 'Litterära kopplingar' : 'Literary links'}</div>
-                  <ul className="space-y-0.5">
-                    {stone.edda.map((e, i) => (
-                      <li key={i} className="text-sm text-muted-foreground">{e.title} <span className="text-muted-foreground/60">({e.relation})</span></li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {stone.scholarly_notes && (
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{sv ? 'Forskningsnoter' : 'Scholarly notes'}</div>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{stone.scholarly_notes}</p>
-                </div>
-              )}
-            </Section>
-          )}
-
           {/* Källor */}
           {sources && sources.length > 0 && (
             <Section icon={<BookOpen className="h-5 w-5 text-gold" />} title={sv ? 'Källor' : 'Sources'}>
