@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { zoneOf, bucketCorridor } from './navCorridor';
+import { zoneOf, bucketCorridor, minSignificanceForSpeed, gateBySpeed } from './navCorridor';
 import type { AlongRouteFeature } from '@/hooks/useRoadtrip';
 
 const f = (id: string, detour_km: number, frac_along: number): AlongRouteFeature => ({
@@ -24,5 +24,26 @@ describe('bucketCorridor', () => {
   });
   it('handles an empty list', () => {
     expect(bucketCorridor([])).toEqual({ near: [], sight: [] });
+  });
+});
+
+describe('minSignificanceForSpeed', () => {
+  it('rises with speed; null/står still shows everything (threshold 0)', () => {
+    expect(minSignificanceForSpeed(null)).toBe(0);
+    expect(minSignificanceForSpeed(0)).toBe(0);
+    const slow = minSignificanceForSpeed(8);   // ~30 km/h
+    const fast = minSignificanceForSpeed(30);  // ~108 km/h
+    expect(fast).toBeGreaterThan(slow);
+  });
+});
+
+describe('gateBySpeed', () => {
+  it('drops features below the speed-derived significance threshold', () => {
+    const hi = f('hi', 0.05, 0.1); hi.significance = 5;
+    const lo = f('lo', 0.05, 0.2); lo.significance = 1;
+    const kept = gateBySpeed([hi, lo], 30); // fast → only high significance
+    expect(kept.map((x) => x.feature_id)).toContain('hi');
+    expect(kept.map((x) => x.feature_id)).not.toContain('lo');
+    expect(gateBySpeed([hi, lo], null)).toHaveLength(2); // still → keep all
   });
 });

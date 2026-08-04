@@ -20,3 +20,17 @@ export function bucketCorridor(features: AlongRouteFeature[]): ZonedCorridor {
   sight.sort(byFrac);
   return { near, sight };
 }
+
+// Hastighet → minsta signifikans som visas. Stillastående/okänd = 0 (visa allt).
+// Linjär upptrappning upp till motorvägsfart (~30 m/s ≈ 108 km/h → tröskel 4).
+export function minSignificanceForSpeed(speedMps: number | null): number {
+  if (speedMps == null || speedMps <= 0) return 0;
+  const capped = Math.min(speedMps, 30);
+  return (capped / 30) * 4;
+}
+
+export function gateBySpeed(features: AlongRouteFeature[], speedMps: number | null): AlongRouteFeature[] {
+  const min = minSignificanceForSpeed(speedMps);
+  if (min <= 0) return features;
+  return features.filter((f) => f.significance >= min);
+}

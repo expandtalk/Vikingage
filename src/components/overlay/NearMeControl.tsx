@@ -13,7 +13,8 @@ import {
 import { useNearbyAlongRoute } from '@/hooks/useNearbyAlongRoute';
 import { geocode, route as computeRoute } from '@/services/routing';
 import { setDrivingMode, useCourseUp, setCourseUp } from '@/hooks/useDrivingMode';
-import { startFieldNav, stopFieldNav } from '@/hooks/useFieldNav';
+import { startFieldNav, stopFieldNav, useFieldNav } from '@/hooks/useFieldNav';
+import { bucketCorridor, gateBySpeed } from '@/utils/navCorridor';
 
 // Svenska etiketter + färg per feature_type ur nearby_features (fallback = råtypen).
 const TYPE_LABEL: Record<string, { sv: string; color: string }> = {
@@ -89,6 +90,8 @@ const consented = () => { try { return localStorage.getItem(CONSENT_KEY) === '1'
 // Position hämtas PÅ BEGÄRAN (getCurrentPosition), ingen följning. Träffar → kunskapsgrafen.
 export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }> = ({ enabledLayers }) => {
   const { open, pos, radiusKm, locating, error } = useNearMe();
+  // Fältnavigeringens live-position (GPS-fart) — driver hastighetsgrindningen i korridorlistan.
+  const { pos: fieldPos } = useFieldNav();
   const [debouncedR, setDebouncedR] = useState(radiusKm);
   useEffect(() => { const t = setTimeout(() => setDebouncedR(radiusKm), 300); return () => clearTimeout(t); }, [radiusKm]);
   // Grupperad lista: en kollapsbar sektion per typ (Runstenar, Gravar, Kyrkor…).
@@ -149,7 +152,10 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   const CORRIDOR_TYPES = ['runestone', 'church', 'cult_site', 'estate', 'museum', 'heritage', 'maritime_node'];
   const { data: corridorData } = useNearbyAlongRoute(mode === 'car' ? route?.coords : null, CORRIDOR_TYPES.filter(showByInterest));
   useEffect(() => { setRoadtripCorridor(corridorData ?? []); }, [corridorData]);
-  const corridorList = [...(corridorData ?? [])].sort((a, b) => a.frac_along - b.frac_along);
+  // Zonat (närzon ≤100 m / synfält) + hastighetsgrindat (fort → bara hög signifikans) — annars
+  // svämmar listan över vid motorvägsfart. Ingen position/fart (fieldPos null) → visa allt.
+  const zoned = bucketCorridor(gateBySpeed(corridorData ?? [], fieldPos?.speed ?? null));
+  const corridorCount = zoned.near.length + zoned.sight.length;
 
   // Kom-ihåg riktig GPS-startpunkt (för "↩ Min plats" + "Kör hem"). Sätts bara vid äkta locate.
   const homePosRef = useRef<{ lat: number; lng: number } | null>(null);
@@ -410,28 +416,57 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
 
       {pos && !error && (
         <div className="flex-1 overflow-y-auto px-2 pb-3">
-          {/* Sevärt LÄNGS VÄGEN — korridorsökning, visas när en bilrutt är aktiv. Ordnad som resväg. */}
-          {mode === 'car' && route && corridorList.length > 0 && (
+          {/* Sevärt LÄNGS VÄGEN — korridorsökning, visas när en bilrutt är aktiv. Zonat (närzon
+              ≤100 m / synfält) + hastighetsgrindat (fort → bara hög signifikans, se navCorridor.ts). */}
+          {mode === 'car' && route && corridorCount > 0 && (
             <div className="mb-3">
-              <div className="px-1 mb-1 text-[10px] uppercase tracking-wide text-amber-300/90">🏁 Sevärt längs vägen ({corridorList.length})</div>
-              <ul className="space-y-0.5">
-                {corridorList.map((f) => {
-                  const isHer = f.feature_type === 'heritage';
-                  const name = isHer ? (heritageName(f.label) || capFirst(heritageType(f.label))) : f.label;
-                  return (
-                    <li key={`along-${f.feature_id}`}>
-                      <button onClick={() => flyToAlong(f)} title="Visa på kartan"
-                        className="w-full flex items-center justify-between gap-2 text-left px-2 rounded hover:bg-slate-800" style={{ minHeight: 40 }}>
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm text-slate-200">{name}</span>
-                          <span className="block truncate text-[11px] text-amber-300/70">{f.rank_reason}</span>
-                        </span>
-                        <span className="shrink-0 tabular-nums text-xs text-amber-300/80" title="omväg från vägen">{fmtDist(f.detour_km)}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="px-1 mb-1 text-[10px] uppercase tracking-wide text-amber-300/90">🏁 Sevärt längs vägen ({corridorCount})</div>
+              {zoned.near.length > 0 && (
+                <>
+                  <div className="px-1 mb-1 text-[10px] uppercase tracking-wide text-amber-300/70">Precis här (≤100 m)</div>
+                  <ul className="space-y-0.5">
+                    {zoned.near.map((f) => {
+                      const isHer = f.feature_type === 'heritage';
+                      const name = isHer ? (heritageName(f.label) || capFirst(heritageType(f.label))) : f.label;
+                      return (
+                        <li key={`along-${f.feature_id}`}>
+                          <button onClick={() => flyToAlong(f)} title="Visa på kartan"
+                            className="w-full flex items-center justify-between gap-2 text-left px-2 rounded hover:bg-slate-800" style={{ minHeight: 40 }}>
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm text-slate-200">{name}</span>
+                              <span className="block truncate text-[11px] text-amber-300/70">{f.rank_reason}</span>
+                            </span>
+                            <span className="shrink-0 tabular-nums text-xs text-amber-300/80" title="omväg från vägen">{fmtDist(f.detour_km)}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+              {zoned.sight.length > 0 && (
+                <>
+                  <div className="px-1 mb-1 mt-2 text-[10px] uppercase tracking-wide text-amber-300/70">Längs vägen</div>
+                  <ul className="space-y-0.5">
+                    {zoned.sight.map((f) => {
+                      const isHer = f.feature_type === 'heritage';
+                      const name = isHer ? (heritageName(f.label) || capFirst(heritageType(f.label))) : f.label;
+                      return (
+                        <li key={`along-${f.feature_id}`}>
+                          <button onClick={() => flyToAlong(f)} title="Visa på kartan"
+                            className="w-full flex items-center justify-between gap-2 text-left px-2 rounded hover:bg-slate-800" style={{ minHeight: 40 }}>
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm text-slate-200">{name}</span>
+                              <span className="block truncate text-[11px] text-amber-300/70">{f.rank_reason}</span>
+                            </span>
+                            <span className="shrink-0 tabular-nums text-xs text-amber-300/80" title="omväg från vägen">{fmtDist(f.detour_km)}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
               <div className="border-t border-slate-700/60 mt-2" />
             </div>
           )}
