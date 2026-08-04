@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { transliterate, type FutharkKind } from '@/data/futhark';
-import { Pen, Download, Info, Sun, Moon } from 'lucide-react';
+import { useVikingNames } from '@/hooks/useVikingNames';
+import { Pen, Download, Info, Sun, Moon, Shield } from 'lucide-react';
 
 // Skrivverktyg: latinsk text → runor (fonematiskt), val av futhark, dark/white, PNG/SVG-export.
 // Glyfer = Unicode Runic (renderas med systemets runfont, som resten av sajten). Transparent:
@@ -28,6 +29,19 @@ export const RuneWriter: React.FC = () => {
   const { runes, steps } = useMemo(() => transliterate(text, kind), [text, kind]);
   const bg = dark ? '#0f172a' : '#ffffff';
   const fg = dark ? '#f5d78b' : '#1e293b';
+
+  // Namnigenkänning: matcha ETT ord mot viking_names (moderna nordiska namnformer + betydelse).
+  // Ärligt: detta är igenkänning + betydelse, INTE en attesterad runstavning från en viss sten.
+  const { data: names } = useVikingNames();
+  const nameIndex = useMemo(() => {
+    const m = new Map<string, { name: string; meaning: string }>();
+    (names ?? []).forEach((n) => { if (n?.name) m.set(n.name.trim().toLowerCase(), { name: n.name, meaning: n.meaning || '' }); });
+    return m;
+  }, [names]);
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  const known = words.length === 1
+    ? (nameIndex.get(words[0].toLowerCase()) || nameIndex.get(words[0].toLowerCase().replace(/(ur|r)$/, '')) || null)
+    : null;
 
   const measure = (s: string, fontPx: number) => {
     const ctx = document.createElement('canvas').getContext('2d');
@@ -101,6 +115,18 @@ export const RuneWriter: React.FC = () => {
         className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-base text-foreground outline-none focus:border-gold/60 mb-3"
         maxLength={120}
       />
+
+      {/* Namnigenkänning (viking_names) — igenkänning + betydelse, ej attesterad runstavning */}
+      {known && (
+        <div className="flex items-start gap-2 rounded-lg border border-gold/40 bg-gold/5 px-3 py-2 mb-3 text-xs">
+          <Shield className="h-4 w-4 text-gold shrink-0 mt-0.5" />
+          <span className="text-muted-foreground">
+            {L('Känt vikingatida namn', 'A known Viking-age name')}: <strong className="text-gold">{known.name}</strong>
+            {known.meaning ? ` — ${known.meaning}` : ''}.
+            <span className="opacity-70"> {L('(Igenkänt namn med betydelse — inte en attesterad runstavning från en specifik sten.)', '(Recognised name with meaning — not an attested runic spelling from a specific stone.)')}</span>
+          </span>
+        </div>
+      )}
 
       {/* Förhandsvisning (samma färger som exporten) */}
       <div
