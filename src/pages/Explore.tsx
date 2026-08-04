@@ -44,7 +44,7 @@ const Explore = () => {
 
   return (
     <div className="min-h-screen viking-bg">
-      <Header />
+      {!driving && <Header />}
       {!driving && <Breadcrumbs />}
 
       <main className={`container mx-auto px-4 ${driving ? 'py-2' : 'py-8'}`}>

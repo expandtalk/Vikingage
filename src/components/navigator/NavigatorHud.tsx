@@ -45,8 +45,17 @@ export const NavigatorHud: React.FC = () => {
         </div>
       </div>
 
-      {/* Nederst: pil + vägnamn + klocka + ETA + kvarvarande km */}
-      <div className="fixed bottom-0 inset-x-0 z-[1200] bg-slate-900/90 backdrop-blur-md text-white px-4 py-3 flex items-center justify-between gap-4">
+      {/* Nederst: pil + vägnamn + klocka + ETA + kvarvarande km.
+          bottom-offset (ej bottom-0): i billäge+rutt (samma tillstånd som visar HUD:en)
+          minimerar NearMeControl (src/components/overlay/NearMeControl.tsx) sig själv till
+          bara sin headerrad (minimera/stäng/kurs-upp) förankrad vid inset-x-0 bottom-0 (mobil)
+          resp. right-4 bottom-4 (desktop), ~64 px hög + ev. dra-handtag (12 px, mobil) + safe-area.
+          Utan offset målar HUD:en (z-[1200]) över den raden och gör knapparna otryckbara.
+          88 px + safe-area-inset-bottom ger marginal över värsta fallet (mobil, notch). */}
+      <div
+        className="fixed inset-x-0 z-[1200] bg-slate-900/90 backdrop-blur-md text-white px-4 py-3 flex items-center justify-between gap-4"
+        style={{ bottom: 'calc(88px + env(safe-area-inset-bottom))' }}
+      >
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-4xl leading-none" aria-hidden>{m.nextTurn ? turnGlyph(m.nextTurn.modifier) : '↑'}</span>
           <span className="text-lg font-semibold truncate">{m.currentRoad || '—'}</span>
