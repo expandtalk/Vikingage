@@ -28,6 +28,7 @@ import {
   Share2,
   Headphones,
   Cross,
+  Microscope,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -204,6 +205,13 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Diocletianus prisedikt (301 e.Kr.) — romerska priser omräknade.',
     descEn: "Diocletian's Price Edict (301 AD) — Roman prices converted.",
     icon: Scale, category: 'history',
+  },
+  {
+    pathEn: '/methodology', pathSv: '/sv/vetenskapsmetodik',
+    labelSv: 'Vetenskapsmetodik', labelEn: 'Methodology',
+    descSv: 'Metoden att inte släppa in dålig data — tio principer, attribution och ägande, proveniens och forensik, samt källkritisk FAQ.',
+    descEn: 'The method for keeping bad data out — ten principles, attribution and ownership, provenance and forensics, and a source-critical FAQ.',
+    icon: Microscope, category: 'science',
   },
   {
     pathEn: '/statistics', pathSv: '/sv/statistik',
