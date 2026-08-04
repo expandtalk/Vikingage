@@ -17,6 +17,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Brain, LogIn } from "lucide-react";
 import { useDrivingMode } from "@/hooks/useDrivingMode";
+import { NavigatorHud } from '@/components/navigator/NavigatorHud';
 
 const Explore = () => {
   const { user, loading } = useAuth();
@@ -47,6 +48,7 @@ const Explore = () => {
       {!driving && <Breadcrumbs />}
 
       <main className={`container mx-auto px-4 ${driving ? 'py-2' : 'py-8'}`}>
+        <NavigatorHud />
         {/* Main Explorer. `relative isolate` = eget stacking-context så kartans flytande
             paneler (absolute, z-[1100]) inte kan bläda ut och lägga sig över innehållet under
             (Daniel: AI-kortet/texten doldes av ett lager). Ingen overflow-hidden — skulle
