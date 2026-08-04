@@ -406,9 +406,11 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         water_routes: true,
         trade_routes: true,
         valdemar_route: true,
-        eriksgatan: true,
+        // Landvägar hör INTE hemma i en vatten-/flodvy (Daniel: "floder visar väldigt mycket";
+        // eriksgatan drunknade här). Eriksgatan + viking_roads har egna vyer/fokus.
+        eriksgatan: false,
         stake_barriers: true,
-        viking_roads: true,
+        viking_roads: false,
         viking_cities: true,
         runic_inscriptions: false,
         foreign_inscriptions: false,
