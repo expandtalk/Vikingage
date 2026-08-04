@@ -49,6 +49,8 @@ const routes = [
   { path: '/sv/kyrkor', priority: 0.8 },
   { path: '/sv/runor', priority: 0.9 },
   { path: '/en/runes', priority: 0.8 },
+  { path: '/sv/danska-runstenar', priority: 0.8 },
+  { path: '/en/danish-runestones', priority: 0.7 },
 ];
 
 const baseUrl = 'https://vikingage.se';

@@ -291,6 +291,13 @@ const EXTRA_LINKS: NavLink[] = [
     descEn: 'The Öland ring fort where a massacre around 480 left the dead unburied.',
     icon: Castle, category: 'themes',
   },
+  {
+    pathEn: '/en/danish-runestones', pathSv: '/sv/danska-runstenar',
+    labelSv: 'Danska runstenar', labelEn: 'Danish runestones',
+    descSv: 'Danmarks runeindskrifter — Jelling, Tryggevælde, Hedeby + signum-systemen.',
+    descEn: 'Danmarks runeindskrifter — Jelling, Tryggevælde, Hedeby + the signum systems.',
+    icon: Landmark, category: 'themes',
+  },
 ];
 
 const home: NavLink = {

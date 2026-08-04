@@ -44,6 +44,7 @@ const Kalmar = lazy(() => import("./pages/Kalmar"));
 const Staket = lazy(() => import("./pages/Staket"));
 const GotaLandsvag = lazy(() => import("./pages/GotaLandsvag"));
 const SandbyBorg = lazy(() => import("./pages/SandbyBorg"));
+const DanskaRunstenar = lazy(() => import("./pages/DanskaRunstenar"));
 const Kyrkor = lazy(() => import("./pages/Kyrkor"));
 const Medeltidsborgar = lazy(() => import("./pages/Medeltidsborgar"));
 const SanktOlof = lazy(() => import("./pages/SanktOlof"));
@@ -172,6 +173,8 @@ const App = () => (
                   <Route path="/en/gota-landsvag" element={<GotaLandsvag />} />
                   <Route path="/sv/sandby-borg" element={<SandbyBorg />} />
                   <Route path="/en/sandby-borg" element={<SandbyBorg />} />
+                  <Route path="/sv/danska-runstenar" element={<DanskaRunstenar />} />
+                  <Route path="/en/danish-runestones" element={<DanskaRunstenar />} />
                   <Route path="/sv/kyrkor" element={<Kyrkor />} />
                   <Route path="/en/churches" element={<Kyrkor />} />
                   <Route path="/sv/medeltidsborgar" element={<Medeltidsborgar />} />
