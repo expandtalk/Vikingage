@@ -27,8 +27,8 @@ const Explore = () => {
   const [aiOpen, setAiOpen] = useState(false);
   const [searchParams] = useSearchParams();
   const focus = searchParams.get('focus');
-  // Kyrkofokus har en egen, rikare sida (byggnadshistoria + tidsålder-zoom). Led dit (route-preferens, SEO).
-  const hideAiSection = focus === 'churches';
+  // AI-analys/login-sektionen ska INTE ligga på explore-sidorna (Daniel, upprepat). Dölj alltid.
+  const hideAiSection = true;
   const redirectChurches = focus === 'churches';
   // Billäge (Near me "Kör"): strippa forsknings-chrome, maximera kartan.
   const driving = useDrivingMode();

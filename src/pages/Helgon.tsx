@@ -111,7 +111,7 @@ const Helgon = () => (
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {[...SAINTS].sort((a, b) => b.year - a.year).map((s) => (
+        {[...SAINTS].sort((a, b) => a.year - b.year).map((s) => (
           <Card key={s.name} className="viking-card">
             <CardHeader className="pb-2">
               <CardTitle className="text-base text-gold">{s.name}</CardTitle>
