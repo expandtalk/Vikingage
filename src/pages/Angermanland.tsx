@@ -8,7 +8,7 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, AlertTriangle, FlaskConical, Info, Compass } from 'lucide-react';
+import { MapPin, AlertTriangle, FlaskConical, Info, Compass, Download, ExternalLink } from 'lucide-react';
 import { useCentralPlaces, type CentralPlaceName, type CentralPlaceGroup } from '@/hooks/useCentralPlaces';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { useReliefOverlay } from '@/hooks/useReliefOverlay';
@@ -140,6 +140,25 @@ const Angermanland = () => {
       .then(({ data }: { data: Record<string, string>[] }) => setSolDiff(data ?? []));
   }, []);
 
+  // Attribution/proveniens — DB-driven (research_scholars + sources), EN sanningskälla.
+  // PDF-länken byter namn när Agneta uppdaterar studien; då räcker det att ändra
+  // sources.url (live direkt, inget ombygge) — sidan + /forskare följer med.
+  const [attribution, setAttribution] = useState<{ instituteUrl: string; workTitle: string | null; pdfUrl: string | null } | null>(null);
+  useEffect(() => {
+    (async () => {
+      const { data: sch } = await (supabase.from('research_scholars') as any)
+        .select('id, external_ref').ilike('name', '%Nyholm%').maybeSingle();
+      if (!sch) return;
+      const { data: work } = await (supabase.from('sources') as any)
+        .select('title, url').eq('scholar_id', sch.id).eq('source_type', 'research_document').maybeSingle();
+      setAttribution({
+        instituteUrl: sch.external_ref ?? 'https://www.sofiainstitutet.se',
+        workTitle: work?.title ?? null,
+        pdfUrl: work?.url ?? null,
+      });
+    })();
+  }, []);
+
   const tierNames = (names: CentralPlaceName[], tier: string) =>
     names.filter((n) => n.evidence_tier === tier).sort((a, b) => a.name.localeCompare(b.name, 'sv'));
 
@@ -169,6 +188,36 @@ const Angermanland = () => {
             källförd metod, inte en färdig slutsats.
           </p>
         </div>
+
+        {/* ATTRIBUTION — sidan är en del av Agneta Nyholms forskning; PDF:en är primärkällan
+            med rikare material. Länkar DB-drivna (sources.url / external_ref). */}
+        {attribution && (
+          <Card className="viking-card mb-4 border-gold/40">
+            <CardContent className="py-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex-1 text-sm text-foreground">
+                  En del av <strong>Agneta Nyholms</strong> forskning vid{' '}
+                  <a href={attribution.instituteUrl} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline inline-flex items-center gap-1">
+                    Sofiainstitutet <ExternalLink className="h-3 w-3" />
+                  </a>.
+                  {attribution.workTitle && (
+                    <> Sidan bygger på studien <em>”{attribution.workTitle}”</em> — hela PDF:en har rikare material än sammanfattningen här.</>
+                  )}
+                </div>
+                {attribution.pdfUrl && (
+                  <a
+                    href={attribution.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-gold px-4 py-2 text-slate-900 font-semibold hover:bg-amber-400 transition-colors shrink-0"
+                  >
+                    <Download className="h-4 w-4" /> Ladda ner hela studien (PDF)
+                  </a>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* KARTA — egen karta över klustret med tänd/släck-filter (Daniel: inte skicka till /explore) */}
         {!isLoading && groups.length > 0 && (
@@ -339,7 +388,8 @@ const Angermanland = () => {
         )}
 
         <p className="text-xs text-muted-foreground mt-6 opacity-75">
-          Forskning: <strong>Agneta Nyholm</strong> (Sofiainstitutet, Härnösand) — ortnamnskluster i
+          Forskning: <strong>Agneta Nyholm</strong> (
+          <a href={attribution?.instituteUrl ?? 'https://www.sofiainstitutet.se'} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">Sofiainstitutet</a>, Härnösand) — ortnamnskluster i
           Ångermanlands vikingatida centralorter (se{' '}
           <Link to="/forskare" className="text-gold hover:underline">forskare &amp; källor</Link>). Metoden
           (namnledskatalog, hypotestestare) delas med{' '}
