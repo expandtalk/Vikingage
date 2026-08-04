@@ -120,6 +120,21 @@ const ChurchDetail: React.FC<{ church: Church }> = ({ church }) => {
             </ol>
           </div>
         )}
+
+        {investigations && investigations.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-foreground mb-1 flex items-center gap-1"><Landmark className="h-3.5 w-3.5" /> {sv ? 'Kyrkoundersökningar (under golvet / källaren)' : 'Church investigations (under floor / crypt)'}</p>
+            <ul className="text-xs text-muted-foreground space-y-1.5">
+              {investigations.map((inv, i) => (
+                <li key={i}>
+                  <span className="text-gold">{inv.year_from ?? ''}{inv.year_to && inv.year_to !== inv.year_from ? `–${inv.year_to}` : ''}</span>{' '}
+                  {inv.what_found || inv.investigation_type}{inv.find_context ? ` — ${inv.find_context}` : ''}
+                  {inv.source_url && <> · <a href={inv.source_url} target="_blank" rel="noreferrer" className="text-gold hover:underline">{sv ? 'arkiv' : 'archive'}</a></>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {church.register_url && (
           <a href={church.register_url} target="_blank" rel="noreferrer" className="text-xs text-gold hover:underline">
             {sv ? 'Källa / register →' : 'Source / register →'}
