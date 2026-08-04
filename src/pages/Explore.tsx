@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams, Navigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { ChevronDown } from 'lucide-react';
 import { Header } from '../components/Header';
@@ -25,8 +25,15 @@ const Explore = () => {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
   const [aiOpen, setAiOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const focus = searchParams.get('focus');
+  // Kyrkofokus har en egen, rikare sida (byggnadshistoria + tidsålder-zoom). Led dit (route-preferens, SEO).
+  const hideAiSection = focus === 'churches';
+  const redirectChurches = focus === 'churches';
   // Billäge (Near me "Kör"): strippa forsknings-chrome, maximera kartan.
   const driving = useDrivingMode();
+
+  if (redirectChurches) return <Navigate to="/sv/kyrkor" replace />;
 
   if (loading || roleLoading) {
     return (
@@ -57,8 +64,8 @@ const Explore = () => {
           <RunicExplorerSimple />
         </div>
 
-        {/* AI-analys/anteckningar = fotsektion. Döljs helt i billäget (Daniel: behöver ej visas). */}
-        {driving ? null : isMobile && !aiOpen ? (
+        {/* AI-analys/anteckningar = fotsektion. Döljs i billäget och på kyrkofokus (Daniel). */}
+        {(driving || hideAiSection) ? null : isMobile && !aiOpen ? (
           <div className="mt-12 pt-8 border-t border-border/60">
             <button
               onClick={() => setAiOpen(true)}

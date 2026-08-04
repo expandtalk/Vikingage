@@ -145,7 +145,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   const [isSearchMinimized, setIsSearchMinimized] = useState(false);
   // Kondenserad (minimerad) som standard på mobil (Daniel) — tidslinjen tar annars mycket
   // yta över kartan; öppnas med ett klick. Desktop startar expanderad.
-  const [isTimelineMinimized, setIsTimelineMinimized] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  // Historiska tidslinjen: condensed by default ÄVEN på desktop (Daniel). Var tidigare bara minimerad <768px.
+  const [isTimelineMinimized, setIsTimelineMinimized] = useState(true);
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
   // Legenden visas som standard på desktop; på mobil startar den STÄNGD (bottom-sheet
   // ska inte täcka kartan vid inladdning — öppnas via Teckenförklaring-knappen).
