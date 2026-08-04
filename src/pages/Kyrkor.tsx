@@ -90,6 +90,7 @@ const ChurchDetail: React.FC<{ church: Church }> = ({ church }) => {
             className="w-full max-h-56 object-cover rounded border border-border" />
         )}
         <div className="flex flex-wrap gap-1.5">
+          {church.church_form === 'rundkyrka' && <Badge variant="outline" className="text-xs border-gold/60 text-gold">⭕ {sv ? 'Rundkyrka' : 'Round church'}</Badge>}
           {eraLabel && <Badge variant="outline" style={{ borderColor: eraLabel.color, color: eraLabel.color }} className="text-xs">{sv ? eraLabel.sv : eraLabel.en}</Badge>}
           {church.parish && <Badge variant="secondary" className="text-xs">{church.parish}{church.landscape ? `, ${church.landscape}` : ''}</Badge>}
           {church.religious_order && <Badge variant="secondary" className="text-xs">{church.religious_order}</Badge>}
@@ -151,12 +152,14 @@ const Kyrkor = () => {
   const { churches, isLoading } = useChurches(true);
   const [eraFilter, setEraFilter] = useState<ChurchEra | 'all'>('all');
   const [kindFilter, setKindFilter] = useState<'all' | 'parish_church' | 'monastery'>('all');
+  const [onlyRound, setOnlyRound] = useState(false);
   const [selected, setSelected] = useState<Church | null>(null);
 
   const filtered = useMemo(() => churches.filter((c) =>
     (eraFilter === 'all' || churchEra(c) === eraFilter) &&
-    (kindFilter === 'all' || c.kind === kindFilter)
-  ), [churches, eraFilter, kindFilter]);
+    (kindFilter === 'all' || c.kind === kindFilter) &&
+    (!onlyRound || c.church_form === 'rundkyrka')
+  ), [churches, eraFilter, kindFilter, onlyRound]);
 
   return (
     <div className="min-h-screen viking-bg">
@@ -202,6 +205,14 @@ const Kyrkor = () => {
               {label}<Badge variant="secondary" className="ml-1">{key === 'all' ? churches.length : churches.filter((c) => c.kind === key).length}</Badge>
             </Button>
           ))}
+          <Button
+            variant={onlyRound ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setOnlyRound(v => !v)}
+            title={sv ? 'Bevarade medeltida rundkyrkor (8 i Sverige)' : "Sweden's preserved medieval round churches (8)"}
+          >
+            ⭕ {sv ? 'Rundkyrkor' : 'Round churches'}<Badge variant="secondary" className="ml-1">{churches.filter((c) => c.church_form === 'rundkyrka').length}</Badge>
+          </Button>
           <span className="text-xs text-muted-foreground ml-2">{sv ? 'Visar' : 'Showing'} {filtered.length}</span>
         </div>
 

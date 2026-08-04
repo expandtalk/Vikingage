@@ -28,6 +28,7 @@ export interface Church {
   image_url?: string;
   image_attribution?: string;
   register_url?: string;
+  church_form?: string;   // t.ex. 'rundkyrka'
 }
 
 // Tidsålder-bucket ur bästa tillgängliga byggår (built_from → current_building_year → founded_year).
@@ -48,7 +49,7 @@ export function churchYear(c: Church): number | null {
 const COLS =
   'id,name,name_en,kind,lat,lng,landscape,parish,municipality,built_from,built_to,current_building_year,' +
   'founded_year,dissolved_year,dating_class,dating_source,religious_order,significance_level,patron_saint,' +
-  'description,description_en,historical_notes,image_url,image_attribution,register_url';
+  'description,description_en,historical_notes,image_url,image_attribution,register_url,church_form';
 
 export const useChurches = (enabled: boolean = true) => {
   const [churches, setChurches] = useState<Church[]>([]);

@@ -44,6 +44,7 @@ const Kalmar = lazy(() => import("./pages/Kalmar"));
 const Staket = lazy(() => import("./pages/Staket"));
 const GotaLandsvag = lazy(() => import("./pages/GotaLandsvag"));
 const Kyrkor = lazy(() => import("./pages/Kyrkor"));
+const Medeltidsborgar = lazy(() => import("./pages/Medeltidsborgar"));
 const SanktOlof = lazy(() => import("./pages/SanktOlof"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Helgon = lazy(() => import("./pages/Helgon"));
@@ -170,6 +171,8 @@ const App = () => (
                   <Route path="/en/gota-landsvag" element={<GotaLandsvag />} />
                   <Route path="/sv/kyrkor" element={<Kyrkor />} />
                   <Route path="/en/churches" element={<Kyrkor />} />
+                  <Route path="/sv/medeltidsborgar" element={<Medeltidsborgar />} />
+                  <Route path="/en/medieval-castles" element={<Medeltidsborgar />} />
                   <Route path="/staket" element={<Staket />} />
                   <Route path="/sv/sankt-olof" element={<SanktOlof />} />
                   <Route path="/en/saint-olav" element={<SanktOlof />} />
