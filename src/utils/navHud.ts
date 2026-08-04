@@ -10,10 +10,11 @@ export function haversineM(a: LatLng, b: LatLng): number {
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
 }
 
-// v1-förenkling: närmaste manöver (fågelvägen), exkl. 'depart'. Förfinas i senare task med
-// rutt-progress. Returnerar null om inga maneuvrar finns.
+// v1-förenkling: närmaste manöver (fågelvägen), exkl. 'depart' och 'arrive' (arrive har
+// modifier null och tomt vägnamn — skulle annars renderas som en missvisande "sväng").
+// Förfinas i senare task med rutt-progress. Returnerar null om inga maneuvrar finns.
 export function nextManeuver(maneuvers: Maneuver[], pos: LatLng): { maneuver: Maneuver; distanceM: number } | null {
-  const cands = maneuvers.filter((m) => m.type !== 'depart');
+  const cands = maneuvers.filter((m) => m.type !== 'depart' && m.type !== 'arrive');
   if (cands.length === 0) return null;
   let best = cands[0], bestD = haversineM(pos, best);
   for (const m of cands.slice(1)) {
@@ -40,6 +41,9 @@ export interface HudModel {
   remainingKm: string;
 }
 
+// v1: ETA pinnas vid ruttstart; remaining/km är helrutts-totaler — live nedräkning kommer
+// i Plan 2 (rutt-progress). `nowMs` ska vara en STABIL tidsstämpel satt när rutten startade,
+// inte en färsk Date.now() per anrop — annars kryper ankomsttiden framåt vid varje omrendering.
 export function hudModel(route: RouteResult, pos: LatLng | null, nowMs: number): HudModel {
   const eta = formatEta(route.durationMin, nowMs);
   const nt = pos ? nextManeuver(route.maneuvers, pos) : null;

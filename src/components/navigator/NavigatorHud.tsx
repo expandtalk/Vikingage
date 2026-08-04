@@ -22,14 +22,18 @@ export function turnGlyph(modifier: string | null): string {
 const fmtM = (m: number) => (m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1).replace('.', ',')} km`);
 
 // HUD i billäget: överst aktuell väg + nästa manöver; nederst pil + vägnamn + klocka + ETA + km.
-// Ren vy — all härledning i hudModel(). Nu-tid läses en gång per render (billäget re-renderar
-// vid varje positionsuppdatering från useFieldNav).
+// Ren vy — all härledning i hudModel(). v1: ETA pinnas vid ruttstart; remaining/km är
+// helrutts-totaler — live nedräkning kommer i Plan 2 (rutt-progress). Utan pinning skulle
+// nowMs läsas färskt vid varje positionsuppdatering från useFieldNav och ankomsttiden
+// kryper då framåt i takt med klockan i stället för att stå still.
 export const NavigatorHud: React.FC = () => {
   const driving = useDrivingMode();
   const { route } = useRoadtrip();
   const { pos } = useFieldNav();
+  const startRef = React.useRef<{ route: unknown; ms: number }>({ route: null, ms: 0 });
+  if (startRef.current.route !== route) startRef.current = { route, ms: new Date().getTime() };
   if (!driving || !route) return null;
-  const nowMs = new Date().getTime();
+  const nowMs = startRef.current.ms;
   const m = hudModel(route, pos ? { lat: pos.lat, lng: pos.lng } : null, nowMs);
 
   return (

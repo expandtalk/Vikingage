@@ -28,6 +28,13 @@ describe('nextManeuver', () => {
   it('returns null when there are no maneuvers', () => {
     expect(nextManeuver([], { lat: 0, lng: 0 })).toBeNull();
   });
+  it('excludes the arrive step (no maneuver to render as "next turn" on approach)', () => {
+    const onlyArrive = [
+      { type: 'depart', modifier: null, lat: 56.66, lng: 16.36, road: 'Storgatan', distanceM: 240 },
+      { type: 'arrive', modifier: null, lat: 56.70, lng: 16.39, road: '', distanceM: 0 },
+    ] as RouteResult['maneuvers'];
+    expect(nextManeuver(onlyArrive, { lat: 56.699, lng: 16.389 })).toBeNull();
+  });
 });
 
 describe('formatEta', () => {
@@ -42,7 +49,7 @@ describe('formatEta', () => {
 describe('hudModel', () => {
   it('derives current road, next turn, remaining km and ETA', () => {
     const m = hudModel(ROUTE, { lat: 56.669, lng: 16.369 }, Date.UTC(2026, 7, 4, 10, 0, 0));
-    expect(m.currentRoad).toBeTypeOf('string');
+    expect(m.currentRoad).toBe('Storgatan');
     expect(m.nextTurn?.road).toBe('Väg 258');
     expect(m.remainingKm).toBe('4,2 km');
     expect(m.remaining).toBe('6 min');
