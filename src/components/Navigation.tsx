@@ -277,6 +277,20 @@ const EXTRA_LINKS: NavLink[] = [
     descEn: 'The saints of the North — Olav, Erik, Birgitta and more.',
     icon: Cross, category: 'themes',
   },
+  {
+    pathEn: '/en/gota-landsvag', pathSv: '/sv/gota-landsvag',
+    labelSv: 'Göta landsväg', labelEn: 'Göta landsväg',
+    descSv: 'Medeltida landsvägen Stockholm–Södertälje över Södertörn, med Svartlötens tingsplats.',
+    descEn: 'The medieval highroad Stockholm–Södertälje across Södertörn, with the Svartlöten assembly site.',
+    icon: Compass, category: 'themes',
+  },
+  {
+    pathEn: '/en/sandby-borg', pathSv: '/sv/sandby-borg',
+    labelSv: 'Sandby borg', labelEn: 'Sandby borg',
+    descSv: 'Ringborgen på Öland där en massaker ca 480 lämnade de döda obegravda.',
+    descEn: 'The Öland ring fort where a massacre around 480 left the dead unburied.',
+    icon: Castle, category: 'themes',
+  },
 ];
 
 const home: NavLink = {
