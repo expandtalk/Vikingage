@@ -53,7 +53,7 @@ const Excursions = () => {
   }, []);
 
   const renderCard = (e: (typeof EXCURSIONS)[number]) => {
-    const exploreUrl = `/explore?lat=${e.coords.lat}&lng=${e.coords.lng}`;
+    const exploreUrl = `/explore?center=${e.coords.lat},${e.coords.lng}&zoom=13`;
 
     return (
       <Card

@@ -606,7 +606,7 @@ const Fortresses = () => {
                           <p className="text-xs text-muted-foreground"><strong>RAÄ:</strong> {hillfort.raa_number}</p>
                         )}
                         <a
-                          href={hillfort.coordinates ? `/explore?lat=${hillfort.coordinates.lat}&lng=${hillfort.coordinates.lng}` : '/fortresses'}
+                          href={hillfort.coordinates ? `/explore?center=${hillfort.coordinates.lat},${hillfort.coordinates.lng}&zoom=14` : '/fortresses'}
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1 text-xs text-gold hover:underline"
                         >
