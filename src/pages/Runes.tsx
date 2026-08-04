@@ -9,6 +9,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useRunicCorpusStats } from '@/hooks/useRunicCorpusStats';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Map, ScrollText, Users, ChevronRight } from 'lucide-react';
+import { YOUNGER, ELDER } from '@/data/futhark';
+import { RuneWriter } from '@/components/runes/RuneWriter';
 
 // /sv/runor + /en/runes — kunskapshubb om runor & futharken, byggd på HELA runstenskorpusen
 // (count_runestones() = sanningskälla via runic_atlas_stats). Evergreen-innehåll (futhark, hur
@@ -16,37 +18,8 @@ import { Map, ScrollText, Users, ChevronRight } from 'lucide-react';
 // Hederlighet: rundikts-tolkningar och urnordiska namn är rekonstruktioner/omdiskuterade →
 // märks som sådana. Källor anges nederst. Deep-links går till riktiga inskrifter i korpusen.
 
-// Yngre futharken (vikingatidens 16 tecken, långkvist) — det nästan alla våra runstenar bär.
-const YOUNGER: { r: string; t: string; name: string; sv: string; en: string }[] = [
-  { r: 'ᚠ', t: 'f', name: 'fé', sv: 'boskap, rikedom', en: 'cattle, wealth' },
-  { r: 'ᚢ', t: 'u', name: 'úr', sv: 'slagg / uroxe (omtvistat)', en: 'dross / aurochs (debated)' },
-  { r: 'ᚦ', t: 'þ (th)', name: 'þurs', sv: 'jätte, turs', en: 'giant, ogre' },
-  { r: 'ᚬ', t: 'ą (nasalt a/o)', name: 'áss / óss', sv: 'as (gud)', en: 'god (of the Æsir)' },
-  { r: 'ᚱ', t: 'r', name: 'reið', sv: 'ritt, färd', en: 'ride, journey' },
-  { r: 'ᚴ', t: 'k', name: 'kaun', sv: 'sår, böld', en: 'sore, ulcer' },
-  { r: 'ᚼ', t: 'h', name: 'hagall', sv: 'hagel', en: 'hail' },
-  { r: 'ᚾ', t: 'n', name: 'nauðr', sv: 'nöd', en: 'need' },
-  { r: 'ᛁ', t: 'i', name: 'íss', sv: 'is', en: 'ice' },
-  { r: 'ᛅ', t: 'a', name: 'ár', sv: 'år, gröda', en: 'year, good harvest' },
-  { r: 'ᛋ', t: 's', name: 'sól', sv: 'sol', en: 'sun' },
-  { r: 'ᛏ', t: 't', name: 'týr', sv: 'guden Tyr', en: 'the god Týr' },
-  { r: 'ᛒ', t: 'b', name: 'bjarkan', sv: 'björk', en: 'birch' },
-  { r: 'ᛘ', t: 'm', name: 'maðr', sv: 'människa', en: 'man' },
-  { r: 'ᛚ', t: 'l', name: 'lögr', sv: 'vatten, sjö', en: 'water, sea' },
-  { r: 'ᛦ', t: 'ʀ', name: 'yr', sv: 'idegran', en: 'yew' },
-];
-
-// Äldre futharken (24 tecken, ca 150–800 e.Kr.). Namnen är urnordiska rekonstruktioner.
-const ELDER: { r: string; t: string; name: string }[] = [
-  { r: 'ᚠ', t: 'f', name: 'fehu' }, { r: 'ᚢ', t: 'u', name: 'ūruz' }, { r: 'ᚦ', t: 'þ', name: 'þurisaz' },
-  { r: 'ᚨ', t: 'a', name: 'ansuz' }, { r: 'ᚱ', t: 'r', name: 'raidō' }, { r: 'ᚲ', t: 'k', name: 'kaunan' },
-  { r: 'ᚷ', t: 'g', name: 'gebō' }, { r: 'ᚹ', t: 'w', name: 'wunjō' }, { r: 'ᚺ', t: 'h', name: 'hagalaz' },
-  { r: 'ᚾ', t: 'n', name: 'naudiz' }, { r: 'ᛁ', t: 'i', name: 'īsaz' }, { r: 'ᛃ', t: 'j', name: 'jēra' },
-  { r: 'ᛇ', t: 'ï', name: 'eihwaz' }, { r: 'ᛈ', t: 'p', name: 'perþō' }, { r: 'ᛉ', t: 'z', name: 'algiz' },
-  { r: 'ᛋ', t: 's', name: 'sōwilō' }, { r: 'ᛏ', t: 't', name: 'tīwaz' }, { r: 'ᛒ', t: 'b', name: 'berkanan' },
-  { r: 'ᛖ', t: 'e', name: 'ehwaz' }, { r: 'ᛗ', t: 'm', name: 'mannaz' }, { r: 'ᛚ', t: 'l', name: 'laguz' },
-  { r: 'ᛜ', t: 'ŋ', name: 'ingwaz' }, { r: 'ᛟ', t: 'o', name: 'ōþila' }, { r: 'ᛞ', t: 'd', name: 'dagaz' },
-];
+// Futhark-tabellerna (YOUNGER/ELDER) flyttade till @/data/futhark — delad sanningskälla
+// för både runsidans tabeller och skrivverktyget (RuneWriter).
 
 // Utvalda runstenar ur korpusen — deep-link till /inscription/:signum. Belagda enrads-fakta.
 const FEATURED: { signum: string; name: string; sv: string; en: string }[] = [
@@ -117,6 +90,9 @@ const Runes: React.FC = () => {
             'Runes are the writing of the Viking Age — the characters of the futhark. This page explains what runes are, the two futharks, and how to read a runestone, linked to the full Scandinavian runestone corpus on the map.',
           )}
         </p>
+
+        {/* Skrivverktyg — translitterera latin → runor, PNG/SVG-export */}
+        <RuneWriter />
 
         {/* Vad är runor */}
         <section className="mb-10">
