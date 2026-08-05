@@ -54,8 +54,9 @@ export const MapAndResultsSection: React.FC<MapAndResultsSectionProps> = ({
   };
 
   return (
-    <div className="w-full">
-      {/* Map Section - Full width */}
+    <div className="w-screen relative left-1/2 -ml-[50vw]">
+      {/* Full-bleed: kartan bryts ut ur container/max-w-7xl till full skärmbredd (margin-teknik,
+          ej transform → Near me:s fixed-drag opåverkat). Resten av sidan förblir centrerad. */}
       <div className="relative w-full">
         <InteractiveMap 
           inscriptions={allInscriptions}
@@ -64,7 +65,7 @@ export const MapAndResultsSection: React.FC<MapAndResultsSectionProps> = ({
           selectedTimePeriod={selectedTimePeriod}
           onMarkerClick={onMarkerClick}
           onMapNavigate={setMapNavFunction}
-          className="h-[600px] w-full"
+          className="h-[100dvh] md:h-[75vh] w-full"
         />
 
         {/* Floating Panels - Filters and Legend */}

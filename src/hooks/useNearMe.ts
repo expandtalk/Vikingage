@@ -20,7 +20,10 @@ interface State {
   resultsLoading: boolean;
 }
 // Default 5 km = en gåendes räckvidd (Daniel). Slider + färdsätts-chips justerar.
-let state: State = { open: false, pos: null, radiusKm: 5, locating: false, error: null, results: [], resultsLoading: false };
+// Radien sparas mellan besök (localStorage) så inställningen minns sig.
+const RKEY = 'vikingage_nearme_radius_v1';
+const loadRadius = (): number => { try { const v = Number(localStorage.getItem(RKEY)); return isFinite(v) && v > 0 ? v : 5; } catch { return 5; } };
+let state: State = { open: false, pos: null, radiusKm: typeof window !== 'undefined' ? loadRadius() : 5, locating: false, error: null, results: [], resultsLoading: false };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
@@ -30,7 +33,7 @@ export const closeNearMe = () => { state = { open: false, pos: null, radiusKm: s
 export const setNearMeLocating = (v: boolean) => { state = { ...state, locating: v, error: v ? null : state.error }; emit(); };
 export const setNearMePos = (lat: number, lng: number, accuracy: number) => { state = { ...state, pos: { lat, lng, accuracy }, error: null, locating: false }; emit(); };
 export const setNearMeError = (error: string) => { state = { ...state, error, locating: false }; emit(); };
-export const setNearMeRadiusKm = (radiusKm: number) => { state = { ...state, radiusKm }; emit(); };
+export const setNearMeRadiusKm = (radiusKm: number) => { state = { ...state, radiusKm }; try { localStorage.setItem(RKEY, String(radiusKm)); } catch { /* privat läge */ } emit(); };
 export const setNearMeResults = (results: NearMeFeature[], resultsLoading: boolean) => { state = { ...state, results, resultsLoading }; emit(); };
 
 export const useNearMe = () => useSyncExternalStore(subscribe, () => state);

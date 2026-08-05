@@ -49,10 +49,23 @@ export const useReachProbeTriggers = ({ map }: Props) => {
       container.appendChild(btn);
     };
 
-    // 2. Högerklick var som helst → sond på den punkten.
+    // 2. Högerklick / long-press var som helst.
+    //    Mobil: öppna en liten MENY-popup på punkten → de befintliga popupopen-injektorerna lägger
+    //    in BÅDE "Mät räckvidd härifrån" OCH "🧭 Led mig hit". Long-press är en KART-händelse (inte
+    //    ett markör-klick), så detta är en robust, popup-OBEROENDE väg — funkar även om markör-klick
+    //    krånglar (medaljong-z-index). Desktop: behåll direkt räckvidds-sond (Led mig hit är mobil-only).
     const onContextMenu = (e: L.LeafletMouseEvent) => {
       e.originalEvent?.preventDefault();
-      setProbe(e.latlng.lat, e.latlng.lng, `Punkt ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`);
+      const label = `Punkt ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`;
+      const isMob = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+      if (isMob) {
+        L.popup({ closeButton: true, className: 'field-action-popup', autoPan: true })
+          .setLatLng(e.latlng)
+          .setContent(`<div style="min-width:160px"><strong style="font-size:13px">${label}</strong><div style="font-size:11px;color:#64748b;margin-top:2px">Välj åtgärd:</div></div>`)
+          .openOn(map);
+      } else {
+        setProbe(e.latlng.lat, e.latlng.lng, label);
+      }
     };
 
     map.on('popupopen', onPopupOpen);

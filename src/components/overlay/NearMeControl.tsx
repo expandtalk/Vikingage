@@ -13,6 +13,12 @@ import {
 import { useNearbyAlongRoute } from '@/hooks/useNearbyAlongRoute';
 import { geocode, route as computeRoute } from '@/services/routing';
 import { setDrivingMode, useCourseUp, setCourseUp } from '@/hooks/useDrivingMode';
+import { useTravelMode, setTravelMode, type TravelMode } from '@/hooks/useTravelMode';
+import { useNearbyPages } from '@/hooks/useNearbyPages';
+import { useCustomPoints, addCustomPoint, removeCustomPoint } from '@/hooks/useCustomPoints';
+import { setProbe, setProbeShape, setProbeRadiusKm } from '@/hooks/useProximityProbe';
+import { useDraggable } from '@/hooks/useDraggable';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { startFieldNav, stopFieldNav, useFieldNav } from '@/hooks/useFieldNav';
 import { bucketCorridor, gateBySpeed } from '@/utils/navCorridor';
 
@@ -70,7 +76,7 @@ const flyTo = (
 // gående = tät närzon (koncentriska band), bil = regional översikt. Bara mobil (Daniel).
 interface TravelMode { key: string; label: string; min: number; def: number; max: number; step: number; stops: number[] }
 const TRAVEL_MODES: TravelMode[] = [
-  { key: 'foot', label: 'Gå',    min: 0.1, def: 5,  max: 5,   step: 0.1, stops: [0.1, 0.2, 0.5, 1, 2, 3, 4, 5] },
+  { key: 'foot', label: 'Gå',    min: 0.1, def: 0.5, max: 5,  step: 0.1, stops: [0.1, 0.2, 0.5, 1, 2, 3, 4, 5] },
   { key: 'bike', label: 'Cykla', min: 1,   def: 3,  max: 30,  step: 1,   stops: [3, 5, 10, 15, 20, 25, 30] },
   { key: 'car',  label: 'Kör',   min: 40,  def: 40, max: 500, step: 10,  stops: [40, 50, 100, 200, 300, 400, 500] },
 ];
@@ -98,12 +104,22 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const toggleGroup = (t: string) => setOpenGroups((p) => { const n = new Set(p); n.has(t) ? n.delete(t) : n.add(t); return n; });
   // Valt färdsätt styr radie-intervallet + hur listan presenteras (band / typ / översikt).
-  const [mode, setMode] = useState('foot');
+  // Delad store → samma läge som mobil-legendens Gå/Cykla/Kör.
+  const mode = useTravelMode();
+  const isMobile = useIsMobile();
+  // Flyttbar panel (desktop) som minns sin position mellan besök.
+  const { rootRef, dragHandleProps, style: dragStyle } = useDraggable('vikingage_nearme_pos_v1');
+  // Mina platser (localStorage) — ersätter fristående "Mina punkter"-kontrollen.
+  const savedPlaces = useCustomPoints();
+  const [placeName, setPlaceName] = useState('');
+  // Bil: Översikt (stanna & planera på den breda kartan) vs Kör (med mål → rutt + korridor).
+  const [carView, setCarView] = useState<'overview' | 'drive'>('overview');
   // Kryssruta: spara samtycket (auto-lokalisera vid återbesök) bara om ikryssad. Default på.
   const [remember, setRemember] = useState(true);
   // Minimera-läge: fäll ihop panelen till bara rubrikraden (behåll position/träffar) — Daniel
   // ville kunna få undan Near me på desktop utan att stänga och tappa sin lokalisering.
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(() => { try { return localStorage.getItem('vikingage_nearme_min_v1') === '1'; } catch { return false; } });
+  useEffect(() => { try { localStorage.setItem('vikingage_nearme_min_v1', minimized ? '1' : '0'); } catch { /* privat läge */ } }, [minimized]);
   // Roadtrip (bil-läge): skriv ett mål → geokoda → rita bilrutt. Store ⇄ useMapRoadtrip.
   const { dest, route, status: rtStatus, error: rtError } = useRoadtrip();
   const courseUp = useCourseUp();
@@ -127,10 +143,10 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // Billäge: map-first-läget slås på när man kör (bil-läge + öppet). Strippar chrome + zoomar in
   // + startar Följ färd (live-position + riktningskägla; GPS-kurs räcker i bil, ingen kompassgest).
   useEffect(() => {
-    const on = open && mode === 'car';
+    const on = open && mode === 'car' && carView === 'drive';
     setDrivingMode(on);
     if (on) startFieldNav(); else stopFieldNav();
-  }, [open, mode]);
+  }, [open, mode, carView]);
   useEffect(() => () => { setDrivingMode(false); stopFieldNav(); }, []);
   const activeMode = TRAVEL_MODES.find((m) => m.key === mode) ?? TRAVEL_MODES[0];
 
@@ -140,6 +156,9 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // OBS: INGEN default (= []) här — det skapar ny array-referens varje render, och eftersom exp
   // ligger i useEffect-deps nedan gav det en oändlig render-loop (React #185). undefined är stabil.
   const { data: exp } = useNearbyExperiences(open ? pos?.lat : null, open ? pos?.lng : null, debouncedR);
+  // Kurerade sidor/upplevelser nära dig (content_pages via pages_near) — "gå Göta landsvägen",
+  // "besök Sandby borg", "se Kalmar". Fast 40 km-radie (region matchar på innehållande bbox).
+  const { data: nearbyPages = [] } = useNearbyPages(open ? pos?.lat : null, open ? pos?.lng : null, 40);
   // Filtrera på intresseprofilen (dölj typer vars lager är avslaget).
   const showByInterest = (t: string) => { const k = LAYER_FOR[t]; return k == null ? true : enabledLayers?.[k] !== false; };
   const rows = [...(data ?? []), ...(exp ?? [])].filter((f: any) => showByInterest(f.feature_type))
@@ -183,7 +202,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   };
   // Efter att en rutt beräknats (mål angivet) → fäll ihop panelen så kartan tar hela skärmen.
   const prevRtStatusRef = useRef(rtStatus);
-  useEffect(() => { if (rtStatus === 'done' && prevRtStatusRef.current !== 'done') setMinimized(true); prevRtStatusRef.current = rtStatus; }, [rtStatus]);
+  useEffect(() => { if (rtStatus === 'done' && prevRtStatusRef.current !== 'done') { setCarView('drive'); setMinimized(true); } prevRtStatusRef.current = rtStatus; }, [rtStatus]);
 
   // Fallback utan GPS (nekad plats/desktop): skriv in en plats (geokoda) eller släpp en nål på
   // kartan → sätter referenspunkten så nearby/korridor/roadtrip funkar ändå (Daniel).
@@ -298,7 +317,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
       <button
         onClick={() => { openNearMe(); locate(); }}
         title="Near me — vad finns omkring?"
-        className="absolute bottom-4 right-4 z-[1050] flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-sky-600/95 hover:bg-sky-600 text-white text-sm font-medium border-2 border-sky-400 shadow-lg backdrop-blur-md"
+        className="absolute z-[1050] bottom-4 left-1/2 -translate-x-[calc(100%+4px)] sm:left-auto sm:translate-x-0 sm:right-4 flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-sky-600/95 hover:bg-sky-600 text-white text-sm font-medium border-2 border-sky-400 shadow-lg backdrop-blur-md"
         style={{ minHeight: 44 }}
       >
         <LocateFixed className="h-5 w-5" />Near me
@@ -308,11 +327,12 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
 
   return (
     <div
+      ref={rootRef}
       className="absolute inset-x-0 bottom-0 sm:inset-x-auto sm:right-4 sm:bottom-4 sm:w-96 z-[1055] bg-slate-900/90 backdrop-blur-md border-t sm:border border-slate-600 sm:rounded-lg rounded-t-2xl shadow-2xl flex flex-col"
-      style={{ maxHeight: '62vh', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      style={{ maxHeight: '62vh', paddingBottom: 'env(safe-area-inset-bottom)', ...(isMobile ? {} : dragStyle) }}
     >
       <div className="sm:hidden mx-auto mt-2 h-1 w-10 rounded-full bg-slate-600" aria-hidden="true" />
-      <div className="flex items-center justify-between px-4 py-2.5">
+      <div {...(!isMobile ? dragHandleProps : {})} className="flex items-center justify-between px-4 py-2.5 sm:cursor-grab sm:active:cursor-grabbing">
         <span className="text-white text-sm font-semibold flex items-center gap-2">
           <Navigation className="h-4 w-4 text-sky-400" />Near me
           {minimized && pos && !error && <span className="text-slate-400 font-normal text-xs">· {isFetching ? '…' : `${rows.length} objekt`}</span>}
@@ -353,7 +373,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
             {/* Färdsätt — sätter radie-intervallet (Gående nära, Bil långt) */}
             <div className="flex gap-1 mb-2">
               {TRAVEL_MODES.map((m) => (
-                <button key={m.key} onClick={() => { setMode(m.key); setNearMeRadiusKm(m.def); }}
+                <button key={m.key} onClick={() => { setTravelMode(m.key as TravelMode); setNearMeRadiusKm(m.def); }}
                   className={`flex-1 py-1.5 rounded border text-[11px] transition-colors ${mode === m.key ? 'bg-sky-500/20 border-sky-500 text-sky-200' : 'border-slate-700 text-slate-300 hover:bg-slate-800'}`}
                   style={{ minHeight: 36 }}>{m.label}</button>
               ))}
@@ -372,6 +392,15 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                 onChange={(e) => setNearMeRadiusKm(Number(e.target.value))} className="flex-1 accent-sky-500 cursor-pointer" aria-label="Sökradie i kilometer" />
               <span className="text-slate-400 whitespace-nowrap">{isFetching ? '…' : `${rows.length} objekt`}</span>
             </div>
+            {/* Bil: Översikt (stanna & planera på breda kartan) vs Kör (mål → rutt + 100 m-korridor). */}
+            {mode === 'car' && (
+              <div className="flex gap-1 mt-2">
+                <button type="button" onClick={() => setCarView('overview')}
+                  className={`flex-1 py-1.5 rounded border text-[11px] ${carView === 'overview' ? 'bg-sky-500/20 border-sky-500 text-sky-200' : 'border-slate-700 text-slate-300 hover:bg-slate-800'}`} style={{ minHeight: 34 }}>🗺️ Översikt</button>
+                <button type="button" onClick={() => setCarView('drive')}
+                  className={`flex-1 py-1.5 rounded border text-[11px] ${carView === 'drive' ? 'bg-sky-500/20 border-sky-500 text-sky-200' : 'border-slate-700 text-slate-300 hover:bg-slate-800'}`} style={{ minHeight: 34 }}>🚗 Kör</button>
+              </div>
+            )}
             {/* Färd upp / Norr upp — kartrotation i billäget (rotation passar inte alla). */}
             {mode === 'car' && (
               <button type="button" onClick={() => setCourseUp(!courseUp)}
@@ -413,6 +442,59 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
           </div>
         )}
       </div>
+
+      {/* Mina platser — sparade egna punkter (localStorage). Ersätter fristående "Mina punkter":
+          spara nuvarande referenspunkt, centrera Near me där, eller analysera 9 km (hexagon). */}
+      {pos && !error && (
+        <div className="px-4 pb-2 border-t border-slate-700/60 pt-2">
+          <div className="flex items-center gap-1">
+            <input value={placeName} onChange={(e) => setPlaceName(e.target.value)} placeholder="Namnge & spara denna plats"
+              className="flex-1 min-w-0 px-2 py-1.5 rounded border border-slate-700 bg-slate-800 text-slate-100 text-xs placeholder:text-slate-500" style={{ minHeight: 34 }} />
+            <button type="button" onClick={() => { if (pos) { addCustomPoint(placeName || 'Min plats', pos.lat, pos.lng); setPlaceName(''); } }}
+              className="shrink-0 px-2.5 rounded bg-amber-600 hover:bg-amber-500 text-white text-xs" style={{ minHeight: 34 }}>Spara</button>
+          </div>
+          {savedPlaces.length > 0 && (
+            <ul className="mt-1 space-y-0.5 max-h-28 overflow-y-auto">
+              {savedPlaces.map((p) => (
+                <li key={p.id} className="flex items-center gap-1 text-xs">
+                  <button onClick={() => setNearMePos(p.lat, p.lng, 0)} title="Centrera Near me här"
+                    className="flex-1 min-w-0 truncate text-left text-slate-200 hover:text-white px-1" style={{ minHeight: 32 }}>📍 {p.name}</button>
+                  <button onClick={() => { setProbe(p.lat, p.lng, p.name); setProbeShape('hexagon'); setProbeRadiusKm(9); }} title="Analysera 9 km (hexagon)"
+                    className="shrink-0 px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500 text-amber-200 text-[10px]">9 km</button>
+                  <button onClick={() => removeCustomPoint(p.id)} title="Ta bort" className="shrink-0 px-1 text-slate-500 hover:text-rose-400">✕</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Upplevelser & sidor nära dig (content_pages via pages_near): gå Göta landsvägen,
+          besök Sandby borg, se Kalmar. Region = du är i den; rutt/plats = inom räckhåll. */}
+      {pos && !error && nearbyPages.length > 0 && (
+        <div className="px-4 pb-2 border-t border-slate-700/60 pt-2">
+          <div className="text-[11px] font-semibold text-gold mb-1.5">✨ Upplevelser & sidor nära dig</div>
+          <ul className="space-y-1">
+            {nearbyPages.slice(0, 5).map((p) => {
+              const km = p.dist_m / 1000;
+              const dist = p.kind === 'region' ? 'här' : p.dist_m < 1000 ? `${p.dist_m} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`;
+              const icon = p.kind === 'route' ? '🥾' : p.kind === 'site' ? '📍' : p.kind === 'region' ? '🗺️' : '📖';
+              return (
+                <li key={p.slug}>
+                  <a href={p.url} className="flex items-start gap-2 rounded px-2 py-1.5 border border-slate-700/50 hover:bg-slate-800/60">
+                    <span className="shrink-0 text-base leading-none mt-0.5">{icon}</span>
+                    <span className="min-w-0">
+                      <span className="text-sm text-white font-medium">{p.title_sv}</span>
+                      <span className="text-[11px] text-sky-300"> · {p.verb_sv} · {dist}{p.geom_approx ? ' (ungefär)' : ''}</span>
+                      {p.teaser_sv && <span className="block text-[11px] text-slate-400 leading-snug">{p.teaser_sv}</span>}
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       {pos && !error && (
         <div className="flex-1 overflow-y-auto px-2 pb-3">

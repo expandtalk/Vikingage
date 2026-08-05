@@ -1,0 +1,2103 @@
+
+Absalons ring
+Uk 3
+Aggersborg-kalkristning 1
+NJy 19
+Aggersborg-kalkristning 10
+NJy 28
+Aggersborg-kalkristning 11
+NJy 29
+Aggersborg-kalkristning 2
+NJy 20
+Aggersborg-kalkristning 3
+NJy 21
+Aggersborg-kalkristning 4
+NJy 22
+Aggersborg-kalkristning 5
+NJy 23
+Aggersborg-kalkristning 6
+NJy 24
+Aggersborg-kalkristning 7
+NJy 25
+Aggersborg-kalkristning 8
+NJy 26
+Aggersborg-kalkristning 9
+NJy 27
+Algade-benstykke
+NJy 77
+Allerslev-kalkristning 1
+Sj 75
+Allerslev-kalkristning 2
+Sj 76
+Allerum-sten†
+Sk 61
+Allerup-sten†
+Fyn 29
+Allesø-brakteat
+Fyn IK 13,1
+Allindemagle-blyamulet
+Sj 63
+Alsted-sten
+Sj 59
+Annelöv-sten
+Sk 63
+Asferg-sten
+MJy 47
+Asmild-sten
+MJy 28
+Astrup-teglsten
+NJy 14
+Aversi-brakteat
+Sj IK 215
+Avnslev-sten†
+Fyn 48
+Baldringe-sten
+Sk 28
+Bjerring-sten
+MJy 10
+Bjolderup-gravsten
+SJy 61
+Bjäresjö-sten 1
+Sk 29
+Bjäresjö-sten 2
+Sk 30
+Bjäresjö-sten 3
+Sk 31
+Björketorp-sten
+Bl 6
+Bjørnsholm-brakteat
+NJy IK 25
+Blæsinge-blyamulet
+Sj 50
+Blæsinge-blyamulet 2
+Sj 114
+Bodilsker-sten 1
+Bh 13
+Bodilsker-sten 2
+Bh 14
+Bodilsker-sten 3
+Bh 15
+Bodilsker-sten 4
+Bh 16
+Bodilsker-sten 5
+Bh 17
+Boeslunde-klokke†
+Sj 64
+Bolbro-brakteat 1
+Fyn IK 13,2
+Bolbro-brakteat 2
+Fyn IK 31
+Bornholm-amulet
+Bh 61
+Borren-blyamulet
+Sj 99
+Borup-sten
+MJy 57
+Bramming Nygård-brakteat
+IK 41,3
+Bregninge-gravsten,Tåsinge
+Fyn 41
+Bregninge-sten, Lolland
+Syd 12
+Broholm-brakteat
+Fyn IK 225
+Bryndum-font
+SJy 44
+Bryndum-sten
+SJy 45
+Brændekilde-økse
+Fyn 15
+Brøns-tømrerruner
+SJy 55
+Brösarp-kalkmaleri
+Sk 1
+Bække-sten 1
+SJy 26
+Bække-sten 2
+SJy 27
+Børglum-søjlefod
+NJy 1
+Börringe-brakteat
+Sk IK 26
+Bösarp-stenfragmenter
+Sk 71
+Bøstrup-røgelseskar
+Fyn 35
+Bårse-font
+Sj 78
+Bårse-sten
+Sj 77
+Dagstorp-sten
+Sk 19
+Dalby-sten
+Sk 74
+Dalby-stylus
+Sk 75
+Dalbyover-sten
+MJy 46
+Dalgård-blyamulet
+SJy 20
+Danmark-brakteat 1†
+Uk IK 229
+Danmark-brakteat 10
+Uk IK39
+Danmark-brakteat 2
+Uk IK364
+Danmark-brakteat 3
+Uk IK 199
+Danmark-brakteat 4
+Uk IK 373
+Danmark-brakteat 5
+Uk IK 375
+Danmark-brakteat 7
+Uk IK 197
+Danmark-brakteat 8
+Uk IK 362
+Dannemare-teglsten
+Syd 8
+Darum-brakteat 1
+SJy IK 42
+Darum-brakteat 2
+SJy IK 41,1
+Darum-brakteat 3
+SJy IK 162,2
+Darum-brakteat 4
+SJy IK 129,2
+Darum-brakteat 5
+SJy IK 43
+Darum-vievandskar
+SJy 30
+Dronningholm-teglsten
+Sj 8
+Drøsselbjerg-kalkristning
+Sj 49
+Duesminde-remendebeslag/fibula
+Syd 6
+Durup-sten
+NJy 49
+Dyrehavegård-blyamulet
+Syd 17
+Eckernförde-brakteat
+Sl IK 237
+Egense-font
+Fyn 42
+Eggeslevmagle-sten
+Sj 72
+Egtved-sten
+SJy 6
+Egvad-tømrerruner
+SJy 22
+Egå-sten
+MJy 67
+Ejby-brakteat
+Sj IK 238
+Ejsing-amuletsten
+SJy 17
+Ejstrup-fingerring
+MJy 104
+Elsø-gravsten
+NJy 37
+Eltang-kalkristning
+SJy 2
+Eltang-sten
+SJy 1
+Esbønderup-kvadersten
+Sj 1
+Eskatorp-brakteat
+Sk IK 241,1
+Farsø-sten
+NJy 50
+Faxe-brakteat a-c
+Sj IK 101a-c
+Femø-brakteat
+Syd IK 340
+Ferslev-sten 1
+NJy 43
+Ferslev-sten 2†
+NJy 44
+Fjelie-kvadersten
+Sk 76
+Fjenneslev-kvadersten
+Sj 61
+Fjenneslev-sten
+Sj 60
+Fjärestad-brakteat
+Sk IK 55
+Flejsborg-sten
+NJy 64
+Flemløse-sten 1
+Fyn 2
+Flemløse-sten 2
+Fyn 3
+Flädie-indskrift†
+Sk 77
+Fosie-blyamulet
+Sk 139
+Fosie-sten
+Sk 67
+Frederiksberg-amulet
+Sj 22
+Frøslev-pind
+Sl 14
+Fuglie-sten 1
+Sk 72
+Fuglie-sten 2
+Sk 73
+Funder-søjlefod
+MJy 3
+Fyn-brakteat 1
+Fyn IK 58
+Fyn-brakteat 2
+Fyn IK 249
+Fyn-brakteat 3
+Fyn IK 75,3
+Färlöv-sten
+Sk 130
+Følagre-blyamulet
+MJy 102
+Føvling-gravsten
+SJy 35
+Fåborg-røgelseskar
+Fyn 37
+Faaborg-sten
+Fyn 51
+Gadegård-brakteat
+Bh IK 578
+Gallehus-horn 1†
+SJy 59
+Gallehus-horn 2†
+SJy 60
+Galsted-brakteat
+SJy IK 61
+Galtrup-gravsten
+NJy 36
+Gammel Hviding-bronzeamulet
+SJy 76
+Gammel Stenderup-brakteat
+Fyn IK 251
+Gammelsogn-tømrerruner
+SJy 19
+Geltorf 1-brakteat
+Sl IK 254
+Geltorf-brakteat 2
+Sl IK 255
+Getinge-sten 1
+Hal 1
+Getinge-sten 2†
+Hal 2
+Give-rude
+SJy 8
+Giver-sten
+NJy 65
+Gjesing-gravsten 1
+MJy 62
+Gjesing-gravsten 2†
+MJy 63
+Gl. Skovgård-blyamulet
+Bh 70
+Glavendrup-sten
+Fyn 26
+Glemminge-sten
+Sk 39
+Glenstrup-sten 1
+MJy 48
+Glenstrup-sten 2
+MJy 49
+Glim-blyamulet
+Sj 25
+Glostrup-amulet
+Sj 16
+Glumsø-sten
+Sj 90
+Gravlev-pind
+NJy 53
+Grensten-sten
+MJy 11
+Grindsted-sten
+SJy 47
+Gudme-brakteat 1
+Fyn IK 51,3
+Gudme-brakteat 2
+Fyn IK 392
+Gudme-brakteat 3
+Fyn IK 393
+Gudme-skjoldbulebeslag
+Fyn 32
+Gudum-blyamulet
+Sj 110
+Gudum-sten†
+NJy 45
+Gullev-kalkristning
+MJy 6
+Gummarp-sten†
+Bl 2
+Gunderup-sten 1
+NJy 46
+Gunderup-sten 2
+NJy 47
+Gunhild-korset
+Uk 1
+Gyldensgård-bronzeamulet
+Bh 60
+Gylling-sten
+MJy 70
+Gørding-fingerring
+SJy 31
+Gørlev-sten 1
+Sj 46
+Gørlev-sten 2
+Sj 47
+Gårdlösa-fibula
+Sk 41
+Gårdstånga-sten 1
+Sk 8
+Gårdstånga-sten 2
+Sk 9
+Gårdstånga-sten 3
+Sk 10
+Haddeby-bennål
+Sl 16
+Haddeby-benstykke
+Sl 7
+Haddeby-kam
+Sl 6
+Haddeby-pind 1
+Sl 8
+Haddeby-pind 2
+Sl 9
+Haddeby-rundstok
+Sl 10
+Haddeby-skål
+Sl 5
+Haddeby-sten 1
+Sl 1
+Haddeby-sten 2
+Sl 2
+Haddeby-sten 3
+Sl 3
+Haddeby-sten 4
+Sl 4
+Halskov-brakteat
+Sj IK 70
+Halsted-blyamulet
+Syd 14
+Hammel-sten 1
+MJy 81
+Hammel-sten 2†
+MJy 82
+Hammenhög-brakteat
+Sk IK 267
+Handbjerg-font
+SJy 21
+Hanning-sten
+SJy 15
+Hardeberga-kalkristning
+Sk 138
+Hardeberga-klokke†
+Sk 78
+Hassle Bösarp-sten†
+Sk 87
+Heden-røgelseskar
+Fyn 38
+Helnæs-sten
+Fyn 8
+Hemdrup-pind
+NJy 62
+Hesselager-brakteat
+Fyn IK 75,1
+Hesselager-røgelseskar
+Fyn 33
+Hesselagergård Skov-brakteat
+Fyn IK 75,1
+Hillerslev-gravsten
+NJy 32
+Himlingøje-fibula 1
+Sj 73
+Himlingøje-fibula 2
+Sj 74
+Himmelev-blyamulet
+Sj 26
+Hjermind-sten 1
+MJy 12
+Hjermind-sten 2†
+MJy 13
+Hjortholm-bronzeamulet
+Sj 24
+Hobro-sten 1†
+NJy 73
+Hobro-sten 2
+NJy 74
+Holm-sten
+Hal 3
+Holmby-sten
+Sk 11
+Holsted-kvadersten
+SJy 36
+Holtug-kvadersten 1
+Sj 84
+Holtug-kvadersten 2
+Sj 85
+Holtug-kvadersten 3
+Sj 86
+Hoptrup-font
+SJy 53
+Horne-sten
+SJy 51
+Hundstrup-røgelseskar
+Fyn 39
+Hune-sten
+NJy 11
+Hunnestad-sten 1
+Sk 54
+Hunnestad-sten 2
+Sk 55
+Hunnestad-sten 3
+Sk 56
+Hunnestad-sten 4
+Sk 57
+Hunnestad-sten 5†
+Sk 58
+Hurup-sten
+NJy 39
+Hvidbjerg-sten
+MJy 5
+Hviding-tømrerruner
+SJy 56
+Hyby-sten 1
+Sk 3
+Hyby-sten 2†
+Sk 4
+Hyrup-billedskærerruner
+Sl 15
+Hällestad-sten 1
+Sk 80
+Hällestad-sten 2
+Sk 81
+Hällestad-sten 3
+Sk 82
+Hæstrup-klokke
+NJy 2
+Hästveda-sten
+Sk 131
+Högseröd-kalkmaleri
+Sk 140
+Høje Taastrup-blyamulet
+Sj 18
+Høje Taastrup-sten
+Sj 17
+Højstrup-brakteat
+Sj IK83
+Hørdum-billedsten
+NJy 30
+Hørning-sten
+MJy 84
+Hörup-benstykke 1
+Sk 40
+Hörup-benstykke 2
+Sk 136
+Høvlsbakke-brakteat 1-2
+Sj 625,2-3
+Höör-font
+Sk 64
+Håstad-sten
+Sk 79
+Ibsker-bronzeamulet
+Bh 45
+Ibsker-kalkristning
+Bh 44
+Ikast-sværdknap
+SJy 18
+Illerup-drikkehornsbeslag
+MJy 92
+Illerup-dupsko
+MJy 91
+Illerup-høvl
+MJy 90
+Illerup-ildstålshåndtag
+MJy 93
+Illerup-lansespids 1
+MJy 88
+Illerup-lansespids 2
+MJy 89
+Illerup-skjoldhåndtagsbeslag 1
+MJy 85
+Illerup-skjoldhåndtagsbeslag 2
+MJy 86
+Illerup-skjoldhåndtagsbeslag 3
+MJy 87
+Istaby-sten
+Bl 4
+Jelling-sten 1
+SJy 10
+Jelling-sten 2
+SJy 11
+Jelling-sten 3
+SJy 12
+Jerslev-amuletsten
+NJy 3
+Jetsmark-klokke†
+NJy 12
+Jetsmark-sten
+NJy 13
+Jørlunde Mark-brakteat 1
+Sj IK 78
+Jørlunde Mark-brakteat 2
+Sj IK 94,2
+Jørlunde Øst-blyamulet
+Sj 95
+Kalmergården-fibula
+Sj 45
+Kalundborg-blyamulet
+Sj 43
+Kalundborg-tak
+Sj 44
+Karise-kalkristning
+Sj 83
+Karlstrup-kalkristning 1
+Sj 37
+Karlstrup-kalkristning 2
+Sj 38
+Karlstrup-kalkristning 3
+Sj 39
+Karlstrup-kalkristning 4
+Sj 40
+Karlstrup-kvadersten
+Sj 41
+Kastelsbakke-blyamulet
+Bh 62
+Kegnæs-hvæssesten
+SJy 63
+Kellersmose-brakteat
+SJy IK 289
+Killerup-brakteat 1
+Fyn IK 51,2
+Killerup-brakteat 2
+Fyn IK 91
+Kirke Hvalsø-kalkristning
+Sj 42
+Kitnæs-brakteat
+Sj IK 94,1
+Kjøllergård-brakteat 1
+Bh IK 95,1
+Kjøllergård-brakteat 2
+Bh IK 95,2
+Klejtrup-sten
+MJy 33
+Klemensker-sten 1
+Bh 1
+Klemensker-sten 2
+Bh 2
+Klemensker-sten 3
+Bh 3
+Klemensker-sten 4
+Bh 4
+Klemensker-sten 5
+Bh 5
+Klemensker-sten 6
+Bh 6
+Klemensker-sten 7
+Bh 9
+Klemensker-sten 8
+Bh 7
+Klemensker-sten 9
+Bh 8
+Kläggeröd-brakteat
+Sk IK97
+Knudsker-sten
+Bh 69
+Kolind-sten
+MJy 42
+Kragehul-horn†
+Fyn 4
+Kragehul-knivskaft
+Fyn 6
+Kragehul-spydskaft
+Fyn 7
+Kragehul-træskive†
+Fyn 5†
+Kragelund-døroverligger
+MJy 4
+Kullerup-røgelseskar
+Fyn 49
+Kvanløse-kalkristning
+Sj 51
+Kvibille-sten
+Hal 4
+Kællingeby-blyamulet 1
+Bh 20
+Kællingeby-blyamulet 2
+Bh 21
+Kællingeby-blyamulet 3
+Bh 22
+Källstorp-sten
+Sk 88
+Kävlinge-blyamulet
+Sk 20
+Købelev-torshammer
+Syd 18
+København-bennål
+Sj 23
+København-elfenbensrelief
+Uk 2
+Køge-blyamulet
+Sj 14
+Kølby-brakteat
+NJy IK 99
+Køng-alabastamulet
+Fyn 11
+Køng-statuette
+Fyn 9
+Køng-stenrelief
+Fyn 10
+Lackalänga-tenvægt
+Sk 83
+Langå-sten 1†
+MJy 14
+Langå-sten 2†
+MJy 15
+Langå-sten 3
+MJy 16
+Langå-sten 4
+MJy 17
+Langå-sten 5†
+MJy 18
+Langå-sten 6†
+MJy 19
+Laurbjerg-sten
+MJy 44
+Ledøje-teglsten
+Sj 19
+Lee-sten†
+MJy 20
+Lejre-benstykke
+Sj 97
+Lekkende-brakteat
+Sj IK 291
+Lellinge-brakteat
+Sj IK 105
+Lem-sten
+MJy 58
+Lilla Harrie-font
+Sk 21
+Lilla Harrie-sten†
+Sk 22
+Lilla Isie-kam
+Sk 89
+Lilla Köpinge-kam
+Sk 34
+Lille Heddinge-kvadersten
+Sj 87
+Lille Myregård-blyamulet
+Bh 36
+Lindholm Høje-knivskaft
+NJy 61
+Lindholmen-amulet
+Sk 69
+Lindkær-brakteat
+MJy IK 110
+Listerby-pulpitur†
+Bl 7
+Lockarp-blyamulet
+Sk 135
+Lockarp-kobberamulet
+Sk 134
+Lousgård-perle
+Bh 47
+Lund Domkirke-kapitæl
+SkL 21
+Lund Domkirke-sokkel 1
+SkL 1
+Lund Domkirke-sokkel 2
+SkL 2
+Lund-bennål 1
+SkL 6
+Lund-bennål 2
+SkL 10
+Lund-bennål 3
+SkL 37
+Lund-bennål 4
+SkL 59
+Lund-bennål 5
+SkL 82
+Lund-benstykke 1
+SkL 7
+Lund-benstykke 10
+SkL 35
+Lund-benstykke 11
+SkL 34
+Lund-benstykke 12
+SkL 36
+Lund-benstykke 13
+SkL 38
+Lund-benstykke 14
+SkL 43
+Lund-benstykke 15
+SkL 46
+Lund-benstykke 16
+SkL 47
+Lund-benstykke 17
+SkL 48
+Lund-benstykke 18
+SkL 49
+Lund-benstykke 19
+SkL 50
+Lund-benstykke 2
+SkL 14
+Lund-benstykke 20
+SkL 51
+Lund-benstykke 21
+SkL 52
+Lund-benstykke 22
+SkL 53
+Lund-benstykke 23
+SkL 54
+Lund-benstykke 24
+SkL 55
+Lund-benstykke 25
+SkL 56
+Lund-benstykke 26
+SkL 57
+Lund-benstykke 27
+SkL 58
+Lund-benstykke 28
+SkL 61
+Lund-benstykke 29
+SkL 63
+Lund-benstykke 3
+SkL 15
+Lund-benstykke 30
+SkL 64
+Lund-benstykke 31
+SkL 65
+Lund-benstykke 32
+SkL 66
+Lund-benstykke 32a
+SkL 67
+Lund-benstykke 33
+SkL 68
+Lund-benstykke 34
+SkL 69
+Lund-benstykke 35
+SkL 72
+Lund-benstykke 36
+SkL 71
+Lund-benstykke 37
+SkL 73
+Lund-benstykke 38
+SkL 75
+Lund-benstykke 39
+SkL 77
+Lund-benstykke 4
+SkL 20
+Lund-benstykke 40
+SkL 78
+Lund-benstykke 41
+SkL 79
+Lund-benstykke 5
+SkL 23
+Lund-benstykke 6
+SkL 24
+Lund-benstykke 7
+SkL 26
+Lund-benstykke 8
+SkL 30
+Lund-benstykke 9
+SkL 33
+Lund-blyamulet
+SkL 31
+Lund-bronzeamulet
+SkL 70
+Lund-kam 1
+SkL 5
+Lund-kam 2
+SkL 8
+Lund-kam 3
+SkL 9
+Lund-kam 4
+SkL 44
+Lund-kam 5
+SkL 81
+Lund-karbund 1
+SkL 41
+Lund-karbund 2
+SkL 28
+Lund-karbund 3
+SkL 39
+Lund-karbund 4
+SkL 40
+Lund-knivskaft
+SkL 11
+Lund-læderskede 1
+SkL 19
+Lund-læderskede 2
+SkL 42
+Lund-læderskede 3
+SkL 45
+Lund-læderskede 4
+SkL 60
+Lund-læderskede 5
+SkL 62
+Lund-mejsel
+SkL 84
+Lund-metalamulet
+SkL 74
+Lund-møntprøvestykke
+SkL 32
+Lund-pragtmønt
+SkL 80
+Lund-skiferamulet
+SkL 16
+Lund-skiferstykke 1
+SkL 17
+Lund-skiferstykke 2
+SkL 18
+Lund-spadserestok
+SkL 29
+Lund-spillebrik
+SkL 83
+Lund-sten 1
+SkL 3
+Lund-sten 2
+SkL 4
+Lund-teglsten
+SkL 22
+Lund-tempelben
+SkL 25
+Lund-træbæger
+SkL 27
+Lund-trægenstand
+SkL 12
+Lund-vævebrik
+SkL 13
+Lunde-røgelseskar
+Fyn 43
+Lundeborg-brakteat
+Fyn IK 295
+Lyngby-font
+NJy 4
+Lyngby-sten
+NJy 51
+Lynge Gyde-brakteat
+Sj IK 298
+Lyngsjö-kalkristning 1
+Sk 12
+Lyngsjö-kalkristning 2
+Sk 13
+Læborg-sten
+SJy 37
+Lønborg-beslag
+SJy 23
+Lösen-gravsten 1
+Bl 8
+Lösen-gravsten 3
+Bl 10
+Lösen-sten 2 †
+Bl 9
+Lösen-teglsten
+Bl 11
+Maglemose-brakteat 1a-d
+Fyn IK 299
+Maglemose-brakteat 2
+Sj IK 301
+Maglemose-brakteat 3
+Sj IK 300
+Malt-sten
+SJy 38
+Mejlby-sten
+MJy 56
+Mosbjerg-kalkristning
+NJy 10
+Munkegård-blyamulet 1
+Bh 25
+Munkegård-blyamulet 2
+Bh 64
+Munkegård-blykors
+Bh 68
+Mygind-sten
+MJy 103
+Møllegårdsmarken-kniv
+Fyn 31
+Mønsted-kvadersten 1
+MJy 1
+Mønsted-kvadersten 2
+MJy 2
+Måløv-kalkristning
+Sj 20
+Nordgården-blyamulet
+Sj 195
+Norra Nöbbelöv-sten
+Sk 84
+Norra Åkarp-kalkmaleri†
+Sk 137
+Norra Åsum-sten
+Sk 14
+Nydam-lanseskaft 1
+SJy 69
+Nydam-lanseskaft 2
+SJy 70
+Nydam-lanseskaft 3
+SJy 71
+Nydam-pileskaft 1†
+SJy 64
+Nydam-pileskaft 2
+SJy 65
+Nydam-pileskaft 3
+SJy 66
+Nydam-rembøjle
+SJy 68
+Nydam-remendebeslag
+SJy 72
+Nydam-sværdperle
+SJy 73
+Nydam-økseskaft
+SJy 67
+Nyker-kalkristning
+Bh 32
+Nyker-sten
+Bh 31
+Nykøbing-teglsten
+Sj 57
+Nylarsker-sten 1
+Bh 33
+Nylarsker-sten 2
+Bh 34
+Nylarsker-sten 3
+Bh 35
+Næsbjerg-fibula
+SJy 46
+Nørholm-blykors
+NJy 82
+Nørre Brarup-sten†
+Sl 13
+Nørre Dalby-kvadersten
+Sj 15
+Nørre Herlev-sten
+Sj 7
+Nørre Løgum-teglsten
+SJy 57
+Nørre Nærå-sten
+Fyn 25
+Nørre Vedby-blyamulet
+Syd 16
+Nøvling-fibula
+NJy 48
+Odder-ege
+MJy 71
+Odense-blyamulet
+Fyn 23
+Odense-træamulet
+Fyn 52
+Odense-vævevægt
+Fyn 24
+Oksby-klemme
+SJy 48
+Ollerup-røgelseskar
+Fyn 44
+Ottestrup-blyamulet
+Sj 65
+Over Hornbæk-brakteat 1a-b
+MJy IK 154,2
+Over Hornbæk-brakteat 2
+MJy IK 312,1
+Over Hornbæk-brakteat 3
+MJy IK 140
+Oxiegården-vævevægt
+Sk 68
+Pedersker-blyamulet 1
+Bh 18
+Pedersker-blyamulet 2
+Bh 19
+Pjedsted-kiste
+SJy 4
+Pjedsted-sten
+SJy 5
+Povlsker-helgenfigur
+Bh 23
+Povlsker-sten†
+Bh 24
+Rakkeby-kalkristning
+NJy 38
+Randbøl-sten
+SJy 14
+Randers-blyamulet
+MJy 61
+Randers-brakteat
+MJy IK 142
+Randers-sten 1
+MJy 59
+Randers-sten 2
+MJy 60
+Randlev-kalkristning
+MJy 72
+Raus-tømrerruner
+Sk 62
+Ravnkilde-sten 1
+NJy 67
+Ravnkilde-sten 2
+NJy 68
+Ravnkilde-teglsten
+NJy 69
+Ravsted-tømrerruner
+SJy 58
+Revninge-fingerring
+Fyn 1
+Revsgård-brakteat
+SJy IK 145
+Ribe-amulet
+SJy 41
+Ribe-bennål
+SJy 79
+Ribe-benskinne
+SJy 80
+Ribe-hjerneskal
+SJy 39
+Ribe-hvalbensplade
+SJy 40
+Ribe-håndtag
+SJy 42
+Ribe-kam
+SJy 81
+Ribe-sten
+SJy 77
+Ribe-teglsten
+SJy 43
+Rimsø-sten
+MJy 41
+Rokkedyssegård-blyamulet
+Sj 109
+Roskilde Domkirke-kalkristning 1
+Sj 29
+Roskilde Domkirke-kalkristning 2
+Sj 30
+Roskilde-blyamulet 1
+Sj 31
+Roskilde-blyamulet 2
+Sj 104
+Roskilde-bronzeamulet
+Sj 27
+Roskilde-skaft
+Sj 32
+Roskilde-træamulet
+Sj 28
+Roskilde, Skt. Jørgensbjerg-kalkristning 1
+Sj 33
+Roskilde, Skt. Jørgensbjerg-kalkristning 2
+Sj 34
+Rudkøbing-klokke†
+Fyn 36
+Rugård-økse
+Fyn 28
+Runemønt, DR Mønt 1
+ZZZ
+Runemønt, DR Mønt 10
+ZZZ
+Runemønt, DR Mønt 100
+ZZZ
+Runemønt, DR Mønt 101
+ZZZ
+Runemønt, DR Mønt 102
+ZZZ
+Runemønt, DR Mønt 103
+ZZZ
+Runemønt, DR Mønt 104
+ZZZ
+Runemønt, DR Mønt 105
+ZZZ
+Runemønt, DR Mønt 106
+ZZZ
+Runemønt, DR Mønt 107
+ZZZ
+Runemønt, DR Mønt 108
+ZZZ
+Runemønt, DR Mønt 109
+ZZZ
+Runemønt, DR Mønt 11
+ZZZ
+Runemønt, DR Mønt 110
+ZZZ
+Runemønt, DR Mønt 111
+ZZZ
+Runemønt, DR Mønt 112
+ZZZ
+Runemønt, DR Mønt 113
+ZZZ
+Runemønt, DR Mønt 114
+ZZZ
+Runemønt, DR Mønt 115
+ZZZ
+Runemønt, DR Mønt 116
+ZZZ
+Runemønt, DR Mønt 117
+ZZZ
+Runemønt, DR Mønt 118
+ZZZ
+Runemønt, DR Mønt 119
+ZZZ
+Runemønt, DR Mønt 12
+ZZZ
+Runemønt, DR Mønt 120
+ZZZ
+Runemønt, DR Mønt 121
+ZZZ
+Runemønt, DR Mønt 122
+ZZZ
+Runemønt, DR Mønt 123
+ZZZ
+Runemønt, DR Mønt 124
+ZZZ
+Runemønt, DR Mønt 125
+ZZZ
+Runemønt, DR Mønt 126
+ZZZ
+Runemønt, DR Mønt 13
+ZZZ
+Runemønt, DR Mønt 14
+ZZZ
+Runemønt, DR Mønt 15
+ZZZ
+Runemønt, DR Mønt 16
+ZZZ
+Runemønt, DR Mønt 17
+ZZZ
+Runemønt, DR Mønt 18
+ZZZ
+Runemønt, DR Mønt 19
+ZZZ
+Runemønt, DR Mønt 2
+ZZZ
+Runemønt, DR Mønt 20
+ZZZ
+Runemønt, DR Mønt 21
+ZZZ
+Runemønt, DR Mønt 22
+ZZZ
+Runemønt, DR Mønt 23
+ZZZ
+Runemønt, DR Mønt 24
+ZZZ
+Runemønt, DR Mønt 25
+ZZZ
+Runemønt, DR Mønt 26
+ZZZ
+Runemønt, DR Mønt 27
+ZZZ
+Runemønt, DR Mønt 28
+ZZZ
+Runemønt, DR Mønt 29
+ZZZ
+Runemønt, DR Mønt 3
+ZZZ
+Runemønt, DR Mønt 30
+ZZZ
+Runemønt, DR Mønt 31
+ZZZ
+Runemønt, DR Mønt 32
+ZZZ
+Runemønt, DR Mønt 33
+ZZZ
+Runemønt, DR Mønt 34
+ZZZ
+Runemønt, DR Mønt 35
+ZZZ
+Runemønt, DR Mønt 36
+ZZZ
+Runemønt, DR Mønt 37
+ZZZ
+Runemønt, DR Mønt 38
+ZZZ
+Runemønt, DR Mønt 39
+ZZZ
+Runemønt, DR Mønt 4
+ZZZ
+Runemønt, DR Mønt 40
+ZZZ
+Runemønt, DR Mønt 41
+ZZZ
+Runemønt, DR Mønt 42
+ZZZ
+Runemønt, DR Mønt 43
+ZZZ
+Runemønt, DR Mønt 44
+ZZZ
+Runemønt, DR Mønt 45
+ZZZ
+Runemønt, DR Mønt 46
+ZZZ
+Runemønt, DR Mønt 47
+ZZZ
+Runemønt, DR Mønt 48
+ZZZ
+Runemønt, DR Mønt 49
+ZZZ
+Runemønt, DR Mønt 5
+ZZZ
+Runemønt, DR Mønt 50
+ZZZ
+Runemønt, DR Mønt 51
+ZZZ
+Runemønt, DR Mønt 52
+ZZZ
+Runemønt, DR Mønt 53
+ZZZ
+Runemønt, DR Mønt 54
+ZZZ
+Runemønt, DR Mønt 55
+ZZZ
+Runemønt, DR Mønt 56
+ZZZ
+Runemønt, DR Mønt 57
+ZZZ
+Runemønt, DR Mønt 58
+ZZZ
+Runemønt, DR Mønt 59A
+ZZZ
+Runemønt, DR Mønt 59B
+ZZZ
+Runemønt, DR Mønt 6
+ZZZ
+Runemønt, DR Mønt 60
+ZZZ
+Runemønt, DR Mønt 61
+ZZZ
+Runemønt, DR Mønt 62
+ZZZ
+Runemønt, DR Mønt 63
+ZZZ
+Runemønt, DR Mønt 64
+ZZZ
+Runemønt, DR Mønt 65
+ZZZ
+Runemønt, DR Mønt 66
+ZZZ
+Runemønt, DR Mønt 67
+ZZZ
+Runemønt, DR Mønt 68
+ZZZ
+Runemønt, DR Mønt 69
+ZZZ
+Runemønt, DR Mønt 7
+ZZZ
+Runemønt, DR Mønt 70
+ZZZ
+Runemønt, DR Mønt 71
+ZZZ
+Runemønt, DR Mønt 72
+ZZZ
+Runemønt, DR Mønt 73
+ZZZ
+Runemønt, DR Mønt 74
+ZZZ
+Runemønt, DR Mønt 75
+ZZZ
+Runemønt, DR Mønt 76
+ZZZ
+Runemønt, DR Mønt 77
+ZZZ
+Runemønt, DR Mønt 78
+ZZZ
+Runemønt, DR Mønt 79
+ZZZ
+Runemønt, DR Mønt 8
+ZZZ
+Runemønt, DR Mønt 80
+ZZZ
+Runemønt, DR Mønt 81
+ZZZ
+Runemønt, DR Mønt 82
+ZZZ
+Runemønt, DR Mønt 83
+ZZZ
+Runemønt, DR Mønt 84
+ZZZ
+Runemønt, DR Mønt 85
+ZZZ
+Runemønt, DR Mønt 86
+ZZZ
+Runemønt, DR Mønt 87
+ZZZ
+Runemønt, DR Mønt 88
+ZZZ
+Runemønt, DR Mønt 89
+ZZZ
+Runemønt, DR Mønt 9
+ZZZ
+Runemønt, DR Mønt 90
+ZZZ
+Runemønt, DR Mønt 91
+ZZZ
+Runemønt, DR Mønt 92
+ZZZ
+Runemønt, DR Mønt 93
+ZZZ
+Runemønt, DR Mønt 94
+ZZZ
+Runemønt, DR Mønt 95
+ZZZ
+Runemønt, DR Mønt 96
+ZZZ
+Runemønt, DR Mønt 97
+ZZZ
+Runemønt, DR Mønt 98
+ZZZ
+Runemønt, DR Mønt 99
+ZZZ
+Rutsker-blyamulet
+Bh 11
+Rutsker-sten
+Bh 10
+Rynkebygård-brakteat
+Fyn IK 147
+Rø-sten
+Bh 12
+Rønne-sten
+Bh 37
+Rønninge-sten
+Fyn 30
+Sahl-gravsten 1
+MJy 7
+Sahl-gravsten 2
+MJy 8
+Sandby-sten 1†
+Sj 91
+Sandby-sten 2
+Sj 92
+Sandby-sten 3
+Sj 93
+Sandegård-blyamulet
+Bh 26
+Sankt Ibs Vej-brakteat
+Sj IK 585
+Sankt Olofs kyrka-kalkristning
+Sk 2
+Selde-font
+MJy 34
+Selsø-blyamulet 1
+Sj 6
+Selsø-blyamulet 2
+Sj 96
+Sigerslev-brakteat
+Sj IK158
+Sigersted Kirke-blyamulet
+Sj 94
+Simris-sten 1
+Sk 46
+Simris-sten 2
+Sk 47
+Sjelle-sten
+MJy 68
+Sjellebro-billedsten
+MJy 69
+Sjælland-brakteat 4
+Sj IK 154,1
+Sjællands-brakteat 1
+Sj IK 330
+Sjællands-brakteat 2a-b
+Sj IK 98
+Sjællands-brakteat 3
+Uk IK 329
+Sjørring-sten
+NJy 33
+Sjörup-sten
+Sk 51
+Skabersjö-fibula
+Sk 5
+Skamstrup-kalkristning
+Sj 58
+Skarp Salling-håndtag
+NJy 63
+Skivarp-sten
+Sk 90
+Skivum-sten
+NJy 70
+Skjellerup-kvadersten
+NJy 72
+Skjern-sten 1
+MJy 21
+Skjern-sten 2
+MJy 22
+Skodborg-brakteat
+SJy IK 161
+Skonager Brakteat 3a-c
+SJy IK 163
+Skonager-brakteat 1
+SJy IK 41,2
+Skonager-brakteat 2
+SJy IK 162,1
+Skonager-brakteatøsken
+SJy IK 512
+Skovbølling-økse
+SJy 13
+Skovgårde-fibula
+Sj 79
+Skovlænge-sten
+Syd 9
+Skovsborg-brakteat
+MJy IK 165
+Skrydstrup-brakteat
+SJy IK 166
+Skyum-font
+NJy 31
+Skørrebrovej-bronzeamulet
+Bh 63
+Skåne-brakteat 1a-b
+Sk IK 149,1
+Skåne-brakteat 2
+Sk IK 153
+Skåne-brakteat 3
+Sk IK 152
+Skåne-brakteat 4
+Uk IK 365,4
+Skåne-brakteat 5
+Sk IK 352
+Skåne-brakteat 6
+Sk IK 151
+Skåne-brakteat 7
+Sk IK 326
+Skåne-sten†
+Sk 132
+Skårby-sten 1
+Sk 52
+Skårby-sten 2
+Sk 53
+Slemminge-skraber
+Syd 13
+Slesvig-bennål 1
+SlB 6
+Slesvig-bennål 2
+SlB 7
+Slesvig-benstykke 1
+SlB 9
+Slesvig-benstykke 10
+SlB 18
+Slesvig-benstykke 11
+SlB 19
+Slesvig-benstykke 12
+SlB 20
+Slesvig-benstykke 13
+SlB 15
+Slesvig-benstykke 14
+SlB 16
+Slesvig-benstykke 15
+SlB 17
+Slesvig-benstykke 16
+SlB 21
+Slesvig-benstykke 2
+SlB 8
+Slesvig-benstykke 3
+SlB 10
+Slesvig-benstykke 4
+SlB 13
+Slesvig-benstykke 5
+SlB 12
+Slesvig-benstykke 6
+SlB 14
+Slesvig-benstykke 7
+SlB 11
+Slesvig-benstykke 8
+SlB 28
+Slesvig-dørbeslag†
+SlB 2
+Slesvig-karbund 1
+SlB 23
+Slesvig-karbund 2
+SlB 25
+Slesvig-karbund 3
+SlB 24
+Slesvig-karbund 4
+SlB 26
+Slesvig-karbund 5
+SlB 27
+Slesvig-knivskaft
+SlB 22
+Slesvig-pind
+SlB 3
+Slesvig-ring
+SlB 5
+Slesvig-spadserestok
+SlB 4
+Slesvig-sten
+SlB 1
+Slipshavn-brakteat
+Fyn IK 394
+Snoldelev-sten
+Sj 35
+Sofiendal-beslag
+NJy 76
+Solberga-sten
+Sk 91
+Sorte Muld-amulet
+Bh 46
+Sottrup-rullesten
+SJy 74
+Spentrup-sten 1
+MJy 50
+Spentrup-sten 2
+MJy 51
+Sporup-sten
+MJy 83
+Staby-kvadersten
+SJy 25
+Starup-sten
+SJy 54
+Stavnsager-brakteat 1
+MJy IK 647
+Stavnsager-brakteat 2
+MJy IK 649
+Stavnsager-brakteat 3
+MJy IK 650
+Stenalt-sten
+MJy 55
+Stenløse-kalkristning
+Sj 13
+Stenmagle-æske
+Sj 62
+Stenstrup-røgelseskar
+Fyn 45
+Stentoften-sten
+Bl 3
+Stoby-kalkristning 1
+Sk 111
+Stoby-kalkristning 10
+Sk 120
+Stoby-kalkristning 11
+Sk 121
+Stoby-kalkristning 12
+Sk 122
+Stoby-kalkristning 13
+Sk 123
+Stoby-kalkristning 14
+Sk 124
+Stoby-kalkristning 15
+Sk 125
+Stoby-kalkristning 16
+Sk 126
+Stoby-kalkristning 17
+Sk 127
+Stoby-kalkristning 18
+Sk 128
+Stoby-kalkristning 19
+Sk 129
+Stoby-kalkristning 2
+Sk 112
+Stoby-kalkristning 3
+Sk 113
+Stoby-kalkristning 4
+Sk 114
+Stoby-kalkristning 5
+Sk 115
+Stoby-kalkristning 6
+Sk 116
+Stoby-kalkristning 7
+Sk 117
+Stoby-kalkristning 8
+Sk 118
+Stoby-kalkristning 9
+Sk 119
+Stokkemarke-relikviegemme
+Syd 10
+Stora Harrie-sten
+Sk 23
+Stora Herrestad-sten†
+Sk 32
+Stora Köpinge-sten
+Sk 33
+Stora Köpinge-økse
+Sk 35
+Store Heddinge-kvadersten
+Sj 88
+Storvorde-blyamulet
+NJy 80
+Strøby-kvadersten
+Sj 89
+Strårup-halsring
+SJy 7
+Sturkö-sten
+Bl 12
+Suldrup-gravsten
+NJy 54
+Suldrup-sten
+NJy 55
+Svendborg-knivskaft
+Fyn 46
+Svenstorp-sten 1†
+Sk 92
+Svenstorp-sten 2†
+Sk 93
+Svenstrup-sten
+NJy 75
+Svindinge-røgelseskar†
+Fyn 34
+Sværdborg-blyamulet
+Sj 111
+Sædding-brakteat
+SJy IK 148
+Sædding-kvadersten
+SJy 16
+Sædinge-sten
+Syd 3
+Søborg-benstykke
+Sj 4
+Søborg-blyamulet
+Sj 5
+Søborg-gravsten
+Sj 2
+Søborg-teglsten
+Sj 3
+Södervidinge-font
+Sk 24
+Södra Villie-sten
+Sk 59
+Søllested Kirke-bronzeamulet
+Syd 15
+Sölvesborg-sten
+Bl 5
+Søndbjerg-sokkelsten
+NJy 40
+Sønder Asmindrup-kalkristning 1
+Sj 52
+Sønder Asmindrup-kalkristning 2
+Sj 53
+Sønder Asmindrup-kalkristning 3
+Sj 54
+Sønder Asmindrup-kalkristning 4†
+Sj 55
+Sønder Kirkeby-sten
+Syd 2
+Sønder Rind-brakteat a-b
+MJy IK 341
+Sønder Vilstrup-sten
+SJy 3
+Sønder Vinge-sten 1
+MJy 23
+Sønder Vinge-sten 2
+MJy 24
+Sønder Vissing-sten 1
+MJy 98
+Sønder Vissing-sten 2
+MJy 99
+Sønderby-sten
+Fyn 12
+Sørup-sten
+Fyn 47
+Søstrup-kalkristning
+Sj 56
+Søtoftegård-brakteat
+Sj IK 619,2
+Sövestad-billedsten
+Sk 36
+Sövestad-sten 2
+Sk 37
+Sövestad-sten 3†
+Sk 38
+Thisted-gravsten
+NJy 34
+Tillitse-sten
+Syd 11
+Tirsted-sten
+Syd 4
+Tjurkö-brakteat 1
+Bl IK 184
+Tjurkö-brakteat 2
+Bl IK 185
+Tjurkö-brakteat 3
+Bl IK 183
+Tjæreby-kalkristning
+Sj 12
+Tjøme-røgelseskar
+Tornby-kalkristning 1
+NJy 15
+Tornby-kalkristning 2
+NJy 16
+Tornby-kalkristning 3
+NJy 17
+Torsbjerg-dupsko
+Sl 11
+Torsbjerg-skjoldbule
+Sl 12
+Torup-sten†
+MJy 25
+Trelleborg-pind
+Sj 98
+Troelseby-blyamulet
+Syd 19
+Trolle-Ljungby-teglsten †
+Sk 133
+Tryggevælde-sten
+Sj 82
+Tullstorp-sten
+Sk 94
+Tune-sten†
+Sj 36
+Tved sogn-brakteat
+NJy IK 357
+Tvorup-sten†
+NJy 35
+Tygstrup-blyamulet
+NJy 79
+Tyvelse-blyamulet
+Sj 113
+Tømmerup-bæger
+Sj 48
+Tønder-brakteat
+SJy IK 353
+Tågerup-sten
+Syd 5
+Tårnborg-blyamulet 1
+Sj 68
+Tårnborg-blyamulet 2
+Sj 69
+Tårnborg-blyamulet 3
+Sj 70
+Tårnborg-blyamulet 4
+Sj 71
+Tårnborg-skifersten
+Sj 67
+Tårnborg-sten
+Sj 66
+UDGÅET
+Bh 66
+Ulbølle-røgelseskar
+Fyn 40
+Ullerup Mark-brakteat
+NJy IK 258
+Uppåkra-brakteat 1
+Sk IK 591,1
+Uppåkra-brakteat 2
+Sk IK 610
+Uppåkra-brakteat 3
+Sk IK 611
+Uppåkra-brakteat 4
+Sk IK 625
+Uppåkra-bronzeamulet
+Sk 7
+Uppåkra-sten
+Sk 6
+Valleberga-sten
+Sk 42
+Vallkärra-sten
+Sk 86
+Vamdrup-gravsten 1
+SJy 28
+Vamdrup-gravsten 2†
+SJy 29
+Vapnö-sten
+Hal 5
+Vedby-brakteat
+Fyn IK 13,3
+Vedslet-amuletsten
+MJy 100
+Veflinge-kalkristning
+Fyn 27
+Veggerby-vinduesoverligger
+NJy 56
+Vejby-teglsten 1
+NJy 5
+Vejby-teglsten 2
+NJy 6
+Vejerslev-gravsten
+MJy 9
+Vejlby-kvadersten
+MJy 43
+Vejlby-sten
+MJy 73
+Vejlby-sten† (Sønderhald h)
+MJy 64
+Vejle-økse
+SJy 9
+Vendsyssel-brakteat
+NJy IK 312,2
+Vennebjerg-kalkristning
+NJy 18
+Vesløs-gravsten
+NJy 42
+Vester Egesborg-kam
+Sj 103
+Vester Tørslev-kalkristning 1
+MJy 53
+Vester Tørslev-kalkristning 2
+MJy 54
+Vester Tørslev-sten
+MJy 52
+Vester Velling-gravsten
+MJy 26
+Vesterborg-gravsten
+Syd 7
+Vestermarie-sten 1
+Bh 38
+Vestermarie-sten 2
+Bh 39
+Vestermarie-sten 3
+Bh 40
+Vestermarie-sten 4
+Bh 41
+Vestermarie-sten 5
+Bh 42
+Vestermarie-sten 6
+Bh 43
+Viborg-blyamulet
+MJy 32
+Viborg-fibula
+MJy 30
+Viborg-lægedomspind
+MJy 29
+Viborg-sokkelsten
+MJy 31
+Vimose-bæltespænde
+Fyn 16
+Vimose-dupsko 1
+Fyn 20
+Vimose-dupsko 2
+Fyn 21
+Vimose-høvl
+Fyn 18
+Vimose-kam
+Fyn 19
+Vimose-lansespids
+Fyn 22
+Vimose-rembøjle
+Fyn 17
+Vindum Stenhuse-brakteat
+MJy IK 384
+Virring-sten
+MJy 65
+Vitskøl-sokkelsten
+NJy 66
+Vokslev-blyamulet
+NJy 57
+Vokslev-kalkmaleri
+NJy 78
+Vordingborg-benstykke
+Sj 81
+Vordingborg-sten
+Sj 80
+Vrangstrup-blyamulet 1
+Sj 100
+Vrangstrup-blyamulet 2
+Sj 101
+Vrangstrup-blyamulet 3
+Sj 102
+Vrangstrup-blyamulet 4
+Sj 106
+Vrangstrup-blyamulet 5
+Sj 107
+Vrangstrup-blyamulet 6
+Sj 112
+Vrejlev-sten†
+NJy 7
+Vä-beslag
+Sk 15
+Vä-kalkristning
+Sk 17
+Vä-metalamulet
+Sk 16
+Værløse-fibula
+Sj 21
+Väsby-brakteat
+Sk IK241,2
+Västra Karaby-sten
+Sk 25
+Västra Nöbbelöv-sten
+Sk 60
+Västra Sallerup-font
+Sk 26
+Västra Strö-sten 1
+Sk 65
+Västra Strö-sten 2
+Sk 66
+Ydby-sten
+NJy 41
+Æbelholt-benamulet
+Sj 10
+Æbelholt-blyamulet
+Sj 11
+Æbelholt-sten
+Sj 9
+Älleköpinge-sten
+Sk 97
+Ølgod-sten
+SJy 52
+Øls-sten†
+NJy 52
+Ølst-brakteat
+MJy IK 135
+Øm-teglsten 1
+MJy 94
+Øm-teglsten 2
+MJy 95
+Øm-teglsten 3
+MJy 96
+Øm-teglsten 4
+MJy 97
+Ørbæk-sten†
+Fyn 50
+Örja-blyamulet
+Sk 142
+Örja-kobberamulet
+Sk 143
+Örja-sten
+Sk 70
+Örsjö-sten
+Sk 95
+Ørsted-kvadersten
+Fyn 13
+Örtofta-font
+Sk 27
+Ørum-font
+NJy 9
+Ørum-sten†
+MJy 45
+Øster Alling-sten
+MJy 66
+Øster Bjerregrav-sten 1
+MJy 35
+Øster Bjerregrav-sten 2
+MJy 36
+Øster Brønderslev-karmsten
+NJy 8
+Øster Løgum-sten
+SJy 62
+Øster Velling-sten
+MJy 27
+Østerlarsker-sten 1
+Bh 48
+Østerlarsker-sten 2
+Bh 49
+Østerlarsker-sten 3
+Bh 50
+Østermarie-alfabetsten
+Bh 57
+Østermarie-blyamulet 1
+Bh 59
+Østermarie-sten 1
+Bh 51
+Østermarie-sten 2
+Bh 52
+Østermarie-sten 3
+Bh 53
+Østermarie-sten 4
+Bh 54
+Østermarie-sten 5
+Bh 55
+Østermarie-sten 6
+Bh 56
+Østermarie-sølvamulet
+Bh 58
+Östra Herrestad-sten
+Sk 43
+Östra Hoby-sten 1†
+Sk 44
+Östra Hoby-sten 2†
+Sk 45
+Östra Ingelstad-kalkristning
+Sk 85
+Östra Sönnarslöv-kirkedør †
+Sk 18
+Östra Vemmenhög-sten
+Sk 96
+Östra Vemmerlöv-kalkristning 1
+Sk 48
+Östra Vemmerlöv-kalkristning 2
+Sk 49
+Östra Vemmerlöv-kalkristning 3
+Sk 50
+Østre Skovgård-blyamulet
+Bh 67
+Ådum-sten
+SJy 24
+Ådum-tømrerruner
+SJy 75
+Åhus-benstykke
+Sk 141
+Åhus-kalkristning 1
+Sk 98
+Åhus-kalkristning 10
+Sk 107
+Åhus-kalkristning 11
+Sk 108
+Åhus-kalkristning 12
+Sk 109
+Åhus-kalkristning 13
+Sk 110
+Åhus-kalkristning 2
+Sk 99
+Åhus-kalkristning 3
+Sk 100
+Åhus-kalkristning 4
+Sk 101
+Åhus-kalkristning 5
+Sk 102
+Åhus-kalkristning 6
+Sk 103
+Åhus-kalkristning 7
+Sk 104
+Åhus-kalkristning 8
+Sk 105
+Åhus-kalkristning 9
+Sk 106
+Åhus-stenskulptur
+SK 142
+Åker-font
+Bh 30
+Åker-sten 1
+Bh 27
+Åker-sten 2
+Bh 28
+Åker-sten 3
+Bh 29
+Åker-økse
+Bh 65
+Ål-kalkristning
+SJy 50
+Ål-kvadersten
+SJy 49
+Ålborg-bennål
+NJy 58
+Ålborg-benstykke
+NJy 59
+Ålborg-blyamulet
+NJy 81
+Ålborg-fibula
+NJy 60
+Ålebæk-sten†
+Fyn 14
+Ålum-sten 1
+MJy 37
+Ålum-sten 2
+MJy 38
+Ålum-sten 3
+MJy 39
+Ålum-sten 4
+MJy 40
+Aarhus-fantomsten
+MJy 75
+Aarhus-kam
+MJy 80
+Aarhus-sten 1
+MJy 74
+Aarhus-sten 2
+MJy 76
+Aarhus-sten 3
+MJy 77
+Aarhus-sten 4
+MJy 78
+Aarhus-sten 5
+MJy 79
+Aarhus-sten 6
+MJy 101
+Års-brakteat 1
+NJy IK 9
+Års-brakteat 2
+NJy IK 8
+Års-sten
+NJy 71
+Åryd-sten
+Bl 1
+Åstrup-knivskaft
+Syd 1
+Åstrup-kvadersten 1
+SJy 32
+Åstrup-kvadersten 2
+SJy 33
+Åstrup-kvadersten 3
+SJy 34
+Åsum-brakteat

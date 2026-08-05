@@ -95,8 +95,14 @@ export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAdd
         .eq('road_id', road.id).order('waypoint_order', { ascending: true });
       const parsed = (wps ?? []).map((w: any) => ({ ll: parsePoint(w.coordinates), name: w.name as string, type: w.waypoint_type as string }))
         .filter((w: any) => w.ll) as { ll: [number, number]; name: string; type: string }[];
-      const { data: near } = await sb.rpc('eriksgata_nearby', { radius_m: 1000 });
-      const nearby: NearbyFeatures = { runestones: near?.runestones ?? [], churches: near?.churches ?? [] };
+      // Leden (linjen + waypoints) ska ritas ÄVEN om närliggande-lagret fallerar.
+      // Wrappa RPC:n så ett fel inte dödar hela draw() (bakgrund: en dubblerad
+      // overload gjorde anropet tvetydigt och tog bort linjen).
+      let nearby: NearbyFeatures = { runestones: [], churches: [] };
+      try {
+        const { data: near } = await sb.rpc('eriksgata_nearby', { radius_m: 1000 });
+        if (near) nearby = { runestones: near.runestones ?? [], churches: near.churches ?? [] };
+      } catch { /* leden ritas ändå — närliggande lager är extra */ }
       dataRef.current = { pts: parsed.map((w) => w.ll), wps: parsed, nearby };
       draw(dataRef.current);
     })();

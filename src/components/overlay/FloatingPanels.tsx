@@ -6,7 +6,6 @@ import { X, ChevronDown, Map } from 'lucide-react';
 import { FilterPanel } from '../filters/FilterPanel';
 import { DraggableLegend } from '../legend/DraggableLegend';
 import { ProximityControl } from './ProximityControl';
-import { CustomPointsControl } from './CustomPointsControl';
 import { ElementSpotlightControl } from './ElementSpotlightControl';
 import { RulerControl } from './RulerControl';
 import { NearMeControl } from './NearMeControl';
@@ -17,7 +16,9 @@ import { LegendItem } from '@/types/common';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { MobileDrawer } from '@/components/ui/mobile-drawer';
 import { MapLegend } from '../MapLegend';
+import { PanelLayoutSelector } from '../panels/PanelLayoutSelector';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { useTravelMode, TRAVEL_MODE_LABELS } from '@/hooks/useTravelMode';
 
 interface FloatingPanelsProps {
   showFilters: boolean;
@@ -87,6 +88,8 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
   const { language } = useLanguage();
   const sv = language === 'sv';
   const isMobile = useIsMobile();
+  const travelMode = useTravelMode();
+  const modeLbl = TRAVEL_MODE_LABELS[travelMode];
   // Är arts-lagret påslaget? (Sök rekursivt i legend-träden.)
   const findEnabled = (items: LegendItem[] | undefined, id: string): boolean => {
     for (const it of items ?? []) {
@@ -108,7 +111,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
           kluster-förklaring) är skrivbords-verktyg och skräpar ner den lilla mobilskärmen
           (Daniel). Dölj dem på mobil — Near me + teckenförklaringen räcker där. */}
       {!isMobile && <ProximityControl />}
-      {!isMobile && <CustomPointsControl />}
+      {/* "Mina punkter" är nu inbakat i Near me (Mina platser) → fristående kontrollen borttagen. */}
       {!isMobile && churchesOn && <ChurchYearControl />}
       {!isMobile && <ElementSpotlightControl />}
       {!isMobile && <RulerControl />}
@@ -124,7 +127,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
             size="sm"
           >
             <Map className="h-4 w-4" />
-            <span className="text-xs font-medium">{sv ? 'Teckenförklaring' : 'Legend'}</span>
+            <span className="text-xs font-medium">{sv ? 'Anpassa karta' : 'Customize map'}</span>
             {activeFiltersCount > 0 && (
               <Badge variant="secondary" className="text-xs bg-orange-600 text-white border-orange-500 font-bold">
                 {activeFiltersCount}
@@ -138,14 +141,40 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
       {/* Mobil: legenden bor i en bottom-sheet (den dragbara desktop-panelen ligger
           annars på x≈880 = utanför skärmen på en telefon). Stora tap-targets. */}
       {isMobile && onLegendToggle && onToggleLegend && (
-        <MobileDrawer isOpen={showLegend} onClose={onToggleLegend} title={sv ? 'Teckenförklaring' : 'Legend'}>
+        <MobileDrawer isOpen={showLegend} onClose={onToggleLegend} title={`${modeLbl.icon} ${sv ? modeLbl.sv : modeLbl.en} · ${sv ? 'Anpassa karta' : 'Customize map'}`}>
           <MapLegend
             isVikingMode={isVikingMode}
             legendItems={legendItems}
             onToggleItem={onLegendToggle}
             onShowAll={onShowAll}
             onHideAll={onHideAll}
+            onModeSelected={onToggleLegend}
           />
+          {/* Filtren bor nu i SAMMA panel — den separata "Intresse"-knappen är borttagen (Daniel:
+              "allt under en yta"). Ärver panelens bakgrund. */}
+          <div className="border-t border-slate-600/60 pt-3 mt-3">
+            <h3 className="text-white font-medium text-sm mb-2">{sv ? 'Filtrera' : 'Filter'}</h3>
+            <FilterPanel
+              selectedLandscape={selectedLandscape}
+              selectedCountry={selectedCountry}
+              selectedPeriod={selectedPeriod}
+              selectedStatus={selectedStatus}
+              selectedObjectType={selectedObjectType}
+              onLandscapeChange={onLandscapeChange}
+              onCountryChange={onCountryChange}
+              onPeriodChange={onPeriodChange}
+              onStatusChange={onStatusChange}
+              onObjectTypeChange={onObjectTypeChange}
+              onClearFilters={onClearFilters}
+              activeFiltersCount={activeFiltersCount}
+            />
+          </div>
+          {/* Intresseprofil SIST i modalen (Daniel): efter teckenförklaring + filter. Kondenserad
+              som standard; visar aktiv profil tills man fäller ut. */}
+          <div className="border-t border-slate-600/60 pt-3 mt-3">
+            <h3 className="text-white font-medium text-sm mb-2">{sv ? 'Intresseprofil' : 'Interest profile'}</h3>
+            <PanelLayoutSelector />
+          </div>
         </MobileDrawer>
       )}
 

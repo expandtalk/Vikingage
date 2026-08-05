@@ -20,4 +20,7 @@ export interface MapLegendProps {
   className?: string;
   onShowAll?: () => void;
   onHideAll?: () => void;
+  // Anropas efter att ett färdsätt valts (Gå/Cykla/Kör) → låter mobilpanelen stänga sig
+  // så kartan syns direkt ("map-first"). Sätts bara på mobil; odefinierad på desktop.
+  onModeSelected?: () => void;
 }

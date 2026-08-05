@@ -19,11 +19,20 @@ import { useState, useRef, useEffect, useCallback } from 'react';
  * Efter första draget blir det position:fixed med left/top (right/bottom nollas).
  * Klick på knappar/inputs i handtaget startar INTE drag (så de fortsätter fungera).
  */
-export function useDraggable() {
+export function useDraggable(persistKey?: string) {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  // Läs ev. sparad position (localStorage) → panelen minns var du la den mellan besök.
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
+    if (!persistKey || typeof window === 'undefined') return null;
+    try { const raw = localStorage.getItem(persistKey); return raw ? (JSON.parse(raw) as { x: number; y: number }) : null; } catch { return null; }
+  });
   const [dragging, setDragging] = useState(false);
   const offset = useRef({ x: 0, y: 0 });
+
+  // Spara positionen när ett drag släpps.
+  useEffect(() => {
+    if (!dragging && persistKey && pos) { try { localStorage.setItem(persistKey, JSON.stringify(pos)); } catch { /* privat läge */ } }
+  }, [dragging, persistKey, pos]);
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     const el = rootRef.current;

@@ -14,6 +14,8 @@ const WelcomeFooter = lazy(() => import('../components/welcome/WelcomeFooter').t
 
 const Welcome = () => {
   const [showIntroduction, setShowIntroduction] = useState(true);
+  // Aktiv hero-sökning → kollapsa kort-sektionen så träffarna får hela skärmen.
+  const [searching, setSearching] = useState(false);
   
   const { data: dbStats, isLoading: statsLoading } = useQuery({
     queryKey: ['database-stats-v2'],
@@ -74,15 +76,24 @@ const Welcome = () => {
         dbStats={displayStats}
         localizedText={localizedText}
         onSkipIntro={handleSkipIntro}
+        onSearchingChange={setSearching}
       />
 
-      <ViewLauncherGrid dbStats={displayStats} />
+      {/* Kort-sektion + footer kollapsar mjukt under aktiv sökning så träfflistan äger skärmen. */}
+      <div
+        className={`transition-all duration-300 ${
+          searching ? 'max-h-0 opacity-0 overflow-hidden pointer-events-none' : 'max-h-[4000px] opacity-100'
+        }`}
+        aria-hidden={searching}
+      >
+        <ViewLauncherGrid dbStats={displayStats} />
 
-      {/* Podcasten näst sist — precis före footern */}
+        {/* Podcasten näst sist — precis före footern */}
 
-      <Suspense fallback={<div className="h-16 animate-pulse bg-white/10 rounded-lg mx-4" />}>
-        <WelcomeFooter />
-      </Suspense>
+        <Suspense fallback={<div className="h-16 animate-pulse bg-white/10 rounded-lg mx-4" />}>
+          <WelcomeFooter />
+        </Suspense>
+      </div>
     </div>
   );
 };

@@ -46,6 +46,13 @@ export interface InscriptionRich {
   k_samsok_uri: string | null;
   socken: string | null;
   harad: string | null;
+  // Textfält som ofta saknas i det objekt modalen öppnas med (kart-popup/sök ger partiell
+  // projektion) → hämtas alltid per id så modalen kan visa dem oavsett ingång.
+  transliteration: string | null;
+  translation_sv: string | null;
+  translation_en: string | null;
+  normalization: string | null;
+  also_known_as: string[] | null;
 }
 
 const fetchExtendedData = async (inscriptionId: string | null) => {
@@ -65,7 +72,7 @@ const fetchExtendedData = async (inscriptionId: string | null) => {
     supabase.from('additional_coordinates').select('latitude, longitude, source, notes, confidence').eq('inscription_id', inscriptionId),
     supabase.from('inscription_media').select('media_url, media_type, description, photographer').eq('inscription_id', inscriptionId),
     supabase.from('inscription_locations').select('role, place_name, parish, lat, lng, certainty, moved_year, note').eq('inscription_id', inscriptionId).order('seq'),
-    supabase.from('runic_inscriptions').select('carver, carver_attribution, cross_forms, has_cross, cross_count, christian_invocation, dating_tpq, dating_taq, k_samsok_uri, socken, harad').eq('id', inscriptionId).maybeSingle()
+    supabase.from('runic_inscriptions').select('carver, carver_attribution, cross_forms, has_cross, cross_count, christian_invocation, dating_tpq, dating_taq, k_samsok_uri, socken, harad, transliteration, translation_sv, translation_en, normalization, also_known_as').eq('id', inscriptionId).maybeSingle()
   ]);
 
   if (imageLinksRes.error) {

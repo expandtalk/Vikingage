@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { useFieldNav, setFieldNavFollowing } from '@/hooks/useFieldNav';
 import { coneRotationDeg } from '@/utils/fieldNav';
+import { haversineKm } from '@/utils/geoDistance';
 
 // Ritar fältlägets position: noggrannhetsring + blå prick med en riktningskägla som roterar med
 // färdriktningen. Pannar kartan med mig när `following`. Norr-upp; ingen kartrotation.
@@ -74,6 +75,17 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
       if (pos) {
         L.polyline([[pos.lat, pos.lng], [target.lat, target.lng]], {
           color: '#f59e0b', weight: 2, dashArray: '6 5', opacity: 0.85,
+        }).addTo(layer);
+        // Avstånd vid ledlinjens mitt — så "vägen dit" syns direkt på kartan (fågelväg), inte bara i panelen.
+        const km = haversineKm(pos, target);
+        const distTxt = km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
+        L.marker([(pos.lat + target.lat) / 2, (pos.lng + target.lng) / 2], {
+          interactive: false, keyboard: false,
+          icon: L.divIcon({
+            className: 'field-nav-dist',
+            html: `<div style="background:#78350f;color:#fef3c7;padding:1px 7px;border-radius:9px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.45)">${distTxt}</div>`,
+            iconSize: [0, 0] as unknown as L.PointExpression, iconAnchor: [0, 0],
+          }),
         }).addTo(layer);
       }
     }

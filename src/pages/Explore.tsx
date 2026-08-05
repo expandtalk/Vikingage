@@ -52,7 +52,7 @@ const Explore = () => {
   return (
     <div className="min-h-screen viking-bg">
       {!driving && <Header />}
-      {!driving && <Breadcrumbs />}
+      {!driving && !isMobile && <Breadcrumbs />}
 
       <main className={`container mx-auto px-4 ${driving ? 'py-2' : 'py-8'}`}>
         <NavigatorHud />

@@ -1,0 +1,40 @@
+-- Rundata litteraturreferenser → runic_inscriptions.bibliography
+-- Genererad ur rundata.sql (signum1='M'). Skriver ej över befintlig bibliografi.
+-- 18 av 18 signum fick referenser.
+
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Liljegren, Johan Gustaf, Run-urkunder. Stockholm. (1833); Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.; Peterson, Lena, Nordiskt runnamnslexikon. Femte reviderade utgåvan. Uppsala 2007.'::text)
+WHERE signum = 'M 1' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 10' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Liljegren, Johan Gustaf, Run-urkunder. Stockholm. (1833); Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 11' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Liljegren, Johan Gustaf, Run-urkunder. Stockholm. (1833); Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 12' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Liljegren, Johan Gustaf, Run-urkunder. Stockholm. (1833); Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 13' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Liljegren, Johan Gustaf, Run-urkunder. Stockholm. (1833); Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 14' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 15' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 16' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Liljegren, Johan Gustaf, Run-urkunder. Stockholm. (1833); Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 17' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 18' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Liljegren, Johan Gustaf, Run-urkunder. Stockholm. (1833); Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 2' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Liljegren, Johan Gustaf, Run-urkunder. Stockholm. (1833); Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 3' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.; Peterson, Lena, Nordiskt runnamnslexikon. Femte reviderade utgåvan. Uppsala 2007.'::text)
+WHERE signum = 'M 4' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 5' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 6' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 7' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Liljegren, Johan Gustaf, Run-urkunder. Stockholm. (1833); Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 8' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));
+UPDATE runic_inscriptions SET bibliography = to_jsonb('Liljegren, Johan Gustaf, Run-urkunder. Stockholm. (1833); Hellbom, Algot, Medelpads runstenar. Sundsvall 1979.'::text)
+WHERE signum = 'M 9' AND (bibliography IS NULL OR bibliography::text IN ('null','""','[]','{}'));

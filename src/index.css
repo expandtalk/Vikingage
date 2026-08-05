@@ -200,9 +200,13 @@
 /* Medaljong-markörer ska ligga ÖVER vanliga prickar/kluster (Leaflet sätter inline
    z-index per markör efter latitud; !important vinner). Kungaplatser och
    monumentstenar högst — de viktigaste ikonerna får aldrig döljas av mindre. */
-.leaflet-marker-icon.vp-medallion { z-index: 9000 !important; }
-.leaflet-marker-icon.vp-medallion--royal { z-index: 9500 !important; }
-.leaflet-marker-icon.monumental-stone { z-index: 9600 !important; }
+/* Måttlig höjning: medaljongerna ska ligga över vanliga prickar/kluster (deras z-index =
+   pixel-y, ~0–1500) men INTE dominera hela kartan. Det tidigare 9000 slog ut linjalpunkter,
+   popup-öppning och grannars klick (allt i marker-panen). Interaktiva verktyg (linjal/sond)
+   ligger nu i egna högre panes och vinner ändå. */
+.leaflet-marker-icon.vp-medallion { z-index: 2000 !important; }
+.leaflet-marker-icon.vp-medallion--royal { z-index: 2010 !important; }
+.leaflet-marker-icon.monumental-stone { z-index: 2020 !important; }
 
 /* Kompakt kartattribution. På mobil kollapsas den långa kreditraden till en tappbar
    "ⓘ Kartdata"-chip (licenskravet uppfyllt men tar inte över kartan). Tap → full text. */

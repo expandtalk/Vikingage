@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { transliterate, type FutharkKind } from '@/data/futhark';
+import { transliterate, readRunes, type FutharkKind } from '@/data/futhark';
 import { useVikingNames } from '@/hooks/useVikingNames';
-import { Pen, Download, Info, Sun, Moon, Shield } from 'lucide-react';
+import { Pen, Download, Info, Sun, Moon, Shield, Copy } from 'lucide-react';
 
 // Skrivverktyg: latinsk text → runor (fonematiskt), val av futhark, dark/white, PNG/SVG-export.
 // Glyfer = Unicode Runic (renderas med systemets runfont, som resten av sajten). Transparent:
@@ -25,8 +25,11 @@ export const RuneWriter: React.FC = () => {
   const [kind, setKind] = useState<FutharkKind>('younger');
   const [dark, setDark] = useState(true);
   const [showSteps, setShowSteps] = useState(false);
+  const [dir, setDir] = useState<'write' | 'read'>('write');
+  const [copied, setCopied] = useState(false);
 
   const { runes, steps } = useMemo(() => transliterate(text, kind), [text, kind]);
+  const read = useMemo(() => readRunes(text, kind), [text, kind]);
   const bg = dark ? '#0f172a' : '#ffffff';
   const fg = dark ? '#f5d78b' : '#1e293b';
 
@@ -79,20 +82,40 @@ export const RuneWriter: React.FC = () => {
     download(new Blob([svg], { type: 'image/svg+xml' }), 'runor.svg');
   };
 
+  const honesty = L(
+    'Yngre futharken är mångtydig (k=k/g, t=t/d, b=b/p, u=u/o/y/v, i=i/e/j) — normaliserad återgivning/tolkning, inte en attesterad stavning.',
+    'The Younger Futhark is ambiguous (k=k/g, t=t/d, b=b/p, u=u/o/y/v, i=i/e/j) — a normalised rendering/reading, not an attested spelling.',
+  );
+
+  // Kopiera resultatet som TEXT (att dela eller mata in i en AI för vidare analys) — med
+  // ärlighets-noten inbakad så mottagaren/AI:n vet att yngre futharken är mångtydig.
+  const copyText = async () => {
+    const fut = kind === 'younger' ? L('Yngre futharken', 'Younger Futhark') : L('Äldre futharken', 'Elder Futhark');
+    const body = dir === 'write'
+      ? `${L('Futhark', 'Futhark')}: ${fut}\n${L('Latinsk text', 'Latin text')}: ${text}\n${L('Runor', 'Runes')}: ${runes}\n${L('Translitteration', 'Transliteration')}: ${steps.map((s) => s.rune || '∅').join(' ')}\n${L('Obs', 'Note')}: ${honesty}`
+      : `${L('Futhark', 'Futhark')}: ${fut}\n${L('Runor', 'Runes')}: ${text}\n${L('Möjliga ljud per runa', 'Possible sounds per rune')}: ${read.cells.filter((c) => c.rune !== ' ').map((c) => `${c.rune}=${c.values.join('/')}`).join('  ')}\n${L('Normaliserad läsning', 'Normalised reading')}: ${read.candidate}\n${L('Obs', 'Note')}: ${honesty}`;
+    try { await navigator.clipboard.writeText(body); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard ej tillgänglig */ }
+  };
+
   const seg = (active: boolean) =>
     `px-3 py-1.5 text-sm rounded-md transition-colors ${active ? 'bg-gold text-slate-900 font-semibold' : 'text-muted-foreground hover:text-foreground'}`;
 
   return (
     <section className="mb-10 rounded-xl border border-gold/30 bg-card/50 p-5">
       <h2 className="text-2xl font-semibold text-gold mb-1 flex items-center gap-2">
-        <Pen className="h-5 w-5" /> {L('Skriv med runor', 'Write in runes')}
+        <Pen className="h-5 w-5" /> {L('Runverktyg — skriv & läs', 'Rune tool — write & read')}
       </h2>
       <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-        {L('Skriv ett eller flera ord — verktyget translittererar ljuden till runor och du kan ladda ner bilden.',
-          'Type one or more words — the tool transliterates the sounds into runes and you can download the image.')}
+        {L('Skriv latinsk text → runor, eller klistra in runor → möjliga ljud. Kopiera resultatet som text att dela eller analysera vidare (t.ex. i en AI) — eller ladda ner en bild.',
+          'Write Latin text → runes, or paste runes → possible sounds. Copy the result as text to share or analyse further (e.g. in an AI) — or download an image.')}
       </p>
 
       <div className="flex flex-wrap items-center gap-3 mb-3">
+        {/* Riktning: skriv/läs */}
+        <div className="inline-flex rounded-lg border border-border bg-background/50 p-0.5">
+          <button className={seg(dir === 'write')} onClick={() => setDir('write')}>{L('Skriv → runor', 'Write → runes')}</button>
+          <button className={seg(dir === 'read')} onClick={() => setDir('read')}>{L('Läs runor', 'Read runes')}</button>
+        </div>
         {/* Futhark-val */}
         <div className="inline-flex rounded-lg border border-border bg-background/50 p-0.5">
           <button className={seg(kind === 'younger')} onClick={() => setKind('younger')}>{L('Yngre futharken', 'Younger Futhark')}</button>
@@ -111,13 +134,14 @@ export const RuneWriter: React.FC = () => {
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={L('Skriv text här…', 'Type text here…')}
+        placeholder={dir === 'write' ? L('Skriv text här…', 'Type text here…') : L('Klistra in runor här… (t.ex. ᛏᛁᚴᛋᛏ)', 'Paste runes here… (e.g. ᛏᛁᚴᛋᛏ)')}
         className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-base text-foreground outline-none focus:border-gold/60 mb-3"
-        maxLength={120}
+        style={dir === 'read' ? { fontFamily: RUNE_FONT } : undefined}
+        maxLength={dir === 'read' ? 300 : 120}
       />
 
-      {/* Namnigenkänning (viking_names) — igenkänning + betydelse, ej attesterad runstavning */}
-      {known && (
+      {/* Namnigenkänning (bara skrivläge) — igenkänning + betydelse, ej attesterad runstavning */}
+      {dir === 'write' && known && (
         <div className="flex items-start gap-2 rounded-lg border border-gold/40 bg-gold/5 px-3 py-2 mb-3 text-xs">
           <Shield className="h-4 w-4 text-gold shrink-0 mt-0.5" />
           <span className="text-muted-foreground">
@@ -128,54 +152,77 @@ export const RuneWriter: React.FC = () => {
         </div>
       )}
 
-      {/* Förhandsvisning (samma färger som exporten) */}
-      <div
-        className="rounded-lg border border-border overflow-x-auto flex items-center min-h-[96px] px-6 py-4 mb-3"
-        style={{ background: bg }}
-      >
-        <span style={{ fontFamily: RUNE_FONT, fontSize: 56, color: fg, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-          {runes || <span style={{ color: dark ? '#475569' : '#cbd5e1', fontFamily: 'inherit', fontSize: 18 }}>{L('Förhandsvisning', 'Preview')}</span>}
-        </span>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 mb-3">
-        <button onClick={exportPNG} disabled={!runes} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-gold text-slate-900 font-semibold disabled:opacity-40">
-          <Download className="h-4 w-4" /> PNG
-        </button>
-        <button onClick={exportSVG} disabled={!runes} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-gold/50 text-gold disabled:opacity-40">
-          <Download className="h-4 w-4" /> SVG
-        </button>
-        {steps.length > 0 && (
-          <button onClick={() => setShowSteps((s) => !s)} className="text-xs text-muted-foreground hover:text-foreground underline ml-1">
-            {showSteps ? L('Dölj hur det mappades', 'Hide mapping') : L('Visa hur det mappades', 'Show how it mapped')}
-          </button>
-        )}
-      </div>
-
-      {/* Transparent translitterering */}
-      {showSteps && steps.length > 0 && (
-        <div className="rounded-lg border border-border bg-background/40 p-3 mb-3">
-          <div className="flex flex-wrap gap-2">
-            {steps.map((s, i) => (
-              <span key={i} className="inline-flex items-center gap-1 rounded border border-border/70 bg-card/60 px-2 py-1 text-xs">
-                <span className="text-muted-foreground">{s.input}</span>
-                <span className="text-muted-foreground">→</span>
-                <span style={{ fontFamily: RUNE_FONT }} className="text-gold text-base">{s.rune || '∅'}</span>
-                {(en ? s.noteEn : s.noteSv) && <span className="text-[10px] text-muted-foreground/70">({en ? s.noteEn : s.noteSv})</span>}
-              </span>
-            ))}
+      {dir === 'write' ? (
+        <>
+          {/* Förhandsvisning (runor, samma färger som exporten) */}
+          <div className="rounded-lg border border-border overflow-x-auto flex items-center min-h-[96px] px-6 py-4 mb-3" style={{ background: bg }}>
+            <span style={{ fontFamily: RUNE_FONT, fontSize: 56, color: fg, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+              {runes || <span style={{ color: dark ? '#475569' : '#cbd5e1', fontFamily: 'inherit', fontSize: 18 }}>{L('Förhandsvisning', 'Preview')}</span>}
+            </span>
           </div>
-        </div>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <button onClick={exportPNG} disabled={!runes} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-gold text-slate-900 font-semibold disabled:opacity-40"><Download className="h-4 w-4" /> PNG</button>
+            <button onClick={exportSVG} disabled={!runes} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-gold/50 text-gold disabled:opacity-40"><Download className="h-4 w-4" /> SVG</button>
+            <button onClick={copyText} disabled={!runes} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-border text-muted-foreground hover:text-foreground disabled:opacity-40"><Copy className="h-4 w-4" /> {copied ? L('Kopierad!', 'Copied!') : L('Kopiera text', 'Copy text')}</button>
+            {steps.length > 0 && (
+              <button onClick={() => setShowSteps((s) => !s)} className="text-xs text-muted-foreground hover:text-foreground underline ml-1">
+                {showSteps ? L('Dölj hur det mappades', 'Hide mapping') : L('Visa hur det mappades', 'Show how it mapped')}
+              </button>
+            )}
+          </div>
+          {showSteps && steps.length > 0 && (
+            <div className="rounded-lg border border-border bg-background/40 p-3 mb-3">
+              <div className="flex flex-wrap gap-2">
+                {steps.map((s, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 rounded border border-border/70 bg-card/60 px-2 py-1 text-xs">
+                    <span className="text-muted-foreground">{s.input}</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span style={{ fontFamily: RUNE_FONT }} className="text-gold text-base">{s.rune || '∅'}</span>
+                    {(en ? s.noteEn : s.noteSv) && <span className="text-[10px] text-muted-foreground/70">({en ? s.noteEn : s.noteSv})</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Läsläge: normaliserad läsning + per-runa möjliga ljud (mångtydigheten synlig) */}
+          <div className="rounded-lg border border-border px-4 py-3 mb-3" style={{ background: bg }}>
+            <div className="text-[11px] uppercase tracking-wide mb-1" style={{ color: dark ? '#64748b' : '#94a3b8' }}>{L('Normaliserad läsning', 'Normalised reading')}</div>
+            <div style={{ color: fg, fontSize: 22, lineHeight: 1.3, wordBreak: 'break-word' }}>
+              {read.candidate || <span style={{ color: dark ? '#475569' : '#cbd5e1', fontSize: 16 }}>{L('Klistra in runor ovan', 'Paste runes above')}</span>}
+            </div>
+          </div>
+          {read.cells.some((c) => c.rune !== ' ') && (
+            <div className="rounded-lg border border-border bg-background/40 p-3 mb-3">
+              <div className="flex flex-wrap gap-1.5">
+                {read.cells.map((c, i) => c.rune === ' '
+                  ? <span key={i} className="w-3" aria-hidden />
+                  : (
+                    <span key={i} className="inline-flex flex-col items-center rounded border border-border/70 bg-card/60 px-2 py-1">
+                      <span style={{ fontFamily: RUNE_FONT }} className="text-gold text-xl leading-none">{c.rune}</span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5">{c.values.join('/')}</span>
+                    </span>
+                  ))}
+              </div>
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <button onClick={copyText} disabled={!read.candidate} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-gold text-slate-900 font-semibold disabled:opacity-40"><Copy className="h-4 w-4" /> {copied ? L('Kopierad!', 'Copied!') : L('Kopiera text för analys', 'Copy text for analysis')}</button>
+          </div>
+        </>
       )}
 
-      {/* Hederlighets-brasklapp */}
+      {/* Hederlighets-brasklapp (mode-anpassad) */}
       <p className="text-[11px] text-muted-foreground/80 flex items-start gap-2 leading-relaxed">
         <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
         <span>
-          {L(
-            'Translittererings-hjälpmedel — ljud översätts till runor, inte bokstav för bokstav. Yngre futharken har bara 16 runor, så flera ljud delar runa (k även g, t även d, u även o/y/v). Det är alltså inte ett påstående om att texten historiskt skrevs exakt så.',
-            'A transliteration aid — sounds are mapped to runes, not letter-by-letter. The Younger Futhark has only 16 runes, so several sounds share a rune (k also g, t also d, u also o/y/v). It is not a claim that the text was historically written exactly this way.',
-          )}
+          {dir === 'write'
+            ? L('Translittererings-hjälpmedel — ljud översätts till runor, inte bokstav för bokstav. Yngre futharken har bara 16 runor, så flera ljud delar runa (k även g, t även d, u även o/y/v). Det är alltså inte ett påstående om att texten historiskt skrevs exakt så.',
+                'A transliteration aid — sounds are mapped to runes, not letter-by-letter. The Younger Futhark has only 16 runes, so several sounds share a rune (k also g, t also d, u also o/y/v). It is not a claim that the text was historically written exactly this way.')
+            : L('Tolknings-hjälpmedel — yngre futharken är mångtydig, så en runa kan läsas som flera ljud (visas per runa ovan). Den normaliserade läsningen tar första värdet; verklig tolkning kräver kontext, språk och ofta jämförelse med etablerade läsningar. Kopiera texten för att diskutera eller analysera vidare (t.ex. i en AI) — behandla den som utgångspunkt, inte facit.',
+                'A reading aid — the Younger Futhark is ambiguous, so a rune can be read as several sounds (shown per rune above). The normalised reading takes the first value; a real interpretation needs context, language and often comparison with established readings. Copy the text to discuss or analyse further (e.g. in an AI) — treat it as a starting point, not the answer.')}
         </span>
       </p>
     </section>

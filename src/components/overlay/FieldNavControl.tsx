@@ -35,7 +35,7 @@ export const FieldNavControl: React.FC = () => {
       <button
         onClick={async () => { await requestCompassPermission(); startFieldNav(); }}
         title="Följ min färd — visa färdriktning"
-        className="absolute bottom-20 right-4 z-[1050] flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-emerald-600/95 hover:bg-emerald-600 text-white text-sm font-medium border-2 border-emerald-400 shadow-lg backdrop-blur-md"
+        className="absolute z-[1050] bottom-4 left-1/2 translate-x-1 sm:left-auto sm:translate-x-0 sm:right-4 sm:bottom-20 flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-emerald-600/95 hover:bg-emerald-600 text-white text-sm font-medium border-2 border-emerald-400 shadow-lg backdrop-blur-md"
         style={{ minHeight: 44 }}
       >
         <Navigation2 className="h-5 w-5" />Följ färd

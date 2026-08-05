@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Loader2, CornerDownLeft, BookOpen, Hammer, MapPin, Church,
@@ -13,6 +13,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useEntityNeighbors } from '@/hooks/useEntityNeighbors';
 import { useEntityFacets } from '@/hooks/useEntityFacets';
 import { useOffTopicSenses } from '@/hooks/useOffTopicSenses';
+import { useSearchThumbs } from '@/hooks/useSearchThumbs';
+import { RelationMindmap } from './RelationMindmap';
 
 // Facett-ikoner (entity_facets.icon = strängnamn) → lucide-komponent.
 const FACET_ICON: Record<string, LucideIcon> = {
@@ -41,6 +43,7 @@ interface Hit {
 }
 interface Row {
   key: string;
+  id: string;          // entity_id — nyckel för tumnagel-uppslagning
   title: string;
   subtitle?: string;
   signum?: string;
@@ -121,6 +124,7 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
     const isNamedInscription = h.entity_type === 'inscription' && h.signum && h.signum !== h.label;
     g.rows.push({
       key: `${h.entity_type}-${h.entity_id}`,
+      id: h.entity_id,
       title: isNamedInscription ? `${h.signum} — ${h.label}` : h.label,
       subtitle: h.sublabel ?? undefined,
       signum: h.signum ?? undefined,
@@ -178,6 +182,53 @@ const GoFurther: React.FC<{ hit: Hit; onGo: (route: string) => void; sv: boolean
           );
         })}
       </div>
+    </div>
+  );
+};
+
+// Kunskapspanel (höger kolumn i hero-söket) — "left brain": bild + typ + titel + utdrag,
+// primär öppna-knapp, "Gå vidare"-chips OCH en radiell relationskarta ("right brain").
+// Visas bara i den breda hero-ytan (dialogen är för smal); driven av starkaste träffen.
+const KnowledgePanel: React.FC<{ hit: Hit; thumb?: string; onGo: (route: string) => void; sv: boolean }> = ({ hit, thumb, onGo, sv }) => {
+  const meta = META[hit.entity_type];
+  const { data: neighbors } = useEntityNeighbors(hit.entity_id);
+  if (!meta) return null;
+  const Icon = meta.icon;
+  const title = hit.entity_type === 'inscription' && hit.signum && hit.signum !== hit.label
+    ? `${hit.signum} — ${hit.label}` : hit.label;
+  const desc = stripTags(hit.snippet) ?? hit.sublabel ?? undefined;
+  const mindNodes = neighbors.slice(0, 8).map((n) => ({ label: n.label, route: n.destination.route, icon: n.destination.icon }));
+
+  return (
+    <div className="text-left">
+      {thumb ? (
+        <img
+          src={thumb}
+          alt={title}
+          loading="lazy"
+          className="h-44 w-full object-cover"
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+        />
+      ) : (
+        <div className="flex h-28 w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+          <Icon className="h-10 w-10 text-slate-600" />
+        </div>
+      )}
+      <div className="px-4 py-3">
+        <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+          <Icon className="h-3 w-3" />{sv ? meta.labelSv : meta.labelEn}
+        </div>
+        <h3 className="text-base font-semibold text-amber-100 leading-tight">{title}</h3>
+        {desc && <p className="mt-1.5 text-xs leading-relaxed text-slate-400 line-clamp-4">{desc}</p>}
+        <button
+          onClick={() => onGo(meta.route(hit))}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-amber-500/90 px-3 py-1.5 text-xs font-medium text-slate-900 hover:bg-amber-400"
+        >
+          {sv ? 'Öppna' : 'Open'} <CornerDownLeft className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <GoFurther hit={hit} onGo={onGo} sv={sv} />
+      <RelationMindmap center={hit.label} nodes={mindNodes} onGo={onGo} sv={sv} />
     </div>
   );
 };
@@ -296,6 +347,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
           .filter((e: any) => META[e.entity_type])
           .map((e: any) => ({
             key: `edge-${e.entity_id}`,
+            id: e.entity_id,
             title: e.label ?? e.entity_type,
             subtitle: META[e.entity_type][sv ? 'labelSv' : 'labelEn'],
             route: META[e.entity_type].route({ entity_id: e.entity_id, entity_type: e.entity_type, label: e.label ?? '', signum: null, sublabel: null, snippet: null, score: 0 }),
@@ -351,6 +403,13 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   const go = useCallback((route: string) => { setOpen(false); setHeroActive(false); navigate(route); }, [navigate]);
   const total = groups.reduce((n, g) => n + g.rows.length, 0);
 
+  // Tumnaglar: batcha alla synliga inskriftsträffar i EN RPC (search_thumbs).
+  const inscriptionIds = useMemo(
+    () => groups.filter((g) => g.type === 'inscription').flatMap((g) => g.rows.map((r) => r.id)),
+    [groups],
+  );
+  const { data: thumbs = {} } = useSearchThumbs(inscriptionIds);
+
   // Grounded RAG-svar via edge-funktionen search-answer (källfört, inga påhitt).
   const askAI = useCallback(async () => {
     const q = query.trim();
@@ -370,8 +429,12 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   }, [query, sv]);
 
   // Delad träfflista — samma innehåll i hero-dropdownen och i dialogen.
-  const resultsList = (
-    <div className="max-h-[60vh] overflow-y-auto text-left">
+  // scrollClass styr höjden per yta: hero använder nästan hela skärmen, dialogen håller sig lägre.
+  // wide=true (bara hero) → tvåkolumn: träfflista + kunskapspanel till höger.
+  const renderResults = (scrollClass: string, wide = false) => {
+    const showPanel = wide && !!topEntity && !theme;
+    const list = (
+    <div className={`${scrollClass} overflow-y-auto text-left`}>
       {/* Homonym vid sidan — off-topic betydelser (Tor Browser etc.), avmarkerade */}
       <SideSenses query={query} sv={sv} />
       {/* AI-svar (grounded RAG) — knapp när man skrivit en fråga, sedan källfört svar */}
@@ -465,8 +528,24 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
               <button
                 key={row.key}
                 onClick={() => go(row.route)}
-                className="flex w-full items-start gap-3 px-4 py-2 text-left hover:bg-amber-500/10"
+                className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-amber-500/10"
               >
+                {/* Tumnagel för runinskrifter (övriga typer saknar bild → ingen tom ruta) */}
+                {g.type === 'inscription' && (
+                  thumbs[row.id] ? (
+                    <img
+                      src={thumbs[row.id]}
+                      alt=""
+                      loading="lazy"
+                      className="h-10 w-10 shrink-0 rounded object-cover bg-slate-800"
+                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                    />
+                  ) : (
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-slate-800/60">
+                      <Icon className="h-4 w-4 text-slate-600" />
+                    </span>
+                  )
+                )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-amber-100 truncate">{row.title}</span>
@@ -480,7 +559,8 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         );
       })}
 
-      {topEntity && !theme && <GoFurther hit={topEntity} onGo={go} sv={sv} />}
+      {/* I bred vy bor "Gå vidare" i kunskapspanelen till höger — inline bara i smal vy */}
+      {!showPanel && topEntity && !theme && <GoFurther hit={topEntity} onGo={go} sv={sv} />}
 
       {query.trim().length >= 2 && groups.some((g) => g.type === 'inscription') && (
         <button
@@ -492,13 +572,27 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         </button>
       )}
     </div>
-  );
+    );
+
+    if (!showPanel) return list;
+    // Tvåkolumn: träfflistan till vänster, kunskapspanel (bild + fakta + relationskarta) till höger.
+    return (
+      <div className="lg:grid lg:grid-cols-[1fr_340px]">
+        {list}
+        <aside className={`hidden lg:block border-l border-slate-800 ${scrollClass} overflow-y-auto`}>
+          <KnowledgePanel hit={topEntity!} thumb={thumbs[topEntity!.entity_id]} onGo={go} sv={sv} />
+        </aside>
+      </div>
+    );
+  };
 
   // HERO: riktigt inline-sökfält. Man skriver direkt i rutan; träffarna fälls ut under.
+  // Vid träffar breddas rutan mot nästan full skärmbredd och listan får nästan hela höjden
+  // (Daniel: "använd hela skärmen") — kort-sektionen under kollapsar (styrs i Welcome).
   if (variant === 'hero') {
     const hasResults = query.trim().length >= 2 || !!theme;
     return (
-      <div ref={heroWrapRef} className={`relative w-full mx-auto transition-all ${hasResults ? 'max-w-3xl' : 'max-w-xl'}`}>
+      <div ref={heroWrapRef} className={`relative w-full mx-auto transition-all ${hasResults ? 'max-w-5xl' : 'max-w-xl'}`}>
         <div className="flex items-center gap-3 rounded-full bg-white border border-slate-200 shadow-lg hover:shadow-xl focus-within:shadow-xl px-5 py-3.5 transition-shadow">
           <Search className="h-5 w-5 text-slate-400 shrink-0" />
           <input
@@ -516,7 +610,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         </div>
         {heroActive && (
           <div className="absolute left-0 right-0 z-[60] mt-2 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden">
-            {hasResults ? resultsList : (
+            {hasResults ? renderResults('max-h-[76vh]', true) : (
               <div className="p-3">
                 <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                   {sv ? 'Förslag' : 'Suggestions'}
@@ -568,7 +662,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
             />
             {loading && <Loader2 className="h-4 w-4 animate-spin text-amber-400 shrink-0" />}
           </div>
-          {resultsList}
+          {renderResults('max-h-[60vh]')}
         </DialogContent>
       </Dialog>
     </>

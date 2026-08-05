@@ -110,3 +110,42 @@ export function transliterate(text: string, kind: FutharkKind): { runes: string;
   }
   return { runes: out, steps };
 }
+
+// --- LÄS-riktning: runor → möjliga ljud -------------------------------------------------
+// Ärligt: yngre futharken är MÅNGTYDIG — en runa kan läsas som flera ljud. Läsaren visar
+// därför ALLA rimliga värden per runa, inte en påstådd "rätt" tolkning. Inkluderar även
+// stungna (dotted) medeltida runor + vanliga kortkvist-varianter så verkliga inskrifter kan
+// klistras in. Detta är ett tolknings-HJÄLPMEDEL, inte en attesterad läsning.
+const Y_READ: Record<string, string[]> = {
+  'ᚠ': ['f'], 'ᚢ': ['u', 'o', 'y', 'v', 'w'], 'ᚦ': ['þ', 'th'], 'ᚬ': ['ą', 'a', 'o'],
+  'ᚱ': ['r'], 'ᚴ': ['k', 'g'], 'ᚼ': ['h'], 'ᚾ': ['n'], 'ᛁ': ['i', 'e', 'j'],
+  'ᛅ': ['a', 'æ'], 'ᛋ': ['s'], 'ᛏ': ['t', 'd'], 'ᛒ': ['b', 'p'], 'ᛘ': ['m'],
+  'ᛚ': ['l'], 'ᛦ': ['ʀ', 'r'],
+  // stungna (dotted) medeltida runor:
+  'ᚵ': ['g'], 'ᚧ': ['ð'], 'ᛂ': ['e'], 'ᛑ': ['d'], 'ᛔ': ['p'], 'ᚤ': ['y'], 'ᚿ': ['n'],
+  // vanliga kortkvist-varianter:
+  'ᚽ': ['h'], 'ᛌ': ['s'], 'ᛆ': ['a'], 'ᛧ': ['ʀ'], 'ᛓ': ['b'],
+};
+const E_READ: Record<string, string[]> = {
+  'ᚠ': ['f'], 'ᚢ': ['u'], 'ᚦ': ['þ'], 'ᚨ': ['a'], 'ᚱ': ['r'], 'ᚲ': ['k'], 'ᚷ': ['g'], 'ᚹ': ['w', 'v'],
+  'ᚺ': ['h'], 'ᚾ': ['n'], 'ᛁ': ['i'], 'ᛃ': ['j'], 'ᛇ': ['ï', 'ei'], 'ᛈ': ['p'], 'ᛉ': ['z', 'ʀ'], 'ᛋ': ['s'],
+  'ᛏ': ['t'], 'ᛒ': ['b'], 'ᛖ': ['e'], 'ᛗ': ['m'], 'ᛚ': ['l'], 'ᛜ': ['ŋ', 'ng'], 'ᛟ': ['o'], 'ᛞ': ['d'],
+};
+
+export interface ReadCell { rune: string; values: string[] }
+
+// Läs runor → per-runa möjliga ljud + en normaliserad kandidat (första värdet per runa).
+// Ordskiljare (᛫ : · mellanslag) blir mellanslag; okända runtecken markeras '?'.
+export function readRunes(input: string, kind: FutharkKind): { cells: ReadCell[]; candidate: string } {
+  const map = kind === 'younger' ? Y_READ : E_READ;
+  const cells: ReadCell[] = [];
+  for (const ch of Array.from(input || '')) {
+    if (ch === DIV || ch === ':' || ch === '·' || ch === '⁚' || /\s/.test(ch)) { cells.push({ rune: ' ', values: [' '] }); continue; }
+    const v = map[ch];
+    if (v) cells.push({ rune: ch, values: v });
+    else if (/[ᚠ-᛿]/.test(ch)) cells.push({ rune: ch, values: ['?'] }); // runtecken utan mappning
+    // annat (latinsk text, siffror) hoppas över
+  }
+  const candidate = cells.map((c) => (c.values[0] === ' ' ? ' ' : c.values[0])).join('').replace(/\s+/g, ' ').trim();
+  return { cells, candidate };
+}

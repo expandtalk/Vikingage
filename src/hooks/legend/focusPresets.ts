@@ -21,6 +21,12 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
     parishes: false,
     // Avaktivera alla andra legend items som kan visas
     religious_places: false,
+    // Kristna kurerade platser (christian_sites) har DEFAULT-PÅ-gate (!== false) i
+    // useMapChristianSites → utan detta läcker kloster/konvent/hospital in på ALLA
+    // fokusvyer (t.ex. fortresses). Släck dem som default; legenden tänder vid behov.
+    early_christian_sites: false,
+    medieval_monasteries: false,
+    late_medieval_sites: false,
     folk_groups: false,
     archaeological_finds: false,
     germanic_timeline: false,
@@ -59,7 +65,7 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
       console.log('🌊 Rivers focus: ENDAST Rivers, trade routes, Danvirke, Götavirke and cities - no runestones, religious places or fortresses');
       return {
         ...basePresets,
-        runic_inscriptions: false, // Avaktivera runstenar för rivers focus
+        runic_inscriptions: true, // Runstenar klickbara även i farledsvyn — vattennära stenar hör till farlederna
         religious_places: false, // Avaktivera religiösa platser (källorna etc)
         viking_fortresses: false, // Avaktivera försvarsborgar för rivers focus
         water_routes: true, // Aktivera alla vattenvägar
@@ -75,15 +81,15 @@ export const getFocusLegendPresets = (focus: string | null): LegendPreset => {
       };
       
     case 'eriksgatan':
-      console.log('👑 Eriksgata focus: den kungliga riksrundan + vägar/städer, inget brus');
+      console.log('👑 Eriksgata focus: ENBART den kungliga riksrundan (eriksgatan) — inget annat (Daniel)');
       return {
         ...basePresets,
         runic_inscriptions: false,
         religious_places: false,
         viking_fortresses: false,
         eriksgatan: true,
-        land_routes: true,
-        viking_cities: true
+        land_routes: false,
+        viking_cities: false
       };
 
     case 'fortresses':

@@ -6,7 +6,6 @@ import { useMapMarkers } from "@/hooks/useMapMarkers";
 import { useVikingFortresses } from "@/hooks/useVikingFortresses";
 import { useVikingCities } from "@/hooks/useVikingCities";
 import { MapHeader } from "./MapHeader";
-import { MapInfoPanel } from "./MapInfoPanel";
 import { MapContainer } from "./MapContainer";
 import { useMapData } from "./hooks/useMapData";
 import { useMapCounts } from "./hooks/useMapCounts";
@@ -18,6 +17,9 @@ import { VikingRoadsRenderer } from "./layers/VikingRoadsRenderer";
 import { TradeRoutesLayer } from "./layers/TradeRoutesLayer";
 import { PlaceNamesLayer } from "./layers/PlaceNamesLayer";
 import { PaleoShorelinesLayer } from "./layers/PaleoShorelinesLayer";
+import { ShorelinePeriodControl } from "./ShorelinePeriodControl";
+import { useShorelineOverlay } from "@/hooks/useShorelineOverlay";
+import L from 'leaflet';
 import { useTradeRoutes } from "@/hooks/useTradeRoutes";
 import { InteractiveMapProps } from './types';
 import 'leaflet/dist/leaflet.css';
@@ -72,6 +74,13 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
     selectedTimePeriod,
     inscriptions: inscriptionsWithCoords
   });
+
+  // Landhöjning (dåtida strandlinje) — SAMMA återanvändbara hook + kontroll som forsknings-
+  // sidorna (Öland/Kalmar/Genealogi). Default 'Av'. Ritas som lager under punktlagren.
+  const [shoreYear, setShoreYear] = React.useState<number | null>(null);
+  const shoreMapRef = React.useRef<L.Map | null>(null);
+  React.useEffect(() => { shoreMapRef.current = map; }, [map]);
+  useShorelineOverlay(shoreMapRef, shoreYear);
 
   const shouldShowTradeRoutes = enabledLegendItems.trade_routes !== false;
   
@@ -139,6 +148,11 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
         />
         
         <CardContent className="p-0">
+          {/* Landhöjnings-kontroll (återanvändbar ShorelinePeriodControl) — inline ovanför kartan
+              i st.f. ännu en flytande overlay (kartan är redan överlastad). */}
+          <div className="px-3 pt-2 pb-1">
+            <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+          </div>
           <MapContainer mapContainer={mapContainer} />
           
           {/* Viking Roads Layer */}
@@ -171,15 +185,8 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
             isVisible={isMapReady}
           />
 
-          <MapInfoPanel
-            isVikingMode={isVikingMode}
-            inscriptionsCount={inscriptionsWithCoords.length}
-            fortressesCount={selectedTimePeriod === 'viking_age' ? vikingFortresses.length : 0}
-            citiesCount={selectedTimePeriod === 'viking_age' ? filteredCities.length : 0}
-            totalInscriptions={inscriptions.length}
-            fortressesLoading={fortressesLoading}
-            citiesLoading={citiesLoading}
-          />
+          {/* Info-panelen ("Modern karta visar N runinskrifter…") borttagen på begäran (Daniel):
+              den svarta plattan skymde kartan. Återinför vid behov. */}
         </CardContent>
       </Card>
 

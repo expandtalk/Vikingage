@@ -26,14 +26,18 @@ interface HeroSectionProps {
     language: string;
   };
   onSkipIntro: () => void;
+  // Signaleras uppåt (Welcome) så kort-sektionen under kan kollapsa och ge sökträffarna hela skärmen.
+  onSearchingChange?: (v: boolean) => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   dbStats,
   localizedText,
-  onSkipIntro
+  onSkipIntro,
+  onSearchingChange
 }) => {
   const [searching, setSearching] = useState(false);
+  const handleActive = (v: boolean) => { setSearching(v); onSearchingChange?.(v); };
   return (
     <section
       className={`relative overflow-hidden transition-[min-height] duration-300 ${
@@ -69,7 +73,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         )}
 
         {/* Google-lik sökruta — vid sökning kollapsar intro-texten och rutan får hela ytan. */}
-        <GlobalSearch variant="hero" onActiveChange={setSearching} />
+        <GlobalSearch variant="hero" onActiveChange={handleActive} />
       </div>
     </section>
   );

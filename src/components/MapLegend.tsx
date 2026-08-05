@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Map, ToggleLeft, ToggleRight, ExternalLink } from 'lucide-react';
+import { Map, ToggleLeft, ToggleRight, ExternalLink, Save, RotateCcw } from 'lucide-react';
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTravelMode, setTravelMode, TRAVEL_MODE_LABELS, type TravelMode } from '@/hooks/useTravelMode';
+import { getModePreset, saveModePreset, clearModePreset, useHasModePreset } from '@/hooks/useModePresets';
 import { LegendItemComponent } from './legend/LegendItem';
 import { LegendCategory } from './legend/LegendCategory';
 import { MapsControl } from './legend/MapsControl';
@@ -51,9 +53,54 @@ export const MapLegend: React.FC<MapLegendProps> = ({
   onToggleItem,
   className = "",
   onShowAll,
-  onHideAll
+  onHideAll,
+  onModeSelected
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const sv = language === 'sv';
+  const travelMode = useTravelMode();
+  const hasPreset = useHasModePreset(travelMode);
+  // Gå-läge: fyll alla lager + släck historiska rasterkartor (de täcker vägarna). Engångsåtgärd
+  // vid val (funktionella updaters → sekventiellt, ingen race), inte per render → förblir togglingsbart.
+  // Släck historiska rasterlager (fula färgade fyrkanter som täcker vägarna): historical_maps +
+  // dess barn (histmap_*) + paleo_shoreline. Anropas DIREKT efter onShowAll (då är de PÅ → en
+  // toggle var flippar dem AV; funktionella updaters = sekventiellt, ingen race).
+  const hideHistoricalRasters = () => {
+    const hist = legendItems.find((i) => i.id === 'historical_maps');
+    ['historical_maps', ...(hist?.children?.map((c) => c.id) ?? []), 'paleo_shoreline']
+      .forEach((id) => onToggleItem(id));
+  };
+  // Platt {id:enabled} ur legendträdet (hoppa länk-typer) — för spara/applicera preset.
+  const flattenEnabled = (): Record<string, boolean> => {
+    const out: Record<string, boolean> = {};
+    const walk = (items: typeof legendItems) => items.forEach((it) => {
+      if (it.type !== 'link') out[it.id] = !!it.enabled;
+      if (it.children) walk(it.children);
+    });
+    walk(legendItems);
+    return out;
+  };
+  // Applicera en sparad preset: toggla bara de lager vars läge SKILJER sig (funktionella
+  // updaters → sekventiellt). Event-drivet (vid läges-val), aldrig per render.
+  const applyPreset = (preset: Record<string, boolean>) => {
+    const walk = (items: typeof legendItems) => items.forEach((it) => {
+      if (it.type !== 'link' && it.id in preset && preset[it.id] !== !!it.enabled) onToggleItem(it.id);
+      if (it.children) walk(it.children);
+    });
+    walk(legendItems);
+  };
+  const saveCurrentAsPreset = () => saveModePreset(travelMode, flattenEnabled());
+  const selectMode = (m: TravelMode) => {
+    setTravelMode(m);
+    const preset = getModePreset(m);
+    if (preset) {
+      applyPreset(preset);      // användarens sparade egna vy för läget
+    } else if (m === 'foot' && onShowAll) {
+      onShowAll();              // inbyggd standard: Gå = alla lager PÅ
+      hideHistoricalRasters();  // …men rasterkartorna av
+    }
+    onModeSelected?.();  // map-first: stäng mobilpanelen så kartan syns direkt
+  };
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['religious_places', 'heritage_sites']);
   
   const totalVisible = legendItems.filter(item => item.enabled).reduce((sum, item) => {
@@ -66,8 +113,11 @@ export const MapLegend: React.FC<MapLegendProps> = ({
   
   // Länk-poster (t.ex. spökvandringen) har ingen enabled/switch — de ska inte räknas
   // med i "alla på?"-bedömningen, annars låser en enda länk fast "Visa alla".
+  // Historiska rasterkartor räknas INTE in i "alla på?" (de hålls medvetet av i Visa alla),
+  // annars kan knappen aldrig flippa till "Dölj alla".
   const toggleableItems = legendItems.filter(item => item.type !== 'link');
-  const allEnabled = toggleableItems.length > 0 && toggleableItems.every(item => item.enabled);
+  const dataItems = toggleableItems.filter(item => item.id !== 'historical_maps' && item.id !== 'paleo_shoreline');
+  const allEnabled = dataItems.length > 0 && dataItems.every(item => item.enabled);
 
   const handleToggleAll = () => {
     if (allEnabled && onHideAll) {
@@ -76,6 +126,7 @@ export const MapLegend: React.FC<MapLegendProps> = ({
     } else if (!allEnabled && onShowAll) {
       console.log(`👁️ Not all items enabled, showing all`);
       onShowAll();
+      hideHistoricalRasters();  // "Visa alla" ska INTE tända de fula rasterfyrkanterna
     }
   };
 
@@ -134,6 +185,44 @@ export const MapLegend: React.FC<MapLegendProps> = ({
             {allEnabled ? <ToggleRight className="h-3 w-3" /> : <ToggleLeft className="h-3 w-3" />}
             {allEnabled ? t('hideAll') : t('showAll')}
           </Button>
+        </div>
+
+        {/* Färdsätt (Gå/Cykla/Kör) — delas med Near me. Gå fyller alla lager + släcker historiska kartor. */}
+        <div className="pt-1">
+          <div className="flex gap-1">
+            {(['foot', 'bike', 'car'] as TravelMode[]).map((m) => {
+              const lbl = TRAVEL_MODE_LABELS[m];
+              const active = travelMode === m;
+              return (
+                <button
+                  key={m}
+                  onClick={() => selectMode(m)}
+                  className={`flex-1 py-1.5 rounded border text-[11px] transition-colors ${active ? 'bg-sky-500/20 border-sky-500 text-sky-200' : 'border-gray-700 text-gray-300 hover:bg-gray-800'}`}
+                >
+                  {lbl.icon} {sv ? lbl.sv : lbl.en}
+                </button>
+              );
+            })}
+          </div>
+          {/* Spara/återställ egen vy per läge (localStorage; funkar utan konto). */}
+          <div className="flex items-center gap-1 px-1 pt-1">
+            <Button onClick={saveCurrentAsPreset} variant="ghost" size="sm"
+              className="h-6 px-2 text-[10px] text-emerald-300 hover:bg-emerald-900/30 flex items-center gap-1">
+              <Save className="h-3 w-3" /> {sv ? 'Spara' : 'Save'} {sv ? TRAVEL_MODE_LABELS[travelMode].sv : TRAVEL_MODE_LABELS[travelMode].en}
+            </Button>
+            {hasPreset && (
+              <>
+                <Button onClick={() => clearModePreset(travelMode)} variant="ghost" size="sm"
+                  className="h-6 px-1.5 text-[10px] text-gray-400 hover:bg-gray-700/50 flex items-center gap-1">
+                  <RotateCcw className="h-3 w-3" /> {sv ? 'standard' : 'default'}
+                </Button>
+                <span className="text-[10px] text-emerald-400/80 ml-auto">✓ {sv ? 'egen vy' : 'custom'}</span>
+              </>
+            )}
+          </div>
+          {travelMode === 'foot' && !hasPreset && (
+            <p className="px-1 pt-0.5 text-[10px] text-gray-500">{sv ? 'Gåläge: alla lager på, historiska kartor av.' : 'Walking: all layers on, historical maps off.'}</p>
+          )}
         </div>
       </CardHeader>
       

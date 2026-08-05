@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home,
   Castle,
   Scroll,
   Hammer,
@@ -300,13 +299,6 @@ const EXTRA_LINKS: NavLink[] = [
   },
 ];
 
-const home: NavLink = {
-  pathEn: '/', pathSv: '/',
-  labelSv: 'Hem', labelEn: 'Home',
-  descSv: 'Startsida', descEn: 'Home',
-  icon: Home,
-};
-
 const profile: NavLink = {
   pathEn: '/profile', pathSv: '/profile',
   labelSv: 'Profil', labelEn: 'Profile',
@@ -346,7 +338,8 @@ const useNavLinks = (): NavLink[] => {
     };
   });
 
-  return [home, game, podcast, ...routeLinks, ...EXTRA_LINKS, profile];
+  // 'home' borttagen ur navet — loggan (ᚱ) i Header länkar redan till startsidan.
+  return [game, podcast, ...routeLinks, ...EXTRA_LINKS, profile];
 };
 
 const useResolveLink = () => {
@@ -429,8 +422,6 @@ export const Navigation: React.FC = () => {
   return (
     <NavigationMenu className="hidden md:flex">
       <NavigationMenuList>
-        {directLink(home)}
-
         {CATEGORY_ORDER.map((cat) => {
           const catLinks = byCategory(cat);
           if (catLinks.length === 0) return null;

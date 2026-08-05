@@ -70,8 +70,12 @@ export const useExplorerData = ({
   const roleLayerPreset = useMemo(() => {
     const merged: Record<string, boolean> = {};
     for (const p of selectedProfiles) {
-      const lp = resolveProfileLayers(p, currentFocus);
-      for (const k of Object.keys(lp)) if ((lp as Record<string, boolean>)[k]) merged[k] = true;
+      const lp = resolveProfileLayers(p, currentFocus) as Record<string, boolean>;
+      // BEVARA FALSE: en fokus-override som SLÄCKER ett lager måste propageras. Gamla koden
+      // kopierade bara true → false-nycklar föll bort → default-PÅ-hooks (!== false) tände
+      // lagret igen när nyckeln saknades (kloster/kyrkor läckte in på alla fokusvyer, och
+      // eriksgatan drunknade i bruset). true vinner fortfarande över profiler (union).
+      for (const k of Object.keys(lp)) merged[k] = (merged[k] ?? false) || lp[k];
     }
     return merged as ReturnType<typeof resolveProfileLayers>;
   }, [selectedProfiles, currentFocus]);

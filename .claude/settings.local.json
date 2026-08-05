@@ -83,7 +83,16 @@
       "WebFetch(domain:alltpaoland.se)",
       "WebFetch(domain:minnen.se)",
       "WebFetch(domain:sv.wikipedia.org)",
-      "Bash(echo \"=== TSC EXIT: $? ===\")"
+      "Bash(echo \"=== TSC EXIT: $? ===\")",
+      "Bash(curl *)",
+      "WebFetch(domain:stockholmskallan.stockholm.se)",
+      "WebFetch(domain:naturkartan.se)",
+      "WebFetch(domain:www.sgu.se)",
+      "Read(//c/Users/Lenovo/.claude/plugins/cache/claude-plugins-official/superpowers/6.2.0/skills/subagent-driven-development/scripts/**)",
+      "Bash(bash /c/Users/Lenovo/.claude/plugins/cache/claude-plugins-official/superpowers/6.2.0/skills/subagent-driven-development/scripts/sdd-workspace docs/superpowers/plans/2026-08-04-kulturmiljo-navigator-fas1-plan1-hud-turnbyturn.md)",
+      "Bash(bash /c/Users/Lenovo/.claude/plugins/cache/claude-plugins-official/superpowers/6.2.0/skills/subagent-driven-development/scripts/task-brief docs/superpowers/plans/2026-08-04-kulturmiljo-navigator-fas1-plan1-hud-turnbyturn.md 1)",
+      "Bash(git -C C:\\\\Users\\\\Lenovo\\\\projects\\\\vikingage add src/services/routing.ts src/services/routing.maneuvers.test.ts)",
+      "Bash(git -C C:\\\\Users\\\\Lenovo\\\\projects\\\\vikingage commit -m \"feat\\(navigator\\): parse OSRM turn-by-turn maneuvers into RouteResult\")"
     ]
   }
 }

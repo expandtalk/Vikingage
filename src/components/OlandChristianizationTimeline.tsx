@@ -76,7 +76,7 @@ export function OlandChristianizationTimeline() {
   const ticks = [980, 1000, 1020, 1040, 1060, 1080, 1100, 1120];
 
   return (
-    <div className="mt-4">
+    <div>
       <div className="text-sm font-semibold text-foreground mb-1">Runstenarnas kristnande — per stilgrupp (Gräslund)</div>
       <p className="text-[11px] text-muted-foreground mb-3">
         Varje band är en stilgrupp daterad med Gräslunds Pr-serie (relativ kronologi, ~±25 år — inte exakta år).

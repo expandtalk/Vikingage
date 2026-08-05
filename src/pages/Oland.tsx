@@ -219,6 +219,25 @@ const Oland = () => {
           </p>
         </div>
 
+        {/* Interaktiva kartan högst upp på sidan (Daniel) */}
+        <Legend on={on} toggle={toggle} />
+        {isLoading ? (
+          <p className="text-muted-foreground">Laddar kartan…</p>
+        ) : (
+          <OlandMap
+            points={shown}
+            showConnections={on['connection'] !== false}
+            solidi={olandSolidi}
+            showSolidi={!!on['solidi']}
+            showTerritories={!!on['territory']}
+          />
+        )}
+        <p className="text-xs text-muted-foreground mt-3 mb-6 opacity-80">
+          {points.length} punkter: {count('runestone')} runstenar · {count('hillfort')} fornborgar · {count('church')} kyrkor · {count('find')} guld-/silverfynd · {count('fro_name')} Frö-namn.
+          {' '}Solidi-lagret rymmer {olandSolidi.length} individuella guldmynt (SHM CC BY).
+          Källor: Samnordisk runtextdatabas; RAÄ/Fornsök; Historiska museet (guldfynd); Ortnamnsregistret.
+        </p>
+
         <Card className="viking-card mb-4">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2 text-gold"><Route className="h-5 w-5" /> Vad datan visar</CardTitle>
@@ -249,35 +268,33 @@ const Oland = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2 text-gold"><Route className="h-5 w-5" /> Kristnandet på Öland — tempo mot Uppland &amp; Ångermanland</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground space-y-2">
-            <p>
+          <CardContent className="text-sm text-muted-foreground">
+            <p className="mb-6">
               <strong className="text-foreground">Öland kristnades fort:</strong> ~halva kyrkbeståndet stod redan på 1100-talet och var i stort klart till 1200. <strong>Uppland</strong> fylldes gradvis (16&nbsp;% vid 1100 → 58&nbsp;% vid 1200), och <strong>Ångermanland</strong> förblev glest (26 kyrkor, ~10 km isär, bara 3 fornborgar). Olika odlingslandskap och befolkning → olika tempo.
             </p>
-            <OlandChristianizationEpochs />
-            <ChristianizationChart />
-            <OlandChristianizationTimeline />
-            <ChurchConsolidationCard sv={sv} />
-            <p className="text-xs opacity-80"><strong className="text-amber-300">Tolkning (hypotes):</strong> ett snabbt, front-tungt kristnande tyder på att kyrkorna restes på redan etablerade centrum — övertagande av gamla kult-/maktplatser — eller på ett område som var kristet-influerat tidigare. Täthet ensam avgör inte vilket; det gör kyrkornas läge (på hednisk kultplats? vid runsten med kors?). Nästa steg: lägga 190 Öland-runstenar + spolia (återbrukade bildstenar i kyrkor) mot kyrkolägena.</p>
+
+            {/* Fyra fristående figurer — varje med egen rubrik och tydlig avgränsare
+                (tidigare låg de i en osammanhängande hög; Daniel: "ser inte bra ut typografiskt"). */}
+            <div className="[&>section]:border-t [&>section]:border-border/40 [&>section]:pt-6 [&>section]:mt-6 [&>section:first-child]:border-0 [&>section:first-child]:pt-0 [&>section:first-child]:mt-0">
+              <section>
+                <OlandChristianizationEpochs />
+              </section>
+              <section>
+                <div className="text-sm font-semibold text-foreground mb-2">Kristnandetempo — Öland mot Uppland &amp; Ångermanland</div>
+                <ChristianizationChart />
+              </section>
+              <section>
+                <OlandChristianizationTimeline />
+              </section>
+              <section>
+                <ChurchConsolidationCard sv={sv} />
+              </section>
+            </div>
+
+            <p className="text-xs opacity-80 mt-6 border-t border-border/40 pt-4"><strong className="text-amber-300">Tolkning (hypotes):</strong> ett snabbt, front-tungt kristnande tyder på att kyrkorna restes på redan etablerade centrum — övertagande av gamla kult-/maktplatser — eller på ett område som var kristet-influerat tidigare. Täthet ensam avgör inte vilket; det gör kyrkornas läge (på hednisk kultplats? vid runsten med kors?). Nästa steg: lägga 190 Öland-runstenar + spolia (återbrukade bildstenar i kyrkor) mot kyrkolägena.</p>
           </CardContent>
         </Card>
 
-        <Legend on={on} toggle={toggle} />
-        {isLoading ? (
-          <p className="text-muted-foreground">Laddar kartan…</p>
-        ) : (
-          <OlandMap
-            points={shown}
-            showConnections={on['connection'] !== false}
-            solidi={olandSolidi}
-            showSolidi={!!on['solidi']}
-            showTerritories={!!on['territory']}
-          />
-        )}
-        <p className="text-xs text-muted-foreground mt-3 opacity-80">
-          {points.length} punkter: {count('runestone')} runstenar · {count('hillfort')} fornborgar · {count('church')} kyrkor · {count('find')} guld-/silverfynd · {count('fro_name')} Frö-namn.
-          {' '}Solidi-lagret rymmer {olandSolidi.length} individuella guldmynt (SHM CC BY).
-          Källor: Samnordisk runtextdatabas; RAÄ/Fornsök; Historiska museet (guldfynd); Ortnamnsregistret.
-        </p>
         <div className="pt-4">
           <a href="/explore?center=56.7,16.6&zoom=9" className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2 text-slate-900 font-semibold hover:bg-amber-400 transition-colors">
             <Compass className="h-4 w-4" /> Öppna hela kartan (experimentera med fler lager)

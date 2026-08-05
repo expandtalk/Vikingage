@@ -63,6 +63,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
         country: 'Land', coordsCurrent: 'Koordinater (nuvarande)', noCoords: 'Inga koordinater',
         coordsAlt: 'Koordinater', status: 'Status', translit: 'Transliteration',
         translationSv: 'Översättning (SV)', translationEn: 'Översättning (EN)', translationOther: 'Översättning',
+        normalization: 'Normalisering (fornnordiska)', alsoKnown: 'Även känd som',
         dating: 'Datering', rundataDating: 'Rundata-datering', material: 'Material', objectType: 'Objekttyp',
         currentLocation: 'Nuvarande plats', dimensions: 'Mått', runeType: 'Runtyp', styleGroup: 'Stilgrupp', meter: 'Versmått',
         carver: 'Ristare', crossForm: 'Korsform / ikonografi', christianFormula: 'Kristen formel', datingTermini: 'Datering (termini)',
@@ -78,6 +79,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
         country: 'Country', coordsCurrent: 'Coordinates (current)', noCoords: 'No coordinates',
         coordsAlt: 'Coordinates', status: 'Status', translit: 'Transliteration',
         translationSv: 'Translation (SV)', translationEn: 'Translation (EN)', translationOther: 'Translation',
+        normalization: 'Normalization (Old Norse)', alsoKnown: 'Also known as',
         dating: 'Dating', rundataDating: 'Rundata dating', material: 'Material', objectType: 'Object type',
         currentLocation: 'Current location', dimensions: 'Dimensions', runeType: 'Rune type', styleGroup: 'Style group', meter: 'Poetic metre',
         carver: 'Carver', crossForm: 'Cross form / iconography', christianFormula: 'Christian formula', datingTermini: 'Dating (termini)',
@@ -144,6 +146,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
             <DetailItem label={L.nameEn} value={name_en} />
             <DetailItem label={L.signum} value={signum} />
             <DetailItem label={L.breakdown} value={signumBreakdown} />
+            <DetailItem label={L.alsoKnown} value={extendedData?.rich?.also_known_as?.join(', ')} />
             <DetailItem label={L.place} value={location} />
             <DetailItem label={L.parish} value={parish} />
             <DetailItem label={L.municipality} value={municipality} />
@@ -164,9 +167,10 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
               ))
             )}
             <DetailItem label={L.status} value={status ? <Badge variant="outline">{status}</Badge> : null} />
-            <DetailItem label={L.translit} value={transliteration} />
-            <DetailItem label={L.translationSv} value={translation_sv} />
-            <DetailItem label={L.translationEn} value={translation_en} />
+            <DetailItem label={L.translit} value={transliteration || extendedData?.rich?.transliteration} />
+            <DetailItem label={L.translationSv} value={translation_sv || extendedData?.rich?.translation_sv} />
+            <DetailItem label={L.translationEn} value={translation_en || extendedData?.rich?.translation_en} />
+            <DetailItem label={L.normalization} value={extendedData?.rich?.normalization} />
             {extendedData?.translations && extendedData.translations.length > 0 && (
               extendedData.translations.map((trans, index) => (
                 <DetailItem
@@ -242,9 +246,9 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
               />
             )}
             <DetailItem label={L.condition} value={condition_notes} />
-            <DetailItem label={L.scholarly} value={<p className="whitespace-pre-wrap">{scholarly_notes}</p>} />
-            <DetailItem label={L.context} value={<p className="whitespace-pre-wrap">{historical_context}</p>} />
-            <DetailItem label={L.paleo} value={<p className="whitespace-pre-wrap">{paleographic_notes}</p>} />
+            <DetailItem label={L.scholarly} value={scholarly_notes ? <p className="whitespace-pre-wrap">{scholarly_notes}</p> : null} />
+            <DetailItem label={L.context} value={historical_context ? <p className="whitespace-pre-wrap">{historical_context}</p> : null} />
+            <DetailItem label={L.paleo} value={paleographic_notes ? <p className="whitespace-pre-wrap">{paleographic_notes}</p> : null} />
 
             {/* P5: graf-RAG-analys — servern hämtar källkontexten ur kunskapsgrafen */}
             {signum && (

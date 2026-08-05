@@ -76,6 +76,24 @@ export const EXCURSION_GROUPS = [
 
 export const EXCURSIONS: Excursion[] = [
   {
+    id: 'gustav-vasa-landstigning',
+    name: 'Gustav Vasas landstigning 1520',
+    region: 'Kalmar, Kalmarsund',
+    group: 'Småland & Kalmarsund',
+    period: 'Tidigmodern tid (31 maj 1520)',
+    // Omtvistad landstigningsplats: Olsan (källkritisk) vs Stensö (romantisk tradition).
+    // Kandidatlägena ligger i location_hypotheses (hypothesesSlug).
+    coords: { lat: 56.6534328, lng: 16.3401828 },
+    hypothesesSlug: 'gustav-vasa-landstigning-1520',
+    mapLabel: 'Olsan',
+    tagline: {
+      sv: 'Var steg Gustav Eriksson iland när han återvände ur dansk fångenskap?',
+      en: 'Where did Gustav Eriksson come ashore on his return from Danish captivity?',
+    },
+    sv: 'Den 31 maj 1520 återvände Gustav Eriksson (senare Gustav Vasa) med skepp från Lübeck till Kalmartrakten efter flykten ur dansk fångenskap på Kalø slot. Var han steg iland är omtvistat. Den traditionella berättelsen — till stor del 1800-talsnationalromantik, med en sent rest minnessten — pekar på Stensö udde. En källkritisk läsning talar i stället för Olsan vid Kalmar fiskeläge: Olsan är idag en insjö i Kalmarsundsparken men var förr en vik, en naturlig båtplats utanför staden. Peder Svarts krönika (en tendentiös Vasakälla) berättar att Gustav kom till Kalmar, förhandlade med borgarna och de tyska knektarna som nära slog ihjäl honom, och lämnade staden — men nämner ingen insegling i slottshamnen. Att som flykting segla in i den knekthållna hamnen innanför Grimskär, förbi Skansgrundet och trolig tullkontroll, vore mycket riskabelt; rådande sydvästvind i Kalmarsund gynnar dessutom en landfästning på Olsan-sidan. Ankomsten till Kalmar är belagd, den exakta landstigningsplatsen är det inte. Namnet Olsan kommer inte ur S:t Olofs vik — det är en folketymologi.',
+    en: 'On 31 May 1520 Gustav Eriksson (later Gustav Vasa) returned by ship from Lübeck to the Kalmar area after his escape from Danish captivity at Kalø Castle. Where he came ashore is disputed. The traditional account — largely 19th-century national romanticism, with a memorial stone raised much later — points to Stensö point. A source-critical reading instead favours Olsan by the Kalmar fishing hamlet: Olsan is today an inland lake in Kalmarsundsparken but was once a bay, a natural landing outside the town. The chronicle of Peder Svart (a tendentious pro-Vasa source) relates that Gustav came to Kalmar, negotiated with the burghers and the German mercenaries who nearly killed him, and left the town — but mentions no sailing into the castle harbour. For a fugitive to sail into the mercenary-held harbour inside Grimskär, past Skansgrundet and a likely toll, would be highly risky; the prevailing south-westerly wind in Kalmarsund also favours a landing on the Olsan side. The arrival at Kalmar is attested; the exact landing place is not. The name Olsan does not derive from Saint Olof bay — that is a folk etymology.',
+  },
+  {
     id: 'kalmar-jarnalder',
     name: 'Kalmar – järnåldersgravfälten & Hossmo',
     region: 'Kalmar, Småland',

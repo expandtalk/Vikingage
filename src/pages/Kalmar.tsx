@@ -304,29 +304,6 @@ const Kalmar = () => {
           </p>
         </div>
 
-        {/* SPÖKVANDRING (Äventyr-pilot) — länk till den publicerade mobilsidan */}
-        <a
-          href="https://claude.ai/code/artifact/8ce236d2-f48a-46fa-9558-54bcf5cea2c0"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block mb-4 rounded-lg"
-        >
-          <Card className="viking-card border-amber-700/40 hover:border-amber-500/60 transition-colors">
-            <CardContent className="py-4 flex items-center gap-3">
-              <span className="text-2xl" aria-hidden="true">🕯️</span>
-              <div className="min-w-0 flex-1">
-                <div className="text-gold font-semibold flex items-center gap-2">
-                  Kalmar spökvandring
-                  <span className="text-[10px] uppercase tracking-wide bg-amber-500/15 text-amber-300 rounded px-1.5 py-0.5">Pilot</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  En mörk kvällsvandring genom Gamla stan &amp; Slottsfjärden — 5 stopp med navigation. Öppnas i mobilen. →
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </a>
-
         {/* KARTA */}
         <Card className="viking-card mb-4">
           <CardHeader className="pb-2">

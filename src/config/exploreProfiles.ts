@@ -100,6 +100,12 @@ export const EMPTY_LEGEND_PRESET: LegendPreset = {
   place_names: false,
   viking_roads: false,
   beacon_sites: false,
+  // Kurerade kristna platser (christian_sites) — default AV. useMapChristianSites har en
+  // default-PÅ-gate (!== false); utan dessa nycklar i baslinjen läcker kloster/kyrkor/
+  // hospital in på ALLA vyer. Tänds via legenden vid behov.
+  early_christian_sites: false,
+  medieval_monasteries: false,
+  late_medieval_sites: false,
   // Kulturlager-kategorin PÅ (så per-typ-kryssen är synliga/åtkomliga) men alla
   // typ-barn AV → tom karta tills man kryssar i en typ. Driven i useMapHeritageSites.
   heritage_sites: true,
@@ -446,6 +452,8 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
       break;
     case "eriksgatan":
       // Ren Eriksgata-vy: den kungliga riksrundan + vägar/städer som kontext, inget annat brus.
+      // Uttömmande släck-lista (som inscriptions/rivers) — annars läcker profilens tunga
+      // punktlager in och begraver leden (Daniel: "visar många andra objekt, ingen led").
       Object.assign(o, {
         eriksgatan: true,
         viking_roads: true,
@@ -458,13 +466,80 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         hundreds: false,
         parishes: false,
         folk_groups: false,
+        germanic_groups: false,
+        germanic_timeline: false,
         trade_routes: false,
         river_routes: false,
         water_routes: false,
+        valdemar_route: false,
+        stake_barriers: false,
+        carvers: false,
+        gods: false,
+        place_names: false,
+        battle_sites: false,
+        archaeological_sites: false,
+        archaeological_finds: false,
+        heritage_sites: false,
+        ecclesiastical_churches: false,
+        early_christian_sites: false,
+        medieval_monasteries: false,
+        late_medieval_sites: false,
+        maritime: false,
+        maritime_nodes: false,
+        ship_losses: false,
+        fairways_modern: false,
+        fairways_historical: false,
+        hanseatic_cities: false,
+        coins: false,
+        beacon_sites: false,
       });
       break;
     case "fortresses":
-      Object.assign(o, { viking_fortresses: true, runic_inscriptions: true });
+      // Ren försvarsvy: borgar + försvarskontext (vårdkasar, fort-territorier). Uttömmande
+      // släck-lista — annars läcker särskilt KYRKOR & KLOSTER in (christian_sites-lagren är
+      // default-PÅ) och begraver borgarna, som då blir svåra att hitta/klicka (Daniel).
+      Object.assign(o, {
+        viking_fortresses: true,
+        beacon_sites: true,
+        fort_territories: true,
+        // Kyrkor/kloster hör hemma på /sv/kyrkor, inte i borgvyn:
+        religious_places: false,
+        ecclesiastical_churches: false,
+        early_christian_sites: false,
+        medieval_monasteries: false,
+        late_medieval_sites: false,
+        // Övrigt punkt-/linjebrus av:
+        runic_inscriptions: false,
+        foreign_inscriptions: false,
+        viking_regions: false,
+        hundreds: false,
+        parishes: false,
+        folk_groups: false,
+        germanic_groups: false,
+        germanic_timeline: false,
+        trade_routes: false,
+        river_routes: false,
+        water_routes: false,
+        valdemar_route: false,
+        eriksgatan: false,
+        viking_roads: false,
+        viking_cities: false,
+        stake_barriers: false,
+        carvers: false,
+        gods: false,
+        place_names: false,
+        battle_sites: false,
+        heritage_sites: false,
+        archaeological_sites: false,
+        archaeological_finds: false,
+        maritime: false,
+        maritime_nodes: false,
+        ship_losses: false,
+        fairways_modern: false,
+        fairways_historical: false,
+        hanseatic_cities: false,
+        coins: false,
+      });
       break;
     case "carvers":
       Object.assign(o, { carvers: true, runic_inscriptions: true });

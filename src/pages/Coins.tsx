@@ -11,7 +11,80 @@ import { Coins as CoinsIcon, MapPin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCoins, parseCoinCoord, type Coin } from '@/hooks/useCoins';
 import { useSolidi } from '@/hooks/useSolidi';
+import { useDanishRunicCoins, type RunicCoin } from '@/hooks/useDanishRunicCoins';
 import { MaktikonTimeline } from '@/components/coins/MaktikonTimeline';
+
+const trunc = (s: string, n: number) => (s.length > n ? s.slice(0, n) + '…' : s);
+const isBracteate = (t: string | null) => !!t && /brakteat/i.test(t);
+
+// Danska runmynt + guldbrakteater ur runic_inscriptions (ej i coins-tabellen). Fakta + Rundata (ODbL).
+const DanishRunicSection: React.FC<{ sv: boolean }> = ({ sv }) => {
+  const { data: items = [], isLoading } = useDanishRunicCoins();
+  if (isLoading || items.length === 0) return null;
+  const coins = items.filter((i) => !isBracteate(i.object_type));
+  const bracts = items.filter((i) => isBracteate(i.object_type));
+  const dating = (i: RunicCoin) =>
+    i.dating_text ||
+    (i.period_start != null || i.period_end != null
+      ? `${i.period_start ?? ''}${i.period_end != null ? `–${i.period_end}` : ''}`
+      : null);
+  const place = (i: RunicCoin) => [i.parish, i.province].filter(Boolean).join(', ') || null;
+  const transl = (i: RunicCoin) => (sv ? i.translation_sv || i.translation_en : i.translation_en || i.translation_sv);
+
+  const Grid: React.FC<{ list: RunicCoin[] }> = ({ list }) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {list.map((i) => (
+        <div key={i.id} className="viking-card rounded-lg border border-border p-3 text-sm">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="font-semibold text-gold">{i.name || i.signum}</span>
+            <span className="text-[10px] text-muted-foreground shrink-0">{i.signum}</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {i.object_type && <Badge variant="outline" className="text-[10px]">{i.object_type}</Badge>}
+            {i.material && <Badge variant="outline" className="text-[10px]">{i.material}</Badge>}
+            {dating(i) && <Badge variant="secondary" className="text-[10px]">{dating(i)}</Badge>}
+          </div>
+          {i.transliteration && (
+            <p className="mt-1.5 font-mono text-[11px] text-slate-300 break-words">{trunc(i.transliteration, 140)}</p>
+          )}
+          {transl(i) && <p className="mt-1 text-xs text-muted-foreground">{trunc(transl(i)!, 200)}</p>}
+          {place(i) && (
+            <div className="mt-1 text-[11px] text-muted-foreground flex items-center gap-1">
+              <MapPin className="h-3 w-3" />{place(i)}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <section className="mb-8">
+      <h2 className="text-2xl font-semibold text-foreground mb-2 flex items-center gap-2">
+        <span className="inline-block w-3 h-3 rounded-full" style={{ background: '#a855f7' }} />
+        {sv ? 'Danska runmynt & guldbrakteater' : 'Danish rune coins & gold bracteates'}
+        <span className="text-muted-foreground text-base">({items.length})</span>
+      </h2>
+      <p className="text-muted-foreground text-sm mb-4 max-w-3xl">
+        {sv
+          ? 'Runförsedda mynt och folkvandringstida guldbrakteater från danskt område (DR/DK). Signum, translitteration och översättning ur Rundata (ODbL).'
+          : 'Rune-bearing coins and Migration-Period gold bracteates from Danish territory (DR/DK). Signum, transliteration and translation from Rundata (ODbL).'}
+      </p>
+      {coins.length > 0 && (
+        <>
+          <h3 className="text-lg font-medium text-gold mb-2">{sv ? 'Runmynt' : 'Rune coins'} <span className="text-muted-foreground text-sm">({coins.length})</span></h3>
+          <div className="mb-5"><Grid list={coins} /></div>
+        </>
+      )}
+      {bracts.length > 0 && (
+        <>
+          <h3 className="text-lg font-medium text-gold mb-2">{sv ? 'Guldbrakteater' : 'Gold bracteates'} <span className="text-muted-foreground text-sm">({bracts.length})</span></h3>
+          <Grid list={bracts} />
+        </>
+      )}
+    </section>
+  );
+};
 
 // Romerska/bysantinska solidi (SHM CC BY + Fischer): 1000+ individuella guldmynt, per landskap.
 // Jämförelse Öland↔Gotland + Diocletianus-värdering. Fyndplats sockennivå/by.
@@ -187,6 +260,8 @@ const Coins = () => {
             <MaktikonTimeline coins={coins} />
 
             <SolidiSection sv={sv} />
+
+            <DanishRunicSection sv={sv} />
 
             {byCategory.map(({ key, coins: list }) => (
               <section key={key} className="mb-8">

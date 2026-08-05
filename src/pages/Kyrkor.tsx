@@ -8,11 +8,12 @@ import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Church as ChurchIcon, Building2, Clock, MapPin, Info, Landmark } from 'lucide-react';
+import { Church as ChurchIcon, Building2, Clock, MapPin, Info, Landmark, Search, Palette } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChurches, churchEra, churchYear, type Church, type ChurchEra } from '@/hooks/useChurches';
 import { useChurchDatings } from '@/hooks/useChurchDatings';
 import { useChurchInvestigations } from '@/hooks/useChurchInvestigations';
+import { useChurchArtworks } from '@/hooks/useChurchArtworks';
 
 // Byggnadsfas-typ: skiljer ursprunglig (nybyggnad) från senare ombyggnad/rivning (t.ex. 1800-talet).
 const EVENT_SV: Record<string, string> = {
@@ -74,6 +75,7 @@ const ChurchDetail: React.FC<{ church: Church }> = ({ church }) => {
   const sv = language === 'sv';
   const { data: datings } = useChurchDatings({ churchId: church.id });
   const { investigations } = useChurchInvestigations(church.id);
+  const { data: artworks } = useChurchArtworks(church.id);
   const y = churchYear(church);
   const eraLabel = ERAS.find((e) => e.key === churchEra(church));
   return (
@@ -136,6 +138,24 @@ const ChurchDetail: React.FC<{ church: Church }> = ({ church }) => {
             </ul>
           </div>
         )}
+        {artworks && artworks.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-foreground mb-1 flex items-center gap-1"><Palette className="h-3.5 w-3.5" /> {sv ? 'Konst & inventarier' : 'Art & furnishings'}</p>
+            <ul className="text-xs text-muted-foreground space-y-1.5">
+              {artworks.map((aw) => (
+                <li key={aw.id}>
+                  <span className="text-gold">{aw.title || aw.artwork_type}</span>
+                  {aw.artist?.name ? <span> — {aw.artist.name}</span> : null}
+                  {(aw.dating_text || aw.year_from != null) ? <span className="opacity-80"> ({aw.dating_text || aw.year_from})</span> : null}
+                  {aw.motif ? <span className="block opacity-80">{aw.motif}</span> : null}
+                  {aw.location_in_church ? <span className="block opacity-70">{sv ? 'Placering' : 'Location'}: {aw.location_in_church}</span> : null}
+                  {aw.condition ? <span className="block opacity-70 italic">{aw.condition}</span> : null}
+                  {aw.source_url ? <a href={aw.source_url} target="_blank" rel="noreferrer" className="text-gold hover:underline">{sv ? 'källa →' : 'source →'}</a> : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {church.register_url && (
           <a href={church.register_url} target="_blank" rel="noreferrer" className="text-xs text-gold hover:underline">
             {sv ? 'Källa / register →' : 'Source / register →'}
@@ -151,18 +171,25 @@ const Kyrkor = () => {
   const sv = language === 'sv';
   const { churches, isLoading } = useChurches(true);
   const [eraFilter, setEraFilter] = useState<ChurchEra | 'all'>('all');
-  const [kindFilter, setKindFilter] = useState<'all' | 'parish_church' | 'monastery'>('all');
+  const [kindFilter, setKindFilter] = useState<'all' | 'parish_church' | 'monastery' | 'chapel'>('all');
   const [onlyRound, setOnlyRound] = useState(false);
+  const [hideModern, setHideModern] = useState(false);
+  const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Church | null>(null);
 
-  const filtered = useMemo(() => churches.filter((c) =>
-    (eraFilter === 'all' || churchEra(c) === eraFilter) &&
-    (kindFilter === 'all' || c.kind === kindFilter) &&
-    (!onlyRound || c.church_form === 'rundkyrka')
-  ), [churches, eraFilter, kindFilter, onlyRound]);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return churches.filter((c) =>
+      (eraFilter === 'all' || churchEra(c) === eraFilter) &&
+      (kindFilter === 'all' || c.kind === kindFilter) &&
+      (!onlyRound || c.church_form === 'rundkyrka') &&
+      (!hideModern || churchEra(c) !== 'efterreformatorisk') &&
+      (!q || (c.name || '').toLowerCase().includes(q) || (c.name_en || '').toLowerCase().includes(q))
+    );
+  }, [churches, eraFilter, kindFilter, onlyRound, hideModern, query]);
 
   return (
-    <div className="min-h-screen viking-bg">
+    <div className="min-h-screen viking-bg overflow-x-hidden">
       <PageMeta
         title="Kyrkor & kloster — byggnadshistoria och tidsålder"
         titleEn="Churches & monasteries — building history and period"
@@ -185,6 +212,31 @@ const Kyrkor = () => {
           </p>
         </div>
 
+        {/* Sök kyrka på namn */}
+        <div className="mb-3">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={sv ? 'Sök kyrka på namn…' : 'Search church by name…'}
+              aria-label={sv ? 'Sök kyrka på namn' : 'Search church by name'}
+              className="w-full rounded-md border border-border bg-card/60 pl-8 pr-8 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-gold"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                aria-label={sv ? 'Rensa sökning' : 'Clear search'}
+                className="absolute right-2 top-2 text-muted-foreground hover:text-foreground text-sm"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Tidsålder-zoom */}
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {sv ? 'Tidsålder:' : 'Period:'}</span>
@@ -200,7 +252,7 @@ const Kyrkor = () => {
         {/* Snabbval: typ */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <span className="text-xs text-muted-foreground flex items-center gap-1"><Landmark className="h-3.5 w-3.5" /> {sv ? 'Snabbval:' : 'Quick pick:'}</span>
-          {([['all', sv ? 'Alla' : 'All'], ['parish_church', sv ? 'Sockenkyrkor' : 'Parish churches'], ['monastery', sv ? 'Kloster' : 'Monasteries']] as const).map(([key, label]) => (
+          {([['all', sv ? 'Alla' : 'All'], ['parish_church', sv ? 'Sockenkyrkor' : 'Parish churches'], ['monastery', sv ? 'Kloster' : 'Monasteries'], ['chapel', sv ? 'Kapell' : 'Chapels']] as const).map(([key, label]) => (
             <Button key={key} variant={kindFilter === key ? 'default' : 'outline'} size="sm" onClick={() => setKindFilter(key)}>
               {label}<Badge variant="secondary" className="ml-1">{key === 'all' ? churches.length : churches.filter((c) => c.kind === key).length}</Badge>
             </Button>
@@ -212,6 +264,14 @@ const Kyrkor = () => {
             title={sv ? 'Bevarade medeltida rundkyrkor (8 i Sverige)' : "Sweden's preserved medieval round churches (8)"}
           >
             ⭕ {sv ? 'Rundkyrkor' : 'Round churches'}<Badge variant="secondary" className="ml-1">{churches.filter((c) => c.church_form === 'rundkyrka').length}</Badge>
+          </Button>
+          <Button
+            variant={hideModern ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setHideModern(v => !v)}
+            title={sv ? 'Dölj kyrkor byggda efter reformationen (1520–)' : 'Hide churches built after the Reformation (1520–)'}
+          >
+            {hideModern ? '🚫' : '👁'} {sv ? 'Dölj moderna' : 'Hide modern'}<Badge variant="secondary" className="ml-1">{churches.filter((c) => churchEra(c) === 'efterreformatorisk').length}</Badge>
           </Button>
           <span className="text-xs text-muted-foreground ml-2">{sv ? 'Visar' : 'Showing'} {filtered.length}</span>
         </div>

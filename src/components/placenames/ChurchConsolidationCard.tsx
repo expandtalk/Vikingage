@@ -19,10 +19,17 @@ export function ChurchConsolidationCard({ sv }: { sv: boolean }) {
   }, []);
   if (!rows.length) return null;
   const maxDens = Math.max(...rows.map((r: any) => r.dens));
-  const yearX = (y: number) => ((y - 1075) / (1350 - 1075)) * 100; // 1075–1350
+  // Dynamisk tidsaxel som spänner över faktiska t25/t50/t75 → inga markörer utanför boxen.
+  // (Många landskaps t50 ligger på 1800-talet: bevarad kyrka = ofta ombyggd kyrka.)
+  const years = rows.flatMap((r: any) => [r.t25, r.t50, r.t75]).filter((y: any): y is number => y != null);
+  const minY = years.length ? Math.min(...years) : 1075;
+  const maxY = years.length ? Math.max(...years) : 1350;
+  const midY = Math.round((minY + maxY) / 2);
+  const span = Math.max(1, maxY - minY);
+  const yearX = (y: number) => ((y - minY) / span) * 100;
 
   return (
-    <div className="mb-4 viking-card rounded-lg border border-border p-4">
+    <div>
       <div className="text-sm font-semibold text-foreground mb-1">{sv ? 'Kyrkoutbyggnad per landskap — täthet & tidpunkt' : 'Church-building per province — density & timing'}</div>
       <p className="text-[11px] text-muted-foreground mb-2">{sv ? 'Täthet = kyrkor per 100 km² landyta (Skåne/Öland = odlingsbygd, tätast). t50 = median byggår (linjen; band = 25–75 %). Mäter KONSOLIDERING, ej kristnandet (~950–1100).' : 'Density = churches per 100 km²; t50 = median build year.'}</p>
       <div className="space-y-1">
@@ -40,10 +47,10 @@ export function ChurchConsolidationCard({ sv }: { sv: boolean }) {
           </div>
         ))}
       </div>
-      <div className="flex justify-between text-[9px] text-muted-foreground/70 mt-0.5 ml-[calc(6rem+6rem+4rem+0.5rem)]"><span>1075</span><span>1200</span><span>1350</span></div>
+      <div className="flex justify-between text-[9px] text-muted-foreground/70 mt-0.5 ml-[calc(6rem+6rem+4rem+0.5rem)]"><span>{minY}</span><span>{midY}</span><span>{maxY}</span></div>
       <p className="text-[11px] text-muted-foreground mt-2">{sv
-        ? 'Gradient: Skåne/Öland tidigast & tätast (t50 ~1150–1200), Uppland senast (~1240) — syd→nord-kristnandet i sten. Förbehåll: täthet mot TOTAL yta (odlingsbygd skulle skärpa Skåne ytterligare); t50 vilar på daterade kyrkor (n varierar, Halland/Blekinge tunt). Gravskiftes-proxyn (kremering→skelett) går EJ att bygga — inga rit-daterade gravar i vår data.'
-        : 'Gradient: Skåne/Öland earliest & densest, Uppland latest — the south-to-north conversion in stone. Caveats: density vs total area; t50 rests on dated churches; a grave-rite proxy is not buildable (no rite-dated graves).'}</p>
+        ? 'VIKTIGT om t50: det är median byggår för de BEVARADE kyrkorna. I Skåne, Halland, Småland, Blekinge, Söder- och Östergötland hamnar t50 på 1800-talet — det speglar den stora ombyggnadsvågen (medeltidskyrkor revs och ersattes), INTE medeltida konsolidering. Jämför därför bara landskap med bevarat medeltida bestånd (Öland, Gotland, Västergötland, Uppland). Täthet mot total landyta; n = daterade kyrkor (varierar). En äkta konsolideringskurva kräver filtrering på medeltida byggår — kommande.'
+        : 'Note on t50: it is the median build year of the SURVIVING churches. In Skåne, Halland, Småland and others t50 falls in the 1800s — the great rebuilding wave, not medieval consolidation. Compare only provinces with a surviving medieval stock (Öland, Gotland, Västergötland, Uppland). A true consolidation curve needs a medieval build-year filter (to come).'}</p>
     </div>
   );
 }

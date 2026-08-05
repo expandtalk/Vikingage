@@ -4,7 +4,6 @@ import { StatsSection } from './StatsSection';
 import { FiltersStatusSection } from './FiltersStatusSection';
 import { ExplorerPanels } from './ExplorerPanels';
 import { TimelineModule } from '../modules/TimelineModule';
-import { EventTimeline } from './EventTimeline';
 import { GodCardsGrid } from '../gods/GodCardsGrid';
 import { CultSitesView } from '../gods/CultSitesView';
 import { PanelLayoutSelector } from '../panels/PanelLayoutSelector';
@@ -293,21 +292,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         <CultSitesView onNavigate={mapNavigate ? (lat, lng, zoom) => mapNavigate(lat, lng, zoom ?? 12) : undefined} />
       )}
 
-      {/* Mobile Quick Actions — Stats borttaget på mobil (Daniel); "Filters" → "Intresse".
-          Döljs i billäget (map-first). */}
-      {isMobile && !driving && (
-        <div className="flex gap-2 justify-center mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setMobileFiltersOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Intresse {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-          </Button>
-        </div>
-      )}
+      {/* Mobil "Intresse"-knappen borttagen (Daniel): filtren bor nu i "Anpassa karta"-panelen
+          (FloatingPanels) → mobilen har EN inställningsyta i st.f. flera. */}
 
       {/* Stats and Filters Status - Desktop. Visas bara vid aktiv sökning/filtrering —
           annars tar "Resultat"-rutan onödig yta i kondenserat läge (Daniel). */}
@@ -333,22 +319,6 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         </div>
       )}
 
-      {/* Mobile Drawers (Stats-lådan borttagen på mobil — Daniel) */}
-
-      <MobileDrawer
-        isOpen={mobileFiltersOpen}
-        onClose={() => setMobileFiltersOpen(false)}
-        title="Filters"
-      >
-        <FiltersStatusSection
-          activeFiltersCount={activeFiltersCount}
-          handleClearFilters={handleClearFilters}
-          searchQuery={searchQuery}
-          selectedLandscape={selectedLandscape}
-          selectedCountry={selectedCountry}
-          selectedPeriod={selectedPeriod}
-        />
-      </MobileDrawer>
 
       {/* Carver Focus Panel */}
       <ExplorerPanels
@@ -426,9 +396,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         </div>
       )}
 
-      {/* Eventlinjen: händelser kronologiskt (ej kartnålar). Klick → panorera kartan
-          till centralorten. Döljs i billäget (Daniel: events över time behöver ej visas). */}
-      {!driving && <EventTimeline selectedTimePeriod={selectedTimePeriod} mapNavigate={mapNavigate} />}
+      {/* Eventlinjen ("Events over time") borttagen på begäran (Daniel) — större karta.
+          Komponenten EventTimeline finns kvar i repo; återinför här vid behov. */}
 
     </div>
   );

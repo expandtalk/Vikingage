@@ -13,7 +13,7 @@ import { Shield, MapPin, Coins, AlertTriangle, ScrollText, ExternalLink, Landmar
 // där en massaker ca 480 e.Kr. lämnade de dödade obegravda och platsen övergiven.
 //
 // KÄLLKRITIK: alla hårda fakta nedan är belagda i vår DB (swedish_hillforts, "Sandby borg"):
-//   koordinat (16.63926,56.55253) → 56.55253/16.63926, RAÄ Sandby 45:1, Sandby sn/Borgholm,
+//   koordinat (16.63926,56.55253) → 56.55253/16.63926, RAÄ Sandby 45:1, Sandby sn/Mörbylånga,
 //   datering folkvandringstid 400–550 + massaker ca 480 (dating_basis "14C + massakerfynden",
 //   dating_confidence "belagd", dating_source "Kalmar läns museum; Victor et al. (DiVA)"),
 //   fort_function "defense", terräng (elevation ~1,16 m, rel_height −1,77 m, on_height=false,
@@ -100,7 +100,7 @@ const SandbyBorg = () => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            <Fact label="Läge">Sandby socken, Borgholms kommun, Öland</Fact>
+            <Fact label="Läge">Sandby socken, Mörbylånga kommun, Öland</Fact>
             <Fact label="Fornlämning">RAÄ Sandby 45:1</Fact>
             <Fact label="Typ">Ringborg (fornborg)</Fact>
             <Fact label="Datering">Folkvandringstid, ca 400–550 e.Kr.</Fact>

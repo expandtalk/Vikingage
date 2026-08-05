@@ -57,7 +57,7 @@ export function OlandChristianizationEpochs() {
   ];
 
   return (
-    <div className="mb-4">
+    <div>
       <div className="text-sm font-semibold text-foreground mb-1">Kristnandets långa båge på Öland (200–1400 e.Kr.)</div>
       {/* årsaxel */}
       <div className="relative h-4 mb-1">
