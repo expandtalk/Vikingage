@@ -65,18 +65,17 @@ export function OlandChristianizationEpochs() {
           <div key={t} className="absolute -translate-x-1/2 text-[10px] text-muted-foreground" style={{ left: `${x(t)}%` }}>{t}</div>
         ))}
       </div>
-      {/* epok-band */}
-      <div className="space-y-1.5">
+      {/* epok-band + not under (full bredd, ingen trunkering) */}
+      <div className="space-y-2">
         {epochs.map(e => (
-          <div key={e.label} className="relative h-8">
-            <div className="absolute inset-y-0 rounded border border-border flex items-center px-2 overflow-hidden"
-              style={{ left: `${x(e.a)}%`, width: `${x(e.b) - x(e.a)}%`, background: e.bg }}>
-              <span className="text-[11px] text-foreground whitespace-nowrap font-medium">{e.label}</span>
+          <div key={e.label}>
+            <div className="relative h-7">
+              <div className="absolute inset-y-0 rounded border border-border flex items-center px-2 overflow-hidden"
+                style={{ left: `${x(e.a)}%`, width: `${x(e.b) - x(e.a)}%`, background: e.bg }}>
+                <span className="text-[11px] text-foreground whitespace-nowrap font-medium">{e.label}</span>
+              </div>
             </div>
-            <div className="absolute inset-y-0 flex items-center text-[10px] text-muted-foreground pl-2"
-              style={{ left: `${x(e.b)}%`, maxWidth: `${100 - x(e.b)}%` }}>
-              <span className="truncate">{e.note}</span>
-            </div>
+            {e.note && <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{e.note}</p>}
           </div>
         ))}
       </div>
@@ -94,13 +93,20 @@ export function OlandChristianizationEpochs() {
           </div>
         </div>
       )}
-      {/* daterade händelse-pins */}
-      <div className="relative h-8 mt-1">
+      {/* daterade händelse-pins: positions-streck på axeln + läsbar lista under (undviker överlapp/klippning) */}
+      <div className="relative h-3 mt-1">
         {pins.map(p => (
-          <div key={p.y} className="absolute -translate-x-1/2 flex flex-col items-center" style={{ left: `${x(p.y)}%` }}>
+          <div key={p.y} className="absolute -translate-x-1/2" style={{ left: `${x(p.y)}%` }}>
             <div className="w-px h-3 bg-gold" />
-            <span className="text-[9px] text-gold whitespace-nowrap">{p.y} {p.t}</span>
           </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
+        {pins.map(p => (
+          <span key={p.y} className="inline-flex items-center gap-1.5 text-[11px] text-gold">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold shrink-0" />
+            <span><strong>{p.y}</strong> {p.t}</span>
+          </span>
         ))}
       </div>
       <p className="text-[11px] text-muted-foreground mt-1">

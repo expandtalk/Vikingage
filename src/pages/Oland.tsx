@@ -36,13 +36,16 @@ const KIND_STYLE: Record<string, { color: string; radius: number; label: string 
 const CONN_NODES: { name: string; lat: number; lng: number; note: string }[] = [
   { name: 'Kalmar', lat: 56.663, lng: 16.366, note: 'fastland — stad & slott' },
   { name: 'Revsudden', lat: 56.747, lng: 16.553, note: 'smalaste Kalmarsund — överfart' },
-  { name: 'Hossmo', lat: 56.632, lng: 16.437, note: 'fastland — tidigt center' },
+  { name: 'Hossmo', lat: 56.6372, lng: 16.2251, note: 'fastland vid Ljungbyån — Hossmo kyrka/husaby' },
   { name: 'Ottenby', lat: 56.198, lng: 16.398, note: 'Ölands sydspets — kungsgård' },
 ];
 const CONN_LINES: { name: string; coords: [number, number][] }[] = [
-  { name: 'Kalmar–Färjestaden (sund + landväg österut)', coords: [[56.663, 16.366], [56.545, 16.462], [56.60, 16.52], [56.67, 16.60]] },
+  // Sund (Kalmar→Färjestaden) + landväg österut via Gråborg — schematisk ankarlinje genom
+  // verifierade lägen (Färjestaden, Gråborg-borg, Långrälla, Bröttorp, N Möckleby). Exakt
+  // vägsträckning (väg 136/H951/H957, Borgmossen/Nötmossen) ej ritad — saknar verifierad geometri.
+  { name: 'Kalmar–Färjestaden–Gråborg–Norra Möckleby (sund + landväg)', coords: [[56.663, 16.366], [56.6517, 16.4722], [56.6664, 16.604], [56.6624, 16.6406], [56.6516, 16.6537], [56.6467, 16.6747]] },
   { name: 'Revsudden-överfarten', coords: [[56.747, 16.553], [56.752, 16.62]] },
-  { name: 'Hossmo–Karlevi', coords: [[56.632, 16.437], [56.608, 16.440]] },
+  { name: 'Hossmo–Karlevi (över sundet)', coords: [[56.6372, 16.2251], [56.608, 16.440]] },
   { name: 'Ölands norra udde → Gotland', coords: [[57.355, 17.05], [57.45, 17.55]] },
 ];
 
@@ -237,6 +240,15 @@ const Oland = () => {
           {' '}Solidi-lagret rymmer {olandSolidi.length} individuella guldmynt (SHM CC BY).
           Källor: Samnordisk runtextdatabas; RAÄ/Fornsök; Historiska museet (guldfynd); Ortnamnsregistret.
         </p>
+
+        <details className="viking-card rounded-lg border border-border mb-4 text-sm">
+          <summary className="cursor-pointer px-4 py-2 text-gold font-medium">ⓘ Om borgterritorierna — metod &amp; källkritik</summary>
+          <div className="px-4 pb-3 text-muted-foreground space-y-2">
+            <p>Territorierna är <strong>Voronoi-/Thiessen-polygoner</strong>: varje fornborg får den yta som ligger närmare den än någon annan borg — en teoretisk modell av upptagningsområden <em>före</em> socken-/skatteformen. Daterade borgar ritas fyllda (orange), odaterade streckade och blekare.</p>
+            <p><strong className="text-amber-300">Viktig källkritik:</strong> Voronoi förutsätter att borgarna är <em>samtida</em> — vilket de inte är. Detta är därför ett <strong>hypotesgenererande, schematiskt lager</strong>, inte belagda gränser. På Öland är 6 av 21 borgar daterade (folkvandringstid, försvar).</p>
+            <p>Beräkningen är numera <strong>generaliserad</strong> (<code>fort_territories</code> per region-bbox) och kan köras för andra regioner. Fastlandets borgar (73 i Småland) är dock ännu <strong>odaterade</strong> och skulle ritas som osäkra tills de daterats.</p>
+          </div>
+        </details>
 
         <Card className="viking-card mb-4">
           <CardHeader className="pb-2">
