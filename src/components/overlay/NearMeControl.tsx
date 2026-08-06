@@ -90,6 +90,9 @@ const fitFeatures = (items: { lat: number; lng: number }[]) =>
   (window as unknown as { __nearMeFitFeatures?: (p: { lat: number; lng: number }[]) => void }).__nearMeFitFeatures?.(items);
 const CONSENT_KEY = 'nearme_consent';
 const consented = () => { try { return localStorage.getItem(CONSENT_KEY) === '1'; } catch { return false; } };
+// Beständig "nekad"-flagga: när webbläsaren nekat plats ska vi INTE öppna en stor panel vid varje
+// sidladdning (Daniel: "jag ser den hela tiden i desktoppen") — visa bara en liten pill-länk.
+const DENIED_KEY = 'nearme_denied_v1';
 
 // "Near me" — var är jag & vad finns omkring. Förstagångs: stor knapp = samtyckesgest
 // → webbläsarens platsdialog. Efter godkänt (localStorage) auto-lokaliseras vid retur.
@@ -107,6 +110,9 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // Delad store → samma läge som mobil-legendens Gå/Cykla/Kör.
   const mode = useTravelMode();
   const isMobile = useIsMobile();
+  // Nekad/otillgänglig plats → liten länk i st.f. stor panel. Kvarstår mellan besök.
+  const [denied, setDenied] = useState(() => { try { return localStorage.getItem(DENIED_KEY) === '1'; } catch { return false; } });
+  const setDeniedPersist = (v: boolean) => { setDenied(v); try { if (v) localStorage.setItem(DENIED_KEY, '1'); else localStorage.removeItem(DENIED_KEY); } catch { /* noop */ } };
   // Flyttbar panel (desktop) som minns sin position mellan besök.
   const { rootRef, dragHandleProps, style: dragStyle } = useDraggable('vikingage_nearme_pos_v1');
   // Mina platser (localStorage) — ersätter fristående "Mina punkter"-kontrollen.
@@ -264,16 +270,21 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
     }
     setNearMeLocating(true);
     const ok = (p: GeolocationPosition) => {
+      setDeniedPersist(false); // plats fungerar igen → rensa nekad-flaggan
       // Spara samtycket bara om användaren kryssat "kom ihåg" — annars gäller det bara denna gång.
       if (remember) { try { localStorage.setItem(CONSENT_KEY, '1'); } catch { /* noop */ } }
       // Riktig GPS-position = "startpunkt/hem" (för "↩ Min plats" + "Kör hem").
       homePosRef.current = { lat: p.coords.latitude, lng: p.coords.longitude };
       setNearMePos(p.coords.latitude, p.coords.longitude, p.coords.accuracy);
     };
-    const fail = (err: GeolocationPositionError) => setNearMeError(
-      err.code === err.PERMISSION_DENIED ? 'Platsåtkomst nekad — tillåt plats i webbläsarinställningarna'
-      : err.code === err.POSITION_UNAVAILABLE ? 'Positionen kunde inte fastställas (ingen GPS/nätverksplats). Prova igen.'
-      : 'Tidsgränsen gick ut — försök igen.');
+    const fail = (err: GeolocationPositionError) => {
+      // Nekad → kom ihåg det, så vi inte auto-öppnar en stor panel varje gång (visa liten länk).
+      if (err.code === err.PERMISSION_DENIED) setDeniedPersist(true);
+      setNearMeError(
+        err.code === err.PERMISSION_DENIED ? 'Platsåtkomst nekad — tillåt plats i webbläsarinställningarna'
+        : err.code === err.POSITION_UNAVAILABLE ? 'Positionen kunde inte fastställas (ingen GPS/nätverksplats). Prova igen.'
+        : 'Tidsgränsen gick ut — försök igen.');
+    };
     // Hög precision först (mobil-GPS); vid annat fel än nekad → fall tillbaka till nätverksläge
     // (desktop saknar GPS → high-accuracy timeout/POSITION_UNAVAILABLE).
     const attempt = (highAcc: boolean) => navigator.geolocation.getCurrentPosition(
@@ -284,16 +295,31 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
     attempt(true);
   };
 
-  // Retur-besök: har man redan godkänt plats → auto-lokalisera + visa Near me direkt.
+  // Retur-besök: auto-lokalisera BARA om behörigheten är bekräftat 'granted' (Permissions API).
+  // Annars ('prompt'/'denied', eller API saknas) öppnar vi INGENTING — då slapp man den ständigt
+  // öppna "nekad"-panelen på desktop (Daniel). Användaren tar fram den via den lilla länken.
   const autoRan = useRef(false);
   useEffect(() => {
     if (autoRan.current) return; autoRan.current = true;
-    if (consented() && !open) { openNearMe(); locate(); }
+    if (open || !consented()) return;
+    let cancelled = false;
+    (async () => {
+      let granted = false;
+      try {
+        const perm = await (navigator as any).permissions?.query({ name: 'geolocation' as PermissionName });
+        granted = perm?.state === 'granted';
+        if (perm?.state === 'denied') setDeniedPersist(true);
+      } catch { granted = false; }
+      if (granted && !cancelled) { openNearMe(); locate(); }
+    })();
+    return () => { cancelled = true; };
   }, []); // en gång vid montering
 
   if (!open) {
-    // Förstagång = STOR, solklar knapp (gesten som utlöser platsdialogen). Retur = kompakt pill.
-    if (!consented()) {
+    // STOR CTA bara vid förstagång PÅ MOBIL (där den är den primära gesten). Desktop, återbesök och
+    // nekad plats → kompakt pill-länk (Daniel: "bara ha en länk till platsåtkomst", inte en stor
+    // ruta som ligger framme hela tiden på desktop).
+    if (!consented() && !denied && isMobile) {
       return (
         <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[1050] w-[min(92%,360px)] text-center">
           <button
