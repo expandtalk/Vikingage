@@ -230,8 +230,10 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
       }
     }
 
-    if (pts.length > 0) {
-      map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: selected ? 12 : 6 });
+    // Zooma BARA vid drill-in (vald region). Översikten behåller sitt stabila nationella läge —
+    // annars "zoomas den in" på runsten-bältet så fort man går till Härader/Socknar (Daniel).
+    if (selected && pts.length > 0) {
+      map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 12 });
     }
     setTimeout(() => map.invalidateSize(), 100);
   }, [regions, activeInscriptions, selected, onResultClick, c.finds, governance.data, forts.data, sv]);
