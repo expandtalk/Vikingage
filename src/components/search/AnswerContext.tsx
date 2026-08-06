@@ -40,74 +40,82 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   if (!data || (data.count === 0 && (data.images?.length ?? 0) === 0 && !data.page && (data.research?.length ?? 0) === 0)) return null;
 
   return (
-    <div className="border-b border-slate-800 bg-slate-900 px-4 py-3">
-      {/* Platsnod (kunskapsgraf) — överst, centrerad; klickbar till den kurerade hubben */}
+    <div className="border-b border-slate-800 bg-slate-900">
+      {/* SEKTION 1 (överst, spänner): platsnod-header — tydlig typografisk hierarki */}
       {data.page && (
-        <div className="mb-2 flex justify-center">
+        <div className="flex flex-wrap items-end justify-between gap-3 px-5 pt-4 pb-3">
+          <div className="min-w-0">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-300/70">
+              {sv ? 'Plats · kunskapsnod' : 'Place · knowledge node'}
+            </div>
+            <h2 className="truncate text-2xl font-bold leading-tight text-white">{data.page.title}</h2>
+          </div>
           <button
             onClick={() => onGo(`/sv/${data.page!.slug}`)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/50 bg-amber-500/10 px-3.5 py-1.5 text-sm font-semibold text-amber-100 hover:bg-amber-500/20"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-amber-500/50 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-100 hover:bg-amber-500/20"
           >
-            <MapPin className="h-4 w-4" /> {data.page.title}
-            <ArrowRight className="h-3.5 w-3.5 opacity-70" />
+            {sv ? 'Öppna kunskapssida' : 'Open knowledge page'} <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
 
-      {/* Karta i mitten — platsens läge (KG-nod) */}
-      {data.center && (
-        <div ref={mapEl} className="h-56 w-full overflow-hidden rounded-lg border border-slate-700 bg-slate-800" />
-      )}
-
-      {/* Under/på sidorna: relaterad forskning + runinskrifter */}
-      <div className="mt-3 grid gap-4 md:grid-cols-2">
-        {data.research?.length > 0 && (
-          <div>
-            <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
-              <GraduationCap className="h-3 w-3" /> {sv ? 'Relaterad forskning' : 'Related research'}
-            </div>
-            <ul className="space-y-1.5">
-              {data.research.map((r) => (
-                <li key={r.id} className="text-sm">
-                  <span className="text-white">{r.name}</span>
-                  {(r.role || r.affiliation) && (
-                    <span className="block text-xs text-slate-400">{[r.role, r.affiliation].filter(Boolean).join(' · ')}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
+      {/* SEKTION 2: karta (bred, mitten) + sidopanel (forskning + runstenar) till höger */}
+      <div className="grid gap-4 px-5 pb-4 lg:grid-cols-[1fr_320px]">
+        {data.center && (
+          <div ref={mapEl} className="h-64 w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 lg:h-80" />
         )}
 
-        {data.count > 0 && (
-          <div>
-            <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
-              <BookOpen className="h-3 w-3" /> {sv ? 'Runinskrifter i trakten' : 'Runic inscriptions nearby'} · {data.count}
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {data.inscriptions.slice(0, 14).map((r) => (
-                <button key={r.id} onClick={() => onGo(`/inscription/${encodeURIComponent(r.signum ?? r.label)}`)}
-                  className="rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100">
-                  {r.signum ?? r.label}
-                </button>
-              ))}
-              {data.count > 14 && (
-                <button onClick={() => onGo(`/explore?searchQuery=${encodeURIComponent(query)}`)}
-                  className="inline-flex items-center gap-1 rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-400 hover:text-amber-100">
-                  <MapPin className="h-3 w-3" /> {sv ? 'alla på kartan' : 'all on map'}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
+        <div className="min-w-0 space-y-4">
+          {data.research?.length > 0 && (
+            <section>
+              <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+                <GraduationCap className="h-3.5 w-3.5" /> {sv ? 'Relaterad forskning' : 'Related research'}
+              </h3>
+              <ul className="space-y-2">
+                {data.research.map((r) => (
+                  <li key={r.id} className="border-l-2 border-slate-700 pl-2.5">
+                    <span className="text-sm font-medium text-white">{r.name}</span>
+                    {(r.role || r.affiliation) && (
+                      <span className="block text-xs text-slate-400">{[r.role, r.affiliation].filter(Boolean).join(' · ')}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {data.count > 0 && (
+            <section>
+              <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+                <BookOpen className="h-3.5 w-3.5" /> {sv ? 'Runstenar i trakten' : 'Runestones nearby'} · {data.count}
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {data.inscriptions.slice(0, 12).map((r) => (
+                  // Vardagsnamn (label) som default; signum visas vid hover om det skiljer sig.
+                  <button key={r.id} onClick={() => onGo(`/inscription/${encodeURIComponent(r.signum ?? r.label)}`)}
+                    title={r.signum && r.signum !== r.label ? r.signum : undefined}
+                    className="rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100">
+                    {r.label}
+                  </button>
+                ))}
+                {data.count > 12 && (
+                  <button onClick={() => onGo(`/explore?searchQuery=${encodeURIComponent(query)}`)}
+                    className="inline-flex items-center gap-1 rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-400 hover:text-amber-100">
+                    <MapPin className="h-3 w-3" /> {sv ? 'alla på kartan' : 'all on map'}
+                  </button>
+                )}
+              </div>
+            </section>
+          )}
+        </div>
       </div>
 
-      {/* Bilder under */}
+      {/* SEKTION 3: bilder — horisontell remsa underst, spänner hela bredden */}
       {data.images?.length > 0 && (
-        <div className="mt-3 flex gap-2 overflow-x-auto">
-          {data.images.slice(0, 10).map((img, i) => (
+        <div className="flex gap-2 overflow-x-auto px-5 pb-4">
+          {data.images.slice(0, 12).map((img, i) => (
             <img key={i} src={img.url} alt={img.desc ?? ''} loading="lazy" title={img.desc ?? undefined}
-              className="h-20 w-28 shrink-0 rounded object-cover bg-slate-800"
+              className="h-24 w-32 shrink-0 rounded-lg object-cover bg-slate-800"
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
           ))}
         </div>
