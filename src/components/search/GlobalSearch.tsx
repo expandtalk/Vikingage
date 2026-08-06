@@ -120,6 +120,22 @@ const themeIcon = (t: DbTheme): LucideIcon => THEME_ICONS[t.slug ?? ''] ?? Spark
 // Per-typ-tak: regionsökningar ska visa ALLA borgar (Öland har 16), men inskrifter
 // klipps tidigare — där finns alltid "visa alla på kartan"-länken.
 const GROUP_CAP: Record<string, number> = { fortress: 16, parish: 12, inscription: 20 };
+
+// Etiketthygien (Daniel: "etiketter läcker databasen"). Mappa interna råvärden (osm_hamlet, other,
+// okänd) till mänskliga ord eller inget, och dölj sublabel som bara upprepar titeln.
+const SUBLABEL_MAP: Record<string, string> = {
+  osm_hamlet: 'ort', osm_city: 'stad', osm_town: 'ort', osm_village: 'by', osm_suburb: 'stadsdel',
+  osm_locality: 'plats', osm_isolated_dwelling: 'gård', other: '', okänd: '', okänt: '', unknown: '', 'övrig': '', 'övrigt': '',
+};
+const humanSub = (title: string, sub?: string | null): string | null => {
+  if (!sub) return null;
+  const cleaned = sub.split(/\s*·\s*/)
+    .map((part) => { const m = SUBLABEL_MAP[part.trim().toLowerCase()]; return m === undefined ? part.trim() : m; })
+    .filter(Boolean).join(' · ');
+  if (!cleaned) return null;
+  if (cleaned.toLowerCase() === (title || '').trim().toLowerCase()) return null; // upprepar titeln
+  return cleaned;
+};
 const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
   const groups: Group[] = [];
   const byType = new Map<string, Group>();
@@ -641,7 +657,11 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
               <Icon className="h-3 w-3" /> {sv ? g.labelSv : g.labelEn}
               <span className="text-slate-600">· {g.rows.length}</span>
             </div>
-            {g.rows.map((row) => (
+            {g.rows.map((row) => {
+              const sub = humanSub(row.title, row.subtitle);
+              const snip = stripTags(row.snippet);
+              const showSnip = snip && snip.trim().toLowerCase() !== (row.title || '').trim().toLowerCase();
+              return (
               <button
                 key={row.key}
                 onClick={() => go(row.route)}
@@ -666,12 +686,13 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-amber-100 truncate">{row.title}</span>
-                    {row.subtitle && <span className="text-xs text-slate-400 truncate">· {row.subtitle}</span>}
+                    {sub && <span className="text-xs text-slate-400 truncate">· {sub}</span>}
                   </div>
-                  {row.snippet && <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{row.snippet}</p>}
+                  {showSnip && <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{snip}</p>}
                 </div>
               </button>
-            ))}
+              );
+            })}
           </div>
         );
       })}
