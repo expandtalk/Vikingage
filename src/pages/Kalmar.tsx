@@ -208,8 +208,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   }, [enabled.ortnamn, enabled.hamn, enabled.mynt, enabled.stadsmur, places, harbor, coins, wallReady]);
 
   // Medeltida stadsmuren (fort_at-RPC, evidensklass-färgad) — samma data som /sv/kalmar-stadsmur,
-  // ritad vid ~1400 (peak medeltid). Eget lager så den inte rensas vid ortnamns-omritning.
-  const wallRef = useRef<L.LayerGroup | null>(null);
+  // ritad vid ~1400 (peak medeltid). Eget togglebart lager (wallRef deklareras i ref-blocket ovan).
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
