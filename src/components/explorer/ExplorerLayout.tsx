@@ -5,6 +5,7 @@ import { FiltersStatusSection } from './FiltersStatusSection';
 import { ExplorerPanels } from './ExplorerPanels';
 import { TimelineModule } from '../modules/TimelineModule';
 import { GodCardsGrid } from '../gods/GodCardsGrid';
+import { WindRose } from './WindRose';
 import { CultSitesView } from '../gods/CultSitesView';
 import { PanelLayoutSelector } from '../panels/PanelLayoutSelector';
 import { usePanelManager } from '@/hooks/usePanelManager';
@@ -380,6 +381,13 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
       {currentFocus === 'gods' && (
         <div className="mt-6">
           <GodCardsGrid onFocusDeity={onFocusDeity} />
+        </div>
+      )}
+
+      {/* Vindros på farleds-/marinvyerna — förhärskande vind i Kalmarsund (SMHI). */}
+      {(currentFocus === 'rivers' || currentFocus === 'marine') && (
+        <div className="mt-4">
+          <WindRose location="Kalmarsund" />
         </div>
       )}
 
