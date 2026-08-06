@@ -15,6 +15,7 @@ import { useEntityFacets } from '@/hooks/useEntityFacets';
 import { useOffTopicSenses } from '@/hooks/useOffTopicSenses';
 import { useSearchThumbs } from '@/hooks/useSearchThumbs';
 import { RelationMindmap } from './RelationMindmap';
+import { AnswerContext } from './AnswerContext';
 
 // Facett-ikoner (entity_facets.icon = strängnamn) → lucide-komponent.
 const FACET_ICON: Record<string, LucideIcon> = {
@@ -675,8 +676,9 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="flex-1 min-h-0">
-              {renderResults('h-full', true)}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <AnswerContext query={query} onGo={go} />
+              {renderResults('', true)}
             </div>
           </div>
         )}

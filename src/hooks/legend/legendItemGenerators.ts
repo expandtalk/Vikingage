@@ -391,7 +391,10 @@ export const generateBasicInscriptionItems = (
   // (ingen sifferbadge). Av som standard (=== true matchar lagrets gate).
   items.push({
     id: 'paleo_shoreline',
-    label: '🌊 Dåtida strandlinje (SGU)',
+    // Täckning = sydöstra Sverige/Östersjön (Kalmar–Öland–Mälaren, där kontrollpunkterna finns).
+    // Väst-/sydkust (Göteborg/Halland/Skåne) ej modellerad ännu → transparens i etiketten så
+    // frånvaron där läses som "ej modellerat", inte som bugg (kräver NKG2016LU, se minne).
+    label: '🌊 Dåtida strandlinje (SGU · Östersjön/sydöst)',
     color: '#3b82f6',
     count: 0,
     enabled: itemEnabled(enabledLegendItems, 'paleo_shoreline')
