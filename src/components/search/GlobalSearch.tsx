@@ -97,6 +97,12 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   theme:          { labelSv: 'Teman', labelEn: 'Themes', icon: Sparkles, route: () => '/explore' },
 };
 
+// Entitetstyper med geografiskt läge → erbjud "Visa på kartan" i svarspanelen.
+const GEO_TYPES = new Set([
+  'place', 'city', 'parish', 'landscape', 'hillfort', 'inscription', 'excursion',
+  'road', 'christian_site', 'fortress', 'shipwreck',
+]);
+
 // Ikon per tema-slug (ikoner är UI-konfig; temadatat bor i DB).
 const THEME_ICONS: Record<string, LucideIcon> = {
   faith: Cross, cult: Sparkles, death: Skull, voyage: Compass, weapons: Swords,
@@ -221,12 +227,28 @@ const KnowledgePanel: React.FC<{ hit: Hit; thumb?: string; onGo: (route: string)
         </div>
         <h3 className="text-base font-semibold text-amber-100 leading-tight">{title}</h3>
         {desc && <p className="mt-1.5 text-xs leading-relaxed text-slate-400 line-clamp-4">{desc}</p>}
-        <button
-          onClick={() => onGo(meta.route(hit))}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-amber-500/90 px-3 py-1.5 text-xs font-medium text-slate-900 hover:bg-amber-400"
-        >
-          {sv ? 'Öppna' : 'Open'} <CornerDownLeft className="h-3.5 w-3.5" />
-        </button>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            onClick={() => onGo(meta.route(hit))}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/90 px-3 py-1.5 text-xs font-medium text-slate-900 hover:bg-amber-400"
+          >
+            {sv ? 'Öppna' : 'Open'} <CornerDownLeft className="h-3.5 w-3.5" />
+          </button>
+          {GEO_TYPES.has(hit.entity_type) && (
+            <button
+              onClick={() => onGo(`/explore?searchQuery=${enc(hit.label)}`)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600 px-3 py-1.5 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
+            >
+              <MapPin className="h-3.5 w-3.5" /> {sv ? 'Visa på kartan' : 'Show on map'}
+            </button>
+          )}
+          <button
+            onClick={() => onGo('/forskare')}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600 px-3 py-1.5 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
+          >
+            <Users className="h-3.5 w-3.5" /> {sv ? 'Forskare & källor' : 'Researchers & sources'}
+          </button>
+        </div>
       </div>
       <GoFurther hit={hit} onGo={onGo} sv={sv} />
       <RelationMindmap center={hit.label} nodes={mindNodes} onGo={onGo} sv={sv} />
