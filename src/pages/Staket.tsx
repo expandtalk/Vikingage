@@ -66,7 +66,7 @@ const StaketMap: React.FC = () => {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [59.47, 17.92], zoom: 10, scrollWheelZoom: true });
-    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 });
+    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
     KIND_KEYS.forEach((k) => { groupsRef.current[k] = L.layerGroup(); });
     const pts: [number, number][] = [];
     SITES.forEach((s) => {

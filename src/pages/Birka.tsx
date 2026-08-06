@@ -44,7 +44,7 @@ const BirkaMap: React.FC = () => {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: BIRKA, zoom: 11, scrollWheelZoom: true });
-    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 });
+    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
     L.circleMarker(BIRKA, { radius: 9, color: '#b45309', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.55 })
       .bindTooltip('Birka', { permanent: true, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
       .bindPopup('<b>Birka</b><br/><span style="font-size:11px">Handelsstad på Björkö i Mälaren, ca 750–975. Sveriges första stad. UNESCO-världsarv (med Hovgården på Adelsö).</span>')

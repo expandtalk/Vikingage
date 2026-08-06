@@ -89,7 +89,7 @@ const GotaLandsvagMap: React.FC = () => {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [59.245, 17.84], zoom: 11, scrollWheelZoom: true });
-    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 });
+    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
     GL_KIND_KEYS.forEach((k) => { groupsRef.current[k] = L.layerGroup(); });
 
     // Väglinjen genom noderna → egen togglebar grupp

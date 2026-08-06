@@ -117,7 +117,9 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [56.66, 16.34], zoom: 11, scrollWheelZoom: true });
     tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 });
+    tileRef.current.addTo(map); // baskartan på direkt (default på) — undvik tomrender innan toggle-effekten
     mapRef.current = map;
+    setTimeout(() => { try { map.invalidateSize(); } catch { /* noop */ } }, 120);
     return () => { map.remove(); mapRef.current = null; };
   }, []);
 
