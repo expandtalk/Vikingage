@@ -160,10 +160,10 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
 const Vetenskapsmetodik = () => (
   <div className="min-h-screen viking-bg">
     <PageMeta
-      title="Vetenskapsmetodik — källkritik och datakvalitet"
-      titleEn="Scientific methodology — source criticism and data quality"
-      description="Hur Viking Age arbetar källkritiskt: metoden att inte släppa in dålig data (belagt eller markerat obelagt), och hur väl plattformen följer Marnie Hughes-Warringtons ramverk för historia och artificiell intelligens."
-      descriptionEn="How Viking Age works with source criticism: the method for keeping bad data out, and how the platform aligns with Marnie Hughes-Warrington's framework for history and artificial intelligence."
+      title="Vetenskapsmetodik och AI"
+      titleEn="Scientific Methodology and AI"
+      description="Vetenskapsmetodik och AI på forskningsplattformen Viking Age: metoden för att hålla dålig data ute — belagt eller markerat obelagt, källa före påstående, koordinater ur verifierad källa, konfidensgradering — och hur AI används källkritiskt i analysen, mätt mot Marnie Hughes-Warringtons ramverk för historia och artificiell intelligens."
+      descriptionEn="Scientific methodology and AI at the Viking Age research platform: how bad data is kept out — attested or flagged unattested, source before claim, verified coordinates, confidence grading — and how AI is used critically in analysis, measured against Marnie Hughes-Warrington's framework for history and AI."
       keywords="vetenskapsmetodik, källkritik, datakvalitet, historia och AI, Hughes-Warrington, artificiell intelligens, forskningsetik"
     />
     <Header />
@@ -172,7 +172,7 @@ const Vetenskapsmetodik = () => (
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-foreground mb-3 flex items-center gap-3">
           <FlaskConical className="h-8 w-8 text-gold" />
-          Vetenskapsmetodik
+          Vetenskapsmetodik och AI
         </h1>
         <p className="text-muted-foreground text-lg leading-relaxed">
           Viking Age är en forskningsplattform. Trovärdigheten är hela produkten. Därför är metoden
