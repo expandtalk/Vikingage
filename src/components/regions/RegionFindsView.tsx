@@ -9,7 +9,7 @@ import { MapPin, Search, Church, Landmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { addRunicInscriptionMarkers } from '@/hooks/map/useRunicInscriptionMarkers';
-import { useParishGovernance } from '@/hooks/useParishGovernance';
+import { useParishGovernance, useRegionForts } from '@/hooks/useParishGovernance';
 import { buildRegionGroups, type RegionGroup, type RegionMode } from './regionGrouping';
 
 const ROLE_LABEL: Record<string, string> = {
@@ -86,6 +86,8 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
 
   // Socken-styrpanel: kyrkor + stiftshistorik + ledarskap (bara i parishes-läget).
   const governance = useParishGovernance(mode === 'parishes' ? selectedName : null);
+  // Fornborgar i regionen (svar på "har inte X en borg?") — visas på kartan + i panelen.
+  const forts = useRegionForts(mode === 'parishes' ? selectedName : null);
 
   // Deep-link: /explore?focus=parishes&region=Runsten förväljer socknen/häradet.
   // (Globalsökets socken-träffar länkar hit — textsök på t.ex. "Runsten" är fel
@@ -194,6 +196,20 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
           .addTo(layerRef.current);
         pts.push([k.lat, k.lng]);
       }
+
+      // Fornborgar i regionen — mörka fyrkanter, egen stil, ingår i inzoomningen.
+      for (const f of forts.data) {
+        if (f.lat == null || f.lng == null) continue;
+        L.circleMarker([f.lat, f.lng], {
+          radius: 6, color: '#0f172a', weight: 1.5, fillColor: '#475569', fillOpacity: 0.9,
+        })
+          .bindTooltip(
+            `🛡️ ${f.name}${f.dating_basis || f.period ? ` · ${f.period ?? f.dating_basis}` : ''}${f.raa_number ? ` · ${f.raa_number}` : ''}`,
+            { direction: 'top' },
+          )
+          .addTo(layerRef.current);
+        pts.push([f.lat, f.lng]);
+      }
     } else {
       // Översikt: klustra per region → proportionell symbolkarta.
       for (const r of regions) {
@@ -214,7 +230,7 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
       map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: selected ? 12 : 6 });
     }
     setTimeout(() => map.invalidateSize(), 100);
-  }, [regions, activeInscriptions, selected, onResultClick, c.finds, governance.data, sv]);
+  }, [regions, activeInscriptions, selected, onResultClick, c.finds, governance.data, forts.data, sv]);
 
   return (
     <Card className="bg-white/10 backdrop-blur-md border-white/20">
@@ -398,6 +414,22 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
               </div>
             ) : (
               <p className="text-slate-400 text-sm">{sv ? 'Ingen data.' : 'No data.'}</p>
+            )}
+            {/* Fornborgar i regionen — svar på "har inte X en borg?" (mörka fyrkanter på kartan) */}
+            {forts.data.length > 0 && (
+              <div className="mt-4 border-t border-white/10 pt-3">
+                <div className="text-slate-300 text-xs font-semibold mb-1.5">
+                  🛡️ {sv ? 'Fornborgar i trakten' : 'Hillforts nearby'} ({forts.data.length})
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {forts.data.slice(0, 40).map((f, i) => (
+                    <span key={i} className="text-xs bg-white/5 rounded px-2 py-0.5 text-slate-200">
+                      {f.name}{f.raa_number ? <span className="text-slate-500"> · {f.raa_number}</span> : null}
+                    </span>
+                  ))}
+                  {forts.data.length > 40 && <span className="text-xs text-slate-500 self-center">+{forts.data.length - 40}</span>}
+                </div>
+              </div>
             )}
           </div>
         )}
