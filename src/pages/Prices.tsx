@@ -1,6 +1,7 @@
 import React from 'react';
 import { Header } from '@/components/Header';
 import DiocletianConverter from '@/components/DiocletianConverter';
+import { VikingSilverConverter } from '@/components/VikingSilverConverter';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Prices = () => {
@@ -9,10 +10,14 @@ const Prices = () => {
   return (
     <div className="min-h-screen viking-bg">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-6">
-        {/* Historical Context Banner */}
-        <div className="bg-slate-800/90 border border-slate-700 rounded-lg p-6 mb-6 max-w-4xl mx-auto">
+        {/* Vikingatida silvervåg — hjälten (vägd silverekonomi, källförd). */}
+        <VikingSilverConverter />
+
+        {/* Romersk tid: Diocletianus prisedikt — knyter an till våra romerska importfynd
+            (glaskärlet, Apollo Grannus, denarerna). Sekundärt, under vikinga-vågen. */}
+        <div className="bg-slate-800/90 border border-slate-700 rounded-lg p-6 my-6 max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-orange-400 mb-3">
             {language === 'sv' ? 'Diocletianus Prisförordning (301 e.Kr.)' : 'Diocletian Price Edict (301 CE)'}
           </h2>
