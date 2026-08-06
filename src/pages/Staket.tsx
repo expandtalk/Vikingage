@@ -111,7 +111,7 @@ const StaketMap: React.FC = () => {
       <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
       <div className="relative">
         <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
-        <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} />
+        <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} mapRef={mapRef} />
       </div>
       <div className="mt-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5"><span style={{ width: 12, height: 3, background: '#38bdf8', display: 'inline-block' }} /> blå yta = hav vid vald tid</span>

@@ -136,7 +136,7 @@ const GotaLandsvagMap: React.FC = () => {
       <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
       <div className="relative">
         <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
-        <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} />
+        <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} mapRef={mapRef} />
       </div>
     </div>
   );

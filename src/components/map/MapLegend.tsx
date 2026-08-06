@@ -1,22 +1,58 @@
-import React, { useState } from 'react';
-import { Layers, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Layers, ChevronDown, ChevronUp, Maximize2, Minimize2 } from 'lucide-react';
+import type L from 'leaflet';
 import type { LegendLayerDef } from '@/hooks/map/useMapLegendState';
 
 // Återanvändbar kartlegend — MONTERA på valfri kartsida (position: absolute i kart-wrappern).
-// Tänder/släcker lager. Baskartor (group='basemap') visas i egen grupp; cappen (max 2)
-// sköts av useMapLegendState. "En funktion man anropar" — samma legend överallt.
+// Tänder/släcker lager. Baskartor (group='basemap') visas i egen "Kartor (max 2)"-grupp.
+// Med `mapRef`: (1) klick på kartan öppnar legenden om den är hopfälld, (2) expandera-knapp
+// (helskärm) — samma två funktioner på ALLA kartor.
 interface Props {
   defs: LegendLayerDef[];
   enabled: Record<string, boolean>;
   onToggle: (key: string) => void;
   title?: string;
   className?: string;
+  mapRef?: React.MutableRefObject<L.Map | null>;
 }
 
-export const MapLegend: React.FC<Props> = ({ defs, enabled, onToggle, title = 'Lager', className = '' }) => {
+export const MapLegend: React.FC<Props> = ({ defs, enabled, onToggle, title = 'Lager', className = '', mapRef }) => {
   const [open, setOpen] = useState(true);
+  const [fs, setFs] = useState(false);
   const layers = defs.filter((d) => d.group !== 'basemap');
   const base = defs.filter((d) => d.group === 'basemap');
+
+  // (1) Klick på kartan (när legenden är hopfälld) → öppna legenden. Gäller alla kartor.
+  useEffect(() => {
+    if (!mapRef) return;
+    let map: L.Map | null = null;
+    let handler: (() => void) | null = null;
+    let id: number;
+    const attach = () => {
+      map = mapRef.current;
+      if (!map) { id = window.setTimeout(attach, 200); return; }
+      handler = () => setOpen(true);
+      map.on('click', handler);
+    };
+    id = window.setTimeout(attach, 0);
+    return () => { window.clearTimeout(id); if (map && handler) map.off('click', handler); };
+  }, [mapRef]);
+
+  // (2) Expandera kartan (helskärm på leaflet-containern) + invalidateSize efteråt.
+  const toggleExpand = () => {
+    const el = mapRef?.current?.getContainer?.();
+    if (!el) return;
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else el.requestFullscreen?.();
+  };
+  useEffect(() => {
+    const onFs = () => {
+      setFs(!!document.fullscreenElement);
+      window.setTimeout(() => { try { mapRef?.current?.invalidateSize?.(); } catch { /* noop */ } }, 120);
+    };
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, [mapRef]);
 
   const Item = (d: LegendLayerDef) => (
     <button
@@ -37,13 +73,21 @@ export const MapLegend: React.FC<Props> = ({ defs, enabled, onToggle, title = 'L
 
   return (
     <div className={`absolute right-2 top-2 z-[1000] w-48 rounded-lg border border-slate-700 bg-slate-900/95 shadow-xl backdrop-blur ${className}`}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300"
-      >
-        <span className="flex items-center gap-1.5"><Layers className="h-3.5 w-3.5" /> {title}</span>
-        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-      </button>
+      <div className="flex items-center justify-between px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+        <button onClick={() => setOpen((o) => !o)} className="flex flex-1 items-center gap-1.5">
+          <Layers className="h-3.5 w-3.5" /> {title}
+        </button>
+        <div className="flex items-center gap-1">
+          {mapRef && (
+            <button onClick={toggleExpand} title={fs ? 'Förminska' : 'Expandera'} className="text-slate-400 hover:text-amber-200">
+              {fs ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            </button>
+          )}
+          <button onClick={() => setOpen((o) => !o)} className="text-slate-400 hover:text-amber-200">
+            {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+        </div>
+      </div>
       {open && (
         <div className="max-h-[50vh] overflow-y-auto px-1 pb-2">
           {layers.map(Item)}

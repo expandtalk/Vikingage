@@ -18,6 +18,7 @@ import { parseCoinCoord } from '@/hooks/useCoins';
 import { supabase } from '@/integrations/supabase/client';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
+import { WindRose } from '@/components/explorer/WindRose';
 
 // Öland-modellen — forskningssida. Testar hypotesen om vikingatidens vägnät och
 // centralplatser via runstenar, fornborgar, guldfynd, Frö-namn och kyrkor. Imperativ
@@ -151,7 +152,13 @@ const OlandMap: React.FC<{
   return (
     <div>
       <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
-      <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
+      <div className="relative">
+        <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
+        {/* Förhärskande vind i Kalmarsund (SMHI) — sundet kanaliserar N–S; styr seglingsrutterna. */}
+        <div className="absolute bottom-3 left-3 z-[1000]">
+          <WindRose location="Kalmarsund" />
+        </div>
+      </div>
     </div>
   );
 };
