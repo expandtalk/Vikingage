@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, ChevronDown, Map } from 'lucide-react';
+import { X, ChevronDown, ChevronRight, Map, Check } from 'lucide-react';
 import { FilterPanel } from '../filters/FilterPanel';
 import { DraggableLegend } from '../legend/DraggableLegend';
 import { ProximityControl } from './ProximityControl';
@@ -88,6 +88,9 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
   const { language } = useLanguage();
   const sv = language === 'sv';
   const isMobile = useIsMobile();
+  // Avancerade filter (land/period/typ/status) är hopfällda som standard på mobil — man ska inte
+  // mötas av en avancerad meny direkt. Öppnas via "Fler filter". Aktiva filter puttar upp badgen.
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const travelMode = useTravelMode();
   const modeLbl = TRAVEL_MODE_LABELS[travelMode];
   // Är arts-lagret påslaget? (Sök rekursivt i legend-träden.)
@@ -150,30 +153,59 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
             onHideAll={onHideAll}
             onModeSelected={onToggleLegend}
           />
-          {/* Filtren bor nu i SAMMA panel — den separata "Intresse"-knappen är borttagen (Daniel:
-              "allt under en yta"). Ärver panelens bakgrund. */}
+          {/* Avancerade filter (land/period/typ/status) — HOPFÄLLDA som standard. Man ska förstå
+              att lager-valen ovan redan gäller; det avancerade är ett medvetet extra steg (Daniel). */}
           <div className="border-t border-slate-600/60 pt-3 mt-3">
-            <h3 className="text-white font-medium text-sm mb-2">{sv ? 'Filtrera' : 'Filter'}</h3>
-            <FilterPanel
-              selectedLandscape={selectedLandscape}
-              selectedCountry={selectedCountry}
-              selectedPeriod={selectedPeriod}
-              selectedStatus={selectedStatus}
-              selectedObjectType={selectedObjectType}
-              onLandscapeChange={onLandscapeChange}
-              onCountryChange={onCountryChange}
-              onPeriodChange={onPeriodChange}
-              onStatusChange={onStatusChange}
-              onObjectTypeChange={onObjectTypeChange}
-              onClearFilters={onClearFilters}
-              activeFiltersCount={activeFiltersCount}
-            />
+            <button
+              type="button"
+              onClick={() => setShowAdvancedFilters((v) => !v)}
+              aria-expanded={showAdvancedFilters}
+              className="flex w-full items-center justify-between text-left"
+            >
+              <span className="flex items-center gap-2 text-white font-medium text-sm">
+                {sv ? 'Fler filter' : 'More filters'}
+                {activeFiltersCount > 0 && (
+                  <Badge variant="secondary" className="text-xs bg-orange-600 text-white border-orange-500 font-bold">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </span>
+              {showAdvancedFilters ? <ChevronDown className="h-4 w-4 text-slate-400" /> : <ChevronRight className="h-4 w-4 text-slate-400" />}
+            </button>
+            {showAdvancedFilters && (
+              <div className="mt-2">
+                <FilterPanel
+                  selectedLandscape={selectedLandscape}
+                  selectedCountry={selectedCountry}
+                  selectedPeriod={selectedPeriod}
+                  selectedStatus={selectedStatus}
+                  selectedObjectType={selectedObjectType}
+                  onLandscapeChange={onLandscapeChange}
+                  onCountryChange={onCountryChange}
+                  onPeriodChange={onPeriodChange}
+                  onStatusChange={onStatusChange}
+                  onObjectTypeChange={onObjectTypeChange}
+                  onClearFilters={onClearFilters}
+                  activeFiltersCount={activeFiltersCount}
+                />
+              </div>
+            )}
           </div>
           {/* Intresseprofil SIST i modalen (Daniel): efter teckenförklaring + filter. Kondenserad
               som standard; visar aktiv profil tills man fäller ut. */}
           <div className="border-t border-slate-600/60 pt-3 mt-3">
             <h3 className="text-white font-medium text-sm mb-2">{sv ? 'Intresseprofil' : 'Interest profile'}</h3>
             <PanelLayoutSelector />
+          </div>
+          {/* Sticky "klart"-knapp: en tydlig väg tillbaka till kartan efter man justerat (Daniel:
+              "man ska förstå att det sparas"). Valen gäller redan live — knappen stänger panelen. */}
+          <div className="sticky bottom-0 -mx-4 mt-3 border-t border-slate-600/60 bg-background px-4 pt-3 pb-1">
+            <Button
+              onClick={onToggleFilters}
+              className="w-full bg-amber-600 hover:bg-amber-500 text-white font-medium flex items-center justify-center gap-2"
+            >
+              <Check className="h-4 w-4" /> {sv ? 'Visa kartan' : 'Show the map'}
+            </Button>
           </div>
         </MobileDrawer>
       )}

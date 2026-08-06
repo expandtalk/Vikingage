@@ -8,7 +8,9 @@ import { useFocusManager } from './useFocusManager';
 import { useTravelMode, type TravelMode } from './useTravelMode';
 import { useChristianSites } from './useChristianSites';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { LEGEND_DEFAULTS } from './legend/itemEnabled';
+import { LEGEND_DEFAULTS, MOBILE_DEFAULT_LAYERS } from './legend/itemEnabled';
+import { getModePreset } from './useModePresets';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { LegendPreset } from '@/types/legend';
 
 // Persistensnyckel för "Kom ihåg min vy" (localStorage). Exporterad (inte lokal till hooken)
@@ -30,6 +32,10 @@ export const useLegendManager = (
   const { currentFocus } = useFocusManager();
   const { t, language } = useLanguage();
   const travelMode = useTravelMode();
+  const isMobile = useIsMobile();
+  // Utgångsläget för kartan skiljer sig per skärm: telefon = kurerad lugn vy (runstenar/kyrkor/
+  // fornlämningar), desktop = full LEGEND_DEFAULTS. Se MOBILE_DEFAULT_LAYERS.
+  const BASE_DEFAULTS = isMobile ? MOBILE_DEFAULT_LAYERS : LEGEND_DEFAULTS;
   const [enabledLegendItems, setEnabledLegendItems] = useState<{ [key: string]: boolean }>({});
 
   // Fetch Christian sites data
@@ -68,17 +74,17 @@ export const useLegendManager = (
       setEnabledLegendItems({ ...preset });
     } else if (presetChanged && Object.keys(preset).length > 0) {
       // Explicit persona-byte (roleLayerPreset ändrades, ingen focus) → seeda personans lager
-      // ovanpå LEGEND_DEFAULTS som utgångsläge. Ren start per persona (ingen ackumulering);
-      // användaren kan sedan toggla fritt och det sparas via "Kom ihåg min vy".
-      setEnabledLegendItems({ ...LEGEND_DEFAULTS, ...preset });
+      // ovanpå baslagren som utgångsläge (kurerat på mobil, fullt på desktop). Ren start per
+      // persona (ingen ackumulering); användaren kan sedan toggla fritt och det sparas.
+      setEnabledLegendItems({ ...BASE_DEFAULTS, ...preset });
     } else if (saved && typeof saved === 'object') {
       // Sparad vy vinner rakt av (mount/omladdning, inget persona-byte).
       setEnabledLegendItems({ ...saved });
     } else {
-      // Ingen focus, ingen sparad vy, inget persona-byte: seeda EXPLICIT med LEGEND_DEFAULTS
-      // (flera kart-hooks läser rå-staten === true / !== false; tomt {} osynliggör opt-in-lager
-      // som ska vara PÅ, t.ex. heritage_grotta, och håller deras legend-kategori hopfälld).
-      setEnabledLegendItems({ ...LEGEND_DEFAULTS });
+      // Ingen focus, ingen sparad vy, inget persona-byte: seeda EXPLICIT med baslagren
+      // (mobil = kurerad lugn vy, desktop = LEGEND_DEFAULTS). Flera kart-hooks läser rå-staten
+      // === true / !== false; tomt {} osynliggör opt-in-lager och håller kategorier hopfällda.
+      setEnabledLegendItems({ ...BASE_DEFAULTS });
     }
   }, [roleLayerPreset, currentFocus]);
 
@@ -176,29 +182,34 @@ export const useLegendManager = (
     return processedItems;
   }, [inscriptions, isVikingMode, selectedTimePeriod, scopedEnabled, language]);
 
-  // Gå/Cykla-seed: när man byter IN i färdläget Gå eller Cykla tänds ALLA tematiska lager
-  // EN gång (man rör sig i landskapet → vill se allt i närheten). Sedan togglingsbart (ref-vakt,
-  // aldrig tvinga på varje render — samma princip som persona/djuptids-seedningen). Baskartorna
-  // ligger utanför denna legend (egna kontroller) så "max 1 karta" gäller automatiskt här.
-  // Seedar INTE på mount (respekterar sparad vy); bara vid faktiskt färdlägesbyte.
+  // Färdläges-seed (Gå/Cykla/Kör): ENDA källan som sätter lager vid färdlägesbyte — MapLegend.selectMode
+  // är avsiktligt "dum" (sätter bara travelMode) så det inte blir en kapplöpning mellan två mekanismer.
+  // Prioritet: (1) användarens SPARADE egna vy för läget vinner alltid; annars (2) Gå/Cykla → utgångsläge
+  // = kurerad mobil-default på telefon / allt på på desktop; (3) Kör utan preset → oförändrat.
+  // Ref-vakt: seedar bara vid FAKTISKT lägesbyte, aldrig per render, och INTE på mount (respekterar sparad vy).
   const lastTravelSeedRef = useRef<TravelMode | null>(null);
   useEffect(() => {
     if (lastTravelSeedRef.current === travelMode) return;
     const prev = lastTravelSeedRef.current;
     lastTravelSeedRef.current = travelMode;
-    if (prev === null) return; // mount → seeda inte, respektera sparad vy
-    if ((travelMode === 'foot' || travelMode === 'bike') && legendItems.length > 0) {
-      setEnabledLegendItems((prevState) => {
-        const next = { ...prevState };
+    if (prev === null) return;          // mount → seeda inte, respektera sparad vy
+    if (legendItems.length === 0) return;
+    const preset = getModePreset(travelMode);
+    setEnabledLegendItems((prevState) => {
+      if (preset) return { ...prevState, ...preset };   // sparad egen vy vinner (alla lägen)
+      if (travelMode === 'foot' || travelMode === 'bike') {
+        if (isMobile) return { ...prevState, ...MOBILE_DEFAULT_LAYERS };  // kurerad lugn vy på telefon
+        const next = { ...prevState };                                    // desktop: allt på
         const setAll = (items: typeof legendItems) => items.forEach((item) => {
           next[item.id] = true;
           if (item.children) setAll(item.children as typeof legendItems);
         });
         setAll(legendItems);
         return next;
-      });
-    }
-  }, [travelMode, legendItems]);
+      }
+      return prevState;                 // Kör utan preset: oförändrat
+    });
+  }, [travelMode, legendItems, isMobile]);
 
   // Handle legend toggle. En KATEGORI (post med barn) styr sina barn: kartlagren gate:ar
   // på barnens nycklar, så en kategori-toggle måste kaskadera — annars gömdes bara barnen

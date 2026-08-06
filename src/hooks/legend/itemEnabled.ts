@@ -104,6 +104,41 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
 };
 
 /**
+ * KURERAD MOBIL-STARTUPPSÄTTNING (Daniel 2026-08-06): på telefon ska kartan öppna lugn —
+ * bara **runstenar, kyrkor och fornlämningar** PÅ, allt annat av. "Visa allt" är ett medvetet
+ * opt-in därifrån (brandslangen var default förut → oöverskådligt på liten skärm).
+ *
+ * VIKTIGT: många lager gate:ar `!== false` (dvs PÅ om nyckeln är ODEFINIERAD). Därför räcker det
+ * INTE att bara tända de tre grupperna — varje default-på-lager måste EXPLICIT nollställas, annars
+ * läcker de igenom. Vi bygger därför en full false-karta (alla kända default-nycklar + extra
+ * gate-nycklar som renderar lager men saknas i LEGEND_DEFAULTS) och tänder sedan de kurerade.
+ */
+const MOBILE_ON: string[] = [
+  // Runstenar (svenska + utländska) — kategori-parent + barn som driver kartan
+  'cat_runic', 'runic_inscriptions', 'foreign_inscriptions',
+  // Kyrkor & kristendom
+  'cat_church', 'ecclesiastical_churches', 'early_christian_sites', 'medieval_monasteries', 'late_medieval_sites',
+  // Fornlämningar: Kulturlager-parent + representativa gravtyper/monument (bbox-laddat → lätt)
+  'heritage_sites', 'heritage_gravfalt', 'heritage_stensattning', 'heritage_ganggrift',
+  'heritage_dos', 'heritage_domarring', 'heritage_skeppssattning', 'heritage_stenkammargrav',
+  'heritage_reststen', 'heritage_hallristning',
+];
+// Extra gate-nycklar (renderar lager via `!== false` men står inte i LEGEND_DEFAULTS) — måste
+// nollställas explicit. Speglar EXTRA_GATE_KEYS i useLegendManager.handleHideAll.
+const MOBILE_EXTRA_OFF: string[] = [
+  'historical_events', 'valdemar_route', 'road_rullstensas', 'road_halvagar', 'road_vinteragar',
+  'road_landmarks', 'place_names_sacral', 'place_names_power', 'place_names_nature',
+  'religious_center', 'trading_post', 'koping', 'established_city', 'gotlandic_center', 'viking_cities',
+];
+export const MOBILE_DEFAULT_LAYERS: Record<string, boolean> = (() => {
+  const out: Record<string, boolean> = {};
+  for (const k of Object.keys(LEGEND_DEFAULTS)) out[k] = false;
+  for (const k of MOBILE_EXTRA_OFF) out[k] = false;
+  for (const k of MOBILE_ON) out[k] = true;
+  return out;
+})();
+
+/**
  * Räkna ut om ett lager är på. Explicit användarval vinner; annars default; annars AV.
  * `fallback` låter dynamiska id:n (t.ex. gruppkategorier) ange sin default inline utan
  * att behöva stå i registret.

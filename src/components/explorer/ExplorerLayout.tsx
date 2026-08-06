@@ -272,8 +272,22 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
     );
   }
 
+  // Modul-fokus som byter sidans innehåll (gudar/kultplatser/farleder/forten). Dessa föll
+  // förut igenom UTAN stäng-knapp → man kunde bli låst på mobilen (Daniel: "kunde inte stänga
+  // ner gudamodulen"). Invariant: varje modul måste ha en synlig väg tillbaka till kartan.
+  const moduleFocus = currentFocus === 'gods' || currentFocus === 'cultSites'
+    || currentFocus === 'rivers' || currentFocus === 'fortresses';
+
   return (
     <div className="max-w-7xl mx-auto space-y-3">
+      {moduleFocus && (
+        <button
+          onClick={clearFocus}
+          className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800/70 px-3 py-2 text-sm text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
+        >
+          <ArrowLeft className="h-4 w-4" /> {focusSv ? 'Stäng — tillbaka till kartan' : 'Close — back to map'}
+        </button>
+      )}
       {/* cultSites: runstenssöket är irrelevant (platserna är innehållet) —
           behåll profilväljaren men släck sök-/tidslinjemodulen (Daniel 2026-07-20). */}
       {currentFocus === 'cultSites' ? (

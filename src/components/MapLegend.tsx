@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Map, ToggleLeft, ToggleRight, ExternalLink, Save, RotateCcw } from 'lucide-react';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTravelMode, setTravelMode, TRAVEL_MODE_LABELS, type TravelMode } from '@/hooks/useTravelMode';
-import { getModePreset, saveModePreset, clearModePreset, useHasModePreset } from '@/hooks/useModePresets';
+import { saveModePreset, clearModePreset, useHasModePreset } from '@/hooks/useModePresets';
 import { LegendItemComponent } from './legend/LegendItem';
 import { LegendCategory } from './legend/LegendCategory';
 import { MapsControl } from './legend/MapsControl';
@@ -80,25 +80,12 @@ export const MapLegend: React.FC<MapLegendProps> = ({
     walk(legendItems);
     return out;
   };
-  // Applicera en sparad preset: toggla bara de lager vars läge SKILJER sig (funktionella
-  // updaters → sekventiellt). Event-drivet (vid läges-val), aldrig per render.
-  const applyPreset = (preset: Record<string, boolean>) => {
-    const walk = (items: typeof legendItems) => items.forEach((it) => {
-      if (it.type !== 'link' && it.id in preset && preset[it.id] !== !!it.enabled) onToggleItem(it.id);
-      if (it.children) walk(it.children);
-    });
-    walk(legendItems);
-  };
   const saveCurrentAsPreset = () => saveModePreset(travelMode, flattenEnabled());
+  // Dum by design: sätt bara färdläget + stäng panelen. useLegendManagers färdläges-seed
+  // sköter lagren reaktivt (sparad preset > kurerad mobil-default / allt på) — så det inte blir
+  // en kapplöpning mellan MapLegend och hooken. På mobil = kartan öppnar lugn (3 grupper), inte allt.
   const selectMode = (m: TravelMode) => {
     setTravelMode(m);
-    const preset = getModePreset(m);
-    if (preset) {
-      applyPreset(preset);      // användarens sparade egna vy för läget
-    } else if (m === 'foot' && onShowAll) {
-      onShowAll();              // inbyggd standard: Gå = alla lager PÅ
-      hideHistoricalRasters();  // …men rasterkartorna av
-    }
     onModeSelected?.();  // map-first: stäng mobilpanelen så kartan syns direkt
   };
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['religious_places', 'heritage_sites']);
