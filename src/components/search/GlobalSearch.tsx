@@ -159,7 +159,17 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
 const GoFurther: React.FC<{ hit: Hit; onGo: (route: string) => void; sv: boolean }> = ({ hit, onGo, sv }) => {
   const { data: neighbors } = useEntityNeighbors(hit.entity_id);
   const { data: facets } = useEntityFacets(hit.entity_type, hit.entity_id);
-  if (!neighbors.length && !facets.length) return null;
+  // Filtrera bort chips utan riktig etikett — "Okänd"/null ska inte bli en klickbar knapp
+  // (Daniel: "en null som blivit knapp"). Deduplicera på etikett.
+  const seen = new Set<string>();
+  const cleanNeighbors = neighbors.filter((n) => {
+    const l = (n.label ?? '').trim();
+    if (!l || ['okänd', 'unknown', 'other', 'övrig'].includes(l.toLowerCase())) return false;
+    if (seen.has(l.toLowerCase())) return false;
+    seen.add(l.toLowerCase());
+    return true;
+  });
+  if (!cleanNeighbors.length && !facets.length) return null;
   return (
     <div className="border-t border-slate-800 px-4 py-3">
       <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
@@ -181,8 +191,8 @@ const GoFurther: React.FC<{ hit: Hit; onGo: (route: string) => void; sv: boolean
             </button>
           );
         })}
-        {/* KG-grannar därefter (graph_neighborhood) */}
-        {neighbors.slice(0, 12).map((n, i) => {
+        {/* KG-grannar därefter (graph_neighborhood) — rensade från null/"Okänd" + dedupade */}
+        {cleanNeighbors.slice(0, 12).map((n, i) => {
           const Icon = n.destination.icon;
           return (
             <button
@@ -236,9 +246,13 @@ const KnowledgePanel: React.FC<{ hit: Hit; thumb?: string; onGo: (route: string)
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             onClick={() => onGo(meta.route(hit))}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/90 px-3 py-1.5 text-xs font-medium text-slate-900 hover:bg-amber-400"
+            className="inline-flex max-w-full items-center gap-1.5 truncate rounded-lg bg-amber-500/90 px-3 py-1.5 text-xs font-medium text-slate-900 hover:bg-amber-400"
           >
-            {sv ? 'Öppna' : 'Open'} <CornerDownLeft className="h-3.5 w-3.5" />
+            {/* Primärknappen namnger DESTINATIONEN, inte handlingen (Daniel: "Open säger ingenting"). */}
+            {GEO_TYPES.has(hit.entity_type)
+              ? (sv ? `Utforska ${hit.label}` : `Explore ${hit.label}`)
+              : (sv ? `Öppna ${hit.label}` : `Open ${hit.label}`)}
+            <CornerDownLeft className="h-3.5 w-3.5 shrink-0" />
           </button>
           {GEO_TYPES.has(hit.entity_type) && (
             <button
@@ -766,15 +780,18 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                   <AnswerContext query={query} onGo={go} />
                 </div>
                 <aside className="hidden min-h-0 flex-col overflow-y-auto border-l border-slate-800 lg:flex">
-                  <div className="border-b border-slate-800 p-3">
+                  {/* Kunskapspanelen (träffens egen destination) äger toppen. */}
+                  {topEntity && !theme && <KnowledgePanel hit={topEntity} thumb={thumbs[topEntity.entity_id]} onGo={go} sv={sv} />}
+                  {/* Runverktyget är ett fördjupningsverktyg, inte kopplat till träffen → sekundärt,
+                      längst ner (Daniel: "ägde primärpositionen utan att förtjäna den"). */}
+                  <div className="mt-auto border-t border-slate-800 p-3">
                     <button
                       onClick={() => go('/sv/runor')}
-                      className="flex w-full items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-100 hover:bg-amber-500/20"
+                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:border-amber-500/50 hover:text-amber-100"
                     >
-                      <Hammer className="h-4 w-4" /> {sv ? 'Öppna runverktyget' : 'Open the rune tool'}
+                      <Hammer className="h-3.5 w-3.5" /> {sv ? 'Öppna runverktyget' : 'Open the rune tool'}
                     </button>
                   </div>
-                  {topEntity && !theme && <KnowledgePanel hit={topEntity} thumb={thumbs[topEntity.entity_id]} onGo={go} sv={sv} />}
                 </aside>
               </div>
             </div>
