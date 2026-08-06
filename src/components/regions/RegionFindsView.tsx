@@ -85,7 +85,11 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
   const selectedName = selectedGroup?.name ?? null;
 
   // Socken-styrpanel: kyrkor + stiftshistorik + ledarskap (bara i parishes-läget).
-  const governance = useParishGovernance(mode === 'parishes' ? selectedName : null);
+  // Skickar gruppens landskap → disambiguerar homonyma socknar (Kalmar Uppland vs Småland).
+  const governance = useParishGovernance(
+    mode === 'parishes' ? selectedName : null,
+    mode === 'parishes' ? selectedGroup?.landscape ?? null : null,
+  );
   // Fornborgar i regionen (svar på "har inte X en borg?") — visas på kartan + i panelen.
   const forts = useRegionForts(mode === 'parishes' ? selectedName : null);
 
@@ -358,8 +362,8 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
                       {governance.data.churches.map((k, i) => (
                         <li key={i} className="bg-white/5 rounded p-2">
                           {k.image_url && (
-                            <img src={`${k.image_url}?width=240`} alt={k.name} loading="lazy"
-                              className="w-full h-24 object-cover rounded mb-1"
+                            <img src={`${k.image_url}?width=320`} alt={k.name} loading="lazy"
+                              className="w-full h-32 object-contain rounded mb-1 bg-slate-800/60"
                               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                           )}
                           <div className="text-white">{k.name}

@@ -34,7 +34,9 @@ export function useRegionForts(socken: string | null) {
   return { data };
 }
 
-export function useParishGovernance(socken: string | null) {
+// landscape disambiguerar homonyma socknar (t.ex. Kalmar Uppland vs Kalmar Småland) →
+// bara den valda gruppens landskaps-kyrkor returneras.
+export function useParishGovernance(socken: string | null, landscape?: string | null) {
   const [data, setData] = useState<ParishGovernance | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -45,14 +47,14 @@ export function useParishGovernance(socken: string | null) {
     (async () => {
       const { data: res, error } = await (supabase as unknown as {
         rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
-      }).rpc('parish_governance', { p_socken: socken });
+      }).rpc('parish_governance', { p_socken: socken, p_landscape: landscape ?? null });
       if (cancelled) return;
       setLoading(false);
       if (error || !res) { if (error) console.warn('parish_governance:', error.message); setData(null); return; }
       setData(res as ParishGovernance);
     })();
     return () => { cancelled = true; };
-  }, [socken]);
+  }, [socken, landscape]);
 
   return { data, loading };
 }
