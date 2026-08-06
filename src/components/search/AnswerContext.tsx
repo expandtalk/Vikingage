@@ -12,6 +12,20 @@ const shortCaption = (d: string): string => {
   return cut.length > 70 ? cut.slice(0, 68) + '…' : cut;
 };
 
+// Dedup bildkarusellen på bildtext (Daniel: "tre bilder heter alla Kyrkogården"). Behåll första
+// per ledtext; bilder utan text dedupas på url. Kapa långa RAÄ-texter via shortCaption.
+const dedupImages = (imgs: { url: string; desc: string | null }[]): { url: string; desc: string | null }[] => {
+  const seen = new Set<string>();
+  const out: { url: string; desc: string | null }[] = [];
+  for (const im of imgs) {
+    const key = (im.desc ? shortCaption(im.desc) : im.url).toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(im);
+  }
+  return out;
+};
+
 // Rik svars-topp: inbäddad minikarta av den sökta platsen + kopplade runinskrifter (pins)
 // + bilder. Visas överst i söksvaret; självdöljande när platsen inte har kopplat innehåll.
 export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => void }> = ({ query, onGo }) => {
@@ -166,7 +180,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           inte i ny flik. Kort bildtext under varje så man ser VAD de är. */}
       {data.images?.length > 0 && (
         <div className="flex gap-3 overflow-x-auto px-5 pb-4">
-          {data.images.slice(0, 12).map((img, i) => (
+          {dedupImages(data.images).slice(0, 12).map((img, i) => (
             <button key={i} type="button" onClick={() => setLightbox({ url: img.url, desc: img.desc })}
               title={img.desc ?? undefined} className="group block w-32 shrink-0 text-left">
               <img src={img.url} alt={img.desc ?? ''} loading="lazy"
