@@ -687,6 +687,16 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
     en: 'Museum on Djurgården, Stockholm, about the Viking Age.',
   },
   {
+    id: 'skansen-friluftsmuseum',
+    name: 'Skansen (friluftsmuseum)',
+    region: 'Djurgården, Stockholm',
+    group: 'Uppland & Mälardalen',
+    period: 'Vikingatid–nutid',
+    coords: { lat: 59.32418, lng: 18.10200 }, // Wikidata Q725108
+    sv: 'Världens äldsta friluftsmuseum, grundat 1891 av Artur Hazelius. Fyra runstenar har flyttats hit från andra socknar och står nu i museiområdet: U 871 (från Gryta), U 419 (från Norrsunda), U 72 (från Spånga) och Sö 352 (från Överjärna). Varje sten bär sin egen datering och ristartradition — Skansen är en samlingsplats, inte ursprunget. Runstenslägen enligt Wikidata (P276=Q725108).',
+    en: 'The world\'s oldest open-air museum, founded 1891 by Artur Hazelius. Four runestones were moved here from other parishes and now stand on the grounds: U 871 (from Gryta), U 419 (from Norrsunda), U 72 (from Spånga) and Sö 352 (from Överjärna). Each stone keeps its own dating and carving tradition — Skansen is a collection site, not the origin. Runestone locations per Wikidata (P276=Q725108).',
+  },
+  {
     id: 'fotevikens-museum',
     name: 'Fotevikens Museum',
     region: 'Höllviken, Vellinge, Skåne',

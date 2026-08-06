@@ -38,3 +38,24 @@ export function useOffTopicSenses(query: string) {
   });
   return { data: q.data ?? [] };
 }
+
+// Kanonisk mening av söksträngen (our_domain=true) — den betydelse VI menar. Lyfts överst
+// när ett vardagsord har flera referenter (t.ex. "Skansen" → friluftsmuseet, inte OSM-orterna).
+export function useCanonicalSense(query: string) {
+  const term = query.trim().toLowerCase();
+  const q = useQuery({
+    queryKey: ['canonical-sense', term],
+    enabled: term.length >= 2,
+    queryFn: async (): Promise<OffTopicSense | null> => {
+      const { data, error } = await sb
+        .from('entity_senses')
+        .select('sense_label_sv,sense_label_en,note_sv,note_en,destination')
+        .eq('term', term)
+        .eq('our_domain', true)
+        .order('rank', { ascending: true });
+      if (error || !Array.isArray(data) || !data.length) return null;
+      return data[0] as OffTopicSense;
+    },
+  });
+  return { data: q.data ?? null };
+}

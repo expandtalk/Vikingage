@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEntityNeighbors } from '@/hooks/useEntityNeighbors';
 import { useEntityFacets } from '@/hooks/useEntityFacets';
-import { useOffTopicSenses } from '@/hooks/useOffTopicSenses';
+import { useOffTopicSenses, useCanonicalSense } from '@/hooks/useOffTopicSenses';
 import { useSearchThumbs } from '@/hooks/useSearchThumbs';
 import { RelationMindmap } from './RelationMindmap';
 import { AnswerContext } from './AnswerContext';
@@ -264,6 +264,32 @@ const KnowledgePanel: React.FC<{ hit: Hit; thumb?: string; onGo: (route: string)
 
 // Homonym "vid sidan": off-topic betydelser av söksträngen (our_domain=false), avmarkerade.
 // Vi hävdar vår mening i träffarna; detta noterar bara "menade du X? — fokuserar vi inte på".
+// Kanonisk mening överst: när ett vardagsord har flera referenter hävdar vi vilken vi menar
+// och länkar dit (t.ex. "Skansen" → friluftsmuseet på Djurgården, inte OSM-orterna/fornborgarna).
+const CanonicalSense: React.FC<{ query: string; sv: boolean; onGo: (route: string) => void }> = ({ query, sv, onGo }) => {
+  const { data: s } = useCanonicalSense(query);
+  if (!s) return null;
+  const label = sv ? s.sense_label_sv : s.sense_label_en;
+  const note = sv ? s.note_sv : s.note_en;
+  const inner = (
+    <div className="flex items-start gap-2">
+      <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-amber-300" />
+      <div>
+        <div className="text-[11px] uppercase tracking-wide text-amber-300/80">{sv ? 'Menar du' : 'Do you mean'}</div>
+        <div className="text-sm font-medium text-amber-100">{label}</div>
+        {note && <div className="text-xs text-slate-400">{note}</div>}
+      </div>
+    </div>
+  );
+  return (
+    <div className="border-b border-slate-800 bg-amber-500/5 px-4 py-2.5">
+      {s.destination ? (
+        <button onClick={() => onGo(s.destination!)} className="w-full text-left hover:opacity-90">{inner}</button>
+      ) : inner}
+    </div>
+  );
+};
+
 const SideSenses: React.FC<{ query: string; sv: boolean }> = ({ query, sv }) => {
   const { data } = useOffTopicSenses(query);
   if (!data.length) return null;
@@ -464,6 +490,8 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     const showPanel = wide && !!topEntity && !theme;
     const list = (
     <div className={`${scrollClass} overflow-y-auto text-left`}>
+      {/* Kanonisk mening överst (t.ex. Skansen → friluftsmuseet), homonymer vid sidan under */}
+      <CanonicalSense query={query} sv={sv} onGo={go} />
       {/* Homonym vid sidan — off-topic betydelser (Tor Browser etc.), avmarkerade */}
       <SideSenses query={query} sv={sv} />
       {/* AI-svar (grounded RAG) — knapp när man skrivit en fråga, sedan källfört svar */}
