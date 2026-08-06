@@ -19,6 +19,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { WindRose } from '@/components/explorer/WindRose';
+import { MapLegend } from '@/components/map/MapLegend';
+import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 
 // Öland-modellen — forskningssida. Testar hypotesen om vikingatidens vägnät och
 // centralplatser via runstenar, fornborgar, guldfynd, Frö-namn och kyrkor. Imperativ
@@ -53,48 +55,76 @@ const CONN_LINES: { name: string; coords: [number, number][] }[] = [
 
 const sb = supabase as unknown as { rpc: (fn: string, args?: any) => any };
 
+const OL_KIND_KEYS = Object.keys(KIND_STYLE);
+// Vindskyddad farled (hypotes) genom Kalmarsund — kopplad till vindrosen: förhärskande N/S-vind
+// → man höll lä-sidan och stannade i skydd. ENDAST verifierade nodkoordinater (jfr CONN_NODES);
+// de specifika hamnarna Olsan/Snäckstrand/Saxnäs/Skallöarna ritas inte förrän koord verifierats.
+const WIND_LEE: [number, number][] = [
+  [56.663, 16.366],   // Kalmar
+  [56.6517, 16.4722], // Färjestaden
+  [56.756, 16.527],   // Stora Rör
+];
+
 const OlandMap: React.FC<{
   points: OlandPoint[];
-  showConnections: boolean;
   solidi: { lat: number; lng: number; ruler: string | null; find_place: string | null; parish: string | null }[];
-  showSolidi: boolean;
-  showTerritories: boolean;
-}> = ({ points, showConnections, solidi, showSolidi, showTerritories }) => {
+}> = ({ points, solidi }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const layerRef = useRef<L.LayerGroup | null>(null);
-  const solidiRef = useRef<L.LayerGroup | null>(null);
-  const terrRef = useRef<L.LayerGroup | null>(null);
+  const tileRef = useRef<L.TileLayer | null>(null);
+  const layerRef = useRef<L.LayerGroup>(L.layerGroup());
+  const connRef = useRef<L.LayerGroup>(L.layerGroup());
+  const windRef = useRef<L.LayerGroup>(L.layerGroup());
+  const solidiRef = useRef<L.LayerGroup>(L.layerGroup());
+  const terrRef = useRef<L.LayerGroup>(L.layerGroup());
   const terrGeoRef = useRef<any[] | null>(null);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   useShorelineOverlay(mapRef, shoreYear);
 
+  const LEGEND: LegendLayerDef[] = [
+    ...OL_KIND_KEYS.map((k) => ({ key: k, label: KIND_STYLE[k].label, color: KIND_STYLE[k].color, defaultOn: true })),
+    { key: 'connection', label: 'Förbindelser', color: '#f59e0b', defaultOn: true },
+    { key: 'windLee', label: 'Vindskyddad farled (hypotes)', color: '#0ea5e9', defaultOn: false },
+    { key: 'solidi', label: 'Solidi (guldmynt)', color: '#eab308', defaultOn: false },
+    { key: 'territory', label: 'Borgterritorier', color: '#b45309', defaultOn: false },
+    { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
+  ];
+  const { enabled, toggle } = useMapLegendState(LEGEND);
+
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [56.7, 16.55], zoom: 9, scrollWheelZoom: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
-    // Köpingsvik-hubben
+    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
+    // Köpingsvik-hubben (alltid synlig)
     L.circle([56.885, 16.727], { radius: 4000, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.08 })
       .bindPopup('<b>Köpingsvik</b><br/><span style="font-size:11px">Öns dominerande vikingatida nod — 89 av 190 runstenar inom 4 km.</span>')
       .addTo(map);
-    layerRef.current = L.layerGroup().addTo(map);
-    solidiRef.current = L.layerGroup().addTo(map);
-    terrRef.current = L.layerGroup().addTo(map);
+    layerRef.current.addTo(map); connRef.current.addTo(map); windRef.current.addTo(map);
+    solidiRef.current.addTo(map); terrRef.current.addTo(map);
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; layerRef.current = null; solidiRef.current = null; terrRef.current = null; };
+    setTimeout(() => { try { map.invalidateSize(); } catch { /* noop */ } }, 120);
+    return () => { map.remove(); mapRef.current = null; };
   }, []);
+
+  // Baskarta på/av
+  useEffect(() => {
+    const map = mapRef.current, tile = tileRef.current;
+    if (!map || !tile) return;
+    if (enabled.osm) { if (!map.hasLayer(tile)) tile.addTo(map); }
+    else if (map.hasLayer(tile)) map.removeLayer(tile);
+  }, [enabled.osm]);
 
   // Solidi-lager (547 Öland-guldmynt) — små guldpunkter, oberoende av modell-punkterna.
   useEffect(() => {
     const layer = solidiRef.current; if (!layer) return;
     layer.clearLayers();
-    if (!showSolidi) return;
+    if (!enabled.solidi) return;
     solidi.forEach((s) => {
       L.circleMarker([s.lat, s.lng], { radius: 2.5, color: '#78350f', weight: 0.5, fillColor: '#eab308', fillOpacity: 0.85 })
         .bindPopup(`<b>${s.ruler || 'Solidus'}</b><br/><span style="font-size:11px;color:#666">${s.find_place || ''}${s.parish ? ` · ${s.parish} sn` : ''}</span>`)
         .addTo(layer);
     });
-  }, [solidi, showSolidi]);
+  }, [solidi, enabled.solidi]);
 
   // Borgterritorier (Voronoi) — hämtas en gång, cacheas i ref.
   useEffect(() => {
@@ -103,7 +133,7 @@ const OlandMap: React.FC<{
     const draw = (rows: any[]) => {
       if (cancelled) return;
       layer.clearLayers();
-      if (!showTerritories) return;
+      if (!enabled.territory) return;
       for (const f of rows) {
         let geom; try { geom = JSON.parse(f.geojson); } catch { continue; }
         const style = f.dated
@@ -115,7 +145,7 @@ const OlandMap: React.FC<{
       }
     };
     if (terrGeoRef.current) { draw(terrGeoRef.current); return; }
-    if (!showTerritories) { layer.clearLayers(); return () => { cancelled = true; }; }
+    if (!enabled.territory) { layer.clearLayers(); return () => { cancelled = true; }; }
     (async () => {
       const { data } = await sb.rpc('oland_fort_territories');
       if (cancelled || !data) return;
@@ -123,13 +153,13 @@ const OlandMap: React.FC<{
       draw(data as any[]);
     })();
     return () => { cancelled = true; };
-  }, [showTerritories]);
+  }, [enabled.territory]);
 
+  // Punkter — filtrerade per lager i legenden (enabled[kind]).
   useEffect(() => {
     const layer = layerRef.current;
-    if (!layer) return;
     layer.clearLayers();
-    points.forEach((p) => {
+    points.filter((p) => enabled[p.kind]).forEach((p) => {
       const s = KIND_STYLE[p.kind] ?? { color: '#94a3b8', radius: 3, label: p.kind };
       L.circleMarker([p.lat, p.lng], {
         radius: s.radius,
@@ -141,19 +171,35 @@ const OlandMap: React.FC<{
         .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${s.label}${p.note ? ` · ${p.note}` : ''}</span>`)
         .addTo(layer);
     });
-    if (showConnections) {
-      CONN_LINES.forEach((l) => L.polyline(l.coords, { color: '#f59e0b', weight: 2, dashArray: '6 6', opacity: 0.75 })
-        .bindPopup(`<b>${l.name}</b><br/><span style="font-size:11px">Schematisk förbindelse (ej uppmätt väg)</span>`).addTo(layer));
-      CONN_NODES.forEach((n) => L.circleMarker([n.lat, n.lng], { radius: 6, color: '#f59e0b', weight: 2, fillColor: '#ffffff', fillOpacity: 0.9 })
-        .bindPopup(`<b>${n.name}</b><br/><span style="font-size:11px;color:#666">${n.note}</span>`).addTo(layer));
-    }
-  }, [points, showConnections]);
+  }, [points, enabled]);
+
+  // Förbindelser (default PÅ på Öland).
+  useEffect(() => {
+    const g = connRef.current;
+    g.clearLayers();
+    if (!enabled.connection) return;
+    CONN_LINES.forEach((l) => L.polyline(l.coords, { color: '#f59e0b', weight: 2, dashArray: '6 6', opacity: 0.75 })
+      .bindPopup(`<b>${l.name}</b><br/><span style="font-size:11px">Schematisk förbindelse (ej uppmätt väg)</span>`).addTo(g));
+    CONN_NODES.forEach((n) => L.circleMarker([n.lat, n.lng], { radius: 6, color: '#f59e0b', weight: 2, fillColor: '#ffffff', fillOpacity: 0.9 })
+      .bindPopup(`<b>${n.name}</b><br/><span style="font-size:11px;color:#666">${n.note}</span>`).addTo(g));
+  }, [enabled.connection]);
+
+  // Vindskyddad farled (hypotes) — kopplad till vindrosen.
+  useEffect(() => {
+    const g = windRef.current;
+    g.clearLayers();
+    if (!enabled.windLee) return;
+    L.polyline(WIND_LEE, { color: '#0ea5e9', weight: 3, dashArray: '2 6', opacity: 0.9 })
+      .bindPopup('<b>Vindskyddad farled (hypotes)</b><br/><span style="font-size:11px">Kopplad till vindrosen: förhärskande N/S-vind i Kalmarsund → man höll lä-sidan och stannade i skydd. Schematisk genom verifierade noder (Kalmar–Färjestaden–Stora Rör). Specifika hamnar (Olsan, Snäckstrand, Saxnäs, Skallöarna) ritas när koordinaterna verifierats.</span>')
+      .addTo(g);
+  }, [enabled.windLee]);
 
   return (
     <div>
       <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
       <div className="relative">
         <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
+        <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} mapRef={mapRef} />
         {/* Förhärskande vind i Kalmarsund (SMHI) — sundet kanaliserar N–S; styr seglingsrutterna. */}
         <div className="absolute bottom-3 left-3 z-[1000]">
           <WindRose location="Kalmarsund" />
@@ -163,41 +209,11 @@ const OlandMap: React.FC<{
   );
 };
 
-const Legend: React.FC<{ on: Record<string, boolean>; toggle: (k: string) => void }> = ({ on, toggle }) => (
-  <div className="flex flex-wrap gap-2 text-xs mb-3">
-    {Object.entries(KIND_STYLE).map(([k, s]) => {
-      const active = on[k] !== false;
-      return (
-        <button key={k} type="button" onClick={() => toggle(k)}
-          className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${active ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
-          <span style={{ width: 10, height: 10, borderRadius: 9999, background: s.color, display: 'inline-block' }} /> {s.label}
-        </button>
-      );
-    })}
-    <button type="button" onClick={() => toggle('connection')}
-      className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${on['connection'] !== false ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
-      <span style={{ width: 14, height: 0, borderTop: '2px dashed #f59e0b', display: 'inline-block' }} /> Förbindelser
-    </button>
-    <button type="button" onClick={() => toggle('solidi')}
-      className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${on['solidi'] ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
-      <span style={{ width: 10, height: 10, borderRadius: 9999, background: '#eab308', display: 'inline-block' }} /> Solidi (guldmynt)
-    </button>
-    <button type="button" onClick={() => toggle('territory')}
-      className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${on['territory'] ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
-      <span style={{ width: 12, height: 10, background: 'rgba(245,158,11,0.15)', border: '1.5px solid #b45309', display: 'inline-block' }} /> Borgterritorier
-    </button>
-    <span className="inline-flex items-center gap-1 text-muted-foreground"><span style={{ width: 10, height: 10, borderRadius: 9999, border: '2px solid #f59e0b', display: 'inline-block' }} /> Köpingsvik-hub</span>
-  </div>
-);
-
 const Oland = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
   const { data: points = [], isLoading } = useOlandModel();
   const { data: allSolidi = [] } = useSolidi();
-  const [on, setOn] = useState<Record<string, boolean>>({});
-  const toggle = (k: string) => setOn((s) => ({ ...s, [k]: s[k] === false ? true : false }));
-  const shown = points.filter((p) => on[p.kind] !== false);
   const count = (k: string) => points.filter((p) => p.kind === k).length;
   // Öland-solidi med giltig koordinat (landscape = Öland).
   const olandSolidi = React.useMemo(() => allSolidi
@@ -230,18 +246,11 @@ const Oland = () => {
           </p>
         </div>
 
-        {/* Interaktiva kartan högst upp på sidan (Daniel) */}
-        <Legend on={on} toggle={toggle} />
+        {/* Interaktiva kartan högst upp på sidan (Daniel) — legenden ligger på kartan (delad MapLegend) */}
         {isLoading ? (
           <p className="text-muted-foreground">Laddar kartan…</p>
         ) : (
-          <OlandMap
-            points={shown}
-            showConnections={on['connection'] !== false}
-            solidi={olandSolidi}
-            showSolidi={!!on['solidi']}
-            showTerritories={!!on['territory']}
-          />
+          <OlandMap points={points} solidi={olandSolidi} />
         )}
         <p className="text-xs text-muted-foreground mt-3 mb-6 opacity-80">
           {points.length} punkter: {count('runestone')} runstenar · {count('hillfort')} fornborgar · {count('church')} kyrkor · {count('find')} guld-/silverfynd · {count('fro_name')} Frö-namn.
