@@ -95,14 +95,16 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   road:           { labelSv: 'Vägar & leder', labelEn: 'Roads', icon: MapPin, route: () => '/explore' },
   shipwreck:      { labelSv: 'Skeppsvrak', labelEn: 'Shipwrecks', icon: Ship, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   scholar:        { labelSv: 'Forskning', labelEn: 'Research', icon: Users, route: () => '/forskare' },
+  place_name:     { labelSv: 'Ortnamn', labelEn: 'Place names', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  heritage_site:  { labelSv: 'Fornlämningar', labelEn: 'Ancient remains', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   excursion:      { labelSv: 'Utflykter', labelEn: 'Excursions', icon: Compass, route: (h) => h.signum ? `/excursions/${enc(h.signum)}` : '/excursions' },
   theme:          { labelSv: 'Teman', labelEn: 'Themes', icon: Sparkles, route: () => '/explore' },
 };
 
 // Entitetstyper med geografiskt läge → erbjud "Visa på kartan" i svarspanelen.
 const GEO_TYPES = new Set([
-  'place', 'city', 'parish', 'landscape', 'hillfort', 'inscription', 'excursion',
-  'road', 'christian_site', 'fortress', 'shipwreck',
+  'place', 'place_name', 'heritage_site', 'city', 'parish', 'landscape', 'hillfort',
+  'inscription', 'excursion', 'road', 'christian_site', 'fortress', 'shipwreck',
 ]);
 
 // Ikon per tema-slug (ikoner är UI-konfig; temadatat bor i DB).

@@ -288,10 +288,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
 
       {/* Gudakorten flyttade UNDER kartan i gods-fokus (Daniel: visa kartan först) — se efter LayoutContent. */}
 
-      {/* Heliga källor & kultplatser: PLATSLISTAN i fokus (Frej/Freja först), klick zoomar kartan */}
-      {currentFocus === 'cultSites' && (
-        <CultSitesView onNavigate={mapNavigate ? (lat, lng, zoom) => mapNavigate(lat, lng, zoom ?? 12) : undefined} />
-      )}
+      {/* Heliga källor & kultplatser: CultSitesView flyttad UNDER kartan (kartan först, som
+          övriga sidor) — renderas efter LayoutContent nedan. */}
 
       {/* Mobil "Intresse"-knappen borttagen (Daniel): filtren bor nu i "Anpassa karta"-panelen
           (FloatingPanels) → mobilen har EN inställningsyta i st.f. flera. */}
@@ -376,6 +374,13 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         selectedTimePeriod={selectedTimePeriod}
         onInscriptionUpdate={onInscriptionUpdate}
       />
+
+      {/* Heliga källor & kultplatser: kartan FÖRST (som övriga sidor), platslistan under. */}
+      {currentFocus === 'cultSites' && (
+        <div className="mt-6">
+          <CultSitesView onNavigate={mapNavigate ? (lat, lng, zoom) => mapNavigate(lat, lng, zoom ?? 12) : undefined} />
+        </div>
+      )}
 
       {/* Gudakorten UNDER kartan i gods-fokus (Daniel: kartan först, bilderna som fördjupning) */}
       {currentFocus === 'gods' && (
