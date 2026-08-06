@@ -494,6 +494,25 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         beacon_sites: false,
       });
       break;
+    case "marine":
+      // Marinarkeologi-vy: vrak, farleder, hamnar/noder, spärrar, strandförskjutning + Hansa.
+      // Släck landlagren så vattnet och vraken syns (samma princip som rivers-vyn).
+      Object.assign(o, {
+        maritime: true, maritime_nodes: true, ship_losses: true, shipwrecks: true,
+        fairways_modern: true, fairways_historical: true, hanseatic_cities: true,
+        stake_barriers: true, water_routes: true, valdemar_route: true,
+        paleo_shoreline: true, viking_cities: true, beacon_sites: true,
+        river_routes: false, trade_routes: false, eriksgatan: false, viking_roads: false,
+        runic_inscriptions: false, foreign_inscriptions: false, viking_fortresses: false,
+        religious_places: false, viking_regions: false, hundreds: false, parishes: false,
+        folk_groups: false, germanic_groups: false, germanic_timeline: false,
+        carvers: false, gods: false, place_names: false, battle_sites: false,
+        archaeological_sites: false, archaeological_finds: false, heritage_sites: false,
+        ecclesiastical_churches: false, early_christian_sites: false,
+        medieval_monasteries: false, late_medieval_sites: false, historical_events: false,
+        coins: false,
+      });
+      break;
     case "fortresses":
       // Ren försvarsvy: borgar + försvarskontext (vårdkasar, fort-territorier). Uttömmande
       // släck-lista — annars läcker särskilt KYRKOR & KLOSTER in (christian_sites-lagren är

@@ -28,6 +28,7 @@ import {
   Headphones,
   Cross,
   Microscope,
+  Anchor,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -141,6 +142,13 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Vad runor är, yngre och äldre futharken, hur man läser en runsten — och hela runstenskorpusen på kartan.',
     descEn: 'What runes are, the Younger and Elder Futhark, how to read a runestone — and the whole runestone corpus on the map.',
     icon: Scroll, category: 'inscriptions',
+  },
+  {
+    pathEn: '/explore?focus=marine', pathSv: '/explore?focus=marine',
+    labelSv: 'Marinarkeologi', labelEn: 'Marine archaeology',
+    descSv: 'Vrak, farleder, hamnar och strandförskjutning — sjöns kulturarv på kartan.',
+    descEn: "Wrecks, fairways, harbours and shoreline shift — the sea's heritage on the map.",
+    icon: Anchor, category: 'places',
   },
   {
     pathEn: '/excursions', pathSv: '/excursions',
