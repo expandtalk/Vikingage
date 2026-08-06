@@ -132,6 +132,15 @@ export const PLACE_NAME_ELEMENTS: PlaceNameElement[] = [
     patterns: ['sal', 'sala', 'sall'], excludes: ['salt'],
   },
   {
+    // Sjökrigsorganisation (ledung): snäcka = vikingatida krigsskepp. Snäck-namn tolkas ofta
+    // som uppläggnings-/bemanningsplatser i flottans tjänst. Omtvistat — kan även vara snäcka
+    // (snigel/skal), personnamn eller topografi. Boundary 'prefix' (Snäcksta, Snäckhamn, Snäcke).
+    key: 'snack', label: 'Snäck- (snäcka/ledung)', category: 'power', evidenceLayer: 'extended',
+    sacralConfidence: 'none', isControl: false, contested: true, boundaryRule: 'prefix',
+    etymology: 'Fornnordiska *snekkja* — ett smäckert vikingatida krigsskepp. Snäck-namn (Snäcksta, Snäckhamn, Snäckevarp) tolkas ofta som platser i ledungens/sjökrigsorganisationens tjänst (uppläggningshamn/bemanning). Omtvistat: "snäck-" kan även vara snäcka (snigel/skal), personnamn eller topografi.',
+    patterns: ['snack'], excludes: [],
+  },
+  {
     key: 'stav', label: 'Stav', category: 'sacral', evidenceLayer: 'extended',
     sacralConfidence: 'low', isControl: false, contested: true, boundaryRule: 'prefix',
     etymology: 'Stav eller stavgård — möjlig kultplats, men omtvistat.',
