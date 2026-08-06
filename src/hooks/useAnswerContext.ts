@@ -9,6 +9,8 @@ export interface AnswerCtx {
   inscriptions: { id: string; signum: string | null; label: string; lat: number; lng: number; place: string | null }[];
   images: { url: string; desc: string | null }[];
   research: { id: string; name: string; role: string | null; affiliation: string | null }[];
+  // documents-länkad litteratur (böcker om den sökta entiteten) — isbn driver "Hitta boken"-länk.
+  literature: { id: string; title: string; author: string | null; year: number | null; isbn: string | null; kind: string | null }[];
   count: number;
 }
 
@@ -19,7 +21,7 @@ export const useAnswerContext = (name?: string) =>
     queryFn: async (): Promise<AnswerCtx> => {
       const { data, error } = await (supabase as any).rpc('entity_answer_context', { p_name: name });
       if (error) throw error;
-      return (data ?? { center: null, page: null, inscriptions: [], images: [], research: [], count: 0 }) as AnswerCtx;
+      return (data ?? { center: null, page: null, inscriptions: [], images: [], research: [], literature: [], count: 0 }) as AnswerCtx;
     },
     staleTime: 5 * 60 * 1000,
   });

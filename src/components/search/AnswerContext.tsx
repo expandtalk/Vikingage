@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { MapPin, BookOpen, GraduationCap, ArrowRight } from 'lucide-react';
+import { MapPin, BookOpen, GraduationCap, ArrowRight, Library } from 'lucide-react';
 import { useAnswerContext } from '@/hooks/useAnswerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { FindBookLink } from './FindBookLink';
 
 // Rik svars-topp: inbäddad minikarta av den sökta platsen + kopplade runinskrifter (pins)
 // + bilder. Visas överst i söksvaret; självdöljande när platsen inte har kopplat innehåll.
@@ -49,7 +50,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     roRef.current = null; mapRef.current = null; layerRef.current = null;
   }, []);
 
-  if (!data || (data.count === 0 && (data.images?.length ?? 0) === 0 && !data.page && (data.research?.length ?? 0) === 0)) return null;
+  if (!data || (data.count === 0 && (data.images?.length ?? 0) === 0 && !data.page
+      && (data.research?.length ?? 0) === 0 && (data.literature?.length ?? 0) === 0)) return null;
 
   return (
     <div className="border-b border-slate-800 bg-slate-900">
@@ -114,6 +116,25 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                   </button>
                 )}
               </div>
+            </section>
+          )}
+
+          {/* Litteratur: böcker som documents-länkats till entiteten. ISBN → "Hitta boken"-länk
+              (STEG 0, ingen affiliate ännu). Skild från källor/forskning för trovärdighetens skull. */}
+          {data.literature?.length > 0 && (
+            <section>
+              <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+                <Library className="h-3.5 w-3.5" /> {sv ? 'Litteratur' : 'Literature'}
+              </h3>
+              <ul className="space-y-2">
+                {data.literature.map((b) => (
+                  <li key={b.id} className="border-l-2 border-slate-700 pl-2.5">
+                    <div className="text-sm font-medium text-white leading-snug">{b.title}</div>
+                    <div className="text-xs text-slate-400">{[b.author, b.year].filter(Boolean).join(' · ')}</div>
+                    <FindBookLink isbn={b.isbn} title={b.title} sv={sv} className="mt-0.5" />
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
         </div>
