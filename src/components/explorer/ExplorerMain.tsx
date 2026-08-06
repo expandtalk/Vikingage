@@ -245,6 +245,24 @@ export const ExplorerMain: React.FC = () => {
             mapNavigate(coords.lat, coords.lng, coords.zoom);
             return;
         }
+
+        // Priority 5: geokoda ortnamnet mot DB (place_names) → centrera rätt i st.f. att hoppa
+        //   till en godtycklig runsten (Daniel: "Härnösand visar Skanör/Falsterbo"). Async; om
+        //   ingen ort-träff → resultatens TYNGDPUNKT (ej [0], som gav den orelaterade kartan).
+        supabase.from('place_names').select('lat,lng').ilike('name', query).not('lat', 'is', null).limit(1)
+          .then(({ data }: { data: Array<{ lat: number; lng: number }> | null }) => {
+            const hit = data?.[0];
+            if (hit?.lat != null) { mapNavigate(hit.lat, hit.lng, 11); return; }
+            const pts = inscriptions
+              .map((i: any) => getEnhancedCoordinates(i, false))
+              .filter(Boolean) as CoordinatesWithZoom[];
+            if (pts.length) {
+              const la = pts.reduce((s, p) => s + p.lat, 0) / pts.length;
+              const ln = pts.reduce((s, p) => s + p.lng, 0) / pts.length;
+              mapNavigate(la, ln, 7);
+            }
+          });
+        return;
       }
 
       // Fallback to first inscription with coordinates if no direct location match
