@@ -44,6 +44,15 @@ export const useMapInstance = ({ isVikingMode }: UseMapInstanceProps) => {
 
     map.current = mapInstance;
 
+    // 4-KVADRAT-BUGGEN: kartan initieras ofta INNAN containern fått sin slutstorlek → Leaflet laddar
+    // bara ett litet tile-block (2×2) och fyller inte ytan. Måla om vid varje storleksändring
+    // (ResizeObserver) + några fördröjda försök tills layouten satt sig (Daniel: "kartan visas som
+    // 4 kvadrater; vill att den fyller hela ytan").
+    const ro = new ResizeObserver(() => { try { mapInstance.invalidateSize(); } catch { /* noop */ } });
+    ro.observe(mapContainer.current);
+    const sizeTimers = [60, 250, 600, 1200].map((d) =>
+      setTimeout(() => { try { mapInstance.invalidateSize(); } catch { /* noop */ } }, d));
+
     // Attribution: "Leaflet"-länken är frivillig → bort. OSM/CARTO/Lantmäteri-krediten
     // KVARSTÅR (licenskrav). På små skärmar kollapsas den långa kreditraden
     // ("häradsekonomiska karta …") till en liten "ⓘ Kartdata"-chip som fälls ut vid tap —
@@ -61,6 +70,8 @@ export const useMapInstance = ({ isVikingMode }: UseMapInstanceProps) => {
     }
 
     return () => {
+      try { ro.disconnect(); } catch { /* noop */ }
+      sizeTimers.forEach(clearTimeout);
       if (map.current) {
         map.current.remove();
         map.current = null;
