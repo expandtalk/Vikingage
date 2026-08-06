@@ -1,162 +1,102 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Cross, Info } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-// /sv/helgon — hubb för de nordiska/svenska helgonen. St Olof har egen sida; övriga faktarutor.
-// Hederlighet: legenduppgifter (Erikslegenden, Sigfrids dop av Skötkonung) märks som legend.
-
-interface Saint {
+// /sv/helgon — hubb för de nordiska/svenska helgonen. DATA-DRIVEN ur saints-tabellen (show_on_hub),
+// inte hårdkodat (Daniel: "undvik hårdkodat material"). Kurerade noter + kart-länkar bor i tabellen.
+// Källkritik: legenduppgifter är märkta i noterna; St Olof har egen fördjupning via map_href.
+interface HubSaint {
+  code: string;
   name: string;
-  life: string;
-  note: string;
-  year: number;        // representativt år (död/verksamhet) — BARA för sortering, ej visat
-  place?: string;      // konkret plats vi HAR i datan
-  href?: string;       // egen sida, eller djuplänk till kartan (?center=lat,lng&zoom=)
-  linkLabel?: string;  // default "Läs mer →"
+  name_en: string | null;
+  life_line: string | null;
+  note: string | null;
+  place_label: string | null;
+  map_href: string | null;
+  link_label: string | null;
+  sort_year: number | null;
 }
-const SAINTS: Saint[] = [
-  {
-    name: 'Sankt Olof (Olav den helige)',
-    life: 'Olav Haraldsson, † Stiklestad 1030',
-    year: 1030,
-    note: 'Norges kung och sjöfararnas skyddshelgon. En av Nordens starkaste kulter — kyrkor, offerkällor och pilgrimsvägar mot graven i Nidaros. Egen sida med kyrkoruin, Mälaren-seglingen och källkritik.',
-    href: '/sv/sankt-olof',
-  },
-  {
-    name: 'Sankt Erik (Erik den helige)',
-    life: 'Erik Jedvardsson, kung, † enligt traditionen 1160',
-    year: 1160,
-    note: 'Sveriges skyddshelgon. Enligt Erikslegenden (nedtecknad senare) dräpt i Uppsala; hans reliker vilar i Uppsala domkyrka. Legendens historiska kärna är omdiskuterad — märks som legend.',
-  },
-  {
-    name: 'Sankta Birgitta',
-    life: 'Birgitta Birgersdotter, ca 1303–1373',
-    year: 1373,
-    note: 'Grundare av Birgittinorden och Vadstena kloster; kanoniserad 1391. Ett av Europas skyddshelgon. Hennes uppenbarelser (Revelationes) fick vidsträckt spridning. (Folkligt "S:t Britta".)',
-    place: 'Birgittakyrkan i Kalmar (omtalad 1440-talet; vid Tullskolan/Systraströmmen, Gamla stan — approx.)',
-    href: '/explore?center=56.65972,16.34822&zoom=16',
-    linkLabel: 'Visa på kartan →',
-  },
-  {
-    name: 'Sankt Knut',
-    life: 'Knut den helige (Knut IV av Danmark), † 1086',
-    year: 1086,
-    note: 'Danmarks skyddshelgon, populär vid Östersjön. Vid Gråborg på Öland ligger ruinen av det kapell som bar hans namn — en vallfarts- och marknadsplats invid en av öns stora fornborgar.',
-    place: 'Sankt Knuts kapell vid Gråborg, Öland (ruin, 1100-tal–ca 1560)',
-    href: '/explore?center=56.66792,16.60133&zoom=14',
-    linkLabel: 'Visa på kartan →',
-  },
-  {
-    name: 'Sankt Sigfrid',
-    life: 'Missionsbiskop, 1000-tal',
-    year: 1020,
-    note: 'Knuten till Växjö och kristnandet av Småland/Värend. Enligt legenden döpte han Olof Skötkonung i Husaby — en legenduppgift, inte ett fast belägg. Växjös helgon: S:t Sigfrids sjukhus har rötter i ett helgeandshus vid domkyrkan, belagt redan 1318 (Länsstyrelsen Kronoberg).',
-    place: 'Husaby, Västergötland — dopplatsen (kungsgård & källa)',
-    href: '/explore?center=58.5667,13.2833&zoom=14',
-    linkLabel: 'Visa på kartan →',
-  },
-  {
-    name: 'Sankta Ragnhild av Tälje',
-    life: 'ca 1075 – omkring 1117',
-    year: 1117,
-    note: 'Tälje-bornas (Södertälje) skyddshelgon, vördad i katolska kyrkan. KÄLLKRITIK: historiciteten trolig men osäker — äldsta källor är från 1400-talet. Uppgifterna om att hon var drottning/gemål till Inge (den äldre respektive den yngre) är omtvistade (Lilla rimkrönikan, Prosakrönikan), och fadersuppgiften "kung Halsten" anses orimlig. Enligt traditionen grundade hon Södertälje sockenkyrka och är begraven där.',
-    place: 'Södertälje (Tälje)',
-    href: '/explore?searchQuery=S%C3%B6dert%C3%A4lje',
-    linkLabel: 'Visa på kartan →',
-  },
-  {
-    name: 'Sankta Anna',
-    life: 'Jungfru Marias mor, Jesu mormor (legendarisk)',
-    year: 1450,
-    note: 'Ett av senmedeltidens mest populära helgon — skyddshelgon för blivande mödrar och bergsmän. KÄLLKRITIK: Anna nämns inte i Bibeln; legenden kommer ur den apokryfa skriften Jakobs protoevangelium (100-tal). Vanligt motiv i altarskåp: "Anna själv-tredje" (Anna, Maria och Jesusbarnet — tre generationer). Firas 9 december. Namnet lever kvar i S:t Annas skärgård (Östergötland). Källa: Historiska museet (SHM), paraphraserad.',
-    place: 'S:t Annas skärgård, Östergötland',
-  },
-  {
-    name: 'Sankt Eskil',
-    life: 'Engelsk missionsbiskop, martyr, 1000-tal',
-    year: 1080,
-    note: 'Verkade i Södermanland; enligt traditionen stenad vid Strängnäs/Tuna. Gav namn åt Eskilstuna.',
-  },
-  {
-    name: 'Sankt David av Munktorp',
-    life: 'Missionär, 1000-/1100-tal',
-    year: 1100,
-    note: 'Knuten till kristnandet av Västmanland; vördad vid Munktorp.',
-  },
-  {
-    name: 'Sankt Botvid',
-    life: 'Svensk lekmannamissionär, † ca 1120',
-    year: 1120,
-    note: 'Sörmländsk helgonkult; gav namn åt Botkyrka. Enligt legenden dräpt av en frigiven träl.',
-  },
-  {
-    name: 'Sankta Helena (Elin) av Skövde',
-    life: '1100-tal',
-    year: 1155,
-    note: 'Västgötsk helgonkvinna, vördad i Skövde; en av få inhemska kvinnliga helgon före Birgitta.',
-  },
-];
 
-const Helgon = () => (
-  <div className="min-h-screen viking-bg">
-    <PageMeta
-      title="Helgonen i Norden — Olof, Erik, Birgitta och de andra"
-      titleEn="Saints of the North — Olav, Erik, Birgitta and the others"
-      description="Översikt över de nordiska och svenska helgonen: Sankt Olof, Sankt Erik, Sankta Birgitta, Sankt Sigfrid, Sankt Eskil m.fl. Kult, legend och plats — med källkritik som skiljer belagg från legenduppgift."
-      descriptionEn="An overview of the Nordic and Swedish saints: St Olav, St Erik, St Birgitta, St Sigfrid, St Eskil and more — cult, legend and place, with source criticism separating evidence from legend."
-      keywords="helgon, Sankt Olof, Sankt Erik, Sankta Birgitta, Sankt Sigfrid, Sankt Eskil, Botvid, helgonkult, pilgrim, medeltid"
-    />
-    <Header />
-    <Breadcrumbs />
-    <main className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
-          <Cross className="h-8 w-8 text-gold" />
-          Helgonen i Norden
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          De medeltida helgonen satte djupa spår i landskapet — kyrkor, källor, ortnamn och pilgrimsvägar.
-          Här samlas de nordiska och svenska helgonen. <strong>Sankt Olof</strong> har en egen fördjupning;
-          fler kan tillkomma. Legenduppgifter redovisas <em>som</em> legend, skilt från belagd historia.
+const Helgon = () => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+
+  const { data: saints = [] } = useQuery({
+    queryKey: ['saints-hub'],
+    queryFn: async (): Promise<HubSaint[]> => {
+      const { data, error } = await (supabase.from('saints') as any)
+        .select('code,name,name_en,life_line,note,place_label,map_href,link_label,sort_year')
+        .eq('show_on_hub', true)
+        .order('sort_year', { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as HubSaint[];
+    },
+  });
+
+  return (
+    <div className="min-h-screen viking-bg">
+      <PageMeta
+        title="Helgonen i Norden — Olof, Erik, Birgitta och de andra"
+        titleEn="Saints of the North — Olav, Erik, Birgitta and the others"
+        description="Översikt över de nordiska och svenska helgonen: Sankt Olof, Sankt Erik, Sankta Birgitta, Sankt Sigfrid, Sankt Eskil m.fl. Kult, legend och plats — med källkritik som skiljer belagg från legenduppgift."
+        descriptionEn="An overview of the Nordic and Swedish saints: St Olav, St Erik, St Birgitta, St Sigfrid, St Eskil and more — cult, legend and place, with source criticism separating evidence from legend."
+        keywords="helgon, Sankt Olof, Sankt Erik, Sankta Birgitta, Sankt Sigfrid, Sankt Eskil, Botvid, helgonkult, pilgrim, medeltid"
+      />
+      <Header />
+      <Breadcrumbs />
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-6">
+          <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
+            <Cross className="h-8 w-8 text-gold" />
+            {sv ? 'Helgonen i Norden' : 'Saints of the North'}
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            {sv
+              ? 'De medeltida helgonen satte djupa spår i landskapet — kyrkor, källor, ortnamn och pilgrimsvägar. Här samlas de nordiska och svenska helgonen. Sankt Olof har en egen fördjupning. Legenduppgifter redovisas som legend, skilt från belagd historia.'
+              : 'The medieval saints left deep marks on the landscape — churches, springs, place names and pilgrim routes. St Olav has his own page. Legendary material is marked as legend, separate from attested history.'}
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {saints.map((s) => (
+            <Card key={s.code} className="viking-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base text-gold">{sv ? s.name : (s.name_en || s.name)}</CardTitle>
+                {s.life_line && <p className="text-xs text-muted-foreground">{s.life_line}</p>}
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground space-y-2">
+                {s.note && <p className="text-xs leading-relaxed">{s.note}</p>}
+                {s.place_label && <p className="text-[11px] text-gold/80">📍 {s.place_label}</p>}
+                {s.map_href && (
+                  <Link to={s.map_href} className="text-gold hover:underline text-xs font-medium inline-block focus-visible:ring-2 focus-visible:ring-gold rounded">
+                    {s.link_label ?? (sv ? 'Läs mer →' : 'Read more →')}
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <p className="text-xs text-muted-foreground mt-6 opacity-75 flex items-start gap-2">
+          <Info className="h-4 w-4 shrink-0 mt-0.5" />
+          <span>
+            {sv
+              ? 'Faktauppgifter bygger på etablerad helgonforskning; legendmaterial (Erikslegenden, Sigfrids dop av Olof Skötkonung, Botvids död) redovisas som legend. Kung Olof Skötkonung är inte helgonet Olav — de hålls isär. Innehållet kommer ur saints-databasen.'
+              : 'Facts rest on established hagiographic scholarship; legendary material is marked as legend. King Olof Skötkonung is not St Olav — kept apart. Content is served from the saints database.'}
+          </span>
         </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        {[...SAINTS].sort((a, b) => a.year - b.year).map((s) => (
-          <Card key={s.name} className="viking-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base text-gold">{s.name}</CardTitle>
-              <p className="text-xs text-muted-foreground">{s.life}</p>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground space-y-2">
-              <p className="text-xs leading-relaxed">{s.note}</p>
-              {s.place && <p className="text-[11px] text-gold/80">📍 {s.place}</p>}
-              {s.href && (
-                <Link to={s.href} className="text-gold hover:underline text-xs font-medium inline-block">
-                  {s.linkLabel ?? 'Läs mer →'}
-                </Link>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <p className="text-xs text-muted-foreground mt-6 opacity-75 flex items-start gap-2">
-        <Info className="h-4 w-4 shrink-0 mt-0.5" />
-        <span>
-          Faktauppgifter bygger på etablerad helgonforskning; legendmaterial (Erikslegenden, Sigfrids dop av
-          Olof Skötkonung, Botvids död) redovisas som legend. Kung <strong>Olof Skötkonung</strong> är inte
-          helgonet Olav — de hålls isär.
-        </span>
-      </p>
-    </main>
-    <Footer />
-  </div>
-);
+      </main>
+      <Footer />
+    </div>
+  );
+};
 
 export default Helgon;
