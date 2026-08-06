@@ -221,6 +221,13 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Microscope, category: 'science',
   },
   {
+    pathEn: '/researchers', pathSv: '/forskare',
+    labelSv: 'Forskare', labelEn: 'Researchers',
+    descSv: 'Forskare och källor bakom materialet — runologer, arkeologer och historiker med deras verk.',
+    descEn: 'The researchers and sources behind the material — runologists, archaeologists and historians with their works.',
+    icon: BookOpen, category: 'science',
+  },
+  {
     pathEn: '/statistics', pathSv: '/sv/statistik',
     labelSv: 'Statistik', labelEn: 'Statistics',
     descSv: 'Bläddra materialet — antal per landskap, socken, härad och ristare.',
