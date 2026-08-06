@@ -538,7 +538,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         const Icon = g.icon;
         return (
           <div key={g.type} className="py-1">
-            <div className="flex items-center gap-1.5 px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            <div className="flex items-center gap-1.5 px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
               <Icon className="h-3 w-3" /> {sv ? g.labelSv : g.labelEn}
               <span className="text-slate-600">· {g.rows.length}</span>
             </div>
@@ -569,7 +569,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                     <span className="font-medium text-amber-100 truncate">{row.title}</span>
                     {row.subtitle && <span className="text-xs text-slate-400 truncate">· {row.subtitle}</span>}
                   </div>
-                  {row.snippet && <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{row.snippet}</p>}
+                  {row.snippet && <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{row.snippet}</p>}
                 </div>
               </button>
             ))}
@@ -626,26 +626,55 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
           />
           {loading && <Loader2 className="h-4 w-4 animate-spin text-amber-500 shrink-0" />}
         </div>
-        {heroActive && (
+        {heroActive && hasResults && (
+          // Helskärms-overlay: hela skärmen, EN solid mörk bakgrund (ingen blå sida bakom
+          // träffarna) → konsekvent och WCAG-läsbart. Egen sökrad + stäng-knapp överst.
+          <div className="fixed inset-0 z-[80] bg-slate-900 flex flex-col">
+            <div className="shrink-0 border-b border-slate-700 px-4 py-3 flex items-center gap-3">
+              <Search className="h-5 w-5 text-amber-400 shrink-0" />
+              <input
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); if (e.target.value) setTheme(null); }}
+                autoFocus
+                aria-label={sv ? 'Sök' : 'Search'}
+                placeholder={sv
+                  ? 'Sök allt — runsten, ort, socken, gud, kung, mynt…'
+                  : 'Search everything — runestone, place, parish, god, king, coin…'}
+                className="flex-1 min-w-0 bg-transparent text-base text-white placeholder-slate-500 outline-none"
+              />
+              {loading && <Loader2 className="h-4 w-4 animate-spin text-amber-400 shrink-0" />}
+              <button
+                type="button"
+                onClick={() => setHeroActive(false)}
+                aria-label={sv ? 'Stäng sökning' : 'Close search'}
+                className="rounded-full p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 shrink-0"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0">
+              {renderResults('h-full', true)}
+            </div>
+          </div>
+        )}
+        {heroActive && !hasResults && (
           <div className="absolute left-0 right-0 z-[60] mt-2 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden">
-            {hasResults ? renderResults('max-h-[76vh]', true) : (
-              <div className="p-3">
-                <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                  {sv ? 'Förslag' : 'Suggestions'}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {(sv ? SUGGESTIONS_SV : SUGGESTIONS_EN).map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => { setTheme(null); setQuery(s); inputRef.current?.focus(); }}
-                      className="rounded-full border border-slate-600 px-3 py-1 text-sm text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
+            <div className="p-3">
+              <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                {sv ? 'Förslag' : 'Suggestions'}
               </div>
-            )}
+              <div className="flex flex-wrap gap-2">
+                {(sv ? SUGGESTIONS_SV : SUGGESTIONS_EN).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => { setTheme(null); setQuery(s); inputRef.current?.focus(); }}
+                    className="rounded-full border border-slate-600 px-3 py-1 text-sm text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
