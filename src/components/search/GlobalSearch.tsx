@@ -495,10 +495,22 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     }
   }, [query, sv]);
 
+  // Auto-summary: i fullskärmsläget körs grounded RAG automatiskt (debounce) så en kort
+  // sammanfattning visas ÖVERST innan träfflistan ("AI brukar ha summary innan resultatet").
+  // Cachas i qa_cache → billigt; körs bara en gång per söksträng.
+  const lastAskedRef = useRef<string>('');
+  useEffect(() => {
+    if (!heroActive || theme) return;
+    const q = query.trim();
+    if (q.length < 4 || q === lastAskedRef.current) return;
+    const id = setTimeout(() => { lastAskedRef.current = q; askAI(); }, 900);
+    return () => clearTimeout(id);
+  }, [query, heroActive, theme, askAI]);
+
   // Delad träfflista — samma innehåll i hero-dropdownen och i dialogen.
   // scrollClass styr höjden per yta: hero använder nästan hela skärmen, dialogen håller sig lägre.
   // wide=true (bara hero) → tvåkolumn: träfflista + kunskapspanel till höger.
-  const renderResults = (scrollClass: string, wide = false) => {
+  const renderResults = (scrollClass: string, wide = false, hideAi = false) => {
     const showPanel = wide && !!topEntity && !theme;
     const list = (
     <div className={`${scrollClass} overflow-y-auto text-left`}>
@@ -506,8 +518,9 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
       <CanonicalSense query={query} sv={sv} onGo={go} />
       {/* Homonym vid sidan — off-topic betydelser (Tor Browser etc.), avmarkerade */}
       <SideSenses query={query} sv={sv} />
-      {/* AI-svar (grounded RAG) — knapp när man skrivit en fråga, sedan källfört svar */}
-      {!theme && query.trim().length >= 3 && (
+      {/* AI-svar (grounded RAG) — knapp när man skrivit en fråga, sedan källfört svar.
+          I 3-kolumns-overlägget (hideAi) bor summaryn i toppbaren i stället. */}
+      {!hideAi && !theme && query.trim().length >= 3 && (
         <div className="border-b border-slate-800 px-4 py-3">
           {!aiAnswer && !aiLoading && (
             <button
@@ -720,9 +733,46 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              <AnswerContext query={query} onGo={go} />
-              {renderResults('', true)}
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              {/* AI-summary auto ÖVERST (spänner alla kolumner) — sammanfattning före resultatet */}
+              {!theme && query.trim().length >= 3 && (aiLoading || aiAnswer) && (
+                <div className="shrink-0 max-h-[36vh] overflow-y-auto border-b border-slate-800 bg-slate-900 px-4 py-3">
+                  {aiLoading && !aiAnswer && (
+                    <div className="flex items-center gap-2 text-sm text-slate-400">
+                      <Loader2 className="h-4 w-4 animate-spin text-amber-400" />{sv ? 'AI läser källorna…' : 'AI reading the sources…'}
+                    </div>
+                  )}
+                  {aiAnswer && (
+                    <div className="text-sm text-slate-200">
+                      <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+                        <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
+                      </div>
+                      <p className="whitespace-pre-wrap leading-relaxed text-[15px] text-slate-100">{aiAnswer}</p>
+                      <p className="mt-1 text-[10px] text-slate-500">{sv ? 'AI-genererat ur källorna — verifiera via träffarna.' : 'AI-generated from the sources — verify via the results.'}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* 3 kolumner: träfflista (söksvar) · karta (platsnod) · verktyg */}
+              <div className="flex-1 min-h-0 grid overflow-hidden lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)_248px]">
+                <div className="min-h-0 overflow-y-auto lg:border-r lg:border-slate-800">
+                  {renderResults('', false, true)}
+                </div>
+                <div className="min-h-0 overflow-y-auto">
+                  <AnswerContext query={query} onGo={go} />
+                </div>
+                <aside className="hidden min-h-0 flex-col overflow-y-auto border-l border-slate-800 lg:flex">
+                  <div className="border-b border-slate-800 p-3">
+                    <button
+                      onClick={() => go('/sv/runor')}
+                      className="flex w-full items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-100 hover:bg-amber-500/20"
+                    >
+                      <Hammer className="h-4 w-4" /> {sv ? 'Öppna runverktyget' : 'Open the rune tool'}
+                    </button>
+                  </div>
+                  {topEntity && !theme && <KnowledgePanel hit={topEntity} thumb={thumbs[topEntity.entity_id]} onGo={go} sv={sv} />}
+                </aside>
+              </div>
             </div>
           </div>
         )}
