@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, AlertTriangle, FlaskConical, Info, Compass, Download, ExternalLink } from 'lucide-react';
 import { useCentralPlaces, type CentralPlaceName, type CentralPlaceGroup } from '@/hooks/useCentralPlaces';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
+import { MapLegend } from '@/components/map/MapLegend';
+import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { useReliefOverlay } from '@/hooks/useReliefOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,23 +55,40 @@ const NameRow: React.FC<{ n: CentralPlaceName }> = ({ n }) => {
 // de inlagda positionerna direkt, i stället för att skickas till hela /explore.
 const CAT_MARKER: Record<string, string> = { sacral: '#c084fc', power: '#3b82f6' };
 
-const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean> }> = ({ groups, on }) => {
+const ANG_LEGEND: LegendLayerDef[] = [
+  { key: 'central', label: 'Centralort', color: '#f59e0b', defaultOn: true },
+  { key: 'power', label: 'Makt', color: '#3b82f6', defaultOn: true },
+  { key: 'sacral', label: 'Sakralt', color: '#c084fc', defaultOn: true },
+  { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap', defaultOn: true },
+];
+
+const AngMap: React.FC<{ groups: CentralPlaceGroup[] }> = ({ groups }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const tileRef = useRef<L.TileLayer | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   const [relief, setRelief] = useState(false);
   useShorelineOverlay(mapRef, shoreYear);
   useReliefOverlay(mapRef, relief);
+  const { enabled, toggle } = useMapLegendState(ANG_LEGEND);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [62.95, 17.7], zoom: 9, scrollWheelZoom: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
+    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 });
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; layerRef.current = null; };
   }, []);
+
+  // Baskarta på/av
+  useEffect(() => {
+    const map = mapRef.current, tile = tileRef.current;
+    if (!map || !tile) return;
+    if (enabled.osm) { if (!map.hasLayer(tile)) tile.addTo(map); }
+    else if (map.hasLayer(tile)) map.removeLayer(tile);
+  }, [enabled.osm]);
 
   useEffect(() => {
     const layer = layerRef.current;
@@ -80,7 +99,7 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
     const nameLabels: { m: L.CircleMarker; name: string }[] = [];
     const LABEL_ZOOM = 11; // enskilda kluster-namn tänds vid inzoom (annars för rörigt i överblick)
     groups.forEach((g) => {
-      if (on['central'] !== false && g.lat != null && g.lng != null) {
+      if (enabled.central && g.lat != null && g.lng != null) {
         pts.push([g.lat, g.lng]);
         // Centralorten har ALLTID sitt namn synligt (klustrets huvud).
         L.circleMarker([g.lat, g.lng], { radius: 8, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.25 })
@@ -89,7 +108,9 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
       }
       g.names.forEach((n) => {
         if (n.lat == null || n.lng == null) return;
-        if (on[n.category ?? ''] === false) return;
+        const cat = n.category ?? '';
+        // Bara power/sacral är togglebara; övriga kategorier visas alltid (som tidigare).
+        if ((cat === 'power' || cat === 'sacral') && enabled[cat] === false) return;
         pts.push([n.lat, n.lng]);
         const color = CAT_MARKER[n.category ?? ''] ?? '#94a3b8';
         const core = n.evidence_tier === 'core';
@@ -110,13 +131,16 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
     map.on('zoomend', applyLabels);
     if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [24, 24] });
     return () => { map.off('zoomend', applyLabels); };
-  }, [groups, on]);
+  }, [groups, enabled]);
 
   return (
     <div>
       <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
       <label className="inline-flex items-center gap-1.5 text-xs text-emerald-300 cursor-pointer mb-2"><input type="checkbox" checked={relief} onChange={(e) => setRelief(e.target.checked)} /> Höjdrelief (terräng — Höga kustens strandvallar)</label>
-      <div ref={containerRef} className="w-full h-[480px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 480 }} />
+      <div className="relative">
+        <div ref={containerRef} className="w-full h-[480px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 480 }} />
+        <MapLegend defs={ANG_LEGEND} enabled={enabled} onToggle={toggle} />
+      </div>
     </div>
   );
 };
@@ -124,9 +148,6 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[]; on: Record<string, boolean
 const Angermanland = () => {
   const { data: groups = [], isLoading } = useCentralPlaces();
   const totalNames = groups.reduce((s, g) => s + g.names.length, 0);
-  const [on, setOn] = useState<Record<string, boolean>>({});
-  const toggle = (k: string) => setOn((s) => ({ ...s, [k]: s[k] === false ? true : false }));
-  const TOGGLES: [string, string, string][] = [['central', 'Centralort', '#f59e0b'], ['power', 'Makt', '#3b82f6'], ['sacral', 'Sakralt', '#c084fc']];
   // Sambandsstyrka (config-driven, beräknad av ledparsern) — visas MED förbehåll, aldrig naken.
   const [enrich, setEnrich] = useState<Record<string, number | string | null> | null>(null);
   useEffect(() => {
@@ -226,18 +247,7 @@ const Angermanland = () => {
               <CardTitle className="text-base flex items-center gap-2 text-gold"><MapPin className="h-5 w-5" /> Kartan över klustret</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-2 text-xs mb-3">
-                {TOGGLES.map(([k, label, color]) => {
-                  const active = on[k] !== false;
-                  return (
-                    <button key={k} type="button" onClick={() => toggle(k)}
-                      className={`inline-flex items-center gap-1 rounded border px-2 py-1 transition-colors ${active ? 'border-slate-500 text-foreground' : 'border-slate-700 text-muted-foreground opacity-50'}`}>
-                      <span style={{ width: 10, height: 10, borderRadius: 9999, background: color, display: 'inline-block' }} /> {label}
-                    </button>
-                  );
-                })}
-              </div>
-              <AngMap groups={groups} on={on} />
+              <AngMap groups={groups} />
               <p className="text-xs text-muted-foreground mt-2 opacity-75"><strong>Data:</strong> <code>central_places</code> + <code>central_place_names</code> (Agneta Nyholms forskning, SWEREF99 TM → WGS84; verifierad mot Länsstyrelsen/RAÄ <em>Y 24</em>). <strong>Färg</strong> = kategori (lila = sakralt, blått = makt, guld = centralort). <strong>Fylld ring</strong> = kärna (starkast belägg), tunn = utvidgad hypotes. Klicka en punkt för källa, tolkning + belägg-år.</p>
             </CardContent>
           </Card>

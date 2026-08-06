@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Waves, Anchor, Crown, ScrollText, Info, AlertTriangle, MapPin, Ship } from 'lucide-react';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
+import { MapLegend } from '@/components/map/MapLegend';
+import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 
 // /sv/staket — forskningssida om Mälaren som havsvik ~1000 e.Kr. och frågan om var Olav
 // Haraldssons seglats 1007–08 ägde rum (Almarestäket kontra Norrström/Stockholm).
@@ -44,41 +46,74 @@ const KIND: Record<Site['kind'], { color: string; label: string }> = {
   city: { color: '#94a3b8', label: 'Senare stad' },
 };
 
+const KIND_KEYS = Object.keys(KIND) as Site['kind'][];
+
 const StaketMap: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const tileRef = useRef<L.TileLayer | null>(null);
+  const groupsRef = useRef<Record<string, L.LayerGroup>>({});
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', MALAREN_BBOX);
+
+  // Återanvändbar legend: en togglebar grupp per platstyp + baskarta.
+  const LEGEND: LegendLayerDef[] = [
+    ...KIND_KEYS.map((k) => ({ key: k, label: KIND[k].label, color: KIND[k].color, defaultOn: true })),
+    { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
+  ];
+  const { enabled, toggle } = useMapLegendState(LEGEND);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [59.47, 17.92], zoom: 10, scrollWheelZoom: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
-    const layer = L.layerGroup().addTo(map);
+    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 });
+    KIND_KEYS.forEach((k) => { groupsRef.current[k] = L.layerGroup(); });
+    const pts: [number, number][] = [];
     SITES.forEach((s) => {
       const c = KIND[s.kind].color;
       const royal = s.kind === 'royal';
+      pts.push([s.lat, s.lng]);
       L.circleMarker([s.lat, s.lng], {
         radius: royal ? 8 : 6, color: c, weight: 2, fillColor: c, fillOpacity: royal ? 0.5 : 0.65,
       })
         .bindTooltip(s.name, { permanent: royal, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
         .bindPopup(`<b>${s.name}</b><br/><span style="font-size:11px">${s.note}</span>${s.todayM != null ? `<br/><span style="font-size:10px;color:#888">höjd idag ${s.todayM} m ö.h.</span>` : ''}`)
-        .addTo(layer);
+        .addTo(groupsRef.current[s.kind]);
     });
     mapRef.current = map;
+    // Inzoomad på noderna (fitBounds) i st.f. en fast utzoomad vy.
+    if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [40, 40], maxZoom: 12 });
     return () => { map.remove(); mapRef.current = null; };
   }, []);
+
+  // Baskarta på/av
+  useEffect(() => {
+    const map = mapRef.current, tile = tileRef.current;
+    if (!map || !tile) return;
+    if (enabled.osm) { if (!map.hasLayer(tile)) tile.addTo(map); }
+    else if (map.hasLayer(tile)) map.removeLayer(tile);
+  }, [enabled.osm]);
+
+  // Togglar per platstyp enligt legenden
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    KIND_KEYS.forEach((k) => {
+      const g = groupsRef.current[k];
+      if (!g) return;
+      if (enabled[k]) { if (!map.hasLayer(g)) map.addLayer(g); }
+      else if (map.hasLayer(g)) map.removeLayer(g);
+    });
+  }, [enabled]);
 
   return (
     <div>
       <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
-      <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
-      <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-        {Object.values(KIND).map((k) => (
-          <span key={k.label} className="inline-flex items-center gap-1.5">
-            <span style={{ width: 10, height: 10, borderRadius: 9999, background: k.color, display: 'inline-block' }} /> {k.label}
-          </span>
-        ))}
+      <div className="relative">
+        <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
+        <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} />
+      </div>
+      <div className="mt-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5"><span style={{ width: 12, height: 3, background: '#38bdf8', display: 'inline-block' }} /> blå yta = hav vid vald tid</span>
       </div>
     </div>

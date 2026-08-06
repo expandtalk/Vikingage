@@ -10,6 +10,8 @@ import { Route as RouteIcon, ScrollText, Info, AlertTriangle, MapPin, Footprints
 import { Link } from 'react-router-dom';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
+import { MapLegend } from '@/components/map/MapLegend';
+import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -65,29 +67,42 @@ const KIND: Record<Kind, { color: string; label: string }> = {
   church: { color: '#7b3f00', label: 'Medeltidskyrka' },
 };
 
+const GL_KIND_KEYS = Object.keys(KIND) as Kind[];
+
 const GotaLandsvagMap: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const tileRef = useRef<L.TileLayer | null>(null);
+  const groupsRef = useRef<Record<string, L.LayerGroup>>({});
+  const roadRef = useRef<L.LayerGroup>(L.layerGroup());
   const [shoreYear, setShoreYear] = useState<number | null>(null);
   useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', CORRIDOR_BBOX);
+
+  // Återanvändbar legend: väglinje + en togglebar grupp per nodtyp + baskarta.
+  const LEGEND: LegendLayerDef[] = [
+    { key: 'road', label: 'Göta landsväg (~31,9 km)', color: '#d4a63c', defaultOn: true },
+    ...GL_KIND_KEYS.map((k) => ({ key: k, label: KIND[k].label, color: KIND[k].color, defaultOn: true })),
+    { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
+  ];
+  const { enabled, toggle } = useMapLegendState(LEGEND);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [59.245, 17.84], zoom: 11, scrollWheelZoom: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
-    const layer = L.layerGroup().addTo(map);
+    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 });
+    GL_KIND_KEYS.forEach((k) => { groupsRef.current[k] = L.layerGroup(); });
 
-    // Väglinjen genom noderna
+    // Väglinjen genom noderna → egen togglebar grupp
     L.polyline(NODES.map((n) => [n.lat, n.lng] as [number, number]), {
       color: '#d4a63c', weight: 3, opacity: 0.85, dashArray: '6 6',
-    }).addTo(layer);
+    }).addTo(roadRef.current);
 
     NODES.forEach((n) => {
       const c = KIND[n.kind].color;
       L.circleMarker([n.lat, n.lng], { radius: 6, color: c, weight: 2, fillColor: c, fillOpacity: 0.7 })
         .bindTooltip(n.name, { direction: 'top', offset: [0, -8], className: 'ang-clabel' })
         .bindPopup(`<b>${n.name}</b><br/><span style="font-size:11px">${n.note}</span>`)
-        .addTo(layer);
+        .addTo(groupsRef.current[n.kind]);
     });
 
     map.fitBounds(L.latLngBounds(NODES.map((n) => [n.lat, n.lng] as [number, number])), { padding: [30, 30] });
@@ -95,17 +110,33 @@ const GotaLandsvagMap: React.FC = () => {
     return () => { map.remove(); mapRef.current = null; };
   }, []);
 
+  // Baskarta på/av
+  useEffect(() => {
+    const map = mapRef.current, tile = tileRef.current;
+    if (!map || !tile) return;
+    if (enabled.osm) { if (!map.hasLayer(tile)) tile.addTo(map); }
+    else if (map.hasLayer(tile)) map.removeLayer(tile);
+  }, [enabled.osm]);
+
+  // Togglar vägen + nodtyperna enligt legenden
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const toggleG = (on: boolean, g: L.LayerGroup | null) => {
+      if (!g) return;
+      if (on) { if (!map.hasLayer(g)) map.addLayer(g); }
+      else if (map.hasLayer(g)) map.removeLayer(g);
+    };
+    toggleG(enabled.road, roadRef.current);
+    GL_KIND_KEYS.forEach((k) => toggleG(enabled[k], groupsRef.current[k]));
+  }, [enabled]);
+
   return (
     <div>
       <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
-      <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
-      <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-        {Object.values(KIND).map((k) => (
-          <span key={k.label} className="inline-flex items-center gap-1.5">
-            <span style={{ width: 10, height: 10, borderRadius: 9999, background: k.color, display: 'inline-block' }} /> {k.label}
-          </span>
-        ))}
-        <span className="inline-flex items-center gap-1.5"><span style={{ width: 16, height: 3, background: '#d4a63c', display: 'inline-block' }} /> Göta landsväg (~31,9 km)</span>
+      <div className="relative">
+        <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
+        <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} />
       </div>
     </div>
   );
