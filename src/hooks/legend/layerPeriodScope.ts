@@ -10,6 +10,10 @@
 // när användaren går tillbaka till vikingatid återställs alla lager-val.
 
 const FULL_PERIODS = new Set([
+  // 'all' = alla perioder → INGEN period-maskning. Klassades tidigare felaktigt som djuptid
+  // (isEarlyPeriod('all')=true) → maskade bort eriksgatan + maritima lager och tände i stället
+  // megaliter/mynt → symptomen "Eriksgata försvann" + "flera andra objekt visas".
+  'all',
   'vendel_period', 'viking_age',
   'medieval', 'vasa_greatpower', 'century_18', 'century_19', 'century_20', 'modern',
 ]);

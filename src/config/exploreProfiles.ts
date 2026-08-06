@@ -320,8 +320,8 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
     icon: "anchor",
     basemap: "terrain",
     layers: on(
-      // Nya marinarkeologi-lagren (useMapMaritimeLayers)
-      "maritime", "maritime_nodes", "ship_losses", "fairways_modern", "fairways_historical", "hanseatic_cities",
+      // Marinarkeologi: maritima lager (useMapMaritimeLayers) + skeppsvrak (useMapShipwrecks)
+      "maritime", "maritime_nodes", "ship_losses", "shipwrecks", "fairways_modern", "fairways_historical", "hanseatic_cities",
       // Befintliga relevanta lager
       "valdemar_route", "water_routes", "river_routes", "paleo_shoreline", "viking_cities", "beacon_sites",
     ),
