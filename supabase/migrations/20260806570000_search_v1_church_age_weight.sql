@@ -1,0 +1,4 @@
+-- (Mellansteg, ersatt av 20260806580000) Relevansvikt i search_v1: modern frikyrka nära noll,
+-- kurerad medeltida kyrka boost. Se den slutliga åldersgradienten i nästa migration.
+-- Applicerad i prod via MCP (denna fil = repo-spegling). 2026-08-06.
+-- NOTE: superseded by search_v1_church_age_gradient; behållen för migrationshistorik.
