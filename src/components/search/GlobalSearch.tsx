@@ -99,6 +99,7 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   place_name:     { labelSv: 'Ortnamn', labelEn: 'Place names', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   heritage_site:  { labelSv: 'Fornlämningar', labelEn: 'Ancient remains', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   excursion:      { labelSv: 'Utflykter', labelEn: 'Excursions', icon: Compass, route: (h) => h.signum ? `/excursions/${enc(h.signum)}` : '/excursions' },
+  museum_object:  { labelSv: 'Föremål', labelEn: 'Objects', icon: Hammer, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   theme:          { labelSv: 'Teman', labelEn: 'Themes', icon: Sparkles, route: () => '/explore' },
 };
 
