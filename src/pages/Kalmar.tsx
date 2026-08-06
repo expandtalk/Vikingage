@@ -13,6 +13,8 @@ import { MapPin, AlertTriangle, FlaskConical, Info, Compass, Anchor, ScrollText,
 import { supabase } from '@/integrations/supabase/client';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
+import { MapLegend } from '@/components/map/MapLegend';
+import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 
 // /sv/kalmar — forskningshubb för det tidiga/medeltida Kalmar i Möre. Binder ihop:
 //  - Ortnamnsforskningen kring Hossmo (husaby-nukleusen, SOL 2003, kalmar_place_names)
@@ -89,28 +91,51 @@ const precMeta = (p: string | null) => PRECISION_META[p ?? ''] ?? { color: '#94a
 const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: Coin[]; canEdit: boolean; onMove: (id: string, lat: number, lng: number) => void }> = ({ places, harbor, coins, canEdit, onMove }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const layerRef = useRef<L.LayerGroup | null>(null);
+  const tileRef = useRef<L.TileLayer | null>(null);
+  const placesG = useRef<L.LayerGroup>(L.layerGroup());
+  const harborG = useRef<L.LayerGroup>(L.layerGroup());
+  const coinsG = useRef<L.LayerGroup>(L.layerGroup());
+  const wallRef = useRef<L.LayerGroup | null>(null);
+  const [wallReady, setWallReady] = useState(false);
   const fittedRef = useRef(false);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   // Kalmar använder den finupplösta DEM-modellen (Copernicus GLO-30 + paleo_rsl),
   // inte SGU:s grova/statiska raster. Bbox regionavgränsar så Mälaren-lagret inte dras hit.
   useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', [16.18, 56.55, 16.46, 56.72]);
 
+  // Återanvändbar legend: tematiska lager + baskarta. Cap/seed sköts av useMapLegendState.
+  const LEGEND: LegendLayerDef[] = [
+    { key: 'ortnamn', label: 'Ortnamn', color: '#a78bfa', defaultOn: true },
+    { key: 'hamn', label: 'Hamn (Kättilen)', color: '#38bdf8', defaultOn: true },
+    { key: 'mynt', label: 'Myntfynd', color: '#f4c430', defaultOn: true },
+    { key: 'stadsmur', label: 'Stadsmur (~1400)', color: '#22c55e', defaultOn: true },
+    { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap', defaultOn: true },
+  ];
+  const { enabled, toggle } = useMapLegendState(LEGEND);
+
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [56.66, 16.34], zoom: 11, scrollWheelZoom: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
-    layerRef.current = L.layerGroup().addTo(map);
+    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 });
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; layerRef.current = null; };
+    return () => { map.remove(); mapRef.current = null; };
   }, []);
 
+  // Baskarta (OSM) på/av via legenden.
   useEffect(() => {
-    const layer = layerRef.current, map = mapRef.current;
-    if (!layer || !map) return;
-    layer.clearLayers();
+    const map = mapRef.current, tile = tileRef.current;
+    if (!map || !tile) return;
+    if (enabled.osm) { if (!map.hasLayer(tile)) tile.addTo(map); }
+    else if (map.hasLayer(tile)) map.removeLayer(tile);
+  }, [enabled.osm]);
+
+  // Bygg lager-innehållet i EGNA grupper (togglas separat av legenden) + fit en gång.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
     const pts: [number, number][] = [];
 
+    placesG.current.clearLayers();
     places.filter((p) => p.lat != null && p.lng != null && Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng))).forEach((p) => {
       const husaby = p.category === 'husaby';
       const pm = precMeta(p.coord_precision);
@@ -129,7 +154,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
             const ll = (ev.target as L.Marker).getLatLng();
             onMove(p.id, +ll.lat.toFixed(6), +ll.lng.toFixed(6));
           })
-          .addTo(layer);
+          .addTo(placesG.current);
       } else {
         L.circleMarker([p.lat!, p.lng!], {
           radius: husaby ? 9 : 6, color, weight: 2, fillColor: color,
@@ -138,30 +163,49 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
         })
           .bindTooltip(p.name, { permanent: husaby, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
           .bindPopup(popupHtml)
-          .addTo(layer);
+          .addTo(placesG.current);
       }
     });
 
+    harborG.current.clearLayers();
     if (harbor && harbor.lat != null && harbor.lng != null && Number.isFinite(Number(harbor.lat)) && Number.isFinite(Number(harbor.lng))) {
       pts.push([harbor.lat, harbor.lng]);
       L.circleMarker([harbor.lat, harbor.lng], { radius: 7, color: '#38bdf8', weight: 2, fillColor: '#38bdf8', fillOpacity: 0.5 })
         .bindTooltip(harbor.name, { direction: 'top', offset: [0, -8] })
         .bindPopup(`<b>${harbor.name}</b><br/><span style="font-size:11px">${harbor.harbor_type ?? ''}</span>${harbor.description ? `<br/><span style="font-size:11px;color:#666">${harbor.description}</span>` : ''}`)
-        .addTo(layer);
+        .addTo(harborG.current);
     }
 
+    coinsG.current.clearLayers();
     coins.map((c) => ({ c, pt: parsePoint(c.coordinates) })).filter((x) => x.pt).forEach(({ c, pt }) => {
       const color = METAL_COLOR[(c.metal ?? '').toLowerCase()] ?? '#e5e7eb';
       const cy = pt!.y, cx = pt!.x;
       pts.push([cy, cx]);
       L.circleMarker([cy, cx], { radius: 6, color, weight: 2, fillColor: color, fillOpacity: 0.7 })
         .bindPopup(`<b>${c.name}</b><br/><span style="font-size:11px;color:#666">${c.find_place ?? ''}</span>${c.significance ? `<br/><span style="font-size:11px">${c.significance}</span>` : ''}`)
-        .addTo(layer);
+        .addTo(coinsG.current);
     });
 
     // Fit bara första gången — annars hoppar kartan vid varje sparad flytt.
     if (pts.length && !fittedRef.current) { map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 12 }); fittedRef.current = true; }
   }, [places, harbor, coins, canEdit, onMove]);
+
+  // Toggla lager-grupperna enligt legenden (ortnamn/hamn/mynt/stadsmur).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const pairs: [boolean, L.LayerGroup | null][] = [
+      [enabled.ortnamn, placesG.current],
+      [enabled.hamn, harborG.current],
+      [enabled.mynt, coinsG.current],
+      [enabled.stadsmur, wallRef.current],
+    ];
+    for (const [on, g] of pairs) {
+      if (!g) continue;
+      if (on) { if (!map.hasLayer(g)) map.addLayer(g); }
+      else if (map.hasLayer(g)) map.removeLayer(g);
+    }
+  }, [enabled.ortnamn, enabled.hamn, enabled.mynt, enabled.stadsmur, places, harbor, coins, wallReady]);
 
   // Medeltida stadsmuren (fort_at-RPC, evidensklass-färgad) — samma data som /sv/kalmar-stadsmur,
   // ritad vid ~1400 (peak medeltid). Eget lager så den inte rensas vid ortnamns-omritning.
@@ -189,8 +233,8 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
           pointToLayer: (_ft, ll) => L.circleMarker(ll, { radius: 5, color: '#1c1917', weight: 1, fillColor: ev.color, fillOpacity: opacity }),
         }).bindPopup(`<b>${p.name ?? 'Stadsmur'}</b> <span style="font-size:10px;color:#888">medeltida stadsmur (~1400)</span>${p.span ? `<br/><span style="font-size:11px;color:#666">${p.span}</span>` : ''}`).addTo(grp);
       }
-      grp.addTo(map);
       wallRef.current = grp;
+      setWallReady((v) => !v); // trigga toggle-effekten så muren läggs på enligt legenden
     })();
     return () => { cancelled = true; };
   }, []);
@@ -198,7 +242,10 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   return (
     <div>
       <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
-      <div ref={containerRef} className="w-full h-[460px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 460 }} />
+      <div className="relative">
+        <div ref={containerRef} className="w-full h-[460px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 460 }} />
+        <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} />
+      </div>
     </div>
   );
 };
