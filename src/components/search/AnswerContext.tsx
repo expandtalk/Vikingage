@@ -13,6 +13,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const roRef = useRef<ResizeObserver | null>(null);
 
   useEffect(() => {
     if (!data?.center || !mapEl.current) return;
@@ -20,6 +21,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       if (!mapRef.current) {
         mapRef.current = L.map(mapEl.current, { zoomControl: false, attributionControl: false, scrollWheelZoom: false, dragging: true });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapRef.current);
+        // Kartan initieras i en overlay-kolumn som ofta har 0 bredd tills panelen animerat in /
+        // grid:en satt sig → Leaflet målar grått tills dess. Måla om vid varje storleksändring
+        // (ResizeObserver) så kartan dyker upp direkt när kolumnen får sin bredd (Daniel: "kartan
+        // visas inte när jag klickar på Kalmar").
+        roRef.current = new ResizeObserver(() => { try { mapRef.current?.invalidateSize(); } catch { /* noop */ } });
+        roRef.current.observe(mapEl.current);
       }
       const m = mapRef.current;
       m.setView([data.center.lat, data.center.lng], 9);
@@ -31,11 +38,16 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           .bindPopup(`<b>${r.signum ?? ''}</b> ${r.label ?? ''}`)
           .addTo(layerRef.current!);
       });
-      setTimeout(() => { try { m.invalidateSize(); } catch { /* noop */ } }, 60);
+      // Flera omritningar över några frames tills layouten satt sig (belt-and-suspenders utöver RO).
+      [0, 80, 250, 600].forEach((d) => setTimeout(() => { try { m.invalidateSize(); } catch { /* noop */ } }, d));
     } catch { /* karta-init misslyckades → panelen visar ändå listor/bilder */ }
   }, [data]);
 
-  useEffect(() => () => { try { mapRef.current?.remove(); } catch { /* noop */ } mapRef.current = null; layerRef.current = null; }, []);
+  useEffect(() => () => {
+    try { roRef.current?.disconnect(); } catch { /* noop */ }
+    try { mapRef.current?.remove(); } catch { /* noop */ }
+    roRef.current = null; mapRef.current = null; layerRef.current = null;
+  }, []);
 
   if (!data || (data.count === 0 && (data.images?.length ?? 0) === 0 && !data.page && (data.research?.length ?? 0) === 0)) return null;
 
@@ -59,13 +71,10 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
       )}
 
-      {/* SEKTION 2: karta (bred, mitten) + sidopanel (forskning + runstenar) till höger */}
-      <div className="grid gap-4 px-5 pb-4 lg:grid-cols-[1fr_320px]">
-        {data.center && (
-          <div ref={mapEl} className="h-64 w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 lg:h-80" />
-        )}
-
-        <div className="min-w-0 space-y-4">
+      {/* SEKTION 2: forskning + runstenar VÄNSTER (vänsterställt på desktop, Daniel), kartan till
+          höger. Saknas karta → ren enkolumn (ingen strandad högerkolumn). */}
+      <div className={`grid gap-4 px-5 pb-4 ${data.center ? 'lg:grid-cols-[300px_minmax(0,1fr)]' : ''}`}>
+        <div className="min-w-0 space-y-4 lg:order-1">
           {data.research?.length > 0 && (
             <section>
               <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
@@ -108,6 +117,11 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             </section>
           )}
         </div>
+
+        {/* Kartan till höger på desktop (order-2); överst på mobil (stackad). */}
+        {data.center && (
+          <div ref={mapEl} className="order-first h-64 w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 lg:order-2 lg:h-80" style={{ minHeight: 256 }} />
+        )}
       </div>
 
       {/* SEKTION 3: bilder — horisontell remsa underst, spänner hela bredden */}
