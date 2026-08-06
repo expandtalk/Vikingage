@@ -35,7 +35,7 @@ const KIND_STYLE: Record<string, { color: string; radius: number; label: string 
 // Förbindelser (kurerat, schematiskt — Öland definieras av sina länkar till fastland + Gotland).
 const CONN_NODES: { name: string; lat: number; lng: number; note: string }[] = [
   { name: 'Kalmar', lat: 56.663, lng: 16.366, note: 'fastland — stad & slott' },
-  { name: 'Revsudden', lat: 56.747, lng: 16.553, note: 'smalaste Kalmarsund — överfart' },
+  { name: 'Revsudden', lat: 56.7737, lng: 16.4749, note: 'fastland — smalaste Kalmarsund, överfart mot Stora Rör (OSM-koord, ±)' },
   { name: 'Hossmo', lat: 56.6372, lng: 16.2251, note: 'fastland vid Ljungbyån — Hossmo kyrka/husaby' },
   { name: 'Ottenby', lat: 56.198, lng: 16.398, note: 'Ölands sydspets — kungsgård' },
 ];
@@ -44,7 +44,8 @@ const CONN_LINES: { name: string; coords: [number, number][] }[] = [
   // verifierade lägen (Färjestaden, Gråborg-borg, Långrälla, Bröttorp, N Möckleby). Exakt
   // vägsträckning (väg 136/H951/H957, Borgmossen/Nötmossen) ej ritad — saknar verifierad geometri.
   { name: 'Kalmar–Färjestaden–Gråborg–Norra Möckleby (sund + landväg)', coords: [[56.663, 16.366], [56.6517, 16.4722], [56.6664, 16.604], [56.6624, 16.6406], [56.6516, 16.6537], [56.6467, 16.6747]] },
-  { name: 'Revsudden-överfarten', coords: [[56.747, 16.553], [56.752, 16.62]] },
+  // Revsudden (fastland) → Stora Rör (Öland) → väg inåt mot Ismantorps borg. OSM-koord (±) — schematisk.
+  { name: 'Revsudden–Stora Rör–Ismantorp (överfart + väg)', coords: [[56.7737, 16.4749], [56.7564, 16.5275], [56.7454, 16.6427]] },
   { name: 'Hossmo–Karlevi (över sundet)', coords: [[56.6372, 16.2251], [56.608, 16.440]] },
   { name: 'Ölands norra udde → Gotland', coords: [[57.355, 17.05], [57.45, 17.55]] },
 ];

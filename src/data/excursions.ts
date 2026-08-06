@@ -665,6 +665,48 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
     en: 'The Gotland Museum in Visby — a natural starting point for the island\'s Viking-Age sights, with a treasury, picture-stone hall and Viking-Age objects. The gateway to exploring the island.',
   },
 
+  // === Museer (Wikidata-verifierade koordinater, P625) ===
+  {
+    id: 'historiska-museet',
+    name: 'Statens historiska museet',
+    region: 'Stockholm',
+    group: 'Uppland & Mälardalen',
+    period: 'Sten- till medeltid',
+    coords: { lat: 59.33472, lng: 18.09028 }, // Wikidata Q1726607
+    sv: 'Sveriges nationella kulturhistoriska museum i Stockholm — Guldrummet och omfattande vikingatida och medeltida samlingar.',
+    en: 'Sweden\'s national museum of cultural history in Stockholm — the Gold Room and extensive Viking-Age and medieval collections.',
+  },
+  {
+    id: 'vikingaliv',
+    name: 'Vikingaliv (The Viking Museum)',
+    region: 'Djurgården, Stockholm',
+    group: 'Uppland & Mälardalen',
+    period: 'Vikingatid',
+    coords: { lat: 59.327, lng: 18.095 }, // Wikidata Q31871457
+    sv: 'Museum på Djurgården i Stockholm om vikingatiden.',
+    en: 'Museum on Djurgården, Stockholm, about the Viking Age.',
+  },
+  {
+    id: 'fotevikens-museum',
+    name: 'Fotevikens Museum',
+    region: 'Höllviken, Vellinge, Skåne',
+    group: 'Skåne',
+    period: 'Vikingatid',
+    coords: { lat: 55.429, lng: 12.953 }, // Wikidata Q1426033; Wikipedia 55°25′46″N 12°57′11″Ö
+    sv: 'Arkeologiskt friluftsmuseum vid Foteviken i sydvästra Skåne med en rekonstruerad vikingatida stad i full skala. Grundat 1995 av föreningen SVEG (ur marinarkeologin kring Foteviksskeppen) och nedlagt 2022.',
+    en: 'Open-air archaeological museum at Foteviken in south-west Scania, with a full-scale reconstructed Viking-Age town. Founded in 1995 by the SVEG association (from the marine archaeology around the Foteviken ships) and closed in 2022.',
+  },
+  {
+    id: 'trelleborgen',
+    name: 'Trelleborgen (vikingaborg)',
+    region: 'Trelleborg, Skåne',
+    group: 'Skåne',
+    period: 'Vikingatid',
+    coords: { lat: 55.376, lng: 13.148 }, // Wikidata Q2451282
+    sv: 'Delvis rekonstruerad vikingatida ringborg av trelleborgstyp i Trelleborg.',
+    en: 'Partly reconstructed Viking-Age ring fortress of the Trelleborg type, in Trelleborg.',
+  },
+
   // === Gotland – Norra ===
   {
     id: 'lilla_bjars',

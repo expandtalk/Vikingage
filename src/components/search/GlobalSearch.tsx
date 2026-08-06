@@ -457,29 +457,46 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
           )}
           {aiAnswer && (
             <div className="text-sm text-slate-200">
-              <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+              <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
                 <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
               </div>
-              <p className="whitespace-pre-wrap leading-relaxed">{aiAnswer}</p>
+              <p className="whitespace-pre-wrap leading-relaxed text-[15px] text-slate-100">{aiAnswer}</p>
               {aiSources.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {aiSources.map((s, i) => {
-                    const meta = META[s.entity_type];
-                    if (!meta) return null;
-                    return (
-                      <button
-                        key={s.entity_id + i}
-                        onClick={() => go(meta.route(s))}
-                        className="rounded border border-slate-600 px-1.5 py-0.5 text-[11px] text-slate-300 hover:border-amber-500/50 hover:text-amber-100"
-                      >
-                        [{i + 1}] {s.label}
-                      </button>
-                    );
-                  })}
+                <div className="mt-3">
+                  <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    {sv ? 'Källor' : 'Sources'}
+                  </div>
+                  {/* Källkort: numrerad bricka + typ + titel + utdrag, klickbara ner till entiteten */}
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {aiSources.map((s, i) => {
+                      const meta = META[s.entity_type];
+                      if (!meta) return null;
+                      const SIcon = meta.icon;
+                      const snip = stripTags(s.snippet);
+                      return (
+                        <button
+                          key={s.entity_id + i}
+                          onClick={() => go(meta.route(s))}
+                          className="flex items-start gap-2.5 rounded-lg border border-slate-700 bg-slate-800/40 p-2.5 text-left transition-colors hover:border-amber-500/60 hover:bg-slate-800/70"
+                        >
+                          <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-[11px] font-semibold text-amber-300">
+                            {i + 1}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300/80">
+                              <SIcon className="h-3 w-3" />{sv ? meta.labelSv : meta.labelEn}
+                            </span>
+                            <span className="block truncate font-medium text-amber-100">{s.label}</span>
+                            {snip && <span className="mt-0.5 block text-xs leading-snug text-slate-400 line-clamp-2">{snip}</span>}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-              <p className="mt-1.5 text-[10px] text-slate-500">
-                {sv ? 'AI-genererat ur källorna nedan — verifiera via länkarna.' : 'AI-generated from the sources below — verify via the links.'}
+              <p className="mt-2 text-[10px] text-slate-500">
+                {sv ? 'AI-genererat ur källorna ovan — verifiera via länkarna.' : 'AI-generated from the sources above — verify via the links.'}
               </p>
             </div>
           )}
