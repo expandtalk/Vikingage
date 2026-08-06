@@ -93,6 +93,10 @@ const consented = () => { try { return localStorage.getItem(CONSENT_KEY) === '1'
 // Beständig "nekad"-flagga: när webbläsaren nekat plats ska vi INTE öppna en stor panel vid varje
 // sidladdning (Daniel: "jag ser den hela tiden i desktoppen") — visa bara en liten pill-länk.
 const DENIED_KEY = 'nearme_denied_v1';
+// Modulnivå (överlever route-remontering i SPA:n, nollställs vid full omladdning): har användaren
+// STÄNGT Near me ska den inte auto-öppnas igen vid navigering (Daniel: "störigt att behöva stänga
+// ner near me när jag redan gjort det en gång"). Manuellt öppnande via pill-knappen nollställer den.
+let sessionDismissed = false;
 
 // "Near me" — var är jag & vad finns omkring. Förstagångs: stor knapp = samtyckesgest
 // → webbläsarens platsdialog. Efter godkänt (localStorage) auto-lokaliseras vid retur.
@@ -301,7 +305,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   const autoRan = useRef(false);
   useEffect(() => {
     if (autoRan.current) return; autoRan.current = true;
-    if (open || !consented()) return;
+    if (open || !consented() || sessionDismissed) return;
     let cancelled = false;
     (async () => {
       let granted = false;
@@ -323,7 +327,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
       return (
         <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[1050] w-[min(92%,360px)] text-center">
           <button
-            onClick={() => { openNearMe(); locate(); }}
+            onClick={() => { sessionDismissed = false; openNearMe(); locate(); }}
             className="w-full flex items-center justify-center gap-2 px-5 py-4 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white text-base font-semibold border-2 border-sky-300 shadow-2xl"
             style={{ minHeight: 56 }}
           >
@@ -367,7 +371,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
           <button onClick={() => setMinimized((m) => !m)} aria-label={minimized ? 'Expandera' : 'Minimera'} title={minimized ? 'Expandera' : 'Minimera'} className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
             {minimized ? <ChevronUp className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
           </button>
-          <button onClick={() => { clearRoadtrip(); closeNearMe(); }} aria-label="Stäng" className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
+          <button onClick={() => { sessionDismissed = true; clearRoadtrip(); closeNearMe(); }} aria-label="Stäng" className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
             <X className="h-5 w-5" />
           </button>
         </div>

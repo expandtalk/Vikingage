@@ -5,6 +5,13 @@ import { useAnswerContext } from '@/hooks/useAnswerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FindBookLink } from './FindBookLink';
 
+// RAÄ-bildtexter är långa ("Resmo kyrka. Runsignum Öl 4 — Anmärkning: …") — visa bara den
+// läsbara ledtexten (före första ". " eller " — "), kapad, så man ser VAD bilden är.
+const shortCaption = (d: string): string => {
+  const cut = (d.split(/\s—\s|\.\s/)[0] || d).trim();
+  return cut.length > 70 ? cut.slice(0, 68) + '…' : cut;
+};
+
 // Rik svars-topp: inbäddad minikarta av den sökta platsen + kopplade runinskrifter (pins)
 // + bilder. Visas överst i söksvaret; självdöljande när platsen inte har kopplat innehåll.
 export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => void }> = ({ query, onGo }) => {
@@ -145,13 +152,20 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         )}
       </div>
 
-      {/* SEKTION 3: bilder — horisontell remsa underst, spänner hela bredden */}
+      {/* SEKTION 3: bilder — klickbara (öppnar källbilden) + kort bildtext så man ser VAD de är
+          (Daniel: "jag kan inte klicka på dem så jag ser inte vad de handlar om"). */}
       {data.images?.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto px-5 pb-4">
+        <div className="flex gap-3 overflow-x-auto px-5 pb-4">
           {data.images.slice(0, 12).map((img, i) => (
-            <img key={i} src={img.url} alt={img.desc ?? ''} loading="lazy" title={img.desc ?? undefined}
-              className="h-24 w-32 shrink-0 rounded-lg object-cover bg-slate-800"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+            <a key={i} href={img.url} target="_blank" rel="noopener noreferrer" title={img.desc ?? undefined}
+              className="group block w-32 shrink-0">
+              <img src={img.url} alt={img.desc ?? ''} loading="lazy"
+                className="h-24 w-32 rounded-lg object-cover bg-slate-800 transition-opacity group-hover:opacity-90"
+                onError={(e) => { const a = (e.currentTarget as HTMLImageElement).closest('a'); if (a) (a as HTMLElement).style.display = 'none'; }} />
+              {img.desc && (
+                <span className="mt-1 block text-[10px] leading-tight text-slate-400 line-clamp-2">{shortCaption(img.desc)}</span>
+              )}
+            </a>
           ))}
         </div>
       )}

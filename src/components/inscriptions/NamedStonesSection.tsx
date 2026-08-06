@@ -47,6 +47,20 @@ const FOREIGN_ORDER = ['Norway', 'Denmark', 'England', 'Scotland', 'Ireland', 'I
 
 const COLLAPSED_COUNT = 8;
 
+// Monument-kluster: stenar som delar exakt samma namn hör till samma monument (Daniel:
+// "Brobystenarna är ju en grupp av stenar U990, U991"). Datan bär redan grupperingen via `name`
+// (U 990/991/992 = alla 'Brobystenarna'; Sö 219/220/221 = alla 'Blistahällen') — så vi klustrar
+// på namn i st.f. att visa varje signum som ett eget kort. Medlemmar sorteras numeriskt (U 990<991<992).
+interface Cluster { name: string; members: NamedStone[] }
+const clusterByName = (items: NamedStone[]): Cluster[] => {
+  const m = new Map<string, NamedStone[]>();
+  for (const s of items) { if (!m.has(s.name)) m.set(s.name, []); m.get(s.name)!.push(s); }
+  return [...m.values()].map((members) => ({
+    name: members[0].name,
+    members: [...members].sort((a, b) => a.signum.localeCompare(b.signum, 'sv', { numeric: true })),
+  }));
+};
+
 export const NamedStonesSection: React.FC = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
@@ -136,6 +150,42 @@ export const NamedStonesSection: React.FC = () => {
     );
   };
 
+  // Monument-kort: ett kort för flera stenar med samma namn. Bild från första medlem som har en;
+  // varje signum blir en klickbar chip → /inscription/:signum (kortet är inte EN länk, flera mål).
+  const renderMonument = (c: Cluster) => {
+    const lead = c.members.find((m) => m.image_url) ?? c.members[0];
+    const translation = sv ? lead.translation_sv : (lead.translation_en || lead.translation_sv);
+    return (
+      <div key={c.name} className="viking-card rounded-lg border border-border overflow-hidden flex flex-col">
+        {lead.image_url && (
+          <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-900/40">
+            <img src={lead.image_url} alt={c.name} title={lead.image_credit ? `${sv ? 'Foto' : 'Photo'}: ${lead.image_credit}` : undefined}
+              loading="lazy" decoding="async" className="w-full h-full object-contain" />
+            {lead.image_credit && (
+              <span className="absolute bottom-0.5 right-1.5 text-[8px] text-white/60 bg-black/30 px-1 rounded">{lead.image_credit}</span>
+            )}
+          </div>
+        )}
+        <div className="p-3 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-foreground">{c.name}</span>
+            <Badge variant="secondary" className="text-[10px]">{c.members.length} {sv ? 'stenar' : 'stones'}</Badge>
+          </div>
+          {lead.socken && <p className="text-xs text-muted-foreground mt-0.5">{lead.socken}</p>}
+          {translation && <p className="text-xs text-muted-foreground/80 italic line-clamp-2 mt-1">"{translation}"</p>}
+          <div className="flex flex-wrap gap-1 mt-2">
+            {c.members.map((m) => (
+              <Link key={m.id} to={`/inscription/${encodeURIComponent(m.signum)}`}
+                className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:border-gold/60 hover:text-gold transition-colors">
+                {m.signum}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section className="mb-10">
       <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
@@ -150,8 +200,9 @@ export const NamedStonesSection: React.FC = () => {
       </p>
       <div className="space-y-8">
         {groups.map((g) => {
+          const clusters = clusterByName(g.items);   // monument-kluster (flerstens-namn → ett kort)
           const isOpen = !!expanded[g.title];
-          const visible = isOpen ? g.items : g.items.slice(0, COLLAPSED_COUNT);
+          const visible = isOpen ? clusters : clusters.slice(0, COLLAPSED_COUNT);
           return (
             <div key={g.title}>
               <h3 className="text-xl font-bold text-foreground mb-1">
@@ -159,16 +210,16 @@ export const NamedStonesSection: React.FC = () => {
               </h3>
               <div className="h-0.5 w-16 bg-accent/60 rounded mb-4" />
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {visible.map(renderCard)}
+                {visible.map((c) => (c.members.length > 1 ? renderMonument(c) : renderCard(c.members[0])))}
               </div>
-              {g.items.length > COLLAPSED_COUNT && (
+              {clusters.length > COLLAPSED_COUNT && (
                 <button
                   onClick={() => setExpanded((e) => ({ ...e, [g.title]: !isOpen }))}
                   className="mt-3 inline-flex items-center gap-1 text-sm text-gold hover:underline"
                 >
                   {isOpen
                     ? <><ChevronUp className="h-4 w-4" />{sv ? 'Visa färre' : 'Show fewer'}</>
-                    : <><ChevronDown className="h-4 w-4" />{sv ? `Visa alla ${g.items.length}` : `Show all ${g.items.length}`}</>}
+                    : <><ChevronDown className="h-4 w-4" />{sv ? `Visa alla ${clusters.length}` : `Show all ${clusters.length}`}</>}
                 </button>
               )}
             </div>
