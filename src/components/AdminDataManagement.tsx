@@ -9,6 +9,7 @@ import { AdminCarverInscriptions } from './admin/AdminCarverInscriptions';
 import { AdminArtefactMappings } from './admin/AdminArtefactMappings';
 import { AdminVikingLocations } from './admin/AdminVikingLocations';
 import { AdminRiverSystems } from './admin/AdminRiverSystems';
+import { AdminShipwrecks } from './admin/AdminShipwrecks';
 import { AdminMapConfiguration } from './admin/AdminMapConfiguration';
 import { AdminFolkGroups } from './admin/AdminFolkGroups';
 import { AdminEyeColors } from './admin/AdminEyeColors';
@@ -20,7 +21,7 @@ import { DanishParishesImportSection } from './import/DanishParishesImportSectio
 import { ReferenceUriImportSection } from './import/reference-uri/ReferenceUriImportSection';
 import { UrisImportSection } from './import/uris/UrisImportSection';
 import { TranslationsImportSection } from './import/translations/TranslationsImportSection';
-import { Database, MapPin, Languages, Users, Hammer, Package, Castle, Waves, Settings, Users2, Eye, Upload, Link, Link2, Puzzle, Globe2, Globe, Music } from 'lucide-react';
+import { Database, MapPin, Languages, Users, Hammer, Package, Castle, Waves, Settings, Users2, Eye, Upload, Link, Link2, Puzzle, Globe2, Globe, Music, Ship } from 'lucide-react';
 import { CoordinateImport } from './admin/CoordinateImport';
 import { SRDIntegration } from './admin/SRDIntegration';
 import { GeocodingManager } from './admin/GeocodingManager';
@@ -83,6 +84,10 @@ export const AdminDataManagement: React.FC = () => {
                   <TabsTrigger value="river-systems" className="text-white data-[state=active]:bg-cyan-600">
                     <Waves className="h-4 w-4 mr-1" />
                     <span className="hidden sm:inline">Flodsystem</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="shipwrecks" className="text-white data-[state=active]:bg-rose-800">
+                    <Ship className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">Skeppsvrak</span>
                   </TabsTrigger>
                   <TabsTrigger value="map-config" className="text-white data-[state=active]:bg-emerald-600">
                     <Settings className="h-4 w-4 mr-1" />
@@ -193,6 +198,10 @@ export const AdminDataManagement: React.FC = () => {
               
               <TabsContent value="river-systems" className="mt-6">
                 <AdminRiverSystems />
+              </TabsContent>
+
+              <TabsContent value="shipwrecks" className="mt-6">
+                <AdminShipwrecks />
               </TabsContent>
               
               <TabsContent value="map-config" className="mt-6">

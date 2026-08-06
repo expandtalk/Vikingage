@@ -92,6 +92,7 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   source:         { labelSv: 'Källor', labelEn: 'Sources', icon: ScrollText, route: (h) => `/sources/${h.entity_id}` },
   source_text:    { labelSv: 'Källtexter', labelEn: 'Source texts', icon: ScrollText, route: (h) => `/sources/text/${h.entity_id}` },
   road:           { labelSv: 'Vägar & leder', labelEn: 'Roads', icon: MapPin, route: () => '/explore' },
+  shipwreck:      { labelSv: 'Skeppsvrak', labelEn: 'Shipwrecks', icon: Ship, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   excursion:      { labelSv: 'Utflykter', labelEn: 'Excursions', icon: Compass, route: (h) => h.signum ? `/excursions/${enc(h.signum)}` : '/excursions' },
   theme:          { labelSv: 'Teman', labelEn: 'Themes', icon: Sparkles, route: () => '/explore' },
 };

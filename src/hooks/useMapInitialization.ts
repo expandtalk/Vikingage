@@ -33,6 +33,7 @@ import { useMapMuseums } from './map/useMapMuseums';
 import { useMapFortTerritories } from './map/useMapFortTerritories';
 import { useMapPictureStones } from './map/useMapPictureStones';
 import { useMapCoins } from './map/useMapCoins';
+import { useMapShipwrecks } from './map/useMapShipwrecks';
 import { useMapAncestrySites } from './map/useMapAncestrySites';
 import { useMapSolidi } from './map/useMapSolidi';
 import { useMapCustomPoints } from './map/useMapCustomPoints';
@@ -282,6 +283,7 @@ export const useMapInitialization = ({
 
   // Mynt/fynd (coins) på fyndplats-koordinat — färg per metall, gate: legendknappen.
   useMapCoins({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, selectedTimePeriod });
+  useMapShipwrecks({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef });
   useMapSolidi({ map: map.current, enabledLegendItems, isMapReady: isMapReadyRef, selectedTimePeriod });
 
   // Tingsplatser (thing_sites, Wildte 1926 m.fl.) — färg per tingstyp, gate: legendknappen.

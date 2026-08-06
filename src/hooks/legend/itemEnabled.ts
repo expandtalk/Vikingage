@@ -48,6 +48,7 @@ export const LEGEND_DEFAULTS: Record<string, boolean> = {
   species_introductions: false,
   picture_stone_reuse: false,
   coins: false,
+  shipwrecks: false, // marinarkeologi (barn under Marinarkeologi-kategorin), opt-in
   adna_sites: false,
   estates: false, // maktsäten (förälder, opt-in) — ekonomihistorikerns lager
   // Maktsäten-typer (barn). Default PÅ så att när man slår på "Maktsäten" (kaskad) syns

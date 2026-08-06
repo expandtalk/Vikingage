@@ -139,7 +139,7 @@ export const generateBasicInscriptionItems = (
     id: 'maritime',
     label: '⚓ Farleder, noder & Hansa',
     color: '#0ea5e9',
-    count: 3 + 1 + 18 + 6 + 22,
+    count: 3 + 1 + 18 + 6 + 22 + 5,
     enabled: itemEnabled(enabledLegendItems, 'maritime'),
     type: 'category',
     children: [
@@ -148,6 +148,7 @@ export const generateBasicInscriptionItems = (
       { id: 'fairways_modern', label: '🌊 Moderna farleder', color: '#0ea5e9', count: 18, enabled: itemEnabled(enabledLegendItems, 'fairways_modern') },
       { id: 'fairways_historical', label: '🏛️ Historiska leder (Valdemar/Hansa)', color: '#a855f7', count: 6, enabled: itemEnabled(enabledLegendItems, 'fairways_historical') },
       { id: 'hanseatic_cities', label: '🏰 Hansastäder & Kontor', color: '#eab308', count: 22, enabled: itemEnabled(enabledLegendItems, 'hanseatic_cities') },
+      { id: 'shipwrecks', label: '🚢 Skeppsvrak (marinark.)', color: '#7f1d1d', count: 5, enabled: itemEnabled(enabledLegendItems, 'shipwrecks') },
     ],
   });
 
