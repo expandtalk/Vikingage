@@ -93,6 +93,7 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   source_text:    { labelSv: 'Källtexter', labelEn: 'Source texts', icon: ScrollText, route: (h) => `/sources/text/${h.entity_id}` },
   road:           { labelSv: 'Vägar & leder', labelEn: 'Roads', icon: MapPin, route: () => '/explore' },
   shipwreck:      { labelSv: 'Skeppsvrak', labelEn: 'Shipwrecks', icon: Ship, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  scholar:        { labelSv: 'Forskning', labelEn: 'Research', icon: Users, route: () => '/forskare' },
   excursion:      { labelSv: 'Utflykter', labelEn: 'Excursions', icon: Compass, route: (h) => h.signum ? `/excursions/${enc(h.signum)}` : '/excursions' },
   theme:          { labelSv: 'Teman', labelEn: 'Themes', icon: Sparkles, route: () => '/explore' },
 };
