@@ -16,7 +16,8 @@ import { supabase } from '@/integrations/supabase/client';
 // /sv/gota-landsvag — forskningssida + utflyktsmål om Göta landsväg, den medeltida landsvägen
 // Stockholm–Södertälje över Södertörn. Sträckningen speglar road_waypoints i DB (9 verifierade
 // punkter + approximativa ändpunkter). Koordinater: ecclesiastical_sites (kyrkor), runkorpus
-// (Sö 300/304, Rundata), sv.wikipedia (Årstafältet/Flottsbro), RAÄ (Botkyrka 389:1). Endpoints approx.
+// (Sö 300/304, Rundata), sv.wikipedia (Årstafältet/Flottsbro/Björns trädgård), RAÄ (Botkyrka 389:1),
+// Stockholmskällan (Björns trädgård – Allmänningsvägen, Fennö 2004, CC-BY). Endpoints approx.
 
 const CORRIDOR_BBOX: [number, number, number, number] = [17.55, 59.15, 18.15, 59.35];
 
@@ -28,8 +29,10 @@ interface Node { name: string; lat: number; lng: number; kind: Kind; note: strin
 
 // Vägordning N→S (mirror av road_waypoints + start/slut). Verifierade koordinater.
 const NODES: Node[] = [
-  { name: 'Skanstull (start, approx.)', lat: 59.3045, lng: 18.0765, kind: 'endpoint',
-    note: 'Vägens infart mot Södermalm/Stockholm. Ändpunkt approximativ.' },
+  { name: 'Björns trädgård – Allmänningsvägen (start, approx.)', lat: 59.31528, lng: 18.07389, kind: 'endpoint',
+    note: 'Trolig nordlig utgångspunkt vid övre Götgatsbacken (Björns trädgård, intill Medborgarplatsen). Stadsmuseet grävde 2003 fram rester av gator som övergavs vid gaturegleringen på 1640-talet; den bredaste tolkas som Allmänningsvägen — den gamla utfartsvägen söderut ur staden. Källa: Stockholmskällan / Fennö 2004 (CC-BY). Ändpunkt approximativ.' },
+  { name: 'Skanstull (infart Södermalm, approx.)', lat: 59.3045, lng: 18.0765, kind: 'endpoint',
+    note: 'Vägens passage söderut över Södermalm mot Årsta. Läge approximativt.' },
   { name: 'Årstafältet – Valla å', lat: 59.2907, lng: 18.0450, kind: 'bridge',
     note: 'Bäst bevarade sträckan (RAÄ Brännkyrka 34:1), ~730 m över fältet; korsade Valla å (rekonstruerad stenvalvbro 1998). Band samman järnåldersgårdarna Valla/Bägersta och Östberga/Ersta.' },
   { name: 'Brännkyrka kyrka', lat: 59.28194, lng: 18.02306, kind: 'church', church: 'Brännkyrka kyrka',
