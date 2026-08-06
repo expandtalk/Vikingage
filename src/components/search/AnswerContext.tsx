@@ -39,15 +39,23 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         roRef.current.observe(mapEl.current);
       }
       const m = mapRef.current;
-      m.setView([data.center.lat, data.center.lng], 9);
       if (!layerRef.current) layerRef.current = L.layerGroup().addTo(m);
       layerRef.current.clearLayers();
+      const pts: [number, number][] = [];
       (data.inscriptions || []).forEach((r) => {
         if (r.lat == null || r.lng == null) return;
+        pts.push([r.lat, r.lng]);
         L.circleMarker([r.lat, r.lng], { radius: 4, color: '#0f172a', weight: 1, fillColor: '#f59e0b', fillOpacity: 0.9 })
           .bindPopup(`<b>${r.signum ?? ''}</b> ${r.label ?? ''}`)
           .addTo(layerRef.current!);
       });
+      // fitBounds till entitetens geometri ALLTID (Daniel: "Öland syns knappt, centrerad på
+      // fastlandet"). Har vi flera pins → ram runt dem; annars centrera på platsnoden.
+      if (pts.length >= 2) {
+        m.fitBounds(L.latLngBounds(pts), { padding: [24, 24], maxZoom: 11 });
+      } else {
+        m.setView([data.center.lat, data.center.lng], pts.length ? 11 : 9);
+      }
       // Flera omritningar över några frames tills layouten satt sig (belt-and-suspenders utöver RO).
       [0, 80, 250, 600].forEach((d) => setTimeout(() => { try { m.invalidateSize(); } catch { /* noop */ } }, d));
     } catch { /* karta-init misslyckades → panelen visar ändå listor/bilder */ }
