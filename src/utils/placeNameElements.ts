@@ -137,7 +137,7 @@ export const PLACE_NAME_ELEMENTS: PlaceNameElement[] = [
     // (snigel/skal), personnamn eller topografi. Boundary 'prefix' (Snäcksta, Snäckhamn, Snäcke).
     key: 'snack', label: 'Snäck- (snäcka/ledung)', category: 'power', evidenceLayer: 'extended',
     sacralConfidence: 'none', isControl: false, contested: true, boundaryRule: 'prefix',
-    etymology: 'Fornnordiska *snekkja* — ett smäckert vikingatida krigsskepp. Snäck-namn (Snäcksta, Snäckhamn, Snäckevarp) tolkas ofta som platser i ledungens/sjökrigsorganisationens tjänst (uppläggningshamn/bemanning). Omtvistat: "snäck-" kan även vara snäcka (snigel/skal), personnamn eller topografi.',
+    etymology: 'Fornnordiska *snekkja* — ett smäckert vikingatida krigsskepp. Snäck-namn (Snäcksta, Snäckhamn, Snäckevarp) tolkas ofta som platser i ledungens/sjökrigsorganisationens tjänst (uppläggningshamn/bemanning). Studie: Ingemar Olsson, "Snäck-namn på Gotland" (1972) — kopplar gotländska snäck-namn (Snäckgärde, Snäckhus) till ledungshamnar. Omtvistat: "snäck-" kan även vara snäcka (snigel/skal), personnamn eller topografi.',
     patterns: ['snack'], excludes: [],
   },
   {
