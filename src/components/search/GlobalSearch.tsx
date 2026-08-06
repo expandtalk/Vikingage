@@ -16,6 +16,7 @@ import { useOffTopicSenses } from '@/hooks/useOffTopicSenses';
 import { useSearchThumbs } from '@/hooks/useSearchThumbs';
 import { RelationMindmap } from './RelationMindmap';
 import { AnswerContext } from './AnswerContext';
+import { GodQuestions } from './GodQuestions';
 
 // Facett-ikoner (entity_facets.icon = strängnamn) → lucide-komponent.
 const FACET_ICON: Record<string, LucideIcon> = {
@@ -255,6 +256,7 @@ const KnowledgePanel: React.FC<{ hit: Hit; thumb?: string; onGo: (route: string)
         </div>
       </div>
       <GoFurther hit={hit} onGo={onGo} sv={sv} />
+      {hit.entity_type === 'god' && <GodQuestions godId={hit.entity_id} godName={hit.label} onGo={onGo} sv={sv} />}
       <RelationMindmap center={hit.label} nodes={mindNodes} onGo={onGo} sv={sv} />
     </div>
   );
