@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface ParishChurch {
   name: string; kind: string; built_from: number | null; dating_class: string | null;
   status: string | null; image_url: string | null; diocese: string | null;
+  lat: number | null; lng: number | null; patron_saint: string | null;
 }
 export interface DioceseEpoch { diocese: string; from_year: number | null; to_year: number | null; note: string | null; }
 export interface Leader { person_name: string; role: string; from_year: number | null; to_year: number | null; diocese: string; }

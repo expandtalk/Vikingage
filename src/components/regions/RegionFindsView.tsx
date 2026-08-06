@@ -177,6 +177,23 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
       const added = addRunicInscriptionMarkers(map, activeInscriptions, onResultClick);
       added.forEach((m) => { map.removeLayer(m); layerRef.current.addLayer(m); });
       for (const i of activeInscriptions) { const p = coordsOf(i); if (p) pts.push(p); }
+
+      // Relaterade kyrkor i socknen (från parish_governance) — egen markörstil (rosa kors),
+      // så det medeltida kyrkolandskapet syns på kartan och ingår i inzoomningen.
+      for (const k of governance.data?.churches ?? []) {
+        if (k.lat == null || k.lng == null) continue; // obelagt läge → visas i listan, ej på kartan
+        const ruin = k.status === 'ruin' || k.status === 'destroyed';
+        L.circleMarker([k.lat, k.lng], {
+          radius: 7, color: '#881337', weight: 1.5,
+          fillColor: ruin ? '#fda4af' : '#e11d48', fillOpacity: 0.9,
+        })
+          .bindTooltip(
+            `⛪ ${k.name}${k.patron_saint ? ` · ${k.patron_saint}` : ''}${k.built_from ? ` · ${sv ? 'ca' : 'c.'} ${k.built_from}` : ''}${ruin ? (sv ? ' · ruin' : ' · ruin') : ''}`,
+            { direction: 'top' },
+          )
+          .addTo(layerRef.current);
+        pts.push([k.lat, k.lng]);
+      }
     } else {
       // Översikt: klustra per region → proportionell symbolkarta.
       for (const r of regions) {
@@ -197,7 +214,7 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
       map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: selected ? 12 : 6 });
     }
     setTimeout(() => map.invalidateSize(), 100);
-  }, [regions, activeInscriptions, selected, onResultClick, c.finds]);
+  }, [regions, activeInscriptions, selected, onResultClick, c.finds, governance.data, sv]);
 
   return (
     <Card className="bg-white/10 backdrop-blur-md border-white/20">
@@ -329,10 +346,15 @@ export const RegionFindsView: React.FC<RegionFindsViewProps> = ({ inscriptions, 
                               className="w-full h-24 object-cover rounded mb-1"
                               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                           )}
-                          <div className="text-white">{k.name}{k.status === 'ruin' ? <span className="text-slate-400"> · ruin</span> : null}</div>
+                          <div className="text-white">{k.name}
+                            {k.status === 'ruin' ? <span className="text-slate-400"> · ruin</span>
+                              : k.status === 'destroyed' ? <span className="text-slate-400"> · {sv ? 'utplånad' : 'destroyed'}</span> : null}
+                          </div>
                           <div className="text-slate-400 text-xs">
-                            {k.built_from ? `${sv ? 'Byggår' : 'Built'} ${k.built_from}` : (k.dating_class ?? '')}
+                            {k.built_from ? `${sv ? 'ca' : 'c.'} ${k.built_from}` : (k.dating_class ?? '')}
+                            {k.patron_saint ? ` · ${sv ? 'helgon' : 'patron'}: ${k.patron_saint}` : ''}
                             {k.diocese ? ` · ${k.diocese}` : ''}
+                            {k.lat == null ? ` · ${sv ? 'läge obelagt' : 'location unverified'}` : ''}
                           </div>
                         </li>
                       ))}
