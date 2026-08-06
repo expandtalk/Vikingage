@@ -46,23 +46,36 @@ export const useLegendManager = (
   // focus är aktiv; default:ar i stället från LEGEND_DEFAULTS (profil styr fortf.
   // basemap/paneler/period). Focus (kort/deep-link) vinner alltid, så kuraterade vyer
   // (resolveProfileLayers) inte skrivs över. Nyckeln (SAVED_VIEW_KEY) är exporterad ovan.
+  // SEED-ONCE persona→lager: när personan (roleLayerPreset) FAKTISKT byts utan aktiv focus
+  // tänds personans lager EN gång ovanpå baslagren — ett utgångsläge som sedan är togglingsbart
+  // (samma "seeda, tvinga inte varje render"-princip som djuptids-seedningen). Utan detta
+  // ändrade personavalet bara basemap/paneler/period, aldrig lagren → "marinarkeolog visade
+  // inga vrak/leder". Focus vinner fortfarande; mount/omladdning respekterar sparad vy.
+  const lastPresetSigRef = useRef<string | null>(null);
   useEffect(() => {
+    const preset = roleLayerPreset as Record<string, boolean>;
+    const sig = Object.keys(preset).sort().map((k) => `${k}:${preset[k] ? 1 : 0}`).join(',');
+    const presetChanged = lastPresetSigRef.current !== null && lastPresetSigRef.current !== sig;
+    lastPresetSigRef.current = sig;
+
     let saved: Record<string, boolean> | null = null;
     try { const raw = localStorage.getItem(SAVED_VIEW_KEY); if (raw) saved = JSON.parse(raw); } catch { /* privat läge */ }
+
     if (currentFocus) {
       // Focus bär sin kurerade override via resolveProfileLayers — behåll den oförändrad.
-      setEnabledLegendItems({ ...roleLayerPreset });
+      setEnabledLegendItems({ ...preset });
+    } else if (presetChanged && Object.keys(preset).length > 0) {
+      // Explicit persona-byte (roleLayerPreset ändrades, ingen focus) → seeda personans lager
+      // ovanpå LEGEND_DEFAULTS som utgångsläge. Ren start per persona (ingen ackumulering);
+      // användaren kan sedan toggla fritt och det sparas via "Kom ihåg min vy".
+      setEnabledLegendItems({ ...LEGEND_DEFAULTS, ...preset });
     } else if (saved && typeof saved === 'object') {
-      // Sparad vy vinner rakt av — profil-presetet ligger INTE längre under den.
+      // Sparad vy vinner rakt av (mount/omladdning, inget persona-byte).
       setEnabledLegendItems({ ...saved });
     } else {
-      // Ingen focus, ingen sparad vy: seeda EXPLICIT med LEGEND_DEFAULTS (inte ett tomt
-      // {}). Flera kart-hooks (t.ex. useMapHeritageSites) läser enabledLegendItems[key]
-      // === true / !== false RAKT AV på rå-staten — de går INTE via itemEnabled()s
-      // fallback. Ett tomt objekt hade osynliggjort opt-in-lager som ska vara PÅ som
-      // standard (t.ex. heritage_grotta) och hållit deras legend-kategori hopfälld
-      // (LegendCategory visar bara barn när kategorins enabled === true). Genom att
-      // seeda med LEGEND_DEFAULTS får både legend-UI:t och kart-hooksen samma sanning.
+      // Ingen focus, ingen sparad vy, inget persona-byte: seeda EXPLICIT med LEGEND_DEFAULTS
+      // (flera kart-hooks läser rå-staten === true / !== false; tomt {} osynliggör opt-in-lager
+      // som ska vara PÅ, t.ex. heritage_grotta, och håller deras legend-kategori hopfälld).
       setEnabledLegendItems({ ...LEGEND_DEFAULTS });
     }
   }, [roleLayerPreset, currentFocus]);
