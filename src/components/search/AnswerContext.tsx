@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { MapPin, BookOpen, GraduationCap, ArrowRight, Library } from 'lucide-react';
+import { MapPin, BookOpen, GraduationCap, ArrowRight, Library, X, ExternalLink } from 'lucide-react';
 import { useAnswerContext } from '@/hooks/useAnswerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FindBookLink } from './FindBookLink';
@@ -22,6 +22,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const roRef = useRef<ResizeObserver | null>(null);
+  // Bild-lightbox: håll användaren KVAR i plattformen (öppna inte källbilden i ny flik). Daniel.
+  const [lightbox, setLightbox] = useState<{ url: string; desc: string | null } | null>(null);
 
   useEffect(() => {
     if (!data?.center || !mapEl.current) return;
@@ -152,21 +154,41 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         )}
       </div>
 
-      {/* SEKTION 3: bilder — klickbara (öppnar källbilden) + kort bildtext så man ser VAD de är
-          (Daniel: "jag kan inte klicka på dem så jag ser inte vad de handlar om"). */}
+      {/* SEKTION 3: bilder — öppnas i en LIGHTBOX-modal (håll kvar användaren i plattformen, Daniel),
+          inte i ny flik. Kort bildtext under varje så man ser VAD de är. */}
       {data.images?.length > 0 && (
         <div className="flex gap-3 overflow-x-auto px-5 pb-4">
           {data.images.slice(0, 12).map((img, i) => (
-            <a key={i} href={img.url} target="_blank" rel="noopener noreferrer" title={img.desc ?? undefined}
-              className="group block w-32 shrink-0">
+            <button key={i} type="button" onClick={() => setLightbox({ url: img.url, desc: img.desc })}
+              title={img.desc ?? undefined} className="group block w-32 shrink-0 text-left">
               <img src={img.url} alt={img.desc ?? ''} loading="lazy"
                 className="h-24 w-32 rounded-lg object-cover bg-slate-800 transition-opacity group-hover:opacity-90"
-                onError={(e) => { const a = (e.currentTarget as HTMLImageElement).closest('a'); if (a) (a as HTMLElement).style.display = 'none'; }} />
+                onError={(e) => { const b = (e.currentTarget as HTMLImageElement).closest('button'); if (b) (b as HTMLElement).style.display = 'none'; }} />
               {img.desc && (
                 <span className="mt-1 block text-[10px] leading-tight text-slate-400 line-clamp-2">{shortCaption(img.desc)}</span>
               )}
-            </a>
+            </button>
           ))}
+        </div>
+      )}
+
+      {/* Lightbox: större bild + bildtext + "öppna källan"-länk (för den som VILL lämna). */}
+      {lightbox && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 p-4" onClick={() => setLightbox(null)}>
+          <div className="relative max-h-[90vh] max-w-3xl w-full overflow-hidden rounded-xl bg-slate-900 border border-slate-700" onClick={(e) => e.stopPropagation()}>
+            <button type="button" onClick={() => setLightbox(null)} aria-label={sv ? 'Stäng' : 'Close'}
+              className="absolute right-2 top-2 z-10 rounded-full bg-slate-900/80 p-1.5 text-slate-200 hover:text-white">
+              <X className="h-5 w-5" />
+            </button>
+            <img src={lightbox.url} alt={lightbox.desc ?? ''} className="max-h-[70vh] w-full object-contain bg-black" />
+            <div className="px-4 py-3">
+              {lightbox.desc && <p className="text-sm text-slate-200 leading-snug">{lightbox.desc}</p>}
+              <a href={lightbox.url} target="_blank" rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1 text-xs text-sky-300 hover:text-sky-200">
+                {sv ? 'Öppna källbilden' : 'Open source image'} <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
         </div>
       )}
     </div>
