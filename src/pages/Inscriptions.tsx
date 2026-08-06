@@ -5,6 +5,7 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { RunicExplorerSimple } from '../components/RunicExplorerSimple';
 import { NamedStonesSection } from '../components/inscriptions/NamedStonesSection';
+import { RunestonePoetrySection } from '../components/inscriptions/RunestonePoetrySection';
 import { DatingCategoriesSection } from '../components/inscriptions/DatingCategoriesSection';
 import { FingerprintDialog } from '../components/forensics/FingerprintDialog';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -46,6 +47,9 @@ const Inscriptions = () => {
         </div>
         {/* Nivå 1: namngivna stenar som ingång (landskaps-grupperade) */}
         <NamedStonesSection />
+
+        {/* Tema: runstenar med poesi & diktmått (hjältedikt/dróttkvätt/eddisk vers) */}
+        <RunestonePoetrySection />
 
         {/* Datering-kategorisering (Gräslunds stilkronologi) */}
         <DatingCategoriesSection />
