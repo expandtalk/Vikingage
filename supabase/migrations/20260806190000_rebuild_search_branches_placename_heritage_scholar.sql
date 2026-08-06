@@ -1,0 +1,31 @@
+-- Durabilitet: rebuild_search_document fick grenar för place_name/heritage_site/scholar
+-- (var tidigare direkt-inserted → en full ombyggnad hade raderat ~105k+243 rader). 2026-08-06.
+-- Applicerad i prod via MCP (hela funktionen ersatt; nedan = de tillagda grenarna, för spegling).
+--
+--   if p_type is null or p_type = 'place_name' then
+--     insert into search_document (entity_type, entity_id, label, sublabel, body_sv)
+--     select 'place_name', p.id, p.name,
+--       concat_ws(' · ', coalesce(p.feature_type,'ortnamn'), nullif(p.province,'')),
+--       concat_ws(' ', p.name, p.normed_name, p.province)
+--     from place_names p where p.name is not null and (p_id is null or p.id = p_id);
+--   end if;
+--
+--   if p_type is null or p_type = 'heritage_site' then
+--     insert into search_document (entity_type, entity_id, label, sublabel, body_sv)
+--     select 'heritage_site', h.id, coalesce(nullif(h.name,''), h.raa_type),
+--       concat_ws(' · ', h.raa_type, nullif(h.parish,''), nullif(h.municipality,''), nullif(h.landscape,'')),
+--       concat_ws(' ', h.name, h.raa_type, h.parish, h.municipality, h.landscape)
+--     from heritage_sites h where (p_id is null or h.id = p_id);
+--   end if;
+--
+--   if p_type is null or p_type = 'scholar' then
+--     insert into search_document (entity_type, entity_id, label, sublabel, body_sv)
+--     select 'scholar', s.id, s.name,
+--       concat_ws(' · ', 'forskare', nullif(s.role_title,''), nullif(s.affiliation,''), nullif(s.active_period,'')),
+--       concat_ws(' ', s.biography, s.affiliation, s.role_title)
+--     from research_scholars s where (p_id is null or s.id = p_id);
+--   end if;
+--
+-- (Full funktionsdefinition finns i prod via pg_get_functiondef; shipwreck-grenen kom i
+--  20260806150000, dessa tre i denna migration.)
+SELECT 'rebuild_search_document: place_name/heritage_site/scholar-grenar tillagda' AS note;
