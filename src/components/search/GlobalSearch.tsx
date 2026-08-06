@@ -248,10 +248,22 @@ const KnowledgePanel: React.FC<{ hit: Hit; thumb?: string; onGo: (route: string)
             </button>
           )}
           <button
-            onClick={() => onGo('/forskare')}
+            onClick={() => {
+              // Runsten: öppna stenen (modalen visar forskare kopplade till JUST den stenen),
+              // annars bläddra i hela forskarregistret.
+              if (hit.entity_type === 'inscription') {
+                const open = (window as unknown as { __openInscriptionById?: (id: string) => void }).__openInscriptionById;
+                if (open) { open(hit.entity_id); return; }
+                onGo(`/explore?searchQuery=${enc(hit.label)}`);
+                return;
+              }
+              onGo('/forskare');
+            }}
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600 px-3 py-1.5 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
           >
-            <Users className="h-3.5 w-3.5" /> {sv ? 'Forskare & källor' : 'Researchers & sources'}
+            <Users className="h-3.5 w-3.5" /> {hit.entity_type === 'inscription'
+              ? (sv ? 'Forskare kopplade till stenen' : "This stone's researchers")
+              : (sv ? 'Forskare & källor' : 'Researchers & sources')}
           </button>
         </div>
       </div>

@@ -40,6 +40,14 @@ const ATTR_LABEL = (a: string, sv: boolean): string => {
   return hit ? (sv ? hit[0] : hit[1]) : a;
 };
 
+// Bildtext: plocka ut den läsbara "Beskrivning: …"-delen ur RAÄ:s långa anmärkning.
+const photoCaption = (desc: string | null): string | null => {
+  if (!desc) return null;
+  const m = desc.match(/Beskrivning:\s*(.+?)(?:\s*Fotosyfte:|\s*\(Källa:|$)/i);
+  const t = (m ? m[1] : desc).trim();
+  return t || null;
+};
+
 const DetailItem = ({ label, value }: { label: string, value: React.ReactNode }) => {
   if (!value || (Array.isArray(value) && value.length === 0)) return null;
   return (
@@ -71,6 +79,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
         condition: 'Skick', scholarly: 'Forskarnoter', context: 'Historisk kontext', paleo: 'Paleografiska noter',
         sources: 'Källor & externa länkar', unknownTitle: 'Okänd titel', unknownAuthor: 'Okänd författare',
         images: 'Bilder från arkiv', loadingImages: 'Laddar bilder…', noImages: 'Inga bilder i arkiven.',
+        researchers: 'Forskare kopplade till stenen', photoBy: 'Foto',
         edit: 'Redigera', close: 'Stäng',
       }
     : {
@@ -87,6 +96,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
         condition: 'Condition', scholarly: 'Scholarly notes', context: 'Historical context', paleo: 'Paleographic notes',
         sources: 'Sources & external links', unknownTitle: 'Unknown title', unknownAuthor: 'Unknown author',
         images: 'Images from archives', loadingImages: 'Loading images…', noImages: 'No images found in archives.',
+        researchers: 'Researchers linked to this stone', photoBy: 'Photo',
         edit: 'Edit', close: 'Close',
       };
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
@@ -290,18 +300,45 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
               </div>
             )}
 
+            {/* Forskare kopplade till JUST denna sten (via sources.scholar_id) — ej hela listan */}
+            {extendedData?.scholars && extendedData.scholars.length > 0 && (
+              <div className="pt-4">
+                <h4 className="font-semibold text-slate-300 mb-2">{L.researchers}</h4>
+                <div className="flex flex-wrap gap-2">
+                  {extendedData.scholars.map((s) => (
+                    <div key={s.id} className="text-sm px-3 py-1.5 bg-black/20 rounded-md border border-white/10">
+                      <span className="text-white">{s.name}</span>
+                      {(s.role_title || s.affiliation || s.active_period) && (
+                        <span className="block text-slate-400 text-xs">
+                          {[s.role_title, s.affiliation, s.active_period].filter(Boolean).join(' · ')}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="pt-4">
               <h4 className="font-semibold text-slate-300 mb-2">{L.images}</h4>
               {isLoadingExtended ? (
                 <p>{L.loadingImages}</p>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {extendedData?.images && extendedData.images.length > 0 ? (
-                    extendedData.images.map((img, index) => (
-                      <a href={img} target="_blank" rel="noopener noreferrer" key={index}>
-                        <img src={img} alt={`${signum} image ${index + 1}`} className="rounded-md object-cover aspect-square hover:opacity-80 transition-opacity" />
-                      </a>
-                    ))
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {extendedData?.media && extendedData.media.length > 0 ? (
+                    extendedData.media.map((m, index) => {
+                      const cap = photoCaption(m.description);
+                      return (
+                        <a href={m.url} target="_blank" rel="noopener noreferrer" key={index}
+                          title={m.description ?? undefined} className="block group">
+                          <img src={m.url} alt={cap ?? `${signum} ${index + 1}`} loading="lazy"
+                            className="rounded-md object-cover aspect-square w-full hover:opacity-80 transition-opacity"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                          {cap && <span className="mt-1 block text-[11px] leading-tight text-slate-300 line-clamp-3">{cap}</span>}
+                          {m.photographer && <span className="block text-[10px] text-slate-500">{L.photoBy}: {m.photographer}</span>}
+                        </a>
+                      );
+                    })
                   ) : (
                     <p className="text-slate-400">{L.noImages}</p>
                   )}

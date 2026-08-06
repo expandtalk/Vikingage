@@ -19,6 +19,23 @@ export interface Translation {
   translation: string;
 }
 
+// Foto med bildtext — så modalen kan visa "vad som står" på varje bild (inte bara URL).
+export interface InscriptionMediaItem {
+  url: string;
+  description: string | null;
+  photographer: string | null;
+}
+
+// Forskare KOPPLADE till just denna inskrift (via object_source → sources.scholar_id →
+// research_scholars) — inte hela forskarlistan.
+export interface LinkedScholar {
+  id: string;
+  name: string;
+  affiliation: string | null;
+  role_title: string | null;
+  active_period: string | null;
+}
+
 // Proveniens: en runsten kan ha flyttats — ursprunglig (role='original') vs nuvarande
 // (role='current') plats. Källa: inscription_locations (jfr runestone-location-history).
 export interface InscriptionLocationRow {
@@ -57,7 +74,7 @@ export interface InscriptionRich {
 
 const fetchExtendedData = async (inscriptionId: string | null) => {
   if (!inscriptionId) {
-    return { images: [], datings: [], sources: [], translations: [], additionalCoordinates: [], locations: [], rich: null };
+    return { images: [], media: [], datings: [], sources: [], scholars: [], translations: [], additionalCoordinates: [], locations: [], rich: null };
   }
 
   // UUIDs from the main table need to be converted to a bytea representation 
@@ -102,6 +119,14 @@ const fetchExtendedData = async (inscriptionId: string | null) => {
   const locations = (locationsRes.data || []) as InscriptionLocationRow[];
   const rich = (richRes.data || null) as InscriptionRich | null;
 
+  // Foton MED bildtext (behåll description/photographer) — legacy imagelinks får ingen text.
+  const media: InscriptionMediaItem[] = [
+    ...legacyImages.map((url) => ({ url, description: null, photographer: null })),
+    ...mediaFiles
+      .filter((m) => m.media_url)
+      .map((m) => ({ url: m.media_url as string, description: m.description ?? null, photographer: m.photographer ?? null })),
+  ];
+
   // --- New logic for sources and URIs ---
 
   // 1. Get source IDs for the inscription - use UUID format for object_source table
@@ -112,10 +137,10 @@ const fetchExtendedData = async (inscriptionId: string | null) => {
 
   if (osError) {
     console.error('Error fetching object sources:', osError);
-    return { images, datings, sources: [], translations, additionalCoordinates, locations, rich };
+    return { images, media, datings, sources: [], scholars: [], translations, additionalCoordinates, locations, rich };
   }
   if (!objectSources || objectSources.length === 0) {
-    return { images, datings, sources: [], translations, additionalCoordinates, locations, rich };
+    return { images, media, datings, sources: [], scholars: [], translations, additionalCoordinates, locations, rich };
   }
   const sourceIds = objectSources.map(os => os.sourceid);
 
@@ -159,26 +184,40 @@ const fetchExtendedData = async (inscriptionId: string | null) => {
       }
   }
 
-  // 3. Get source details
-  const { data: sourcesData, error: sError } = await supabase
+  // 3. Get source details (inkl. scholar_id → för att koppla forskare till just denna sten)
+  const { data: sourcesData, error: sError } = await (supabase as any)
     .from('sources')
-    .select('sourceid, title, author, publication_year')
+    .select('sourceid, title, author, publication_year, scholar_id')
     .in('sourceid', sourceIds);
 
   if (sError) {
     console.error('Error fetching sources:', sError);
   }
 
-  const sources: SourceWithUris[] = sourcesData ? sourcesData.map(s => ({
+  const sources: SourceWithUris[] = sourcesData ? sourcesData.map((s: any) => ({
       sourceid: s.sourceid,
       title: s.title,
       author: s.author,
       publication_year: s.publication_year,
       uris: sourceIdToUris[s.sourceid] || []
-  })).filter(s => s.uris.length > 0) // Only show sources that have URIs
+  })).filter((s: SourceWithUris) => s.uris.length > 0) // Only show sources that have URIs
   : [];
 
-  return { images, datings, sources, translations, additionalCoordinates, locations, rich };
+  // 4. Forskare kopplade till stenen (via sources.scholar_id → research_scholars).
+  const scholarIds = Array.from(new Set(
+    (sourcesData ?? []).map((s: any) => s.scholar_id).filter(Boolean),
+  )) as string[];
+  let scholars: LinkedScholar[] = [];
+  if (scholarIds.length > 0) {
+    const { data: scholarData, error: scErr } = await supabase
+      .from('research_scholars')
+      .select('id, name, affiliation, role_title, active_period')
+      .in('id', scholarIds);
+    if (scErr) console.error('Error fetching linked scholars:', scErr);
+    else scholars = (scholarData ?? []) as LinkedScholar[];
+  }
+
+  return { images, media, datings, sources, scholars, translations, additionalCoordinates, locations, rich };
 };
 
 export const useInscriptionExtendedData = (inscriptionId: string | null) => {
