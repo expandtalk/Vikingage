@@ -61,6 +61,22 @@ const SAINTS: Saint[] = [
     linkLabel: 'Visa på kartan →',
   },
   {
+    name: 'Sankta Ragnhild av Tälje',
+    life: 'ca 1075 – omkring 1117',
+    year: 1117,
+    note: 'Tälje-bornas (Södertälje) skyddshelgon, vördad i katolska kyrkan. KÄLLKRITIK: historiciteten trolig men osäker — äldsta källor är från 1400-talet. Uppgifterna om att hon var drottning/gemål till Inge (den äldre respektive den yngre) är omtvistade (Lilla rimkrönikan, Prosakrönikan), och fadersuppgiften "kung Halsten" anses orimlig. Enligt traditionen grundade hon Södertälje sockenkyrka och är begraven där.',
+    place: 'Södertälje (Tälje)',
+    href: '/explore?searchQuery=S%C3%B6dert%C3%A4lje',
+    linkLabel: 'Visa på kartan →',
+  },
+  {
+    name: 'Sankta Anna',
+    life: 'Jungfru Marias mor, Jesu mormor (legendarisk)',
+    year: 1450,
+    note: 'Ett av senmedeltidens mest populära helgon — skyddshelgon för blivande mödrar och bergsmän. KÄLLKRITIK: Anna nämns inte i Bibeln; legenden kommer ur den apokryfa skriften Jakobs protoevangelium (100-tal). Vanligt motiv i altarskåp: "Anna själv-tredje" (Anna, Maria och Jesusbarnet — tre generationer). Firas 9 december. Namnet lever kvar i S:t Annas skärgård (Östergötland). Källa: Historiska museet (SHM), paraphraserad.',
+    place: 'S:t Annas skärgård, Östergötland',
+  },
+  {
     name: 'Sankt Eskil',
     life: 'Engelsk missionsbiskop, martyr, 1000-tal',
     year: 1080,
