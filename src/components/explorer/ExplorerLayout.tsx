@@ -16,7 +16,8 @@ import { RegionFindsView } from '../regions/RegionFindsView';
 import { MobileDrawer } from '@/components/ui/mobile-drawer';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useDrivingMode } from '@/hooks/useDrivingMode';
-import { Filter } from 'lucide-react';
+import { Filter, ArrowLeft } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 
 interface ExplorerLayoutProps {
@@ -136,6 +137,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
 }) => {
   const { activePreset } = usePanelManager();
   const { currentFocus, clearFocus } = useFocusManager();
+  const { language } = useLanguage();
+  const focusSv = language === 'sv';
   const isExplorerMode = activePreset === 'explore';
   const isMobile = useIsMobile();
   const driving = useDrivingMode(); // billäge: strippa tidslinje/händelselinje/intresse-knapp
@@ -240,6 +243,14 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
 
     return (
       <div className="max-w-7xl mx-auto space-y-3">
+        {/* Stäng-knapp: alla focus-moduler (parishes/hundreds/carvers…) måste gå att lämna,
+            särskilt i mobilen där man annars blir låst. clearFocus → tillbaka till kartan/near me. */}
+        <button
+          onClick={clearFocus}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800/70 px-3 py-2 text-sm text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
+        >
+          <ArrowLeft className="h-4 w-4" /> {focusSv ? 'Stäng — tillbaka till kartan' : 'Close — back to map'}
+        </button>
         <LayoutHeader
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
