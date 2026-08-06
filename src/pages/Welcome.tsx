@@ -14,9 +14,7 @@ const WelcomeFooter = lazy(() => import('../components/welcome/WelcomeFooter').t
 
 const Welcome = () => {
   const [showIntroduction, setShowIntroduction] = useState(true);
-  // Aktiv hero-sökning → kollapsa kort-sektionen så träffarna får hela skärmen.
-  const [searching, setSearching] = useState(false);
-  
+
   const { data: dbStats, isLoading: statsLoading } = useQuery({
     queryKey: ['database-stats-v2'],
     queryFn: loadDatabaseStats,
@@ -76,16 +74,11 @@ const Welcome = () => {
         dbStats={displayStats}
         localizedText={localizedText}
         onSkipIntro={handleSkipIntro}
-        onSearchingChange={setSearching}
       />
 
-      {/* Kort-sektion + footer kollapsar mjukt under aktiv sökning så träfflistan äger skärmen. */}
-      <div
-        className={`transition-all duration-300 ${
-          searching ? 'max-h-0 opacity-0 overflow-hidden pointer-events-none' : 'max-h-[4000px] opacity-100'
-        }`}
-        aria-hidden={searching}
-      >
+      {/* Korten stannar kvar under sökning — träfflistan lägger sig ovanpå som overlay
+          (ingen mörkblå tomhet, footern förblir smal längst ned). */}
+      <div>
         <ViewLauncherGrid dbStats={displayStats} />
 
         {/* Podcasten näst sist — precis före footern */}

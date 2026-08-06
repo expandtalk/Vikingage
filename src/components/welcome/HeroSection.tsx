@@ -40,8 +40,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const handleActive = (v: boolean) => { setSearching(v); onSearchingChange?.(v); };
   return (
     <section
-      className={`relative overflow-hidden transition-[min-height] duration-300 ${
-        searching ? 'min-h-[42vh]' : 'min-h-[calc(70vh-50px)] lg:min-h-[calc(80vh-50px)]'
+      className={`relative transition-[min-height] duration-300 ${
+        searching ? 'min-h-[42vh]' : 'overflow-hidden min-h-[calc(70vh-50px)] lg:min-h-[calc(80vh-50px)]'
       }`}
     >
       <div className="absolute inset-0">
