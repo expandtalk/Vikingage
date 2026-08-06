@@ -503,7 +503,10 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   useEffect(() => {
     if (!heroActive || theme) return;
     const q = query.trim();
-    if (q.length < 4 || q === lastAskedRef.current) return;
+    // Auto-fyra BARA för frågelika sökningar (flerord eller frågetecken) — breda enordslookups
+    // ("runestone", "Birka") ska INTE trigga en RAG-runda (kostar latens); klicka "Fråga AI" då.
+    const looksLikeQuestion = q.includes(' ') || q.endsWith('?');
+    if (q.length < 6 || !looksLikeQuestion || q === lastAskedRef.current) return;
     const id = setTimeout(() => { lastAskedRef.current = q; askAI(); }, 900);
     return () => clearTimeout(id);
   }, [query, heroActive, theme, askAI]);
@@ -737,7 +740,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
             <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
               {/* AI-summary auto ÖVERST (spänner alla kolumner) — sammanfattning före resultatet */}
               {!theme && query.trim().length >= 3 && (aiLoading || aiAnswer) && (
-                <div className="shrink-0 max-h-[36vh] overflow-y-auto border-b border-slate-800 bg-slate-900 px-4 py-3">
+                <div className="shrink-0 max-h-[36vh] overflow-y-auto border-b border-slate-800 bg-slate-900 px-4 py-3 text-left">
                   {aiLoading && !aiAnswer && (
                     <div className="flex items-center gap-2 text-sm text-slate-400">
                       <Loader2 className="h-4 w-4 animate-spin text-amber-400" />{sv ? 'AI läser källorna…' : 'AI reading the sources…'}
