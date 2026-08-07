@@ -19,6 +19,7 @@ import { PlaceNamesLayer } from "./layers/PlaceNamesLayer";
 import { PaleoShorelinesLayer } from "./layers/PaleoShorelinesLayer";
 import { ShorelinePeriodControl } from "./ShorelinePeriodControl";
 import { WhatsHereProbe } from "./WhatsHereProbe";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import { useShorelineOverlay } from "@/hooks/useShorelineOverlay";
 import L from 'leaflet';
 import { useTradeRoutes } from "@/hooks/useTradeRoutes";
@@ -79,6 +80,7 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
   // Landhöjning (dåtida strandlinje) — SAMMA återanvändbara hook + kontroll som forsknings-
   // sidorna (Öland/Kalmar/Genealogi). Default 'Av'. Ritas som lager under punktlagren.
   const [shoreYear, setShoreYear] = React.useState<number | null>(null);
+  const isMobile = useIsMobile();
   const shoreMapRef = React.useRef<L.Map | null>(null);
   React.useEffect(() => { shoreMapRef.current = map; }, [map]);
   useShorelineOverlay(shoreMapRef, shoreYear);
@@ -149,11 +151,13 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
         />
         
         <CardContent className="p-0">
-          {/* Landhöjnings-kontroll (återanvändbar ShorelinePeriodControl) — inline ovanför kartan
-              i st.f. ännu en flytande overlay (kartan är redan överlastad). */}
-          <div className="px-3 pt-2 pb-1">
-            <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
-          </div>
+          {/* Landhöjnings-kontroll: inline ovanför kartan på desktop. På mobil renderas den istället
+              som en flytande vågknapp (nedan) — inline-raden tog annars ~20 % av kartytan (Daniel). */}
+          {!isMobile && (
+            <div className="px-3 pt-2 pb-1">
+              <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+            </div>
+          )}
           <MapContainer mapContainer={mapContainer} />
           
           {/* Viking Roads Layer */}
@@ -190,6 +194,13 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
               den svarta plattan skymde kartan. Återinför vid behov. */}
         </CardContent>
       </Card>
+
+      {/* Mobil: flytande strandlinje-kontroll (topp-vänster, under "Anpassa karta") i st.f. inline-rad. */}
+      {isMobile && (
+        <div className="absolute left-4 top-16 z-[1105]">
+          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" />
+        </div>
+      )}
 
       {/* "Vad finns här?" — klick-inspektion (kort radie) som når ALLA lager trots canvas-överlappning */}
       {isMapReady && <WhatsHereProbe map={map} />}
