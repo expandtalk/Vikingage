@@ -197,7 +197,7 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
 
       {/* Mobil: flytande strandlinje-kontroll (topp-vänster, under "Anpassa karta") i st.f. inline-rad. */}
       {isMobile && (
-        <div className="absolute left-4 top-16 z-[1105]">
+        <div className="absolute left-2 top-2 z-[1105]">
           <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" />
         </div>
       )}

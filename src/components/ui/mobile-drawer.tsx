@@ -23,15 +23,15 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-[1190] lg:hidden"
           onClick={onClose}
         />
       )}
-      
-      {/* Drawer */}
+
+      {/* Drawer — z över de flytande kartikonerna (z-[1050–1110]) så de inte "läcker" ovanpå lådan (Daniel). */}
       <div
         className={cn(
-          'fixed bottom-0 left-0 right-0 bg-background border-t transform transition-transform duration-300 ease-in-out z-50 lg:hidden',
+          'fixed bottom-0 left-0 right-0 bg-background border-t transform transition-transform duration-300 ease-in-out z-[1200] lg:hidden',
           isOpen ? 'translate-y-0' : 'translate-y-full',
           className
         )}

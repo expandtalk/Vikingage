@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Waves } from 'lucide-react';
+import { Waves, X } from 'lucide-react';
 
 // Periodväljare för dåtida strandlinje (landhöjning) på forskningskartorna. null = av.
 // Åren matchar SGU-skivorna (get_paleo_shorelines_nearest snappar till närmaste).
@@ -47,7 +47,7 @@ export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, varia
           onClick={() => setOpen((o) => !o)}
           aria-label="Dåtida strandlinje"
           aria-expanded={open}
-          className="relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-sky-500/70 bg-slate-900/90 text-sky-200 shadow-lg backdrop-blur hover:bg-slate-800"
+          className="relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-sky-500/70 bg-slate-900/70 text-sky-200 shadow-lg backdrop-blur hover:bg-slate-800"
         >
           <Waves className="h-5 w-5" />
           {value != null && (
@@ -56,8 +56,11 @@ export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, varia
         </button>
         {open && (
           <div className="absolute left-0 top-12 z-[1110] w-[min(80vw,300px)] rounded-lg border border-slate-700 bg-slate-900/95 p-3 shadow-xl backdrop-blur">
-            <div className="mb-2 flex items-center gap-1 text-xs font-medium text-sky-300">
-              <Waves className="h-3.5 w-3.5" /> Dåtida strandlinje
+            <div className="mb-2 flex items-center justify-between gap-1 text-xs font-medium text-sky-300">
+              <span className="flex items-center gap-1"><Waves className="h-3.5 w-3.5" /> Dåtida strandlinje</span>
+              <button type="button" onClick={() => setOpen(false)} aria-label="Stäng" className="text-slate-400 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
             </div>
             <div className="flex flex-wrap gap-1.5 text-xs">
               <PeriodButtons value={value} onChange={(y) => { onChange(y); }} />

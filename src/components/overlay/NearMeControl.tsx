@@ -348,7 +348,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
         onClick={() => { openNearMe(); locate(); }}
         title="Near me — vad finns omkring?"
         aria-label="Near me"
-        className="absolute z-[1050] bottom-4 right-4 flex items-center gap-2 p-2.5 sm:px-3.5 sm:py-2.5 rounded-full bg-sky-600/95 hover:bg-sky-600 text-white text-sm font-medium border-2 border-sky-400 shadow-lg backdrop-blur-md"
+        className="absolute z-[1050] bottom-2 right-4 flex items-center gap-2 p-2 sm:px-3.5 sm:py-2.5 rounded-full bg-sky-600/80 hover:bg-sky-600 text-white text-sm font-medium border-2 border-sky-400 shadow-lg backdrop-blur-md"
         style={{ minWidth: 44, minHeight: 44 }}
       >
         <LocateFixed className="h-5 w-5" /><span className="hidden sm:inline">Near me</span>

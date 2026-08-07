@@ -123,20 +123,25 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
       {!isMobile && <ClusterLegendControl onLegendToggle={onLegendToggle} enabledLayers={enabledLayers} />}
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
       {onToggleLegend && !showLegend && (
-        <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">
+        <div className={isMobile ? 'fixed top-16 right-14 z-[1100]' : 'absolute top-4 left-4 z-50 flex flex-col gap-2'}>
           <Button
             onClick={onToggleLegend}
-            className="bg-slate-900/95 backdrop-blur-md border-slate-500 text-white hover:bg-slate-800/95 flex items-center gap-2 shadow-lg border-2"
+            aria-label={sv ? 'Anpassa karta' : 'Customize map'}
+            className={isMobile
+              ? 'relative h-11 w-11 p-0 rounded-full bg-slate-900/70 backdrop-blur-md border-2 border-slate-500 text-white hover:bg-slate-800 shadow-lg'
+              : 'bg-slate-900/95 backdrop-blur-md border-slate-500 text-white hover:bg-slate-800/95 flex items-center gap-2 shadow-lg border-2'}
             size="sm"
           >
             <Map className="h-4 w-4" />
-            <span className="text-xs font-medium">{sv ? 'Anpassa karta' : 'Customize map'}</span>
+            {!isMobile && <span className="text-xs font-medium">{sv ? 'Anpassa karta' : 'Customize map'}</span>}
             {activeFiltersCount > 0 && (
-              <Badge variant="secondary" className="text-xs bg-orange-600 text-white border-orange-500 font-bold">
+              <Badge variant="secondary" className={isMobile
+                ? 'absolute -top-1 -right-1 px-1 text-[10px] bg-orange-600 text-white border-orange-500 font-bold'
+                : 'text-xs bg-orange-600 text-white border-orange-500 font-bold'}>
                 {activeFiltersCount}
               </Badge>
             )}
-            <ChevronDown className="h-3 w-3" />
+            {!isMobile && <ChevronDown className="h-3 w-3" />}
           </Button>
         </div>
       )}
