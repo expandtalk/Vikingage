@@ -1,0 +1,9 @@
+-- SHM-vikingaföremålens bilder: tillförlitliga PD/CC-bilder från Wikimedia Commons (Wikidata P18 för
+-- Helgö-buddhan; eponyma Commons-kategorier för Mästermyr/Vårby/Klinta). SHM:s egen bildvärd gav 503 →
+-- ej hotlinkbar. Söderala (bara replika-bild), Oden/Lindby och Birka-halsbandet uteslutna (ingen säker
+-- PD/CC-matchning). image_url + attribution (kredit/licens/Commons); source_url (SHM) orört.
+-- Applicerad via psql; denna fil = repo-spegling. 2026-08-07.
+update public.museum_objects set image_url = 'https://upload.wikimedia.org/wikipedia/commons/e/ed/Buddha_-_Historiska_museet_-_DIG_55929.jpg', attribution = 'Ola Myrin · CC BY 4.0 · via Wikimedia Commons — https://commons.wikimedia.org/wiki/File%3ABuddha%20-%20Historiska%20museet%20-%20DIG%2055929.jpg' where name = 'Buddha från Helgö';
+update public.museum_objects set image_url = 'https://upload.wikimedia.org/wikipedia/commons/e/ef/M%C3%A4stermyr_chest_documentation_doc_21592_043.jpg', attribution = 'en:Swedish History Museum / F. Hallberg &amp; F. Sällström · Public domain · via Wikimedia Commons — https://commons.wikimedia.org/wiki/File%3AM%C3%A4stermyr%20chest%20documentation%20doc%2021592%20043.jpg' where name = 'Mästermyrkistan';
+update public.museum_objects set image_url = 'https://upload.wikimedia.org/wikipedia/commons/4/42/V%C3%A5rbyskatten_1960.jpg', attribution = 'ingen uppgift · Public domain · via Wikimedia Commons — https://commons.wikimedia.org/wiki/File%3AV%C3%A5rbyskatten%201960.jpg' where name = 'Vårbyskatten';
+update public.museum_objects set image_url = 'https://upload.wikimedia.org/wikipedia/commons/4/4d/Finds_from_a_priestess%27_grave.jpg', attribution = 'Berig · CC BY-SA 4.0 · via Wikimedia Commons — https://commons.wikimedia.org/wiki/File%3AFinds%20from%20a%20priestess''%20grave.jpg (bild: fynd ur völvegraven, inkl. staven)' where name = 'Klintastaven';
