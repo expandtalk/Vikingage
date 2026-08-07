@@ -113,7 +113,7 @@ export const LayoutContent: React.FC<LayoutContentProps> = ({
           <InteractiveMap
             inscriptions={mapInscriptions}
             onMarkerClick={onMarkerClick}
-            className={isMobile ? 'w-full h-[78dvh]' : 'w-full h-[600px]'}
+            className={isMobile ? 'w-full h-[85dvh]' : 'w-full h-[600px]'}
             isVikingMode={false}
             enabledLegendItems={enabledLegendItems}
             selectedPeriod="all"

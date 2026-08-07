@@ -12,6 +12,7 @@ import { usePanelManager } from '@/hooks/usePanelManager';
 import { useFocusManager } from '@/hooks/useFocusManager';
 import { LayoutHeader } from './layout/LayoutHeader';
 import { LayoutContent } from './layout/LayoutContent';
+import { MobileProfileSheet } from '../overlay/MobileProfileSheet';
 import { RegionFindsView } from '../regions/RegionFindsView';
 import { MobileDrawer } from '@/components/ui/mobile-drawer';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -159,6 +160,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   
   // Mobile-specific state
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  // "Min sida"-arket (mobil): intresseprofil + tidsperiod + konto, öppnas via avatar-ikonen på kartan.
+  const [profileOpen, setProfileOpen] = useState(false);
 
   // Carver state management
   const handleCarverSelect = (carverId: string) => {
@@ -292,7 +295,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
           behåll profilväljaren men släck sök-/tidslinjemodulen (Daniel 2026-07-20). */}
       {currentFocus === 'cultSites' ? (
         <PanelLayoutSelector />
-      ) : (
+      ) : (!isMobile ? (
         <LayoutHeader
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -309,6 +312,27 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
           isTimelineMinimized={isTimelineMinimized}
           setIsTimelineMinimized={setIsTimelineMinimized}
         />
+      ) : null)}
+
+      {/* Mobil: profil-headern (intresseprofil + sök) döljs ovanför kartan — den bor nu i "Min sida"-
+          arket (avatar-ikonen). Sök finns kvar via förstoringsglaset i sidhuvudet. */}
+      {isMobile && (
+        <>
+          <button
+            type="button"
+            onClick={() => setProfileOpen(true)}
+            aria-label={focusSv ? 'Min sida' : 'My page'}
+            className="fixed right-3 top-16 z-[1100] flex h-11 w-11 items-center justify-center rounded-full border-2 border-amber-500/70 bg-slate-900/90 text-amber-200 shadow-lg backdrop-blur hover:bg-slate-800"
+          >
+            <span className="font-norse text-xl leading-none">ᚠ</span>
+          </button>
+          <MobileProfileSheet
+            isOpen={profileOpen}
+            onClose={() => setProfileOpen(false)}
+            selectedTimePeriod={selectedTimePeriod}
+            setSelectedTimePeriod={(v) => setSelectedTimePeriod?.(v)}
+          />
+        </>
       )}
 
       {/* Gudakorten flyttade UNDER kartan i gods-fokus (Daniel: visa kartan först) — se efter LayoutContent. */}
@@ -421,8 +445,8 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         </div>
       )}
 
-      {/* Timeline Module — döljs i billäget (map-first). */}
-      {shouldShowTimeline && !driving && (
+      {/* Timeline Module — döljs i billäget (map-first) OCH på mobil (tiden bor i "Min sida"-arket). */}
+      {shouldShowTimeline && !driving && !isMobile && (
         <div className="mt-6">
           <TimelineModule
             selectedPeriod={selectedTimePeriod}
