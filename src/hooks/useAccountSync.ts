@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useActiveExploreRoles, setActiveExploreRoles } from './useActiveExploreRole';
 import { useNearMe, setNearMeRadiusKm } from './useNearMe';
+import { useTimePeriod, setTimePeriod } from './useTimePeriod';
 import type { ProfileId } from '@/config/exploreProfiles';
 
 // Kontosynk (steg 2): speglar användarens val (intresseprofil/persona + Near me-radie) mot
@@ -10,12 +11,13 @@ import type { ProfileId } from '@/config/exploreProfiles';
 // Vid login LADDAS serverns val och appliceras (om de finns), annars pushas nuvarande lokala upp.
 // Därefter SKRIVS ändringar tillbaka debouncat. Ordningsvakt (readyFor) hindrar att login råkar
 // skriva över serverns val med lokala defaults innan laddningen hunnit klart.
-interface Prefs { roles?: string[]; radiusKm?: number }
+interface Prefs { roles?: string[]; radiusKm?: number; timePeriod?: string }
 
 export const useAccountSync = () => {
   const { user } = useAuth();
   const roles = useActiveExploreRoles();
   const { radiusKm } = useNearMe();
+  const timePeriod = useTimePeriod();
   const loadedFor = useRef<string | null>(null);
   const readyFor = useRef<string | null>(null);
   const hydrating = useRef(false);
@@ -29,7 +31,7 @@ export const useAccountSync = () => {
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await (supabase as any)
+        const { data } = await supabase
           .from('user_preferences').select('prefs').eq('user_id', user.id).maybeSingle();
         if (cancelled) return;
         const prefs = (data?.prefs ?? null) as Prefs | null;
@@ -37,12 +39,13 @@ export const useAccountSync = () => {
           hydrating.current = true;
           setActiveExploreRoles(prefs.roles as ProfileId[]);
           if (typeof prefs.radiusKm === 'number' && prefs.radiusKm > 0) setNearMeRadiusKm(prefs.radiusKm);
+          if (typeof prefs.timePeriod === 'string' && prefs.timePeriod) setTimePeriod(prefs.timePeriod);
           readyFor.current = user.id;
           setTimeout(() => { hydrating.current = false; }, 0);
         } else {
           // Inga serverval än → spara nuvarande lokala som kontots utgångsläge.
-          await (supabase as any).from('user_preferences').upsert({
-            user_id: user.id, prefs: { roles, radiusKm }, updated_at: new Date().toISOString(),
+          await supabase.from('user_preferences').upsert({
+            user_id: user.id, prefs: { roles, radiusKm, timePeriod: timePeriod ?? undefined }, updated_at: new Date().toISOString(),
           });
           readyFor.current = user.id;
         }
@@ -60,11 +63,11 @@ export const useAccountSync = () => {
     if (!user || readyFor.current !== user.id || hydrating.current) return;
     if (writeTimer.current) clearTimeout(writeTimer.current);
     writeTimer.current = setTimeout(() => {
-      void (supabase as any).from('user_preferences').upsert({
-        user_id: user.id, prefs: { roles, radiusKm }, updated_at: new Date().toISOString(),
+      void supabase.from('user_preferences').upsert({
+        user_id: user.id, prefs: { roles, radiusKm, timePeriod: timePeriod ?? undefined }, updated_at: new Date().toISOString(),
       });
     }, 800);
     return () => { if (writeTimer.current) clearTimeout(writeTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, roles, radiusKm]);
+  }, [user, roles, radiusKm, timePeriod]);
 };

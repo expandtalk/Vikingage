@@ -52,8 +52,8 @@ export const MobileProfileSheet: React.FC<MobileProfileSheetProps> = ({
           <p className="mt-1.5 text-xs text-slate-400">
             {user
               ? (sv
-                  ? 'Dina val (intresseprofil, radie) synkas till ditt konto och följer med mellan enheter.'
-                  : 'Your choices (interest profile, radius) sync to your account and follow you across devices.')
+                  ? 'Dina val (intresseprofil, tidsperiod, radie) synkas till ditt konto och följer med mellan enheter.'
+                  : 'Your choices (interest profile, time period, radius) sync to your account and follow you across devices.')
               : (sv
                   ? 'Dina val sparas på den här enheten. Logga in för att synka mellan enheter.'
                   : 'Your choices are saved on this device. Log in to sync across devices.')}

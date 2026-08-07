@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useRunicData } from '@/hooks/useRunicData';
 import { useLegendManager } from '@/hooks/useLegendManager';
 import { useFilterState } from '../FilterState';
@@ -7,6 +7,7 @@ import { useFocusManager } from '@/hooks/useFocusManager';
 import { useActiveExploreProfiles } from '@/hooks/useExploreProfiles';
 import { resolveProfileLayers } from '@/config/exploreProfiles';
 import { filterInscriptionsByPeriod } from '@/utils/timePeriods';
+import { useTimePeriod, setTimePeriod } from '@/hooks/useTimePeriod';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface UseExplorerDataProps {
@@ -48,13 +49,19 @@ export const useExplorerData = ({
   } = useFilterState();
 
   // Startperiod = profilens default; focus kan tvinga viking_age; reglaget kan sedan ändra.
-  const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>(activeProfile.defaultPeriod);
+  // Perioden bor nu i en persistent store (useTimePeriod) → överlever reload + kan kontosynkas.
+  // null = ej satt → faller tillbaka på profilens defaultPeriod. setTimePeriod persisterar.
+  const storedTimePeriod = useTimePeriod();
+  const selectedTimePeriod = storedTimePeriod ?? activeProfile.defaultPeriod;
+  const setSelectedTimePeriod = setTimePeriod;
 
   // Coerca perioden BARA vid genuint focus-byte. Tidigare re-fyrade denna effekt även när
   // react-query bytte profilobjekt (placeholder → DB) och skrev då över användarens manuella
   // val → reglaget "fastnade på Viking". Ref-vakten gör att bara ett faktiskt focus-byte
   // återställer perioden; efterföljande klick i reglaget behålls.
-  const lastCoercedFocusRef = useRef<string | null>(null);
+  // Init till nuvarande focus → mount-körningen HOPPAS över så ett persisterat/synkat periodval
+  // inte klobbras vid sidladdning; bara faktiska focus-byten coercar sedan perioden.
+  const lastCoercedFocusRef = useRef<string | null>(currentFocus);
   useEffect(() => {
     if (lastCoercedFocusRef.current === currentFocus) return;
     lastCoercedFocusRef.current = currentFocus;
