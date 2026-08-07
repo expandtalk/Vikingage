@@ -18,6 +18,7 @@ import { RelationMindmap } from './RelationMindmap';
 import { AnswerContext } from './AnswerContext';
 import { GodQuestions } from './GodQuestions';
 import { SuggestPlaceForm } from './SuggestPlaceForm';
+import { EXCURSIONS } from '@/data/excursions';
 
 // Facett-ikoner (entity_facets.icon = strängnamn) → lucide-komponent.
 const FACET_ICON: Record<string, LucideIcon> = {
@@ -94,12 +95,19 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   viking_name:    { labelSv: 'Namn', labelEn: 'Names', icon: Users, route: () => '/explore?focus=names' },
   source:         { labelSv: 'Källor', labelEn: 'Sources', icon: ScrollText, route: (h) => `/sources/${h.entity_id}` },
   source_text:    { labelSv: 'Källtexter', labelEn: 'Source texts', icon: ScrollText, route: (h) => `/sources/text/${h.entity_id}` },
-  road:           { labelSv: 'Vägar & leder', labelEn: 'Roads', icon: MapPin, route: () => '/explore' },
+  road:           { labelSv: 'Vägar & leder', labelEn: 'Roads', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   shipwreck:      { labelSv: 'Skeppsvrak', labelEn: 'Shipwrecks', icon: Ship, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   scholar:        { labelSv: 'Forskning', labelEn: 'Research', icon: Users, route: () => '/forskare' },
   place_name:     { labelSv: 'Ortnamn', labelEn: 'Place names', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   heritage_site:  { labelSv: 'Fornlämningar', labelEn: 'Ancient remains', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
-  excursion:      { labelSv: 'Utflykter', labelEn: 'Excursions', icon: Compass, route: (h) => h.signum ? `/excursions/${enc(h.signum)}` : '/excursions' },
+  excursion:      { labelSv: 'Utflykter', labelEn: 'Excursions', icon: Compass, route: (h) => {
+                      // search_document har UUID + null signum för utflykter, men ExcursionDetail
+                      // matchar på slug (e.id). Slå upp slugen via namnet i den statiska listan →
+                      // specifik utflyktssida i st.f. generiska /excursions (Daniel).
+                      const ex = EXCURSIONS.find((e) => e.name === h.label)
+                        ?? (h.signum ? EXCURSIONS.find((e) => e.id === h.signum) : undefined);
+                      return ex ? `/excursions/${enc(ex.id)}` : '/excursions';
+                    } },
   museum_object:  { labelSv: 'Föremål', labelEn: 'Objects', icon: Hammer, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   theme:          { labelSv: 'Teman', labelEn: 'Themes', icon: Sparkles, route: () => '/explore' },
 };
@@ -715,11 +723,11 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                   )
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-amber-100 truncate">{row.title}</span>
-                    {sub && <span className="text-xs text-slate-400 truncate">· {sub}</span>}
-                  </div>
-                  {showSnip && <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{snip}</p>}
+                  {/* Titel på egen rad; sublabel bryter till NY rad i st.f. ful avklippning
+                      (Daniel: "Öste... radbrytning hade fixat det"). Först VAD, sedan VAR. */}
+                  <span className="block font-medium text-amber-100 truncate">{row.title}</span>
+                  {sub && <span className="block text-xs text-slate-400 leading-snug">{sub}</span>}
+                  {showSnip && <p className="text-xs text-slate-400 line-clamp-2 mt-0.5">{snip}</p>}
                 </div>
               </button>
               );
