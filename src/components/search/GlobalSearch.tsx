@@ -395,7 +395,9 @@ const SideSenses: React.FC<{ query: string; sv: boolean }> = ({ query, sv }) => 
 // Startförslag i hero-sökrutan — visas direkt när fältet fokuseras (innan man skrivit klart),
 // så man får idéer om vad som finns att söka på.
 const SUGGESTIONS_SV = ['runsten', 'Rökstenen', 'Karlevistenen', 'guld', 'Öland', 'Birka', 'Oden', 'Tor', 'Gustav Vasa', 'runor', 'Sigtuna', 'fornborg'];
-const SUGGESTIONS_EN = ['runestone', 'Rök stone', 'gold', 'Öland', 'Birka', 'Odin', 'Thor', 'runes', 'gods', 'Sigtuna', 'Gotland', 'hillfort'];
+// 'guld' (ej 'gold'): guld-temat är svensk-labelat ('Guld') men tvåspråkigt; 'guld' träffar det,
+// engelska 'gold' faller under sök-golvet (fts-only + label-ankar). Byt tills tema-relevans tweakas.
+const SUGGESTIONS_EN = ['runestone', 'Rök stone', 'guld', 'Öland', 'Birka', 'Odin', 'Thor', 'runes', 'gods', 'Sigtuna', 'Gotland', 'hillfort'];
 
 // variant 'icon' = liten förstoringsglas-ikon (toppnav på övriga sidor) → öppnar dialog (⌘K);
 // 'hero' = stor Google-lik sökruta (startsidan) → RIKTIGT inline-fält, träffarna fälls ut under
