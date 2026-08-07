@@ -253,6 +253,14 @@ export const ExplorerMain: React.FC = () => {
           .then(({ data }: { data: Array<{ lat: number; lng: number }> | null }) => {
             const hit = data?.[0];
             if (hit?.lat != null) { mapNavigate(hit.lat, hit.lng, 11); return; }
+            // Exakt inskrifts-träff (namn/signum/vardagsnamn = "Karlevistenen") → centrera PÅ stenen
+            // (zoom 13). Annars drog en fuzzy-bimatch (Sigtunadosan i norr) tyngdpunkten ut i havet
+            // → tom karta (Daniel: "visar i princip ingenting, zoomar inte in på stenen").
+            const exact = inscriptions.find((i: any) =>
+              (i.name && i.name.toLowerCase() === query)
+              || (i.signum && i.signum.toLowerCase() === query)
+              || (Array.isArray(i.also_known_as) && i.also_known_as.some((a: string) => (a || '').toLowerCase() === query)));
+            if (exact) { const c = getEnhancedCoordinates(exact, false); if (c) { mapNavigate(c.lat, c.lng, 13); return; } }
             const pts = inscriptions
               .map((i: any) => getEnhancedCoordinates(i, false))
               .filter(Boolean) as CoordinatesWithZoom[];
