@@ -1,5 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'  // GLOBALT: annars saknar sök-overläggets karta (AnswerContext) sin
+                                    // CSS på sidor som inte redan laddat en kartkomponent → mörk ruta.
 import App from './App.tsx'
 import './index.css'
 

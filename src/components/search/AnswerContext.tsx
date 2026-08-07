@@ -32,6 +32,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const { data } = useAnswerContext(query);
   const { language } = useLanguage();
   const sv = language === 'sv';
+  // Giltig center = både lat OCH lng är tal (t.ex. Gotland gav {null,null} → rita ingen trasig karta).
+  const hasCenter = !!(data?.center && data.center.lat != null && data.center.lng != null);
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
@@ -40,7 +42,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const [lightbox, setLightbox] = useState<{ url: string; desc: string | null } | null>(null);
 
   useEffect(() => {
-    if (!data?.center || !mapEl.current) return;
+    if (!hasCenter || !data?.center || !mapEl.current) return;
     try {
       if (!mapRef.current) {
         mapRef.current = L.map(mapEl.current, { zoomControl: false, attributionControl: false, scrollWheelZoom: false, dragging: true });
@@ -106,7 +108,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
       {/* SEKTION 2: forskning + runstenar VÄNSTER (vänsterställt på desktop, Daniel), kartan till
           höger. Saknas karta → ren enkolumn (ingen strandad högerkolumn). */}
-      <div className={`grid gap-4 px-5 pb-4 ${data.center ? 'lg:grid-cols-[300px_minmax(0,1fr)]' : ''}`}>
+      <div className={`grid gap-4 px-5 pb-4 ${hasCenter ? 'lg:grid-cols-[300px_minmax(0,1fr)]' : ''}`}>
         <div className="min-w-0 space-y-4 lg:order-1">
           {data.research?.length > 0 && (
             <section>
@@ -171,7 +173,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
 
         {/* Kartan till höger på desktop (order-2); överst på mobil (stackad). */}
-        {data.center && (
+        {hasCenter && (
           <div ref={mapEl} className="order-first h-64 w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 lg:order-2 lg:h-80" style={{ minHeight: 256 }} />
         )}
       </div>
