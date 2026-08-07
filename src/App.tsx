@@ -57,6 +57,7 @@ const LegendStones = lazy(() => import("./pages/LegendStones"));
 const Runes = lazy(() => import("./pages/Runes"));
 const Oland = lazy(() => import("./pages/Oland"));
 const Goteborg = lazy(() => import("./pages/Goteborg"));
+const RegisterPlace = lazy(() => import("./pages/RegisterPlace"));
 const CentralPlaces = lazy(() => import("./pages/CentralPlaces"));
 const SiteIndex = lazy(() => import("./pages/SiteIndex"));
 const Maktsfarer = lazy(() => import("./pages/Maktsfarer"));
@@ -149,6 +150,8 @@ const App = () => (
                   <Route path="/sv/goteborg" element={<Goteborg />} />
                   <Route path="/en/gothenburg" element={<Goteborg />} />
                   <Route path="/goteborg" element={<Goteborg />} />
+                  <Route path="/registrera-plats" element={<RegisterPlace />} />
+                  <Route path="/en/register-place" element={<RegisterPlace />} />
                   <Route path="/sv/centralplatser" element={<CentralPlaces />} />
                   <Route path="/central-places" element={<CentralPlaces />} />
                   <Route path="/sidor" element={<SiteIndex />} />
