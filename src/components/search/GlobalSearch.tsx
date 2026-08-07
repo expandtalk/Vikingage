@@ -17,6 +17,7 @@ import { useSearchThumbs } from '@/hooks/useSearchThumbs';
 import { RelationMindmap } from './RelationMindmap';
 import { AnswerContext } from './AnswerContext';
 import { GodQuestions } from './GodQuestions';
+import { SuggestPlaceForm } from './SuggestPlaceForm';
 
 // Facett-ikoner (entity_facets.icon = strängnamn) → lucide-komponent.
 const FACET_ICON: Record<string, LucideIcon> = {
@@ -645,7 +646,9 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
 
       {((query.trim().length >= 2) || theme) && !loading && total === 0 && (
         <div className="p-6 text-center text-sm text-slate-400">
-          {sv ? 'Inga träffar för' : 'No matches for'} “{theme ? (sv ? theme.name : theme.name_en ?? theme.name) : query}”
+          <p>{sv ? 'Inga träffar för' : 'No matches for'} “{theme ? (sv ? theme.name : theme.name_en ?? theme.name) : query}”</p>
+          {/* Tomt läge → föreslå platsen (granskningskö, verifieras mot källa). Bara för fritextsök. */}
+          {!theme && query.trim().length >= 2 && <SuggestPlaceForm query={query.trim()} sv={sv} />}
         </div>
       )}
 

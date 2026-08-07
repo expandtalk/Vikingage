@@ -22,31 +22,24 @@ export const StatsSection: React.FC<StatsSectionProps> = ({
   const c = sv
     ? { results: 'Resultat', found: 'Hittade platser:', total: 'Totalt i databas:', coordinates: 'Koordinater:', period: 'Tidsperiod:' }
     : { results: 'Results', found: 'Places found:', total: 'Total in database:', coordinates: 'Coordinates:', period: 'Time period:' };
+  // Diskret rad (Daniel: "behöver inte se så prominent ut") — inte längre ett prominent kort.
   return (
-    <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-      <h3 className="text-white font-medium text-sm mb-2">{c.results}</h3>
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-slate-300 text-sm">{c.found}</span>
-          <span className="text-white font-semibold">{inscriptionsCount}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-slate-300 text-sm">{c.total}</span>
-          <span className="text-slate-400 text-sm">{totalInscriptions}</span>
-        </div>
-        {totalCoordinates && totalCoordinates >= 30 && (
-          <div className="flex justify-between items-center">
-            <span className="text-slate-300 text-sm">{c.coordinates}</span>
-            <span className="text-green-400 text-sm">{totalCoordinates}</span>
-          </div>
-        )}
-        {isVikingMode && (
-          <div className="flex justify-between items-center">
-            <span className="text-slate-300 text-sm">{c.period}</span>
-            <span className="text-amber-300 text-sm capitalize">{selectedTimePeriod.replace('_', ' ')}</span>
-          </div>
-        )}
-      </div>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+      <span><span className="font-medium text-slate-200">{inscriptionsCount}</span> {sv ? 'platser' : 'places'}</span>
+      <span className="text-slate-600">·</span>
+      <span>{totalInscriptions} {sv ? 'totalt' : 'total'}</span>
+      {totalCoordinates && totalCoordinates >= 30 && (
+        <>
+          <span className="text-slate-600">·</span>
+          <span className="text-emerald-400/80">{totalCoordinates} {sv ? 'koordinater' : 'coordinates'}</span>
+        </>
+      )}
+      {isVikingMode && (
+        <>
+          <span className="text-slate-600">·</span>
+          <span className="capitalize text-amber-300/80">{selectedTimePeriod.replace('_', ' ')}</span>
+        </>
+      )}
     </div>
   );
 };
