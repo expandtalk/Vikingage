@@ -142,7 +142,8 @@ const KalmarWall = () => {
         </div>
 
         <div className="mb-2">
-          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+          <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} /></div>
+          <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" /></div>
           <span className="block text-[11px] text-muted-foreground opacity-70">
             {sv ? 'Strandlinjen är DEM-härledd (Copernicus + landhöjning). Vid murens tid (1300–1600-tal) stod havet bara ~0,5–0,7 m högre; vikingatidsskivan (~950) visas som djuptidskontext.'
                 : 'Shoreline is DEM-derived (Copernicus + land uplift). In the wall\'s era (14th–17th c.) the sea stood only ~0.5–0.7 m higher; the Viking-age slice (~950) is shown as deep-time context.'}

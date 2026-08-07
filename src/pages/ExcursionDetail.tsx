@@ -425,7 +425,8 @@ const ExcursionDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
             <div className="mb-2 flex flex-col gap-2">
-              <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+              <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} /></div>
+              <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" /></div>
               <label className="inline-flex items-center gap-1.5 text-xs text-emerald-300 cursor-pointer"><input type="checkbox" checked={relief} onChange={(e) => setRelief(e.target.checked)} /> {sv ? 'Höjdrelief (terräng — strandvallar)' : 'Elevation hillshade (terrain)'}</label>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-sky-300 whitespace-nowrap">{sv ? 'Radie' : 'Radius'}: {radius < 1000 ? `${radius} m` : `${(radius / 1000).toFixed(1)} km`}</span>

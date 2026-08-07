@@ -135,7 +135,8 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[] }> = ({ groups }) => {
 
   return (
     <div>
-      <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+      <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} /></div>
+      <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" /></div>
       <label className="inline-flex items-center gap-1.5 text-xs text-emerald-300 cursor-pointer mb-2"><input type="checkbox" checked={relief} onChange={(e) => setRelief(e.target.checked)} /> Höjdrelief (terräng — Höga kustens strandvallar)</label>
       <div className="relative">
         <div ref={containerRef} className="w-full h-[480px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 480 }} />

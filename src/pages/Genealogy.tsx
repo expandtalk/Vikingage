@@ -366,7 +366,8 @@ const Genealogy = () => {
             <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2 text-gold"><MapPin className="h-5 w-5" /> {sv ? 'Anfäderna på kartan' : 'Ancestors on the map'}</CardTitle></CardHeader>
             <CardContent>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+                <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} /></div>
+                <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" /></div>
                 <label className="flex items-center gap-1.5 text-xs cursor-pointer text-muted-foreground hover:text-foreground" title={sv ? 'Visa SGU:s jordarter (morän, lera, sand…) — vilken mark gården låg på.' : 'Show SGU Quaternary deposits — the ground the farm sat on.'}>
                   <input type="checkbox" checked={showSoil} onChange={(e) => setShowSoil(e.target.checked)} className="accent-amber-600" />
                   🌾 {sv ? 'Jordarter (SGU)' : 'Soil (SGU)'}
