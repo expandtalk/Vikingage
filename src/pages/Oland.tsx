@@ -196,8 +196,14 @@ const OlandMap: React.FC<{
 
   return (
     <div>
-      <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+      <div className="hidden sm:block">
+        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+      </div>
       <div className="relative">
+        {/* Mobil: flytande strandlinje-kontroll (frigör kartytan) — inline på desktop ovan. */}
+        <div className="sm:hidden absolute left-2 top-16 z-[1105]">
+          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" />
+        </div>
         <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
         <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} mapRef={mapRef} />
         {/* Förhärskande vind i Kalmarsund (SMHI) — sundet kanaliserar N–S; styr seglingsrutterna. */}
