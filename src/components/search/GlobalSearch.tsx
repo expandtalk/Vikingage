@@ -130,12 +130,30 @@ const SUBLABEL_MAP: Record<string, string> = {
 };
 const humanSub = (title: string, sub?: string | null): string | null => {
   if (!sub) return null;
+  const t = (title || '').toLowerCase();
+  const seen = new Set<string>();
   const cleaned = sub.split(/\s*·\s*/)
     .map((part) => { const m = SUBLABEL_MAP[part.trim().toLowerCase()]; return m === undefined ? part.trim() : m; })
-    .filter(Boolean).join(' · ');
+    .filter(Boolean)
+    .filter((part) => {
+      const p = part.toLowerCase();
+      if (t.includes(p)) return false;   // segmentet står redan i titeln (t.ex. "fornborg", "Göteborg")
+      if (seen.has(p)) return false;      // dedup upprepade segment
+      seen.add(p); return true;
+    })
+    .join(' · ');
   if (!cleaned) return null;
   if (cleaned.toLowerCase() === (title || '').trim().toLowerCase()) return null; // upprepar titeln
   return cleaned;
+};
+
+// Snippet som bara upprepar titel/sublabel (t.ex. ts_headline "Västergötland Göteborg. 1.") är
+// brus — dölj den. Behåll bara snippets som TILLFÖR något (ord som inte redan syns i titel+sublabel).
+const snippetRedundant = (snip: string, title: string, sub?: string | null): boolean => {
+  const hay = `${title} ${sub ?? ''}`.toLowerCase();
+  const toks = snip.toLowerCase().split(/[^a-zà-ÿåäö0-9]+/i).filter((w) => w.length >= 3 && !/^\d+$/.test(w));
+  if (toks.length === 0) return true;                 // bara siffror/skräp
+  return toks.every((w) => hay.includes(w));          // alla ord finns redan i titel+sublabel
 };
 const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
   const groups: Group[] = [];
@@ -167,6 +185,16 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
   const insc = byType.get('inscription');
   insc?.rows.sort((a, b) =>
     (a.signum ?? a.title).localeCompare(b.signum ?? b.title, 'sv', { numeric: true, sensitivity: 'base' }));
+  // Gruppordning: ORTNAMN före SOCKEN (Daniel) — fast prioritet för geo-grupperna, övriga typer
+  // behåller sin relevansordning (originalindex) efter dem.
+  const GROUP_PRIORITY: Record<string, number> = {
+    landscape: 0, city: 1, place: 2, place_name: 3, excursion: 4, heritage_site: 5,
+    fortress: 6, hillfort: 6, parish: 7, hundred: 8, inscription: 9,
+  };
+  const origIdx = new Map(groups.map((g, i) => [g.type, i]));
+  groups.sort((a, b) =>
+    (GROUP_PRIORITY[a.type] ?? 100 + (origIdx.get(a.type) ?? 0)) -
+    (GROUP_PRIORITY[b.type] ?? 100 + (origIdx.get(b.type) ?? 0)));
   return groups;
 };
 
@@ -663,7 +691,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
             {g.rows.map((row) => {
               const sub = humanSub(row.title, row.subtitle);
               const snip = stripTags(row.snippet);
-              const showSnip = snip && snip.trim().toLowerCase() !== (row.title || '').trim().toLowerCase();
+              const showSnip = snip && !snippetRedundant(snip, row.title, sub);
               return (
               <button
                 key={row.key}
