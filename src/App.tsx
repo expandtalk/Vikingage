@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AccountSync } from "@/components/AccountSync";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { RequireRole } from "@/components/auth/RequireRole";
 import Welcome from "./pages/Welcome";
@@ -87,6 +88,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <AccountSync />
           <LanguageProvider>
             <TooltipProvider>
               <Toaster />
