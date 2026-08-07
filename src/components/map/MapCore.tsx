@@ -18,6 +18,7 @@ import { TradeRoutesLayer } from "./layers/TradeRoutesLayer";
 import { PlaceNamesLayer } from "./layers/PlaceNamesLayer";
 import { PaleoShorelinesLayer } from "./layers/PaleoShorelinesLayer";
 import { ShorelinePeriodControl } from "./ShorelinePeriodControl";
+import { WhatsHereProbe } from "./WhatsHereProbe";
 import { useShorelineOverlay } from "@/hooks/useShorelineOverlay";
 import L from 'leaflet';
 import { useTradeRoutes } from "@/hooks/useTradeRoutes";
@@ -189,6 +190,9 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
               den svarta plattan skymde kartan. Återinför vid behov. */}
         </CardContent>
       </Card>
+
+      {/* "Vad finns här?" — klick-inspektion (kort radie) som når ALLA lager trots canvas-överlappning */}
+      {isMapReady && <WhatsHereProbe map={map} />}
 
       {/* Legend is now handled by FloatingPanels - remove duplicate */}
     </div>
