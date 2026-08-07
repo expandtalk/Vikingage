@@ -305,11 +305,14 @@ export const generateBasicInscriptionItems = (
     id: c.key, label: c.labelSv, color: '#94a3b8', count: 0,
     enabled: itemEnabled(enabledLegendItems, c.key),
   }));
-  items.push({
-    id: 'historical_maps', label: '🗺️ Historiska kartor', color: '#94a3b8',
-    count: histMapChildren.length, enabled: itemEnabled(enabledLegendItems, 'historical_maps'),
-    type: 'category', children: histMapChildren,
-  });
+  // Bara om lagren är lanserade (HISTORICAL_MAP_LAYERS tom = ej lanserade → ingen tom rubrik).
+  if (histMapChildren.length > 0) {
+    items.push({
+      id: 'historical_maps', label: '🗺️ Historiska kartor', color: '#94a3b8',
+      count: histMapChildren.length, enabled: itemEnabled(enabledLegendItems, 'historical_maps'),
+      type: 'category', children: histMapChildren,
+    });
+  }
 
   // 7. RESTEN - kultplatser och andra objekt - dynamisk räkning
   const religiousChildren = [

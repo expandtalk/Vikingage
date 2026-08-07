@@ -27,7 +27,7 @@ export const tileUrl = (folder: string) => `${MAP_TILES_BASE}/${folder}/{z}/{x}/
 
 // De dataset som passar raster-overlay-spåret. (GSD-vektor & historicmaps-skeva blad kräver
 // egna pipelines och ingår inte här; se DB-TODO/kart-status.)
-export const HISTORICAL_MAP_LAYERS: HistoricalMapLayer[] = [
+const ALL_HISTORICAL_MAP_LAYERS: HistoricalMapLayer[] = [
   {
     key: 'histmap_haradsekonomiska', labelSv: 'Häradsekonomiska kartan', labelEn: 'Cadastral economic map (c. 1900)',
     tilesFolder: 'haradsekonomiska', attribution: 'Häradsekonomiska kartan © Lantmäteriet',
@@ -54,6 +54,13 @@ export const HISTORICAL_MAP_LAYERS: HistoricalMapLayer[] = [
     opacity: 0.5, maxNativeZoom: 15, minZoom: 5,
   },
 ];
+
+// EJ LANSERADE ännu: tiles är inte uppladdade till FTP → overlays blir tomma/konstiga och
+// "fylls i" utan att visa något vettigt (Daniel). Håll AV i UI tills tiles finns — flip till true
+// när public_html/map/tiles/<folder>/ är uppladdat. Då dyker lagren upp i legenden igen automatiskt.
+export const HISTORICAL_MAPS_LAUNCHED = false;
+export const HISTORICAL_MAP_LAYERS: HistoricalMapLayer[] =
+  HISTORICAL_MAPS_LAUNCHED ? ALL_HISTORICAL_MAP_LAYERS : [];
 
 // Legend-parent för hela gruppen.
 export const HISTORICAL_MAPS_PARENT = 'historical_maps';

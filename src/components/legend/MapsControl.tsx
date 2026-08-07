@@ -40,7 +40,8 @@ export const MapsControl: React.FC<Props> = ({ historicalChildren, onToggleItem 
         </div>
       </div>
 
-      {/* Historiska kartor — staplingsbara overlays, var och en med opacitet + ton */}
+      {/* Historiska kartor — staplingsbara overlays. Döljs helt när ej lanserade (tom lista). */}
+      {historicalChildren.length > 0 && (
       <div>
         <p className="text-[10px] text-gray-400 mb-1">Historiska kartor <span className="text-gray-600">(stapla flera)</span></p>
         <div className="space-y-1.5">
@@ -88,6 +89,7 @@ export const MapsControl: React.FC<Props> = ({ historicalChildren, onToggleItem 
           })}
         </div>
       </div>
+      )}
     </div>
   );
 };
