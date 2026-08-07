@@ -2,6 +2,7 @@
 import React, { useState, Suspense, lazy } from 'react';
 import { Header } from '../components/Header';
 import { HeroSection } from '../components/welcome/HeroSection';
+import { WelcomeNearMe } from '../components/welcome/WelcomeNearMe';
 import { ViewLauncherGrid } from '../components/welcome/ViewLauncherGrid';
 import { PageMeta } from '../components/PageMeta';
 import { useQuery } from '@tanstack/react-query';
@@ -69,7 +70,10 @@ const Welcome = () => {
         keywords="runstenar, vikingatid, runologi, skandinavisk historia, arkeologi, fornnordisk kultur"
       />
       <Header />
-      
+
+      {/* Mobil = fältverktyg: Near me som primär handling direkt på startsidan (dold på desktop). */}
+      <WelcomeNearMe />
+
       <HeroSection
         dbStats={displayStats}
         localizedText={localizedText}
