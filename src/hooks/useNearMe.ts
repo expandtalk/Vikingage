@@ -19,11 +19,12 @@ interface State {
   results: NearMeFeature[];
   resultsLoading: boolean;
 }
-// Default 5 km = en gåendes räckvidd (Daniel). Slider + färdsätts-chips justerar.
-// Radien sparas mellan besök (localStorage) så inställningen minns sig.
+// Default 0,2 km (200 m) = fältverktygets närzon: vad står JAG bredvid just nu (Daniel). Slider +
+// färdsätts-chips vidgar (Gå/Cykla/Kör). Radien sparas mellan besök (localStorage) så valet minns sig.
 const RKEY = 'vikingage_nearme_radius_v1';
-const loadRadius = (): number => { try { const v = Number(localStorage.getItem(RKEY)); return isFinite(v) && v > 0 ? v : 5; } catch { return 5; } };
-let state: State = { open: false, pos: null, radiusKm: typeof window !== 'undefined' ? loadRadius() : 5, locating: false, error: null, results: [], resultsLoading: false };
+const DEFAULT_RADIUS_KM = 0.2;
+const loadRadius = (): number => { try { const v = Number(localStorage.getItem(RKEY)); return isFinite(v) && v > 0 ? v : DEFAULT_RADIUS_KM; } catch { return DEFAULT_RADIUS_KM; } };
+let state: State = { open: false, pos: null, radiusKm: typeof window !== 'undefined' ? loadRadius() : DEFAULT_RADIUS_KM, locating: false, error: null, results: [], resultsLoading: false };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
