@@ -152,6 +152,25 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             </section>
           )}
 
+          {/* Sevärda platser: notabla heritage-monument i trakten (prominence-ordnat ur DB) — så
+              ikoniska monument syns för en plats/ett landskap (Daniel: "Gotlands ringmur borde synas"). */}
+          {data.sites?.length > 0 && (
+            <section>
+              <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+                <MapPin className="h-3.5 w-3.5" /> {sv ? 'Sevärda platser' : 'Notable sites'}
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {data.sites.slice(0, 10).map((s) => (
+                  <button key={s.id} onClick={() => onGo(`/explore?searchQuery=${encodeURIComponent(s.name)}`)}
+                    title={s.type ?? undefined}
+                    className="rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100">
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Litteratur: böcker som documents-länkats till entiteten. ISBN → "Hitta boken"-länk
               (STEG 0, ingen affiliate ännu). Skild från källor/forskning för trovärdighetens skull. */}
           {data.literature?.length > 0 && (
