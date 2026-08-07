@@ -106,10 +106,10 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
       )}
 
-      {/* SEKTION 2: forskning + runstenar VÄNSTER (vänsterställt på desktop, Daniel), kartan till
-          höger. Saknas karta → ren enkolumn (ingen strandad högerkolumn). */}
-      <div className={`grid gap-4 px-5 pb-4 ${hasCenter ? 'lg:grid-cols-[300px_minmax(0,1fr)]' : ''}`}>
-        <div className="min-w-0 space-y-4 lg:order-1">
+      {/* SEKTION 2: kartan VÄNSTER/prominent, forskning+runstenar i HÖGERKOLUMNEN (Daniel).
+          Saknas karta → ren enkolumn (ingen strandad kolumn). */}
+      <div className={`grid gap-4 px-5 pb-4 ${hasCenter ? 'lg:grid-cols-[minmax(0,1fr)_300px]' : ''}`}>
+        <div className="min-w-0 space-y-4 lg:order-2">
           {data.research?.length > 0 && (
             <section>
               <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
@@ -172,9 +172,18 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           )}
         </div>
 
-        {/* Kartan till höger på desktop (order-2); överst på mobil (stackad). */}
+        {/* Kartan till vänster/prominent på desktop (order-1); överst på mobil. Rubrik så man ser VAD
+            kartan visar (Daniel: "en karta som jag inte vet vad den föreställer"). */}
         {hasCenter && (
-          <div ref={mapEl} className="order-first h-64 w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 lg:order-2 lg:h-80" style={{ minHeight: 256 }} />
+          <div className="order-first lg:order-1">
+            <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+              <MapPin className="h-3.5 w-3.5" />
+              {sv ? 'Karta' : 'Map'}
+              {data.page?.title ? ` · ${data.page.title}` : query ? ` · ${query}` : ''}
+              {data.count ? ` · ${data.count} ${sv ? 'runstenar i trakten' : 'runestones nearby'}` : ''}
+            </div>
+            <div ref={mapEl} className="h-64 w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 lg:h-80" style={{ minHeight: 256 }} />
+          </div>
         )}
       </div>
 
