@@ -90,9 +90,11 @@ export const WhatsHereProbe: React.FC<{ map: L.Map | null }> = ({ map }) => {
       {!active ? (
         <button
           onClick={() => setActive(true)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/60 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-amber-100 shadow-lg backdrop-blur hover:bg-slate-800"
+          title="Vad finns här?"
+          aria-label="Vad finns här?"
+          className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/60 bg-slate-900/90 p-2.5 sm:px-3 sm:py-1.5 text-xs font-medium text-amber-100 shadow-lg backdrop-blur hover:bg-slate-800"
         >
-          <MapPinned className="h-3.5 w-3.5" /> Vad finns här?
+          <MapPinned className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Vad finns här?</span>
         </button>
       ) : (
         <div className="rounded-lg border border-slate-700 bg-slate-900/95 shadow-xl backdrop-blur">
