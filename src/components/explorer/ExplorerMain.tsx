@@ -246,13 +246,14 @@ export const ExplorerMain: React.FC = () => {
             return;
         }
 
-        // Priority 5: geokoda ortnamnet mot DB (place_names) → centrera rätt i st.f. att hoppa
-        //   till en godtycklig runsten (Daniel: "Härnösand visar Skanör/Falsterbo"). Async; om
-        //   ingen ort-träff → resultatens TYNGDPUNKT (ej [0], som gav den orelaterade kartan).
-        supabase.from('place_names').select('lat,lng').ilike('name', query).not('lat', 'is', null).limit(1)
-          .then(({ data }: { data: Array<{ lat: number; lng: number }> | null }) => {
+        // Priority 5: generell platsupplösare — slår upp exakt entitet (ortnamn OCH kloster/kyrkor/
+        //   monument/inskrifter/museiföremål) och centrerar PÅ platsen med lämplig zoom. Löser t.ex.
+        //   "Kalmars dominikankonvent (Svartbrödraklostret)" som tidigare inte gick att nå (Daniel).
+        //   Ingen exakt entitet → fall igenom till exakt inskrifts-träff, annars resultatens TYNGDPUNKT.
+        supabase.rpc('resolve_place', { p_q: query })
+          .then(({ data }: { data: Array<{ lat: number; lng: number; zoom: number }> | null }) => {
             const hit = data?.[0];
-            if (hit?.lat != null) { mapNavigate(hit.lat, hit.lng, 11); return; }
+            if (hit?.lat != null && hit?.lng != null) { mapNavigate(hit.lat, hit.lng, hit.zoom ?? 12); return; }
             // Exakt inskrifts-träff (namn/signum/vardagsnamn = "Karlevistenen") → centrera PÅ stenen
             // (zoom 13). Annars drog en fuzzy-bimatch (Sigtunadosan i norr) tyngdpunkten ut i havet
             // → tom karta (Daniel: "visar i princip ingenting, zoomar inte in på stenen").
