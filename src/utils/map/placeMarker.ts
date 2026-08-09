@@ -55,11 +55,15 @@ export const FEATURE_ICON: Record<string, string> = {
   'riksröse': 'riksrose', 'gränsmärke': 'riksrose', 'råmärke': 'riksrose',
   'sevärdhet': 'sevardhet', 'badplats': 'badplats', 'fyr': 'fyr', 'fyrplats': 'fyr',
   'källa med tradition': 'droplet', 'källa': 'droplet',
-  'runestone': 'rune', 'runsten': 'rune',
+  'runestone': 'rune', 'runsten': 'rune', 'rune': 'rune',
   'church': 'church', 'kyrka': 'church',
   'hillfort': 'fort', 'fornborg': 'fort',
   'fro_name': 'grain', 'find': 'coin', 'fynd': 'coin', 'depå': 'coin',
   'cult': 'idol', 'kultplats': 'idol', 'offerplats': 'idol',
+  // Tematiska lager-kinder (forskningssidornas egna nyckelord → glyf; formen bär typen).
+  'bridge': 'bro', 'bro/vadställe': 'bro', 'thing': 'scales', 'tingsplats': 'scales',
+  'fort': 'hus_slott', 'borg': 'hus_slott', 'endpoint': 'dot',
+  'sacral': 'idol', 'sakralt': 'idol', 'power': 'shield', 'makt': 'shield', 'central': 'crown', 'centralort': 'crown',
 };
 
 const normFeat = (s?: string | null) => (s || '').toLowerCase().normalize('NFC').trim();

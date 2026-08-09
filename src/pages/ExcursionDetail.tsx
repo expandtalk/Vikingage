@@ -23,6 +23,9 @@ import { PLACE_TYPE_LABEL, FIND_TYPE_LABEL } from '@/components/excursions/nearb
 import { ExcursionProse, excerptText } from '@/components/excursions/ExcursionProse';
 import { NEAR_CATS, classifyNear, type NearCat } from '@/utils/nearFeatureCategories';
 import { ReferenceList } from '@/components/references/ReferenceList';
+import { MapLegend } from '@/components/map/MapLegend';
+import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
+import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 
 const ATTR_LABEL: Record<string, { sv: string; en: string }> = {
   signed: { sv: 'signerad', en: 'signed' },
@@ -58,6 +61,13 @@ const ExcursionDetail = () => {
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const radiusLayerRef = useRef<L.FeatureGroup | null>(null);
+  // Tematiska on-map-lager i egna grupper (togglas av MapLegend). Löser "kan inte klicka på lagren".
+  const tileRef = useRef<L.TileLayer | null>(null);
+  const routeGroupRef = useRef<L.LayerGroup>(L.layerGroup());
+  const fortressGroupRef = useRef<L.FeatureGroup>(L.featureGroup());
+  const hypGroupRef = useRef<L.LayerGroup>(L.layerGroup());
+  // Vilka lager har innehåll (fornborgar/hypoteser laddas async) → visa bara relevanta i legenden.
+  const [presentLayers, setPresentLayers] = useState<Set<string>>(() => new Set(['route']));
   const [shoreYear, setShoreYear] = useState<number | null>(excursion?.defaultShoreYear ?? null);
   const [radius, setRadius] = useState(2000);  // 500 m var för tätt på landsbygden → tom panel; 2 km ger sevärdheter
   const [relief, setRelief] = useState(false);
@@ -67,6 +77,20 @@ const ExcursionDetail = () => {
   // Byt utflykt (id-param) → återställ strandlinjen till utflyktens default.
   useEffect(() => { setShoreYear(excursion?.defaultShoreYear ?? null); }, [excursion?.id]);
   useReliefOverlay(mapRef, relief);
+
+  // Klickbar on-map-legend: togglebara tematiska lager + baskarta. Nyckar är fasta (seedas en gång
+  // av useMapLegendState); vilka som VISAS styrs av presentLayers (dolda tills de har innehåll).
+  const EXC_LEGEND: LegendLayerDef[] = useMemo(() => [
+    { key: 'route', label: sv ? 'Led & lämningar' : 'Route & remains', color: '#eab308', defaultOn: true },
+    { key: 'fortresses', label: sv ? 'Fornborgar' : 'Hillforts', color: '#ef4444', defaultOn: true },
+    { key: 'hypotheses', label: sv ? 'Lägeshypoteser' : 'Location hypotheses', color: '#0ea5e9', defaultOn: true },
+    { key: 'osm', label: sv ? 'Baskarta (OSM)' : 'Base map (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
+  ], [sv]);
+  const { enabled: layerOn, toggle: toggleLayer } = useMapLegendState(EXC_LEGEND);
+  const visibleLegend = useMemo(
+    () => EXC_LEGEND.filter((d) => d.group === 'basemap' || presentLayers.has(d.key)),
+    [EXC_LEGEND, presentLayers],
+  );
 
   // Sevärdheter inom reglerbar radie (features_near-RPC: heritage_sites + kyrkor, avstånd i meter).
   const { data: nearbyDb } = useQuery({
@@ -270,19 +294,23 @@ const ExcursionDetail = () => {
     if (!excursion || !containerRef.current || mapRef.current) return;
     const { lat, lng } = excursion.coords;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [lat, lng], zoom: 14, scrollWheelZoom: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors', maxZoom: 19,
     }).addTo(map);
-    const mainMarker = L.circleMarker([lat, lng], { radius: 9, color: '#78350f', fillColor: '#eab308', fillOpacity: 0.9, weight: 2 })
-      .addTo(map).bindPopup(`<strong>${excursion.name}</strong>`);
-    // Permanent etikett på huvudpinnen (som på en informationstavla) när mapLabel är satt.
-    if (excursion.mapLabel) mainMarker.bindTooltip(excursion.mapLabel, { permanent: true, direction: 'right', offset: [10, 0], className: 'excursion-map-label' });
+    // Tematiska lager i egna grupper (rensa ev. innehåll från förra utflykten, lägg på nya kartan).
+    routeGroupRef.current.clearLayers(); fortressGroupRef.current.clearLayers(); hypGroupRef.current.clearLayers();
+    routeGroupRef.current.addTo(map); fortressGroupRef.current.addTo(map); hypGroupRef.current.addTo(map);
+    setPresentLayers(new Set(['route']));
+    // Huvudpinnen = medaljong (prominent → permanent namn, som en informationstavla).
+    L.marker([lat, lng], { icon: createPlaceMedallion({ color: '#eab308', icon: excursion.signum ? 'rune' : 'sevardhet', label: excursion.mapLabel || excursion.name, prominent: true, hairline: true }) })
+      .bindPopup(`<strong>${excursion.name}</strong>`).addTo(routeGroupRef.current);
 
-    // Extra intressepunkter (t.ex. skålgropsstenen + gravfältet i samma utflykt)
+    // Extra intressepunkter (t.ex. skålgropsstenen + gravfältet i samma utflykt) → medaljong (hover-namn).
     const extraPts = excursion.points ?? [];
     extraPts.forEach((pt) => {
-      L.marker([pt.lat, pt.lng]).addTo(map)
-        .bindPopup(`<strong>${pt.name}</strong>${pt.note ? `<br/>${pt.note}` : ''}`);
+      L.marker([pt.lat, pt.lng], { icon: createPlaceMedallion({ color: '#38bdf8', icon: 'dot', label: pt.name, prominent: false, hairline: true }) })
+        .bindPopup(`<strong>${pt.name}</strong>${pt.note ? `<br/>${pt.note}` : ''}`)
+        .addTo(routeGroupRef.current);
     });
     if (extraPts.length) {
       const pts: [number, number][] = [[lat, lng], ...extraPts.map((p) => [p.lat, p.lng] as [number, number])];
@@ -306,18 +334,21 @@ const ExcursionDetail = () => {
             const p = feature?.properties ?? {};
             const typ = p.type ?? p.typ;
             const labeled = !!p.label;
-            // Regionala noder ("Historia längs leden") ritas tystare än de lokala lämningarna.
+            // Regionala noder ("Historia längs leden") ritas tystare (hover-namn) än de lokala lämningarna.
             const regional = p.tier === 'regional';
-            const marker = L.circleMarker(latlng, { radius: regional ? 4 : (labeled ? 7 : 5), color: regional ? '#334155' : '#1c1917', weight: 1, fillColor: colorByType.get(norm(typ)) ?? '#94a3b8', fillOpacity: regional ? 0.8 : 0.9 });
-            // Namngivna lämningar får en permanent, läsbar etikett (som Lantmäteriets vandringstavla).
-            if (labeled) marker.bindTooltip(p.label, { permanent: true, direction: 'right', offset: [8, 0], className: regional ? 'excursion-map-label excursion-map-label--regional' : 'excursion-map-label' });
-            return marker;
+            // Medaljong: FORMEN (featureIcon) bär typen; namngivna lokala lämningar blir prominenta
+            // (permanent namn, som Lantmäteriets vandringstavla), regionala/onamnade får hover-namn.
+            return L.marker(latlng, { icon: createPlaceMedallion({
+              color: colorByType.get(norm(typ)) ?? '#94a3b8',
+              icon: featureIcon(typ), label: p.label ?? '',
+              prominent: labeled && !regional, size: regional ? 26 : 30, hairline: true,
+            }) });
           },
           onEachFeature: (feature, lyr) => {
             const p = feature?.properties ?? {};
             lyr.bindPopup(`<strong>${p.label ?? p.type ?? p.typ ?? 'Lämning'}</strong>${p.raa ? `<br/>${p.raa}` : ''}`);
           },
-        }).addTo(mapRef.current);
+        }).addTo(routeGroupRef.current);
         // Fokusera kartan på de namngivna lämningarna (den lokala vandringsytan) + huvudpinnen så
         // etiketterna blir läsbara — farled-linjen sträcker sig vidare som riktningskontext.
         // Faller tillbaka till hela lagrets bounds om inga namngivna punkter finns.
@@ -353,19 +384,22 @@ const ExcursionDetail = () => {
         .ilike('region', `%${excursion.fortressRegion}%`)
         .then(({ data }) => {
           if (cancelled || !mapRef.current || !data?.length) return;
-          const group = L.featureGroup();
+          fortressGroupRef.current.clearLayers();
+          let n = 0;
           for (const f of data) {
             const ll = parsePoint(f.coordinates);
             if (!ll) continue;
             // Klickbar → borgens egen sida (Daniel: "läsa mer om de specifika fornborgarna").
             // /fortresses/:id resolvar viking_fortresses via FortressDetails fallback.
             const readMore = `<br/><a href="/fortresses/${f.id}" style="font-size:11px;color:#0ea5e9">${sv ? 'Läs mer om borgen' : 'Read more'} →</a>`;
-            L.circleMarker(ll, { radius: 7, color: '#1c1917', weight: 1, fillColor: statusColor(f), fillOpacity: 0.9 })
+            // Medaljong: fort-glyf bär typen, färgen bär status (grön/gul/röd).
+            L.marker(ll, { icon: createPlaceMedallion({ color: statusColor(f), icon: 'fort', label: f.name, prominent: false, hairline: true }) })
               .bindPopup(`<strong>${f.name}</strong><br/>${f.status === 'reconstructed' ? (sv ? 'Rekonstruerad' : 'Reconstructed') : f.excavated ? (sv ? 'Utgrävd' : 'Excavated') : (sv ? 'Ej utgrävd' : 'Not excavated')}${f.description ? `<br/><em>${f.description}</em>` : ''}${readMore}`)
-              .addTo(group);
+              .addTo(fortressGroupRef.current);
+            n++;
           }
-          group.addTo(mapRef.current);
-          try { const b = group.getBounds(); if (b.isValid()) mapRef.current.fitBounds(b, { padding: [30, 30] }); } catch { /* tomt */ }
+          if (n) setPresentLayers((prev) => (prev.has('fortresses') ? prev : new Set(prev).add('fortresses')));
+          try { const b = fortressGroupRef.current.getBounds(); if (b.isValid()) mapRef.current.fitBounds(b, { padding: [30, 30] }); } catch { /* tomt */ }
         });
     }
 
