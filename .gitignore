@@ -54,3 +54,7 @@ exports/tingsplatser.json
 exports/fornborgar_daterade.json
 exports/manifest.json
 scripts/data/_recon.log
+
+# Data/asset-filer som inte hör hemma i app-repot (indata + designkällor)
+hav.json
+kartsymboler/
