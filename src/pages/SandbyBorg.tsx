@@ -7,18 +7,23 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, MapPin, Coins, AlertTriangle, ScrollText, ExternalLink, Landmark, Mountain, BookOpen } from 'lucide-react';
+import { Shield, MapPin, Coins, AlertTriangle, ScrollText, ExternalLink, Landmark, Mountain, BookOpen, Microscope, Bot, Users, Swords, CalendarClock, Layers, ScanSearch } from 'lucide-react';
 
 // /sv/sandby-borg — forskningssida + utflyktsmål om Sandby borg, ringborgen på sydöstra Öland
-// där en massaker ca 480 e.Kr. lämnade de dödade obegravda och platsen övergiven.
+// där en massaker under folkvandringstid lämnade de dödade obegravda och platsen övergiven.
+//
+// DATERING (omtvistad, redovisas som TVÅ rader):
+//   Äldre uppskattning ~480 e.Kr. (typologi + myntens TPQ + Roms fall 476).
+//   Ny, starkare ¹⁴C-datering ca 500–540 e.Kr. (29 dateringar, dietkorrigerade + Bayesiansk
+//   modellering, RJ-projekt P15-0138:1). Den nyare ligger senare än den äldre typologiska.
 //
 // KÄLLKRITIK: alla hårda fakta nedan är belagda i vår DB (swedish_hillforts, "Sandby borg"):
 //   koordinat (16.63926,56.55253) → 56.55253/16.63926, RAÄ Sandby 45:1, Sandby sn/Mörbylånga,
-//   datering folkvandringstid 400–550 + massaker ca 480 (dating_basis "14C + massakerfynden",
-//   dating_confidence "belagd", dating_source "Kalmar läns museum; Victor et al. (DiVA)"),
+//   datering folkvandringstid 400–550 (dating_source "Kalmar läns museum; Victor et al. (DiVA)"),
 //   fort_function "defense", terräng (elevation ~1,16 m, rel_height −1,77 m, on_height=false,
 //   jordart "Svallsediment, grus", bördighet "mager" — samplat 2026-08-04).
-// Massaker/tabu-övergivning = TOLKNING ur fynden (Kalmar läns museum) — märkt som sådan.
+// Massaker/avrättning/tabu-övergivning = TOLKNING ur fynden (Kalmar läns museum) — märkt som sådan.
+// Undersökningsgrad: endast 3 av 53 georadar-kartlagda hus helt undersökta (<10 % av innerytan).
 
 const LAT = 56.55253;
 const LNG = 16.63926;
@@ -70,10 +75,10 @@ const SandbyBorg = () => {
   return (
   <div className="min-h-screen viking-bg">
     <PageMeta
-      title="Sandby borg — ringborgen på Öland där tiden stannade ~480 e.Kr."
-      titleEn="Sandby borg — the Öland ring fort frozen at ~480 AD"
-      description="Forskningssida om Sandby borg på sydöstra Öland (RAÄ Sandby 45:1). En folkvandringstida ringborg där en massaker ca 480 e.Kr. lämnade de dödade obegravda och platsen övergiven — med gömda skatter av förgyllda spännen och romerska guldmynt. Belagd datering, källkritik och läge."
-      descriptionEn="Research page on Sandby borg, a Migration-Period ring fort on south-eastern Öland (RAÄ Sandby 45:1). A massacre around 480 AD left the dead unburied and the fort abandoned — with hidden hoards of gilded brooches and Roman gold coins. Sourced dating, source criticism and location."
+      title="Sandby borg — ringborgen på Öland och massakern under folkvandringstid"
+      titleEn="Sandby borg — the Öland ring fort and its Migration-Period massacre"
+      description="Forskningssida om Sandby borg på sydöstra Öland (RAÄ Sandby 45:1). En folkvandringstida ringborg där en massaker lämnade de dödade obegravda och platsen övergiven. Dateringen är omtvistad: äldre uppskattning ~480 e.Kr., nyare ¹⁴C-datering ca 500–540 e.Kr. Depåer med förgyllda spännen och enstaka romerska guldmynt — inte myntskatter. Belagd datering, källkritik och forensisk metod."
+      descriptionEn="Research page on Sandby borg, a Migration-Period ring fort on south-eastern Öland (RAÄ Sandby 45:1). A massacre left the dead unburied and the fort abandoned. The dating is disputed: an older estimate of ~480 AD versus a newer radiocarbon date of c. 500–540 AD. Deposits of gilded brooches and a few Roman gold coins — not coin hoards. Sourced dating, source criticism and forensic method."
       keywords="Sandby borg, Öland, fornborg, ringborg, folkvandringstid, massaker, Kalmar läns museum, solidi, reliefspännen, RAÄ Sandby 45:1, utflykt Öland"
     />
     <Header />
@@ -84,12 +89,14 @@ const SandbyBorg = () => {
           <Shield className="h-8 w-8 text-gold" />
           Sandby borg
         </h1>
-        <p className="text-gold/90 text-sm font-medium mb-3">Ringborgen på sydöstra Öland där tiden stannade omkring 480 e.Kr.</p>
+        <p className="text-gold/90 text-sm font-medium mb-3">Ringborgen på sydöstra Öland och massakern under folkvandringstid.</p>
         <p className="text-muted-foreground text-lg">
           Sandby borg är en <strong>folkvandringstida ringborg</strong> vid Ölands sydöstra kust. Vid en
           arkeologisk undersökning påträffades <strong>obegravda människor liggande där de föll</strong> —
-          husen återbeboddes aldrig, och borgen lämnades orörd. Fynden gör platsen till ett av Sveriges
-          mest omtalade järnåldersfynd: en nedfrusen ögonblicksbild av en katastrof omkring år 480.
+          husen återbeboddes aldrig, och borgen lämnades. Fynden gör platsen till ett av Sveriges
+          mest omtalade järnåldersfynd: en nedfrusen ögonblicksbild av en katastrof under
+          folkvandringstid. <strong>Dateringen är omtvistad</strong> — den nyare ¹⁴C-baserade ligger
+          senare än den äldre typologiska (se rutan nedan).
         </p>
       </div>
 
@@ -103,13 +110,36 @@ const SandbyBorg = () => {
             <Fact label="Läge">Sandby socken, Mörbylånga kommun, Öland</Fact>
             <Fact label="Fornlämning">RAÄ Sandby 45:1</Fact>
             <Fact label="Typ">Ringborg (fornborg)</Fact>
-            <Fact label="Datering">Folkvandringstid, ca 400–550 e.Kr.</Fact>
-            <Fact label="Katastrofen">Massaker ca 480 e.Kr.</Fact>
-            <Fact label="Dateringsgrund">¹⁴C + massakerfynden (belagd)</Fact>
+            <Fact label="Period">Folkvandringstid, ca 400–550 e.Kr.</Fact>
+            <Fact label="Händelse">Massaker (avrättning — tolkning)</Fact>
+            <Fact label="Undersökt">3 av 53 hus (&lt;10 % av innerytan)</Fact>
           </div>
+
+          {/* Datering — TVÅ rader; omtvistad */}
+          <div className="mt-4 rounded-lg border border-amber-900/30 bg-amber-950/20 p-3 space-y-2">
+            <div className="flex items-center gap-2 text-gold text-sm font-medium">
+              <CalendarClock className="h-4 w-4" /> Datering av massakern — omtvistad
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 text-sm">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Äldre uppskattning</span>
+                <span className="text-foreground">~480 e.Kr.</span>
+                <span className="text-xs text-muted-foreground">Typologi + myntens TPQ + Roms fall 476.</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">¹⁴C-datering (ny, starkare)</span>
+                <span className="text-foreground">ca 500–540 e.Kr.</span>
+                <span className="text-xs text-muted-foreground">29 dateringar, dietkorrigerade + Bayesiansk modellering (RJ P15-0138:1).</span>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Dateringen är omtvistad; den nyare ¹⁴C-baserade ligger senare än den äldre typologiska.
+            </p>
+          </div>
+
           <p className="text-xs text-muted-foreground mt-4 opacity-75">
-            Datering enligt Kalmar läns museum (Victor et al., DiVA). Koordinat och RAÄ-nummer verifierade i
-            plattformens databas.
+            Datering enligt Kalmar läns museum (Victor et al., DiVA) samt RJ-projektet P15-0138:1. Koordinat och
+            RAÄ-nummer verifierade i plattformens databas.
           </p>
         </CardContent>
       </Card>
@@ -124,6 +154,23 @@ const SandbyBorg = () => {
         </CardContent>
       </Card>
 
+      {/* Undersökningsgrad — kontext HÖGST UPP innan tolkningar */}
+      <Card className="viking-card mb-4 border-amber-900/40">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Layers className="h-5 w-5" /> Hur mycket är egentligen undersökt?</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-2 leading-relaxed">
+          <p>
+            Endast <strong>3 av borgens 53 georadar-kartlagda hus</strong> är helt undersökta — knappt
+            <strong> 10 % av innerytan</strong> (läget efter 2017). Över <strong>90 % ligger orört</strong>.
+            Allt nedan bygger på det lilla, men exceptionellt välbevarade, urvalet.
+          </p>
+          <p className="text-xs opacity-75">
+            Källor: St. Fleur / NYT 2018; Current World Archaeology; Viberg et al. 2014 (georadar).
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Massakern */}
       <Card id="massakern" className="viking-card mb-4 scroll-mt-24">
         <CardHeader className="pb-2">
@@ -133,15 +180,87 @@ const SandbyBorg = () => {
           <p>
             Kalmar läns museums undersökningar (från metallsökarfynd 2010 och grävningar därefter) visade att
             borgens invånare <strong>dödades och lämnades obegravda</strong> i och mellan husen — från spädbarn
-            till åldringar. Kropparna blev liggande, djur släpptes eller dog kvar, och husen städades eller
-            återanvändes aldrig. Att ingen kom tillbaka för att begrava de döda eller bärga värdesaker är själva
-            nyckeln: platsen tycks ha <strong>undvikits</strong> efteråt.
+            till åldringar. Kropparna blev liggande och husen städades eller återanvändes aldrig. Att ingen kom
+            tillbaka för att begrava de döda eller bärga värdesaker är själva nyckeln: platsen tycks ha
+            <strong> undvikits</strong> efteråt.
           </p>
+
+          <p className="flex gap-2">
+            <Users className="h-4 w-4 mt-0.5 shrink-0 text-gold/80" />
+            <span>
+              <strong className="text-foreground">Vilka var de döda?</strong> Osteologiskt bedömdes de döda
+              som enbart män, men aDNA 2023 (Cell 186; 15 provtagna, 9 könsbestämda) visade
+              <strong> 8 män och 1 kvinna</strong>, utan nära släktband och med sydskandinavisk härkomst.
+            </span>
+          </p>
+
+          <p className="flex gap-2">
+            <Swords className="h-4 w-4 mt-0.5 shrink-0 text-gold/80" />
+            <span>
+              <strong className="text-foreground">Skador och vapen.</strong> 8 av de undersökta (31 %) har
+              perimortem trauma (skarpt, trubbigt och penetrerande); en 10–13-åring var halshuggen. Hugg
+              ovanifrån och bakifrån, och nästan inga vapen på platsen &mdash; detta <em>tolkas</em> som en
+              avrättning, inte en tvåsidig strid.
+            </span>
+          </p>
+
+          <p className="flex gap-2">
+            <CalendarClock className="h-4 w-4 mt-0.5 shrink-0 text-gold/80" />
+            <span>
+              <strong className="text-foreground">När på året?</strong> Slaktade lamm (3–6 mån) och en
+              halväten strömming daterar händelsen till <strong>sen vår–tidig höst</strong>, populärt beskrivet
+              som &quot;kring midsommar&quot;.
+            </span>
+          </p>
+
+          <p>
+            <strong className="text-foreground">Djuren.</strong> Djur (lamm, svin, häst) lämnades instängda
+            och dog kvar.
+          </p>
+
+          <p>
+            <strong className="text-foreground">Var platsen helt orörd?</strong> Inte riktigt. Hus 4 visar
+            två faser: massakerlagret och en rivning ca 100 år senare — platsen var inte helt orörd efteråt,
+            även om de döda aldrig begravdes.
+          </p>
+
           <p className="text-xs bg-amber-950/20 border border-amber-900/30 rounded p-3">
-            <strong className="text-gold">Belagt vs tolkning.</strong> Att individerna är obegravda och att
-            dateringen ligger kring 480 e.Kr. är belagt (osteologi, ¹⁴C, fyndkontext). <em>Att</em> det var en
-            massaker och <em>varför</em> borgen sedan lämnades — övergrepp, hämnd, tabu — är forskningens
-            tolkning av fynden, inte ett dokumenterat händelseförlopp. Gärningsmän och motiv är okända.
+            <strong className="text-gold">Belagt vs tolkning.</strong> Att individerna är obegravda, deras
+            skador (perimortem trauma) och fyndkontexten är belagt (osteologi, aDNA, ¹⁴C). <em>Att</em> det var
+            en riktad avrättning och <em>varför</em> borgen sedan lämnades är forskningens tolkning av fynden,
+            inte ett dokumenterat händelseförlopp. Gärningsmän och motiv är okända.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Varför — hypotesmatris (falsifierbara hypoteser, ej motivspekulation) */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><ScanSearch className="h-5 w-5" /> Varför? Tre prövbara hypoteser</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            I stället för att gissa ett motiv prövar vi <strong>falsifierbara hypoteser</strong> mot fynden. Var
+            och en kan stärkas eller falla på nya data.
+          </p>
+          <div className="space-y-2">
+            <div className="rounded border border-amber-900/30 p-3">
+              <p><strong className="text-foreground">(a) Intern maktkamp</strong> — <span className="text-gold">svagt belagd.</span> Inget i materialet pekar särskilt mot en uppgörelse inifrån.</p>
+            </div>
+            <div className="rounded border border-amber-900/50 bg-amber-950/20 p-3">
+              <p><strong className="text-foreground">(b) Extern eller beordrad avrättning</strong> — <span className="text-gold">starkast stödd.</span> Effektivt och riktat våld, guld och kroppar lämnade kvar, och platsen tabubelagd efteråt.</p>
+            </div>
+            <div className="rounded border border-amber-900/30 p-3">
+              <p><strong className="text-foreground">(c) Klimatkris 536</strong> — <span className="text-gold">kontext, ej bevis.</span> Ger en möjlig historisk ram men bevisar ingen orsak här. (Notera: om ¹⁴C-dateringen 500–540 håller ligger händelsen nära 536.)</p>
+            </div>
+          </div>
+          <p className="text-xs bg-amber-950/20 border border-amber-900/30 rounded p-3">
+            <strong className="text-gold">Prövad och avförd: slavtagning.</strong> Slavtagning som motiv prövas
+            men avförs — hela befolkningen dödades (inklusive barn) och guldet lämnades kvar.
+          </p>
+          <p>
+            <strong className="text-foreground">Sammanfattning.</strong> Att våldet var organiserat och riktat
+            är väl underbyggt; vem och varför är olöst och förblir tolkning.
           </p>
         </CardContent>
       </Card>
@@ -153,12 +272,42 @@ const SandbyBorg = () => {
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
           <p>
-            I husen har depåer av värdeföremål påträffats — bland annat <strong>förgyllda reliefspännen</strong>,
-            guldringar, glaspärlor och <strong>romerska guldmynt (solidi)</strong>, delvis gömda under golv. Att
-            dyrbarheterna aldrig hämtades ut stärker bilden av en plats som lämnades i hast och sedan undveks.
-            Solidi-fynden knyter Sandby borg till Ölands påfallande rika guldhorisont under folkvandringstid —
-            samma sammanhang som öns övriga skattfynd.
+            I husen har <strong>fem depåer</strong> av värdeföremål påträffats. De består mest av
+            <strong> förgyllda silverspännen, ringar, pärlor och bjällror</strong> — delvis gömda under golv.
+            Att dyrbarheterna aldrig hämtades ut stärker bilden av en plats som lämnades i hast och sedan undveks.
           </p>
+          <p>
+            <strong className="text-foreground">Guldmynten — enstaka, inte skatter.</strong> I borgen påträffades
+            enstaka romerska guldmynt — bland annat ett i ett stolphål och ett i hus 52:s lilla guldgömma —
+            <strong> inte myntskatter</strong>. De fem depåerna består alltså mest av föremål, inte mynt.
+          </p>
+          <p>
+            <strong className="text-foreground">Hus 4.</strong> Hus 4 rymde Sveriges äldsta kända
+            glas-/pärlverkstad med ädelmetallhantverk.
+          </p>
+          <p className="flex gap-2">
+            <Coins className="h-4 w-4 mt-0.5 shrink-0 text-gold/80" />
+            <span>
+              <strong className="text-foreground">Hus 52.</strong> I hus 52 låg en äldre man och en liten
+              guldgömma med ett romerskt guldmynt. Vilka funktioner enskilda hus hade (hall, verkstad, bostad)
+              är <em>rapportberoende</em> och sekundärkällorna spretar — se de elva delrapporterna
+              <em> KLM Sandby borg I–XI</em>.
+            </span>
+          </p>
+
+          <div className="rounded-lg border border-amber-900/30 bg-amber-950/20 p-3 space-y-2">
+            <p className="text-foreground font-medium text-sm">Ölands guldhorisont — belagda tal</p>
+            <p>
+              <strong>Åby</strong> i Sandby socken (~80 solidi, TPQ 477) och <strong>Björnhovda</strong> i
+              Torslunda (36 solidi, TPQ 476) rymmer <strong>Ölands två största soliduskatter</strong> — Ölands,
+              inte Sveriges. Torslundaplåtarna är yngre (vendeltid) och hör inte till massakern.
+            </p>
+            <p className="text-xs">
+              <strong className="text-gold">TPQ-fälla.</strong> Ett mynt daterar bara <em>tidigast möjliga</em>
+              nedläggning; guldets yngsta mynt (~475–477) säger inget om massakern — om ¹⁴C-dateringen 500–540
+              håller, ligger guldet en generation före.
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -182,6 +331,67 @@ const SandbyBorg = () => {
           <p className="text-xs opacity-75">
             Terrängvärdena är härledda ur höjdmodell (elevation/relativ höjd) och SGU:s jordartsdata, samplade mot
             borgens verifierade koordinat — inte uppskattade.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Forensik som metod */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Microscope className="h-5 w-5" /> Forensik som metod</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            Sandby borg har undersökts med uttalat <strong>forensisk arkeologi och osteoarkeologi</strong> samt
+            <strong> 3D-dokumentation</strong> (Alfsdotter m.fl.). Metoden lånar begrepp från brottsplatsundersökning
+            men landar i arkeologiska slutsatser — och den skiljer noga på observation och tolkning.
+          </p>
+          <ul className="space-y-2">
+            <li>
+              <strong className="text-foreground">Perimortem, postmortem och tafonomi.</strong> Skador
+              <em> kring</em> dödsögonblicket (perimortem) skiljs från sådant som skedde <em>efter</em> döden
+              (postmortem) och från nedbrytnings- och lagringsprocesser i marken (tafonomi). Bara det första
+              säger något direkt om våldet.
+            </li>
+            <li>
+              <strong className="text-foreground">Traumamorfologi → vapenklass.</strong> Ett huggmärkes form
+              kan antyda <em>klass</em> av redskap (skarpt/trubbigt/penetrerande) som en
+              <strong> differentialbedömning</strong> — en rangordning av möjligheter, inte en dom om ett
+              specifikt vapen.
+            </li>
+            <li>
+              <strong className="text-foreground">Brottsplatsen som spatialt dataset.</strong> Var kroppar,
+              föremål och djur låg i förhållande till varandra behandlas som mätdata — läge och kontext bär
+              lika mycket information som föremålen själva.
+            </li>
+            <li>
+              <strong className="text-foreground">Observation skiljs från tolkning.</strong> &quot;Halshuggen
+              10–13-åring&quot; är en observation; &quot;avrättning&quot; är en tolkning. Sidan håller isär dem
+              genomgående.
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* AI-forntidsforensikern — transparens */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Bot className="h-5 w-5" /> AI-forntidsforensikern</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            För transparensens skull: en <strong>AI-agent (en forntida forensiker)</strong> har gått igenom
+            materialet källkritiskt som <strong>utrednings- och granskningsunderlag</strong>. Arbetssättet är
+            <strong> människa-i-loopen</strong> — AI:n föreslår och strukturerar, en människa verifierar mot
+            källa och beslutar.
+          </p>
+          <p>
+            Dödsorsak, uppsåt och gärningsman redovisas alltid som <strong>tolkning med angiven konfidens</strong>,
+            aldrig som ett &quot;löst fall&quot;. Där belägg saknas står det obelagt.
+          </p>
+          <p className="text-muted-foreground">
+            Läs mer: <Link to="/ai-agenter" className="text-gold hover:underline">AI-agenterna</Link>{' '}
+            och <Link to="/sv/vetenskapsmetodik" className="text-gold hover:underline">vår vetenskapsmetodik</Link>.
           </p>
         </CardContent>
       </Card>
@@ -218,10 +428,32 @@ const SandbyBorg = () => {
             <li>
               <span className="text-foreground">Alfsdotter, C., Papmehl-Dufay, L. &amp; Victor, H. (2018).</span>{' '}
               <em>A moment frozen in time: evidence of a late fifth-century massacre at Sandby borg.</em>{' '}
-              Antiquity 92:362. — osteologin och tolkningen av massakern.
+              Antiquity 92:362, 421–436. — massakerns kontext och tolkning.
             </li>
             <li>
-              Kalmar läns museums undersökningsrapporter (2011–) med fyndredovisning och dateringar —{' '}
+              <span className="text-foreground">Alfsdotter, C. &amp; Kjellström, A. (2019).</span>{' '}
+              <em>The Sandby borg massacre: interpersonal violence and the demography of the dead.</em>{' '}
+              European Journal of Archaeology 22:2. — trauma och demografi.
+            </li>
+            <li>
+              <span className="text-foreground">Alfsdotter, C. (2019).</span>{' '}
+              <em>An Osteological and Forensic Anthropological Study of the Sandby Borg Massacre.</em>{' '}
+              Bioarchaeology International 3:4. — forensisk-osteologisk metod.
+            </li>
+            <li>
+              <span className="text-foreground">Rodríguez-Varela, R. m.fl. (2023).</span>{' '}
+              <em>The genetic history of Scandinavia …</em> Cell 186:1. — aDNA (kön, släktskap, härkomst).
+            </li>
+            <li>
+              <span className="text-foreground">Riksbankens Jubileumsfond — slutrapport P15-0138:1.</span>{' '}
+              ¹⁴C-dateringar (dietkorrigerade + Bayesiansk modellering).
+            </li>
+            <li>
+              <span className="text-foreground">Forskningsprogrammet &quot;Kris, konflikt och klimat 300–700&quot;</span>{' '}
+              (2023–2030) — pågående syntes.
+            </li>
+            <li>
+              Kalmar läns museums delrapporter <em>Sandby borg I–XI</em> (2011–) med fyndredovisning —{' '}
               <a href="https://www.diva-portal.org/smash/resultList.jsf?query=Sandby+borg" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline inline-flex items-center gap-1">
                 sök &quot;Sandby borg&quot; i DiVA <ExternalLink className="h-3 w-3" />
               </a>.
@@ -256,13 +488,13 @@ const SandbyBorg = () => {
               <a href="https://sv.wikipedia.org/wiki/Sandby_borg" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline inline-flex items-center gap-1">
                 Wikipedia — Sandby borg <ExternalLink className="h-3 w-3" />
               </a>
-              <span className="text-muted-foreground"> — översikt med referenser.</span>
+              <span className="text-muted-foreground"> — översikt med referenser <em>(ej auktoritativ)</em>.</span>
             </li>
             <li>
               <a href="https://www.oland.se/sandby-borg" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline inline-flex items-center gap-1">
                 oland.se — Sandby borg <ExternalLink className="h-3 w-3" />
               </a>
-              <span className="text-muted-foreground"> — besöksinformation (öppettider, guidningar).</span>
+              <span className="text-muted-foreground"> — besöksinformation, öppettider, guidningar <em>(ej auktoritativ)</em>.</span>
             </li>
           </ul>
           <p className="text-xs text-muted-foreground mt-3 opacity-75">
