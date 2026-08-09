@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export const Breadcrumbs: React.FC = () => {
+// bare = rendera utan egen container/padding (så den kan dela rad med t.ex. linjalen i Explore).
+export const Breadcrumbs: React.FC<{ bare?: boolean }> = ({ bare = false }) => {
   const location = useLocation();
   const { language } = useLanguage();
   
@@ -106,8 +107,7 @@ export const Breadcrumbs: React.FC = () => {
   // Handle Swedish routes - remove 'sv' from pathnames for display
   const displayPathnames = pathnames[0] === 'sv' ? pathnames.slice(1) : pathnames;
 
-  return (
-    <div className="container mx-auto px-4 py-3">
+  const crumbs = (
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -146,6 +146,7 @@ export const Breadcrumbs: React.FC = () => {
           })}
         </BreadcrumbList>
       </Breadcrumb>
-    </div>
   );
+  if (bare) return crumbs;
+  return <div className="container mx-auto px-4 py-3">{crumbs}</div>;
 };

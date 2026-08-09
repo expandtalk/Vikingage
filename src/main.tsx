@@ -3,6 +3,11 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'  // GLOBALT: annars saknar sök-overläggets karta (AnswerContext) sin
                                     // CSS på sidor som inte redan laddat en kartkomponent → mörk ruta.
 import App from './App.tsx'
+// Self-hostat typsnitt (Crimson Text) via Fontsource → ingen tredjeparts-laddning från Google
+// (fonts.googleapis.com skickade besökarens IP till Google). Samma familjenamn 'Crimson Text'.
+import '@fontsource/crimson-text/400.css'
+import '@fontsource/crimson-text/600.css'
+import '@fontsource/crimson-text/700.css'
 import './index.css'
 
 // leaflet.markercluster (UMD) refererar globala `L` vid modul-eval. I den bundlade koden finns

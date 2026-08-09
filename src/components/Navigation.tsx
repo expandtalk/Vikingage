@@ -25,6 +25,7 @@ import {
   Tag,
   CalendarClock,
   Share2,
+  Bot,
   Headphones,
   Cross,
   Microscope,
@@ -177,6 +178,13 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Det agent-läsbara kontraktet: entitetstyper, relationer, mätmetoder, dateringsmetoder (kol-14, dendro, numismatik) och vetenskapliga referenser.',
     descEn: 'The agent-readable contract: entity types, relations, measures, dating methods (14C, dendro, numismatic) and scientific references.',
     icon: Share2, category: 'science',
+  },
+  {
+    pathEn: '/ai-agents', pathSv: '/ai-agenter',
+    labelSv: 'AI-agenter', labelEn: 'AI agents',
+    descSv: 'Vilka typer av AI-agenter plattformen använder och hur — produkt-AI (runinskrifts-analys, sök) och källkritiska specialistagenter (arkeologi, datakvalitet, GIS, QA). AI beskriver, människan verifierar.',
+    descEn: 'Which AI agents the platform uses and how — product AI (runic analysis, search) and source-critical specialist agents (archaeology, data quality, GIS, QA). AI describes, humans verify.',
+    icon: Bot, category: 'science',
   },
   {
     pathEn: '/texts', pathSv: '/texter',

@@ -17,14 +17,28 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="/og-image.png" />
     
-    <!-- Professional serif font with historical feel -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&display=swap">
-    
+    <!-- Typsnitt (Crimson Text) self-hostas via @fontsource i src/main.tsx — ingen laddning från
+         Google Fonts (undviker att besökarens IP skickas till Google). -->
+
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>ᚱ</text></svg>" />
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- CortIQ Analytics — cookie-fri sajtmätning + AI-bot/citerings-detektering. Publik klient-tracking-nyckel
+         (som ett GA-ID, ej hemlighet). SPA-routes trackas auto via History API. window.cortiqConfig måste ligga
+         direkt ovanför script-taggen. -->
+    <script>
+      window.cortiqConfig = {
+        apiUrl: 'https://cxmkdtgfocgbfizawlwa.supabase.co/functions/v1',
+        siteId: '47825658-d66e-4dfe-9bbb-5b20aeb0f6b2',
+        apiKey: 'tk_5538237980894f44b11d2552efe81fe2',
+        contentType: 'page',
+        platform: 'web'
+      };
+    </script>
+    <script src="https://cortiq.se/spa-tracking.js" defer></script>
   </body>
 </html>

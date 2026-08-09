@@ -28,6 +28,7 @@ const Researchers = lazy(() => import("./pages/Researchers"));
 const Prices = lazy(() => import("./pages/Prices"));
 const Excursions = lazy(() => import("./pages/Excursions"));
 const Coins = lazy(() => import("./pages/Coins"));
+const CoinDetail = lazy(() => import("./pages/CoinDetail"));
 const Kungstavla = lazy(() => import("./pages/Kungstavla"));
 const ExcursionDetail = lazy(() => import("./pages/ExcursionDetail"));
 const KalmarWall = lazy(() => import("./pages/KalmarWall"));
@@ -38,6 +39,7 @@ const InscriptionPage = lazy(() => import("./pages/InscriptionPage"));
 const Statistics = lazy(() => import("./pages/Statistics"));
 const PlaceNames = lazy(() => import("./pages/PlaceNames"));
 const Ontology = lazy(() => import("./pages/Ontology"));
+const AiAgents = lazy(() => import("./pages/AiAgents"));
 const HistoricalEvents = lazy(() => import("./pages/HistoricalEvents"));
 const EconomicHistory = lazy(() => import("./pages/EconomicHistory"));
 const Angermanland = lazy(() => import("./pages/Angermanland"));
@@ -70,9 +72,11 @@ const Heraldry = lazy(() => import("./pages/Heraldry"));
 const Bronsalder = lazy(() => import("./pages/Bronsalder"));
 const ExecutionSites = lazy(() => import("./pages/ExecutionSites"));
 const Genealogy = lazy(() => import("./pages/Genealogy"));
+const Privacy = lazy(() => import("./pages/Privacy"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
+const ResearcherProfile = lazy(() => import("./pages/ResearcherProfile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -116,6 +120,7 @@ const App = () => (
                   <Route path="/sv/borgar" element={<Fortresses />} />
                   <Route path="/forskare" element={<Researchers />} />
                   <Route path="/researchers" element={<Researchers />} />
+                  <Route path="/forskare/:handle" element={<ResearcherProfile />} />
 
                   {/* Consolidated to Explore focus views (EN + SV old paths redirect) */}
                   <Route path="/viking-names" element={<Navigate to="/explore?focus=names" replace />} />
@@ -141,6 +146,8 @@ const App = () => (
                   <Route path="/sv/ortnamn" element={<PlaceNames />} />
                   <Route path="/ontology" element={<Ontology />} />
                   <Route path="/ontologi" element={<Ontology />} />
+                  <Route path="/ai-agents" element={<AiAgents />} />
+                  <Route path="/ai-agenter" element={<AiAgents />} />
                   <Route path="/historical-events" element={<HistoricalEvents />} />
                   <Route path="/sv/historiska-handelser" element={<HistoricalEvents />} />
                   <Route path="/economic-history" element={<EconomicHistory />} />
@@ -233,10 +240,16 @@ const App = () => (
                   <Route path="/sv/statistik" element={<Statistics />} />
                   <Route path="/utflykter/:id" element={<ExcursionDetail />} />
                   <Route path="/coins" element={<Coins />} />
+                  <Route path="/coins/:id" element={<CoinDetail />} />
                   <Route path="/sv/mynt" element={<Coins />} />
+                  <Route path="/sv/mynt/:id" element={<CoinDetail />} />
                   <Route path="/kungsnave" element={<Kungstavla />} />
                   <Route path="/kungstavla" element={<Navigate to="/kungsnave" replace />} />
                   <Route path="/kings-board" element={<Navigate to="/kungsnave" replace />} />
+                  <Route path="/sv/integritetspolicy" element={<Privacy />} />
+                  <Route path="/en/privacy" element={<Privacy />} />
+                  <Route path="/integritetspolicy" element={<Privacy />} />
+                  <Route path="/privacy" element={<Privacy />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route
                     path="/admin"
