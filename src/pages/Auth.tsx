@@ -34,6 +34,13 @@ const Auth = () => {
     }
   }, [user, isAdmin, roleLoading, navigate]);
 
+  // Kom ihåg e-postadressen (förifylls). INTE lösenordet — det sköts av webbläsarens
+  // lösenordshanterare via autoComplete-attributen. Vi lagrar aldrig lösenord.
+  useEffect(() => {
+    const saved = localStorage.getItem('nm_login_email');
+    if (saved) setEmail(saved);
+  }, []);
+
   // Simple rate limiting for login attempts
   const isRateLimited = loginAttempts >= 5;
 
@@ -100,6 +107,7 @@ const Auth = () => {
       // Reset login attempts on successful login. Redirect hanteras av useEffect
       // ovan när user + roll är laddade (admin -> /admin, övriga -> /).
       setLoginAttempts(0);
+      try { localStorage.setItem('nm_login_email', email.trim()); } catch { /* ignore */ }
     } catch (error: any) {
       setError(error.message);
       setLoginAttempts(prev => prev + 1);
@@ -194,7 +202,8 @@ const Auth = () => {
         <div className="text-center mb-8">
           <div className="text-4xl mb-4">🗿</div>
           <h1 className="text-2xl font-bold text-white mb-2">
-            Runic AI Research Platform
+            <span className="sm:hidden">Near Me Platform</span>
+            <span className="hidden sm:inline">Runic AI Research Platform</span>
           </h1>
           <p className="text-slate-400">
             Sign in to access advanced research features
@@ -223,6 +232,7 @@ const Auth = () => {
                       <Input
                         id="email"
                         type="email"
+                        autoComplete="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -251,6 +261,7 @@ const Auth = () => {
                       <Input
                         id="password"
                         type="password"
+                        autoComplete="current-password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
