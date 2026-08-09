@@ -32,7 +32,7 @@ export const MARKER_COLORS: Record<string, string> = {
   bebyggelselamning: '#8a7f6a', gruva: '#7c7686', gruvhal: '#7c7686', bro: '#5f7385',
   vad: '#4f8194', milstolpe: '#9a7b3c', hus_herrgard: '#9a7b3c', hus_slott: '#a9762f',
   torn: '#8a6f3e', ruin: '#7d7468', vaderkvarn: '#7c8577', riksrose: '#8a7a5c',
-  sevardhet: '#a07d34', badplats: '#3f8194', fyr: '#b5651d',
+  sevardhet: '#a07d34', badplats: '#3f8194', fyr: '#b5651d', galge: '#8a5a5a',
 };
 
 export const markerColor = (key: string | undefined | null): string =>
@@ -54,6 +54,7 @@ export const FEATURE_ICON: Record<string, string> = {
   'milstolpe': 'milstolpe', 'milsten': 'milstolpe', 'väghållningssten': 'milstolpe', 'vägmärke': 'milstolpe', 'milestone': 'milstolpe',
   'riksröse': 'riksrose', 'gränsmärke': 'riksrose', 'råmärke': 'riksrose',
   'sevärdhet': 'sevardhet', 'badplats': 'badplats', 'fyr': 'fyr', 'fyrplats': 'fyr',
+  'execution': 'galge', 'avrättningsplats': 'galge', 'avrattningsplats': 'galge', 'galge': 'galge', 'galgbacke': 'galge',
   'källa med tradition': 'droplet', 'källa': 'droplet',
   'runestone': 'rune', 'runsten': 'rune', 'rune': 'rune',
   'church': 'church', 'kyrka': 'church',
@@ -128,6 +129,8 @@ export const MARKER_ICONS: Record<string, string> = {
   sevardhet: '<path d="M12 3 14.1 9.3 20.8 9.3 15.4 13.4 17.4 19.8 12 15.9 6.6 19.8 8.6 13.4 3.2 9.3 9.9 9.3z"/>',
   badplats: '<circle cx="8" cy="8" r="1.8"/><path d="M5 13c2-1.5 3.5 0.5 6-0.5s3.5-2.5 6.5-1.5"/><path d="M2 18.5c2.4 0 2.4 1.6 4.8 1.6s2.4-1.6 4.8-1.6 2.4 1.6 4.8 1.6 2.4-1.6 4.8-1.6"/>',
   fyr: '<path d="M10 21 10.5 9h3L14 21z"/><path d="M8 21h8"/><path d="M10 9V7h4v2"/><path d="M11 7 12 4l1 3"/><path d="M6 6 3.5 5M18 6l2.5-1M6 9 4 9M18 9h2"/>',
+  // Avrättningsplats/galgbacke: galge (upprätt stolpe + arm + hänglina + fot). Dov, allvarlig.
+  galge: '<path d="M6 21V4h8"/><path d="M13 4v5"/><path d="M4 21h6"/>',
   dot: '<circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/>',
 };
 

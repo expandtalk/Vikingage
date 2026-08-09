@@ -25,10 +25,10 @@ import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 const CORRIDOR_BBOX: [number, number, number, number] = [17.55, 59.15, 18.15, 59.35];
 const GOTA_ROAD_ID = '97b4a769-7eed-4d64-b97e-978d5b957e7d';
 
-type Kind = 'endpoint' | 'bridge' | 'thing' | 'rune' | 'church' | 'fort' | 'milestone';
+type Kind = 'endpoint' | 'bridge' | 'thing' | 'rune' | 'church' | 'fort' | 'milestone' | 'execution' | 'trace';
 // Noden bär sekvens + väg-not (ur DB). ENTITETERNA (kyrka/runsten) resolveras dessutom live via
 // signum → runic_inscriptions / church → ecclesiastical_sites för thumbnail, byggår och "Läs mer"-länk.
-interface Node { name: string; lat: number; lng: number; kind: Kind; note: string; signum?: string; church?: string; offRoute?: boolean; }
+interface Node { name: string; lat: number; lng: number; kind: Kind; note: string; signum?: string; church?: string; offRoute?: boolean; order: number; }
 
 // Läs vägens kurerade hållpunkter (N→S) ur road_waypoints via RPC. Enda källa — ingen hårdkodad rutt.
 function useGotaLandsvagNodes(): Node[] {
@@ -49,6 +49,7 @@ function useGotaLandsvagNodes(): Node[] {
         signum: (r.signum as string) ?? undefined,
         church: (r.church_name as string) ?? undefined,
         offRoute: (r.off_route as boolean) ?? undefined,
+        order: Number(r.waypoint_order ?? 0),
       })));
     })();
     return () => { alive = false; };
@@ -66,9 +67,12 @@ const KIND: Record<Kind, { color: string; label: string }> = {
   church: { color: '#7b3f00', label: 'Medeltidskyrka' },
   fort: { color: '#8b5cf6', label: 'Borg (kontrollpunkt)' },
   milestone: { color: '#9a7b3c', label: 'Milstolpe (1700-tal)' },
+  execution: { color: '#8a5a5a', label: 'Avrättningsplats (galgbacke)' },
+  trace: { color: '#eab308', label: 'Bevarat namnspår (moderna gatan)' },
 };
 
-const GL_KIND_KEYS = Object.keys(KIND) as Kind[];
+// Punkttyper som ritas som medaljong-markörer (trace ritas som linje, ej markör → utesluts).
+const GL_KIND_KEYS = (Object.keys(KIND) as Kind[]).filter((k) => k !== 'trace');
 
 const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,12 +80,14 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
   const tileRef = useRef<L.TileLayer | null>(null);
   const groupsRef = useRef<Record<string, L.LayerGroup>>({});
   const roadRef = useRef<L.LayerGroup>(L.layerGroup());
+  const traceRef = useRef<L.LayerGroup>(L.layerGroup());
   const [shoreYear, setShoreYear] = useState<number | null>(null);
   useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', CORRIDOR_BBOX);
 
   // Återanvändbar legend: väglinje + en togglebar grupp per nodtyp + baskarta.
   const LEGEND: LegendLayerDef[] = [
     { key: 'road', label: 'Ankarlinje mellan hållpunkter (ej belagd sträckning)', color: '#d4a63c', defaultOn: true },
+    { key: 'trace', label: 'Bevarat namnspår – moderna Götalandsvägen (Isof)', color: '#eab308', defaultOn: true },
     ...GL_KIND_KEYS.map((k) => ({ key: k, label: KIND[k].label, color: KIND[k].color, defaultOn: true })),
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
   ];
@@ -102,6 +108,7 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
     const map = mapRef.current;
     if (!map || !nodes.length) return;
     roadRef.current.clearLayers();
+    traceRef.current.clearLayers();
     GL_KIND_KEYS.forEach((k) => groupsRef.current[k]?.clearLayers());
 
     // Väglinjen genom noderna (utom off-route-punkter) → egen togglebar grupp
@@ -109,7 +116,16 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
       color: '#d4a63c', weight: 3, opacity: 0.85, dashArray: '6 6',
     }).addTo(roadRef.current);
 
-    nodes.forEach((n) => {
+    // Bevarat namnspår (moderna Götalandsvägen) — SOLID linje, skild från den streckade ankarlinjen.
+    // Namnkontinuitet (gällande gatunamn, Isof), inte påstådd medeltida vägkropp.
+    const trace = nodes.filter((n) => n.kind === 'trace').sort((a, b) => a.order - b.order);
+    if (trace.length > 1) {
+      L.polyline(trace.map((n) => [n.lat, n.lng] as [number, number]), { color: '#eab308', weight: 4, opacity: 0.9 })
+        .bindPopup('<b>Göta landsväg — bevarat namnspår</b><br/><span style="font-size:11px">Moderna gatan Göta landsväg/Götalandsvägen (Årstafältet–Östberga). Namnkontinuitet (Isof) — inte belagd medeltida vägkropp.</span>')
+        .addTo(traceRef.current);
+    }
+
+    nodes.filter((n) => n.kind !== 'trace').forEach((n) => {
       const c = (KIND[n.kind] ?? KIND.endpoint).color;
       // Medaljong: färgen bär nodtypen (matchar legenden), FORMEN (kind→glyf via featureIcon:
       // rune→rune, church→church, bridge→bro, fort→hus_slott, thing→scales, endpoint→dot) bär typen
@@ -140,6 +156,7 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
       else if (map.hasLayer(g)) map.removeLayer(g);
     };
     toggleG(enabled.road, roadRef.current);
+    toggleG(enabled.trace, traceRef.current);
     GL_KIND_KEYS.forEach((k) => toggleG(enabled[k], groupsRef.current[k]));
   }, [enabled]);
 
@@ -392,7 +409,7 @@ const GotaLandsvag = () => {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              {nodes.filter((n) => n.kind !== 'endpoint' && n.kind !== 'milestone').map((n) => {
+              {nodes.filter((n) => !['endpoint', 'milestone', 'execution', 'trace'].includes(n.kind)).map((n) => {
                 const e = enrich[n.name];
                 return (
                   <li key={n.name} className="flex gap-3">
