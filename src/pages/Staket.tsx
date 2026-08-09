@@ -23,7 +23,7 @@ import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegend
 const MALAREN_BBOX: [number, number, number, number] = [17.38, 59.18, 18.80, 59.72];
 
 interface Site {
-  name: string; lat: number; lng: number; kind: 'royal' | 'sound' | 'fort' | 'city' | 'island';
+  name: string; lat: number; lng: number; kind: 'royal' | 'sound' | 'fort' | 'city' | 'island' | 'holme';
   note: string; todayM?: number;
 }
 // Verifierade koordinater (Wikipedia P625 / Upplandsmuseet / place_names). Ingen gissning.
@@ -58,6 +58,18 @@ const SITES: Site[] = [
     note: 'Ö i Mälaren (Lovö sn); äldre form Kongshatt. Isof.' },
   { name: 'Kärsön', lat: 59.3205, lng: 17.9195, kind: 'island',
     note: 'Ö vid Drottningholm/Ekerö, öster om Lovön. Isof.' },
+  { name: 'Krankholmen', lat: 59.3130, lng: 17.9290, kind: 'island',
+    note: 'Liten holme i Mälaren vid Kärsön/Grönvik — mellersta Mälaren, ej innerstad. Isof.' },
+  { name: 'Björnholmen', lat: 59.3108, lng: 17.9427, kind: 'island',
+    note: 'Liten holme i Mälaren nära Kärsön. Isof.' },
+  { name: 'Fläsket', lat: 59.3044, lng: 17.9327, kind: 'island',
+    note: 'Skär/holme i Mälaren vid Skärholmen. Isof.' },
+  // Norrström-sidan: holmar i Stockholms breda, förgrenade innersund — den geografi som gör
+  // den traditionella Norrström-tolkningen (ett ENDA smalt utlopp) svår. Isof (verifierade koord).
+  { name: 'Reimersholme', lat: 59.3182, lng: 18.0228, kind: 'holme',
+    note: 'Holme vid Södermalm i Stockholms förgrenade innersund. En av flera holmar som visar att utloppet vid Gamla stan var brett och grenat — inte ett enda smalt sund. Isof.' },
+  { name: 'Årsta holmar', lat: 59.3072, lng: 18.0443, kind: 'holme',
+    note: 'Holmar i Årstaviken, del av Stockholms förgrenade innersund. Isof.' },
 ];
 const KIND: Record<Site['kind'], { color: string; label: string }> = {
   royal: { color: '#d4a63c', label: 'Kungsgård / stad' },
@@ -65,6 +77,7 @@ const KIND: Record<Site['kind'], { color: string; label: string }> = {
   fort: { color: '#b45309', label: 'Borg / spärr' },
   city: { color: '#94a3b8', label: 'Senare stad' },
   island: { color: '#6b8f71', label: 'Mälarö (Isof)' },
+  holme: { color: '#7c9cb5', label: 'Innerstadsholme (Norrström-sidan)' },
 };
 
 const KIND_KEYS = Object.keys(KIND) as Site['kind'][];
@@ -205,7 +218,7 @@ const Staket = () => (
           <p className="text-xs">Höjddatan gör argumenten prövbara. Vad den visar vid ~+5 m havsnivå:</p>
           <ul className="list-disc pl-5 space-y-1 text-xs">
             <li><strong>Almarestäket är en smal midja</strong> mellan norra bassängen (Skarven/Håtunaviken) och söder — förenligt med sagans smala Stocksund.</li>
-            <li><strong>Gamla stan låg i ett brett, förgrenat sundsystem</strong> (flera 1–2 km breda sund) — svårare att förena med ett <em>enda smalt</em> utlopp.</li>
+            <li><strong>Gamla stan låg i ett brett, förgrenat sundsystem</strong> (flera 1–2 km breda sund) — svårare att förena med ett <em>enda smalt</em> utlopp. Holmarna på Norrström-sidan (Reimersholme, Årsta holmar) markerar just denna förgrening.</li>
             <li>Höjdkoll: Fornsigtuna 13 m och Sigtuna 9 m = land ovan stranden; <strong>Almarestäket 4,5 m = vid själva vattenlinjen</strong> (dvs ett sund), som tesen kräver.</li>
           </ul>
           <p className="text-xs opacity-80">
