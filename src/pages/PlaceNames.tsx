@@ -27,6 +27,7 @@ import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import OnomasticClusterCard from '@/components/placenames/OnomasticClusterCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import { setElementTest } from '@/hooks/useElementTest';
+import { setClusterCase } from '@/hooks/useClusterCase';
 import {
   PLACE_NAME_ELEMENTS,
   ELEMENT_CATEGORY_META,
@@ -100,6 +101,12 @@ const PlaceNames = () => {
   const [category, setCategory] = useState<string>('all');
   const [elementKey, setElementKey] = useState<string>('all');
   const [query, setQuery] = useState<string>('');
+  const [tab, setTab] = useState<string>('hypotes'); // kontrollerad så prova-exempel kan byta flik
+
+  // Klickbart prova-exempel: fyll i verktyget + scrolla dit (ev. byt flik först).
+  const scrollTo = (id: string) => setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+  const tryHypothesis = (els: string[]) => { setElementTest(els); scrollTo('hypothesis-test-card'); };
+  const tryCluster = (id: string) => { setTab('kluster'); setClusterCase(id); scrollTo('cluster-card'); };
 
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
@@ -196,7 +203,7 @@ const PlaceNames = () => {
         </div>
 
         {/* ===== TRE VERKTYG SOM FLIKAR ===== */}
-        <Tabs defaultValue="hypotes" className="mb-10">
+        <Tabs value={tab} onValueChange={setTab} className="mb-10">
           <TabsList className="grid w-full grid-cols-3 max-w-3xl mb-4 h-auto">
             <TabsTrigger value="hypotes" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
               <FlaskConical className="h-4 w-4" /> {sv ? 'Hypotestestaren' : 'Hypothesis tester'}
@@ -218,9 +225,17 @@ const PlaceNames = () => {
                   ? 'Ligger en viss sorts ortnamn systematiskt nära — eller långt från — något, t.ex. kyrkor, fornborgar eller andra namn? Verktyget mäter avstånd till närmaste objekt och räknar hur många objekt som ligger inom en dagsresa, och jämför alltid mot en baslinje (vanliga bebyggelsenamn). Allt redovisar antal (n), median och osäkerhet — inga tvärsäkra slutsatser.'
                   : 'Does a kind of place name systematically lie near — or far from — churches, hillforts or other features? The tool measures distance to the nearest feature and counts features within a day’s travel, always compared to a baseline. Everything reports n, median and uncertainty.'}
               </p>
-              <p className="text-xs text-gold/90 mt-2">
-                {sv ? '► Prova: jämför makt-led (-tuna, husby) mot baslinjen (-by, -sta, -torp) i första kortet.' : '► Try: compare power elements (-tuna, husby) against the baseline (-by, -sta, -torp) in the first card below.'}
-              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground">{sv ? 'Prova:' : 'Try:'}</span>
+                <Button size="sm" variant="outline" className="h-7 text-xs border-gold/60 text-gold hover:bg-gold/10"
+                  onClick={() => tryHypothesis(['tuna', 'husby'])}>
+                  <FlaskConical className="h-3 w-3 mr-1" />{sv ? 'Makt (-tuna, husby) mot baslinjen' : 'Power (-tuna, husby) vs baseline'}
+                </Button>
+                <Button size="sm" variant="outline" className="h-7 text-xs border-gold/60 text-gold hover:bg-gold/10"
+                  onClick={() => tryHypothesis(['tor', 'frö', 'oden'])}>
+                  <FlaskConical className="h-3 w-3 mr-1" />{sv ? 'Sakralt (Tor, Frö, Oden)' : 'Sacral (Thor, Frey, Odin)'}
+                </Button>
+              </div>
             </div>
 
             {/* Vad grupperna betyder */}
@@ -287,11 +302,23 @@ const PlaceNames = () => {
                   ? 'Klumpar ett namnled ihop sig kring en punkt (ett epicentrum, t.ex. en borg eller centralort), eller är det jämnt spritt över landskapet? Verktyget ritar en pricktavla och en radiell profil — hur tätheten avtar med avståndet — och jämför mot vad ren slump skulle ge (ett binomialband). Det letar en skarp, falsifierbar kant där mönstret bryts, i stället för att resonera i cirkel ("namnen ligger nära för att de hör ihop").'
                   : 'Does a name element clump around a point (an epicentre such as a fort or central place), or is it evenly spread? The tool draws a scatter plot and a radial profile — how density falls with distance — compared to what pure chance would give (a binomial band). It seeks a sharp, falsifiable edge rather than circular reasoning.'}
               </p>
-              <p className="text-xs text-gold/90 mt-2">
-                {sv ? '► Prova: -by kring Sandby borg (skarp kant ~5 km) eller -torp kring Gråborg. Ismantorp ger ingen klustring — en äkta negativ kontroll.' : '► Try: -by around Sandby borg (sharp edge ~5 km) or -torp around Gråborg. Ismantorp yields no cluster — a genuine negative control.'}
-              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground">{sv ? 'Prova:' : 'Try:'}</span>
+                <Button size="sm" variant="outline" className="h-7 text-xs border-gold/60 text-gold hover:bg-gold/10"
+                  onClick={() => tryCluster('h1')}>
+                  <Radar className="h-3 w-3 mr-1" />{sv ? '-by kring Sandby borg (skarp kant)' : '-by around Sandby borg (sharp edge)'}
+                </Button>
+                <Button size="sm" variant="outline" className="h-7 text-xs border-gold/60 text-gold hover:bg-gold/10"
+                  onClick={() => tryCluster('h2')}>
+                  <Radar className="h-3 w-3 mr-1" />{sv ? '-torp kring Gråborg' : '-torp around Gråborg'}
+                </Button>
+                <Button size="sm" variant="outline" className="h-7 text-xs border-slate-500 text-slate-300 hover:bg-slate-700/40"
+                  onClick={() => tryCluster('n1')}>
+                  <Radar className="h-3 w-3 mr-1" />{sv ? 'Ismantorp — negativ kontroll' : 'Ismantorp — negative control'}
+                </Button>
+              </div>
             </div>
-            <OnomasticClusterCard />
+            <div id="cluster-card" className="scroll-mt-24"><OnomasticClusterCard /></div>
           </TabsContent>
 
           {/* ---- FLIK 3: AI FILOLOG-AGENT ---- */}
@@ -328,6 +355,10 @@ const PlaceNames = () => {
                     ? 'Verktyget "Ortnamnskluster" i grannfliken är den kvantitativa halvan av filologens arbete: det prövar om ett led klustrar kring ett epicentrum med en skarp, falsifierbar kant i stället för cirkelbevis.'
                     : 'The "Name clustering" tab is the quantitative half of the philologist’s work: it tests whether an element clusters around an epicentre with a sharp, falsifiable edge.'}
                 </p>
+                <Button size="sm" variant="outline" className="h-7 text-xs border-gold/60 text-gold hover:bg-gold/10"
+                  onClick={() => tryCluster('h1')}>
+                  <Radar className="h-3 w-3 mr-1" />{sv ? 'Öppna Ortnamnskluster (Sandby borg)' : 'Open Name clustering (Sandby borg)'}
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>

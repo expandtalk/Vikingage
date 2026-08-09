@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Target, Info, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useClusterCaseSeq, getClusterCase } from '@/hooks/useClusterCase';
 
 // Ortnamns-klusterverktyg (/sv/ortnamn). Testar om ett namnled anrikas kring ett FÖRREGISTRERAT
 // epicentrum, mot en analytisk null (global bakgrundsandel + binomialt band per ring). "Skarp kant"
@@ -40,6 +41,13 @@ const OnomasticClusterCard: React.FC = () => {
   const [rings, setRings] = useState<Ring[]>([]);
   const [loading, setLoading] = useState(false);
   const c = CASES.find((x) => x.id === caseId)!;
+
+  // Prova-exempel i sidans flik-intro kan välja ett fall härifrån (klickbar exempel-knapp).
+  const caseSeq = useClusterCaseSeq();
+  useEffect(() => {
+    const id = getClusterCase();
+    if (id && CASES.some((x) => x.id === id)) setCaseId(id);
+  }, [caseSeq]);
 
   useEffect(() => {
     let alive = true;
