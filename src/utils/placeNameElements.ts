@@ -76,10 +76,16 @@ export const PLACE_NAME_ELEMENTS: PlaceNameElement[] = [
     patterns: ['oden', 'odens', 'odin'], excludes: [],
   },
   {
-    key: 'fro', label: 'Frö / Frey (Frös-)', category: 'sacral', evidenceLayer: 'core',
+    key: 'fro', label: 'Frö / Freyr (Frös-)', category: 'sacral', evidenceLayer: 'core',
     sacralConfidence: 'high', isControl: false, contested: true, boundaryRule: 'prefix',
-    etymology: 'Fruktbarhetsguden Frö (Freyr). Frösö, Frösunda, Fröslunda, Frövi. (Kan i undantag vara *frjó* "frö".)',
-    patterns: ['fro', 'fros', 'froe', 'frey'], excludes: ['frost', 'from', 'frid'],
+    etymology: 'Den MANLIGA fruktbarhetsguden Frö (Freyr), genitiv *Frøs-*: Frösö, Frösunda, Fröslunda, Frösvi. Den kvinnliga Freyja (→ fröja) hålls isär, liksom appellativet *fröjd* "glädje" (Fröjdadal, Fröjdegården — INTE guden). (Frö- kan i undantag vara *frjó* "frö/gröda".)',
+    patterns: ['fro', 'fros', 'froe', 'frey'], excludes: ['frost', 'from', 'frid', 'frojd', 'fröjd'],
+  },
+  {
+    key: 'fröja', label: 'Fröja / Freyja (kvinnlig)', category: 'sacral', evidenceLayer: 'extended',
+    sacralConfidence: 'low', isControl: false, contested: true, boundaryRule: 'prefix',
+    etymology: 'Den KVINNLIGA gudinnan Freyja (genitiv *Frøyju-* → Fröje-/Fröja-). SVÅR att skilja från Freyr (Frö-) och från appellativet *fröjd* "glädje" — därför omtvistad och lågt viktad. Agneta Nyholm framhäver Fröja-spåret i Ångermanland. Uteslut *fröjd*-namn (glädje), som inte är teofora.',
+    patterns: ['fröja', 'fröje'], excludes: ['fröjd', 'fröjde', 'fröjda', 'fröjden', 'fröjds'],
   },
   {
     key: 'ull', label: 'Ull(e)-', category: 'sacral', evidenceLayer: 'core',

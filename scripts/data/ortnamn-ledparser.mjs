@@ -11,7 +11,8 @@ await c.connect();
 // START-förankrade förled-matchare (genitiv-preferens). key = led, re testas mot lowercased namn.
 const CULT = [
   { key:'tor',  re:/^tors[a-zäåö]/ },                 // Tors- (genitiv): Torsåker, Torslunda, Torsvik
-  { key:'frö',  re:/^(frös|frö|frey|frej|frea|fröj)/ }, // Frös-/Frö-/Frey-: Fröland, Frök, Frösslunda
+  { key:'fröja', re:/^fröj[ae]/ },                    // Freyja (Fröje-/Fröja-, gen. Frøyju-) — EJ fröjd (glädje)
+  { key:'frö',  re:/^(frös|frö(?!j)|frey|frej|frea)/ }, // Freyr/generisk: Frös-/Frö-/Frey-. Utesluter fröj- (→ Freyja/fröjd)
   { key:'sal',  re:/^sal(a|o|e|u)/ },                 // Sal/Sala/Salom/Salum/Salem  (ej Salt-, Salteå)
   { key:'ross', re:/^(ross|hross|hors)[a-zäåö]/ },    // Ross-/Hors-
   { key:'vang', re:/^vang/ },                          // Vangsta
