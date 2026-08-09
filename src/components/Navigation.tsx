@@ -145,6 +145,13 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Scroll, category: 'inscriptions',
   },
   {
+    pathEn: '/inscriptions', pathSv: '/sv/runinskrifter',
+    labelSv: 'Runstenar', labelEn: 'Runestones',
+    descSv: 'Runstensväljaren — hela runstenskorpusen på en karta, filtrera på landskap (signum-serie), ornamentstil och typ.',
+    descEn: 'The runestone browser — the whole corpus on a map, filter by province (signum series), ornament style and type.',
+    icon: Map, category: 'inscriptions',
+  },
+  {
     pathEn: '/explore?focus=marine', pathSv: '/explore?focus=marine',
     labelSv: 'Marinarkeologi', labelEn: 'Marine archaeology',
     descSv: 'Vrak, farleder, hamnar och strandförskjutning — sjöns kulturarv på kartan.',

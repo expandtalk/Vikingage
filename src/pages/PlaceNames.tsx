@@ -342,38 +342,43 @@ const PlaceNames = () => {
 
           {/* ---- FLIK 2: ORTNAMNSKLUSTER ---- */}
           <TabsContent value="kluster">
-            <div className="viking-card rounded-lg border border-accent/30 p-4 mb-5">
-              <p className="text-sm text-foreground font-medium mb-1">{sv ? 'Vad svarar det här på?' : 'What does this answer?'}</p>
-              <p className="text-sm text-muted-foreground max-w-3xl">
+            {/* Snabbstart: prova-exempel överst så man direkt ser vad verktyget gör. */}
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <span className="text-xs text-muted-foreground">{sv ? 'Prova direkt:' : 'Try now:'}</span>
+              <Button size="sm" variant="outline" className="h-7 text-xs border-gold/60 text-gold hover:bg-gold/10"
+                onClick={() => tryCluster('h1')}>
+                <Radar className="h-3 w-3 mr-1" />{sv ? '-by kring Sandby borg (skarp kant)' : '-by around Sandby borg (sharp edge)'}
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 text-xs border-gold/60 text-gold hover:bg-gold/10"
+                onClick={() => tryCluster('h2')}>
+                <Radar className="h-3 w-3 mr-1" />{sv ? '-torp kring Gråborg' : '-torp around Gråborg'}
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 text-xs border-slate-500 text-slate-300 hover:bg-slate-700/40"
+                onClick={() => tryCluster('n1')}>
+                <Radar className="h-3 w-3 mr-1" />{sv ? 'Ismantorp — negativ kontroll' : 'Ismantorp — negative control'}
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 text-xs border-cyan-500/60 text-cyan-300 hover:bg-cyan-500/10"
+                onClick={() => tryCluster('a_nora')}>
+                <Radar className="h-3 w-3 mr-1" />{sv ? 'Ångermanland: Nora' : 'Ångermanland: Nora'}
+              </Button>
+            </div>
+
+            {/* Verktyg + resultat FÖRST (Daniel: syns direkt, ej begravt under prosa). */}
+            <div id="cluster-card" className="scroll-mt-24"><OnomasticClusterCard /></div>
+            <AngermanlandClusterResults sv={sv} />
+
+            {/* Metod-förklaringen hopfällbar nederst — kortar sidan. */}
+            <details className="viking-card mt-4 rounded-lg border border-accent/30 p-4">
+              <summary className="cursor-pointer text-sm font-medium text-foreground">{sv ? 'Om metoden — vad svarar det här på?' : 'About the method — what does this answer?'}</summary>
+              <p className="mt-2 text-sm text-muted-foreground max-w-3xl">
                 {sv
                   ? 'Klumpar ett namnled ihop sig kring en punkt (ett epicentrum, t.ex. en borg eller centralort), eller är det jämnt spritt över landskapet? Verktyget ritar en pricktavla och en radiell profil — hur tätheten avtar med avståndet — och jämför mot vad ren slump skulle ge (ett binomialband). Det letar en skarp, falsifierbar kant där mönstret bryts, i stället för att resonera i cirkel ("namnen ligger nära för att de hör ihop").'
                   : 'Does a name element clump around a point (an epicentre such as a fort or central place), or is it evenly spread? The tool draws a scatter plot and a radial profile — how density falls with distance — compared to what pure chance would give (a binomial band). It seeks a sharp, falsifiable edge rather than circular reasoning.'}
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="text-xs text-muted-foreground">{sv ? 'Prova:' : 'Try:'}</span>
-                <Button size="sm" variant="outline" className="h-7 text-xs border-gold/60 text-gold hover:bg-gold/10"
-                  onClick={() => tryCluster('h1')}>
-                  <Radar className="h-3 w-3 mr-1" />{sv ? '-by kring Sandby borg (skarp kant)' : '-by around Sandby borg (sharp edge)'}
-                </Button>
-                <Button size="sm" variant="outline" className="h-7 text-xs border-gold/60 text-gold hover:bg-gold/10"
-                  onClick={() => tryCluster('h2')}>
-                  <Radar className="h-3 w-3 mr-1" />{sv ? '-torp kring Gråborg' : '-torp around Gråborg'}
-                </Button>
-                <Button size="sm" variant="outline" className="h-7 text-xs border-slate-500 text-slate-300 hover:bg-slate-700/40"
-                  onClick={() => tryCluster('n1')}>
-                  <Radar className="h-3 w-3 mr-1" />{sv ? 'Ismantorp — negativ kontroll' : 'Ismantorp — negative control'}
-                </Button>
-                <Button size="sm" variant="outline" className="h-7 text-xs border-cyan-500/60 text-cyan-300 hover:bg-cyan-500/10"
-                  onClick={() => tryCluster('a_nora')}>
-                  <Radar className="h-3 w-3 mr-1" />{sv ? 'Ångermanland: Nora (Agnetas centralplats)' : 'Ångermanland: Nora (Agneta’s central place)'}
-                </Button>
-              </div>
-              <p className="text-[11px] text-muted-foreground/80 mt-2">
+              <p className="mt-2 text-[11px] text-muted-foreground/80">
                 {sv ? 'Verktyget stödjer nu Öland (Daniels pilotfall) och Ångermanland (Agneta Nyholms centralplatser som epicentra, kult-/maktled kombinerat, -sjö som nollkontroll). Växla landskap i kortet.' : 'The tool now supports Öland and Ångermanland (Agneta Nyholm’s central places as epicentres). Switch province in the card.'}
               </p>
-            </div>
-            <div id="cluster-card" className="scroll-mt-24"><OnomasticClusterCard /></div>
-            <AngermanlandClusterResults sv={sv} />
+            </details>
           </TabsContent>
 
           {/* ---- FLIK 3: AI FILOLOG-AGENT ---- */}
