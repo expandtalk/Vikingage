@@ -8,6 +8,7 @@ import { DraggableLegend } from '../legend/DraggableLegend';
 import { ProximityControl } from './ProximityControl';
 import { ElementSpotlightControl } from './ElementSpotlightControl';
 import { NearMeControl } from './NearMeControl';
+import { CarRouteMode } from './CarRouteMode';
 import { FieldNavControl } from './FieldNavControl';
 import { ChurchYearControl } from './ChurchYearControl';
 import { ClusterLegendControl } from './ClusterLegendControl';
@@ -118,6 +119,8 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
       {!isMobile && <ElementSpotlightControl />}
       {/* Linjalen flyttad till breadcrumb-raden (RulerBar i Explore) — inte längre flytande på kartan. */}
       <NearMeControl enabledLayers={enabledLayers} />
+      {/* Bil-läge NIVÅ 1 (rutt-korridor): kurerad väg + objekt längs vägen. Fristående pill (nere vänster). */}
+      <CarRouteMode />
       <FieldNavControl />
       {!isMobile && <ClusterLegendControl onLegendToggle={onLegendToggle} enabledLayers={enabledLayers} />}
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}

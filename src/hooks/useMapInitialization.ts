@@ -22,6 +22,7 @@ import { useMapElementMarkers } from './map/useMapElementMarkers';
 import { useMapRuler } from './map/useMapRuler';
 import { useMapNearMe } from './map/useMapNearMe';
 import { useMapRoadtrip } from './map/useMapRoadtrip';
+import { useMapCarRoute } from './map/useMapCarRoute';
 import { useMapCourseUp } from './map/useMapCourseUp';
 import { useMapFieldNav } from './map/useMapFieldNav';
 import { useFieldNavGeolocation } from './map/useFieldNavGeolocation';
@@ -256,6 +257,10 @@ export const useMapInitialization = ({
 
   // Roadtrip-läge (bil): ritar geokodad bilrutt + målmarkör. Store matas av NearMeControl.
   useMapRoadtrip({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Bil-läge NIVÅ 1 (rutt-korridor): kurerad väg-linje + objekt längs vägen (medaljong-kluster).
+  // Store matas av CarRouteMode. Skilt från roadtrip (Nivå 3, GPS→mål).
+  useMapCarRoute({ map: map.current, isMapReady: isMapReadyRef });
 
   // Färd-upp: roterar kartan så färdriktningen pekar uppåt i billäget (CSS-transform).
   useMapCourseUp({ map: map.current, isMapReady: isMapReadyRef });
