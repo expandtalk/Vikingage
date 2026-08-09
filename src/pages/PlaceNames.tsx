@@ -85,7 +85,13 @@ const GROUP_DEFS: { key: string; sv: string; en: string; color: string; desc: st
     desc: 'Teofora/kultled som pekar på förkristen kult (gudanamn + kultplatsord).',
     descEn: 'Theophoric/cult elements pointing to pre-Christian cult.',
     els: ['tor', 'frö', 'oden', 'ull', 'vi', 'lund', 'harg', 'hov'] },
+  { key: 'ledung', sv: 'Ledung (sjökrig)', en: 'Ledung (naval levy)', color: '#0891b2',
+    desc: 'Snäck-namn (snäcka = vikingatida krigsskepp) tolkas som platser i ledungens tjänst — uppläggnings-/bemanningshamnar i skyddade vikar. Olsson visar att de gotländska snäck-namnen fördelar sig på de gamla tingen (10 ting = ett snäck-namn vardera) → en ting-/ledungsangelägenhet. Omtvistat (kan vara topografisk snäcka).',
+    descEn: 'Snäck names (snäcka = Viking warship) are read as sites in the naval levy (ledung) — berthing/manning harbours in sheltered bays. Olsson shows the Gotland snäck names map onto the old tings (10 tings = one name each). Contested.',
+    els: ['snack'] },
 ];
+// Attribution för snäck/ledung-testet (Daniel: viktigt att källan syns).
+const SNACK_SOURCE = 'Ingemar Olsson, "Snäck-namn på Gotland", Fornvännen 1972:180–208 (RAÄ, öppen · urn:nbn:se:raa:diva-886)';
 
 const PlaceNames = () => {
   const { language } = useLanguage();
@@ -266,7 +272,16 @@ const PlaceNames = () => {
                   onClick={() => tryHypothesis(['tor', 'frö', 'oden'])}>
                   <FlaskConical className="h-3 w-3 mr-1" />{sv ? 'Sakralt (Tor, Frö, Oden)' : 'Sacral (Thor, Frey, Odin)'}
                 </Button>
+                <Button size="sm" variant="outline" className="h-7 text-xs border-cyan-500/60 text-cyan-300 hover:bg-cyan-500/10"
+                  onClick={() => tryHypothesis(['snack'])}>
+                  <FlaskConical className="h-3 w-3 mr-1" />{sv ? 'Snäck (ledung)' : 'Snäck (naval levy)'}
+                </Button>
               </div>
+              <p className="text-[11px] text-muted-foreground/80 mt-2">
+                {sv ? 'Snäck (ledung)-testet — källa: ' : 'The Snäck (ledung) test — source: '}
+                <a href="http://kulturarvsdata.se/raa/fornvannen/html/1972_180" target="_blank" rel="noopener noreferrer" className="text-cyan-300/90 hover:underline">{SNACK_SOURCE}</a>.
+                {sv ? ' Endast ~8 taggade snäck-namn i registret → underpowered; det ideala målet (kustlinje/ting) är ännu ej ett target i testet.' : ' Only ~8 tagged snäck names → underpowered; the ideal target (coastline/ting) is not yet a target in the tester.'}
+              </p>
             </div>
 
             {/* Vad grupperna betyder */}

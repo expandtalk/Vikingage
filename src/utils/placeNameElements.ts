@@ -137,7 +137,7 @@ export const PLACE_NAME_ELEMENTS: PlaceNameElement[] = [
     // (snigel/skal), personnamn eller topografi. Boundary 'prefix' (Snäcksta, Snäckhamn, Snäcke).
     key: 'snack', label: 'Snäck- (snäcka/ledung)', category: 'power', evidenceLayer: 'extended',
     sacralConfidence: 'none', isControl: false, contested: true, boundaryRule: 'prefix',
-    etymology: 'Fornnordiska *snekkja* — ett smäckert vikingatida krigsskepp. Snäck-namn (Snäcksta, Snäckhamn, Snäckevarp) tolkas ofta som platser i ledungens/sjökrigsorganisationens tjänst (uppläggningshamn/bemanning). Studie: Ingemar Olsson, "Snäck-namn på Gotland" (1972) — kopplar gotländska snäck-namn (Snäckgärde, Snäckhus) till ledungshamnar. Omtvistat: "snäck-" kan även vara snäcka (snigel/skal), personnamn eller topografi.',
+    etymology: 'Fornnordiska *snekkja* — ett smäckert vikingatida krigsskepp. Snäck-namn (Snäcksta, Snäckhamn, Snäckevarp) tolkas ofta som platser i ledungens/sjökrigsorganisationens tjänst (uppläggnings-/bemanningshamn). Källa: Ingemar Olsson, "Snäck-namn på Gotland", Fornvännen 1972:180–208 (RAÄ, öppen; urn:nbn:se:raa:diva-886) — visar att de gotländska snäck-platserna ligger i skyddade vikar (ofta vid en å, gravfält intill) och att namnen fördelar sig på de gamla tingen (10 ting = ett snäck-namn vardera) → snäckhamnarna var en ting-/ledungsangelägenhet; facit-plats Snäckhus i Burs (vikingatida huslämning 30×8 m). Omtvistat: "snäck-" kan även vara snäcka (snigel/skal), personnamn eller topografi.',
     patterns: ['snack'], excludes: [],
   },
   {
