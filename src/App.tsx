@@ -115,6 +115,11 @@ const App = () => (
                   <Route path="/royal-chronicles" element={<RoyalChronicles />} />
                   <Route path="/fortresses" element={<Fortresses />} />
                   <Route path="/fortresses/:id" element={<FortressDetail />} />
+                  {/* Vänliga rutter → fornborgs-detaljsidan (claim-liggaren). */}
+                  <Route path="/sv/ismantorp" element={<Navigate to="/fortresses/6660de5b-9d2e-4fa4-b58e-f327fd256ae3" replace />} />
+                  <Route path="/sv/ismanstorp" element={<Navigate to="/fortresses/6660de5b-9d2e-4fa4-b58e-f327fd256ae3" replace />} />
+                  <Route path="/sv/graborg" element={<Navigate to="/fortresses/f82c3020-f03d-4e5c-b578-af3881cdf4f2" replace />} />
+                  <Route path="/sv/gråborg" element={<Navigate to="/fortresses/f82c3020-f03d-4e5c-b578-af3881cdf4f2" replace />} />
                   <Route path="/sv/runinskrifter" element={<Inscriptions />} />
                   <Route path="/sv/ristare" element={<Carvers />} />
                   <Route path="/sv/artefakter" element={<Artefacts />} />
