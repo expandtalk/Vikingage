@@ -511,6 +511,10 @@ const Kalmar = () => {
               <div className="text-foreground font-medium flex items-center gap-2"><MapPin className="h-4 w-4 text-emerald-400" /> Stadsmuren →</div>
               <div className="text-xs mt-0.5">Medeltida mur med tidsslider och evidensklass per segment (uppmätt/interpolerad/hypotetisk). Egen sida.</div>
             </Link>
+            <Link to="/sv/kalmar/medeltid" className="block border-l-2 border-gold pl-3 py-1 hover:bg-slate-800/30 rounded-r transition-colors">
+              <div className="text-foreground font-medium flex items-center gap-2"><MapPin className="h-4 w-4 text-gold" /> Medeltidskarta →</div>
+              <div className="text-xs mt-0.5">Tidsskiktad karta: Gamla stans gator & hamn vid slottet, båtdraget över Stensö (Dragvik), Öland-överfarten (Ölandskajen–Färjestaden) och nya staden på Kvarnholmen. Mot medeltida strandlinje.</div>
+            </Link>
             {harbor && (
               <div className="border-l-2 border-sky-500 pl-3 py-1">
                 <div className="text-foreground font-medium flex items-center gap-2"><Anchor className="h-4 w-4 text-sky-400" /> {harbor.name}</div>
