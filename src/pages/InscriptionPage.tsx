@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Link, useParams } from 'react-router-dom';
@@ -11,10 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MapPin, Calendar, Hammer, Scroll, BookOpen, Compass, ExternalLink, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { InscriptionDiscussion } from '@/components/inscriptions/InscriptionDiscussion';
 
 // Permalänksida per inskrift (/inscription/:signum) — den kanoniska stenartikeln.
-// Länkmål från artefakter, globalsök, namngivna stenar och källsidan. All data i
-// ett RPC-anrop (get_inscription_page). Egen dokumentation prioriteras bland bilder.
+// Layout (variant A, Daniel 2026-08-08): sten-hero (bild + inskriften) överst → full-bredds spatialt
+// 3-kol-band (fakta | bred karta | ristare/källor) → capped prosazon (läsningar/forskning, ~läsbar bredd).
+// All data i ett RPC-anrop (get_inscription_page). Egen dokumentation prioriteras bland bilder.
 
 interface Img { url: string; description: string | null; photographer: string | null; credit: string | null; source: string | null; }
 interface Carver { id: string; name: string; }
@@ -35,7 +37,6 @@ interface InscriptionData {
   images: Img[]; carvers: Carver[]; readings: Reading[]; interpretations: Interpretation[]; literary_links: LitLink[];
 }
 
-// Editionsversioner och språklager ur Samnordisk runtextdatabas (samma koder som RAÄ Runor).
 const READING_LABEL: Record<string, { sv: string; en: string }> = {
   P: { sv: 'primär läsning', en: 'primary reading' },
   Q: { sv: 'alternativ läsning', en: 'alternative reading' },
@@ -54,12 +55,20 @@ const LANG_LABEL: Record<string, { sv: string; en: string }> = {
 
 const sb = supabase as unknown as { rpc: (fn: string, args: Record<string, unknown>) => any };
 
+const Section: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({ icon, title, children }) => (
+  <section className="viking-card rounded-lg border border-border p-5">
+    <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">{icon}{title}</h2>
+    {children}
+  </section>
+);
+
 const InscriptionPage = () => {
   const { signum } = useParams<{ signum: string }>();
   const { language } = useLanguage();
   const sv = language === 'sv';
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showAllImages, setShowAllImages] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['inscription-page', signum],
@@ -88,13 +97,6 @@ const InscriptionPage = () => {
     ? (data.dating_text || (data.period_start ? `${data.period_start}–${data.period_end ?? ''} ${sv ? 'e.Kr.' : 'AD'}` : null))
     : null;
 
-  const Section: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({ icon, title, children }) => (
-    <section className="viking-card rounded-lg border border-border p-5">
-      <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">{icon}{title}</h2>
-      {children}
-    </section>
-  );
-
   const facts: Array<[string, string | null]> = data ? [
     [sv ? 'Objekttyp' : 'Object type', data.object_type],
     [sv ? 'Material' : 'Material', data.material],
@@ -114,7 +116,7 @@ const InscriptionPage = () => {
       />
       <Header />
       <Breadcrumbs />
-      <main className="container mx-auto px-4 py-8 max-w-5xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         <Link to="/inscriptions" className="inline-flex items-center gap-1 text-sm text-gold hover:underline mb-4">
           <ArrowLeft className="h-4 w-4" />{sv ? 'Alla runinskrifter' : 'All inscriptions'}
         </Link>
@@ -152,55 +154,162 @@ const InscriptionPage = () => {
               )}
             </div>
 
-            {/* Bilder */}
-            {data.images.length > 0 && (
-              <section className="mb-6">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {data.images.map((img, i) => (
-                    <a key={i} href={img.url} target="_blank" rel="noopener noreferrer"
-                      className="block rounded-lg overflow-hidden border border-border bg-card group relative">
-                      <img src={img.url} alt={img.description || data.signum} loading="lazy"
-                        className="w-full h-40 object-cover group-hover:opacity-90 transition-opacity"
-                        title={[img.photographer, img.credit].filter(Boolean).join(', ') || undefined} />
-                      {(img.photographer || img.credit) && (
-                        <span className="absolute bottom-0.5 right-1 text-[8px] text-white/60 bg-black/40 px-1 rounded">
-                          {[img.photographer, img.credit].filter(Boolean).join(', ')}
-                        </span>
+            {/* HERO (variant A): stenen + inskriften sida vid sida — bild kapas (stående sten blåses ej upp). */}
+            <div className="mb-8 grid grid-cols-1 lg:grid-cols-[minmax(0,440px)_minmax(0,1fr)] gap-6 items-start">
+              <div className="min-w-0">
+                {data.images.length > 0 ? (
+                  <figure className="m-0">
+                    <a href={data.images[0].url} target="_blank" rel="noopener noreferrer" className="block">
+                      <img src={data.images[0].url} alt={data.images[0].description || data.signum} loading="eager"
+                        className="w-full h-auto rounded-lg border border-border bg-black/20"
+                        title={[data.images[0].photographer, data.images[0].credit].filter(Boolean).join(', ') || undefined} />
+                    </a>
+                    {(data.images[0].description || data.images[0].photographer || data.images[0].credit) && (
+                      <figcaption className="mt-1.5 text-xs text-muted-foreground leading-snug">
+                        {data.images[0].description}
+                        {(data.images[0].photographer || data.images[0].credit) && (
+                          <span className="text-muted-foreground/70"> — {[data.images[0].photographer, data.images[0].credit].filter(Boolean).join(', ')}</span>
+                        )}
+                      </figcaption>
+                    )}
+                  </figure>
+                ) : (
+                  <div className="flex h-56 items-center justify-center rounded-lg border border-dashed border-border">
+                    <span className="flex flex-col items-center gap-2 text-muted-foreground"><ImageIcon className="h-8 w-8 opacity-50" />{sv ? 'Bild saknas' : 'No image'}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Inskriften — stenens egna ord, bredvid bilden (hjärtat i artikeln) */}
+              {(data.transliteration || data.normalization || data.translation_sv || data.translation_en) ? (
+                <Section icon={<Scroll className="h-5 w-5 text-gold" />} title={sv ? 'Inskriften' : 'The inscription'}>
+                  {data.transliteration && (
+                    <div className="mb-3">
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{sv ? 'Translitteration' : 'Transliteration'}</div>
+                      <div className="p-3 bg-black/20 rounded font-mono text-sm text-slate-200 whitespace-pre-wrap">{data.transliteration}</div>
+                    </div>
+                  )}
+                  {data.normalization && (
+                    <div className="mb-3">
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{sv ? 'Normaliserad fornnordiska' : 'Normalised Old Norse'}</div>
+                      <p className="text-sm text-slate-200 font-serif italic whitespace-pre-wrap">{data.normalization}</p>
+                    </div>
+                  )}
+                  {(data.translation_sv || data.translation_en) && (
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{sv ? 'Översättning' : 'Translation'}</div>
+                      <p className="text-base text-foreground italic">"{(sv ? data.translation_sv : data.translation_en) || data.translation_sv || data.translation_en}"</p>
+                    </div>
+                  )}
+                </Section>
+              ) : <div />}
+            </div>
+
+            {/* SPATIALT BAND (full bredd): fakta | bred karta | ristare/litterärt/källor */}
+            <div className="mb-8 grid grid-cols-1 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)_minmax(0,300px)] gap-6 items-start">
+              {/* Vänster: fakta */}
+              <div className="space-y-4">
+                {facts.some(([, v]) => v) && (
+                  <Section icon={<ImageIcon className="h-5 w-5 text-gold" />} title={sv ? 'Fakta' : 'Facts'}>
+                    <dl className="space-y-1.5 text-sm">
+                      {facts.filter(([, v]) => v).map(([k, v]) => (
+                        <div key={k} className="flex justify-between gap-3">
+                          <dt className="text-muted-foreground shrink-0">{k}</dt>
+                          <dd className="text-foreground text-right">{v}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </Section>
+                )}
+              </div>
+
+              {/* Mitten (störst): kartan */}
+              <div className="min-w-0">
+                {data.lat && data.lng ? (
+                  <div>
+                    <div ref={containerRef} className="w-full rounded-lg border border-border" style={{ height: 460 }} />
+                    <div className="mt-2 flex flex-wrap gap-3">
+                      <a href={`/explore?lat=${data.lat}&lng=${data.lng}`} className="inline-flex items-center gap-1 text-xs text-gold hover:underline"><Compass className="h-3 w-3" />{sv ? 'Visa i kartan' : 'Show on map'}</a>
+                      <a href={`https://www.openstreetmap.org/?mlat=${data.lat}&mlon=${data.lng}#map=15/${data.lat}/${data.lng}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-gold hover:underline"><ExternalLink className="h-3 w-3" />OpenStreetMap</a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
+                    <span className="flex items-center gap-2"><MapPin className="h-4 w-4" />{sv ? 'Koordinat okänd' : 'Coordinate unknown'}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Höger: ristare, litterära kopplingar, källor */}
+              <div className="space-y-4">
+                {data.carvers.length > 0 && (
+                  <Section icon={<Hammer className="h-5 w-5 text-gold" />} title={sv ? 'Ristare' : 'Carver(s)'}>
+                    <ul className="space-y-1">
+                      {data.carvers.map((c) => (
+                        <li key={c.id}><Link to={`/carvers?carver=${c.id}`} className="text-gold hover:underline text-sm">{c.name}</Link></li>
+                      ))}
+                    </ul>
+                  </Section>
+                )}
+                {data.literary_links.length > 0 && (
+                  <Section icon={<BookOpen className="h-5 w-5 text-gold" />} title={sv ? 'Litterära kopplingar' : 'Literary links'}>
+                    <ul className="space-y-1">
+                      {data.literary_links.map((l, i) => (
+                        <li key={i}>
+                          <Link to={`/sources/${l.source_id}`} className="text-gold hover:underline text-sm">{l.title}</Link>
+                          {l.relation && <span className="text-xs text-muted-foreground"> · {l.relation}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </Section>
+                )}
+                {(data.k_samsok_uri || data.raa_number || data.bibliography) && (
+                  <Section icon={<ExternalLink className="h-5 w-5 text-gold" />} title={sv ? 'Källor' : 'Sources'}>
+                    <ul className="space-y-1.5 text-sm">
+                      {data.k_samsok_uri && (
+                        <li>
+                          <a href={data.k_samsok_uri} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline inline-flex items-center gap-1">
+                            <ExternalLink className="h-3 w-3" />RAÄ Runor / Samnordisk runtextdatabas</a>
+                          <span className="block text-[11px] text-muted-foreground/70">{sv ? 'Auktoritativ källa att citera (Riksantikvarieämbetet & Uppsala universitet)' : 'Authoritative source for citation (Swedish National Heritage Board & Uppsala University)'}</span>
+                        </li>
                       )}
+                      {data.raa_number && <li className="text-muted-foreground">RAÄ-nr: {data.raa_number}</li>}
+                      {data.bibliography && <li className="text-muted-foreground text-xs">{data.bibliography}</li>}
+                    </ul>
+                  </Section>
+                )}
+              </div>
+            </div>
+
+            {/* BILDER-sektion: hela albumet (viktigt för t.ex. Rök med 100+ bilder) — masonry, ingen
+                beskärning (blandad porträtt/landskap), visa fler vid många. */}
+            {data.images.length > 1 && (
+              <section className="mb-8">
+                <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-gold" />{sv ? 'Bilder' : 'Images'}
+                  <span className="text-sm font-normal text-muted-foreground">· {data.images.length}</span>
+                </h2>
+                <div className="columns-2 sm:columns-3 lg:columns-4 gap-3">
+                  {(showAllImages ? data.images : data.images.slice(0, 24)).map((img, i) => (
+                    <a key={i} href={img.url} target="_blank" rel="noopener noreferrer"
+                      className="mb-3 block break-inside-avoid overflow-hidden rounded-md border border-border bg-black/20"
+                      title={[img.description, img.photographer, img.credit].filter(Boolean).join(' — ') || undefined}>
+                      <img src={img.url} alt={img.description || data.signum} loading="lazy"
+                        className="w-full h-auto transition-opacity hover:opacity-90" />
                     </a>
                   ))}
                 </div>
+                {data.images.length > 24 && !showAllImages && (
+                  <button type="button" onClick={() => setShowAllImages(true)} className="mt-2 text-sm text-gold hover:underline">
+                    {sv ? `Visa alla ${data.images.length} bilder` : `Show all ${data.images.length} images`}
+                  </button>
+                )}
               </section>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                {/* Text */}
-                {(data.transliteration || data.normalization || data.translation_sv || data.translation_en) && (
-                  <Section icon={<Scroll className="h-5 w-5 text-gold" />} title={sv ? 'Inskriften' : 'The inscription'}>
-                    {data.transliteration && (
-                      <div className="mb-3">
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{sv ? 'Translitteration' : 'Transliteration'}</div>
-                        <div className="p-3 bg-black/20 rounded font-mono text-sm text-slate-200 whitespace-pre-wrap">{data.transliteration}</div>
-                      </div>
-                    )}
-                    {data.normalization && (
-                      <div className="mb-3">
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{sv ? 'Normaliserad fornnordiska' : 'Normalised Old Norse'}</div>
-                        <p className="text-sm text-slate-200 font-serif italic whitespace-pre-wrap">{data.normalization}</p>
-                      </div>
-                    )}
-                    {(data.translation_sv || data.translation_en) && (
-                      <div>
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{sv ? 'Översättning' : 'Translation'}</div>
-                        <p className="text-sm text-muted-foreground italic">"{(sv ? data.translation_sv : data.translation_en) || data.translation_sv || data.translation_en}"</p>
-                      </div>
-                    )}
-                  </Section>
-                )}
-
-                {/* Läsningar & tolkningar — flera forskares läsningar + normaliseringslager,
-                    ur Samnordisk runtextdatabas. Det scenkritiska djupet RAÄ Runor har. */}
+            {/* PROSAZON (kapad läsbredd): läsningar & tolkningar + forskning & kontext */}
+            {(data.readings.length > 1 || data.interpretations.length > 1 || data.scholarly_notes || data.historical_context || data.paleographic_notes || data.condition_notes) && (
+              <div className="max-w-3xl space-y-6">
                 {(data.readings.length > 1 || data.interpretations.length > 1) && (
                   <Section icon={<Scroll className="h-5 w-5 text-gold" />} title={sv ? 'Läsningar & tolkningar' : 'Readings & interpretations'}>
                     <p className="text-xs text-muted-foreground mb-3">
@@ -245,77 +354,10 @@ const InscriptionPage = () => {
                   </Section>
                 )}
               </div>
-
-              <div className="space-y-6">
-                {/* Karta */}
-                {data.lat && data.lng && (
-                  <div>
-                    <div ref={containerRef} className="w-full rounded-lg border border-border" style={{ height: 240 }} />
-                    <div className="mt-2 flex flex-wrap gap-3">
-                      <a href={`/explore?lat=${data.lat}&lng=${data.lng}`} className="inline-flex items-center gap-1 text-xs text-gold hover:underline"><Compass className="h-3 w-3" />{sv ? 'Visa i kartan' : 'Show on map'}</a>
-                      <a href={`https://www.openstreetmap.org/?mlat=${data.lat}&mlon=${data.lng}#map=15/${data.lat}/${data.lng}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-gold hover:underline"><ExternalLink className="h-3 w-3" />OpenStreetMap</a>
-                    </div>
-                  </div>
-                )}
-
-                {/* Fakta */}
-                {facts.some(([, v]) => v) && (
-                  <Section icon={<ImageIcon className="h-5 w-5 text-gold" />} title={sv ? 'Fakta' : 'Facts'}>
-                    <dl className="space-y-1.5 text-sm">
-                      {facts.filter(([, v]) => v).map(([k, v]) => (
-                        <div key={k} className="flex justify-between gap-3">
-                          <dt className="text-muted-foreground shrink-0">{k}</dt>
-                          <dd className="text-foreground text-right">{v}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </Section>
-                )}
-
-                {/* Ristare */}
-                {data.carvers.length > 0 && (
-                  <Section icon={<Hammer className="h-5 w-5 text-gold" />} title={sv ? 'Ristare' : 'Carver(s)'}>
-                    <ul className="space-y-1">
-                      {data.carvers.map((c) => (
-                        <li key={c.id}>
-                          <Link to={`/carvers?carver=${c.id}`} className="text-gold hover:underline text-sm">{c.name}</Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </Section>
-                )}
-
-                {/* Litterära kopplingar */}
-                {data.literary_links.length > 0 && (
-                  <Section icon={<BookOpen className="h-5 w-5 text-gold" />} title={sv ? 'Litterära kopplingar' : 'Literary links'}>
-                    <ul className="space-y-1">
-                      {data.literary_links.map((l, i) => (
-                        <li key={i}>
-                          <Link to={`/sources/${l.source_id}`} className="text-gold hover:underline text-sm">{l.title}</Link>
-                          {l.relation && <span className="text-xs text-muted-foreground"> · {l.relation}</span>}
-                        </li>
-                      ))}
-                    </ul>
-                  </Section>
-                )}
-
-                {/* Källor / länkar */}
-                {(data.k_samsok_uri || data.raa_number || data.bibliography) && (
-                  <Section icon={<ExternalLink className="h-5 w-5 text-gold" />} title={sv ? 'Källor' : 'Sources'}>
-                    <ul className="space-y-1.5 text-sm">
-                      {data.k_samsok_uri && (
-                        <li>
-                          <a href={data.k_samsok_uri} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline inline-flex items-center gap-1">
-                            <ExternalLink className="h-3 w-3" />RAÄ Runor / Samnordisk runtextdatabas</a>
-                          <span className="block text-[11px] text-muted-foreground/70">{sv ? 'Auktoritativ källa att citera (Riksantikvarieämbetet & Uppsala universitet)' : 'Authoritative source for citation (Swedish National Heritage Board & Uppsala University)'}</span>
-                        </li>
-                      )}
-                      {data.raa_number && <li className="text-muted-foreground">RAÄ-nr: {data.raa_number}</li>}
-                      {data.bibliography && <li className="text-muted-foreground text-xs">{data.bibliography}</li>}
-                    </ul>
-                  </Section>
-                )}
-              </div>
+            )}
+            {/* DISKUTERA (modererad): frågor/observationer/källor → granskningskö, aldrig ogranskat. */}
+            <div className="max-w-3xl mt-8">
+              <InscriptionDiscussion signum={data.signum} />
             </div>
           </>
         )}

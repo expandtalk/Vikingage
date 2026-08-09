@@ -6,10 +6,11 @@ import { SecurityAuditDashboard } from '../components/SecurityAuditDashboard';
 import { SignumManagement } from '../components/admin/SignumManagement';
 import { AdminRoles } from '../components/admin/AdminRoles';
 import { EntityEditor } from '../components/admin/entity-editor/EntityEditor';
+import { AdminDiscussion } from '../components/admin/AdminDiscussion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, Settings, Database, UserCog, Network } from "lucide-react";
+import { ArrowLeft, Shield, Settings, Database, UserCog, Network, MessagesSquare } from "lucide-react";
 
 // Åtkomstkontroll sker centralt i <RequireRole roles={['admin']}> (App.tsx).
 const Admin = () => {
@@ -36,7 +37,7 @@ const Admin = () => {
 
         {/* Admin functionality */}
         <Tabs defaultValue="content" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-white/10 border-white/20">
+          <TabsList className="grid w-full grid-cols-6 bg-white/10 border-white/20">
             <TabsTrigger value="content" className="data-[state=active]:bg-white/20 text-white">
               <Network className="h-4 w-4 mr-2" />
               Innehåll
@@ -52,6 +53,10 @@ const Admin = () => {
             <TabsTrigger value="roles" className="data-[state=active]:bg-white/20 text-white">
               <UserCog className="h-4 w-4 mr-2" />
               Roller
+            </TabsTrigger>
+            <TabsTrigger value="discussion" className="data-[state=active]:bg-white/20 text-white">
+              <MessagesSquare className="h-4 w-4 mr-2" />
+              Diskussion
             </TabsTrigger>
             <TabsTrigger value="security" className="data-[state=active]:bg-white/20 text-white">
               <Shield className="h-4 w-4 mr-2" />
@@ -79,6 +84,10 @@ const Admin = () => {
             <div className="bg-white/5 backdrop-blur-md border-white/10 rounded-lg p-6">
               <AdminRoles />
             </div>
+          </TabsContent>
+
+          <TabsContent value="discussion" className="mt-6">
+            <AdminDiscussion />
           </TabsContent>
 
           <TabsContent value="security" className="mt-6">
