@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock, ChevronDown, FlaskConical, Languages } from 'lucide-react';
+import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock, ChevronDown, FlaskConical, Languages, Radar } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
 import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceNameAttestations';
@@ -194,112 +195,143 @@ const PlaceNames = () => {
           </p>
         </div>
 
-        {/* ===== HYPOTESTESTAREN (i fokus) ===== */}
-        <div className="mb-10">
-          <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
-            <FlaskConical className="h-7 w-7 text-gold" />
-            {sv ? 'Hypotestestaren' : 'The hypothesis tester'}
-          </h2>
-          <div className="h-0.5 w-16 bg-accent/60 rounded mb-3" />
-          <p className="text-sm text-muted-foreground max-w-3xl mb-4">
-            {sv
-              ? 'Verktyget mäter var olika sorters ortnamn ligger i förhållande till kyrkor, fornborgar och andra objekt. Idén: om en namntyp systematiskt ligger nära (eller långt från) något, är det ett spår värt att undersöka. Du kan mäta avstånd till närmaste objekt, eller räkna hur många objekt som ligger inom en dagsresa. Allt redovisar antal (n), median och osäkerhet — inga tvärsäkra slutsatser.'
-              : 'The tool measures where different kinds of place names sit relative to churches, hillforts and other features. If a name type systematically lies near (or far from) something, that is a lead worth probing. Measure distance to the nearest feature, or count features within a day’s travel.'}
-          </p>
+        {/* ===== TRE VERKTYG SOM FLIKAR ===== */}
+        <Tabs defaultValue="hypotes" className="mb-10">
+          <TabsList className="grid w-full grid-cols-3 max-w-3xl mb-4 h-auto">
+            <TabsTrigger value="hypotes" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
+              <FlaskConical className="h-4 w-4" /> {sv ? 'Hypotestestaren' : 'Hypothesis tester'}
+            </TabsTrigger>
+            <TabsTrigger value="kluster" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
+              <Radar className="h-4 w-4" /> {sv ? 'Ortnamnskluster' : 'Name clustering'}
+            </TabsTrigger>
+            <TabsTrigger value="filolog" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
+              <Languages className="h-4 w-4" /> {sv ? 'AI Filolog-agent' : 'AI philologist'}
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Vad grupperna betyder */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
-            {GROUP_DEFS.map((g) => (
-              <Card key={g.key} className="viking-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2" style={{ color: g.color }}>
-                    ● {sv ? g.sv : g.en}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground space-y-2">
-                  <p>{sv ? g.desc : g.descEn}</p>
-                  <div className="flex flex-wrap gap-1">
-                    {g.els.map((k) => (
-                      <span key={k} className="px-1.5 py-0.5 rounded border border-slate-600 text-slate-300">{elementLabel(k)}</span>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Steg 1: fast baslinjetest */}
-          <DistanceStatsCard sv={sv} />
-
-          {/* Bygg ett eget test (avstånd / antal inom dagsresa, valfri form) */}
-          <FreeDistanceStatsCard sv={sv} />
-
-          {/* Avstånd mellan kyrkorna */}
-          <ChurchDistanceCard sv={sv} />
-
-          {/* Ligger leden vid en fornlämningstyp? (hypotestestare v2, nationella lager) */}
-          <HeritageProximityCard sv={sv} />
-
-          {/* Helgon i centralorterna (sjöfararhelgon-hypotesen) */}
-          <SaintCentralityCard sv={sv} />
-
-          {/* Runkorpus-översikt + kohort-väljare: styr alla runtest */}
-          <RunicCorpusCard sv={sv} cohort={runicCohort} onChange={setRunicCohort} />
-
-          {/* Runiska ord i landskapet — lyder den delade kohorten */}
-          <RunicWordCard sv={sv} cohort={runicCohort} />
-
-          {/* Kristnandet i sten — omvandlingsanalys (kristen markör × region × datering × expeditioner) */}
-          <RunicTransitionCard sv={sv} />
-
-          {/* Exceptionella elit-monument — avvikarna (skaldevers/hjältediktning/förbannelse/centralplats) */}
-          <EliteMonumentsCard sv={sv} />
-
-          {/* Förfina ett sökord (ordförädling) — t.ex. gull */}
-          <WordRefineCard sv={sv} />
-
-          {/* Så förbättrar vi urvalet */}
-          <Card className="viking-card border-sky-700/40">
-            <CardContent className="py-4 text-sm text-muted-foreground space-y-2">
-              <p className="text-foreground font-medium">{sv ? 'Så gör vi urvalet bättre' : 'How we improve the sample'}</p>
-              <p>
+          {/* ---- FLIK 1: HYPOTESTESTAREN ---- */}
+          <TabsContent value="hypotes">
+            <div className="viking-card rounded-lg border border-accent/30 p-4 mb-5">
+              <p className="text-sm text-foreground font-medium mb-1">{sv ? 'Vad svarar det här på?' : 'What does this answer?'}</p>
+              <p className="text-sm text-muted-foreground max-w-3xl">
                 {sv
-                  ? 'Dagens punkter kommer mest från OSM-gazetteern, som är ojämn i precision och saknar ålder. Starkare statistik kräver fler verifierade punkter från auktoritativa källor:'
-                  : 'Today’s points come mostly from the OSM gazetteer, uneven in precision and without age. Stronger statistics need more verified points from authoritative sources:'}
+                  ? 'Ligger en viss sorts ortnamn systematiskt nära — eller långt från — något, t.ex. kyrkor, fornborgar eller andra namn? Verktyget mäter avstånd till närmaste objekt och räknar hur många objekt som ligger inom en dagsresa, och jämför alltid mot en baslinje (vanliga bebyggelsenamn). Allt redovisar antal (n), median och osäkerhet — inga tvärsäkra slutsatser.'
+                  : 'Does a kind of place name systematically lie near — or far from — churches, hillforts or other features? The tool measures distance to the nearest feature and counts features within a day’s travel, always compared to a baseline. Everything reports n, median and uncertainty.'}
               </p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>{sv ? 'Lantmäteriets ortnamn och Isof Ortnamnsregistret (kanonisk namnform + koordinat)' : 'Lantmäteriet place names & Isof name register'}</li>
-                <li>{sv ? 'Jordbruksverkets blockdatabas (bytomter/åkermark → bebyggelsepunkt)' : 'Jordbruksverket block database (village tofts / arable → settlement point)'}</li>
-                <li>{sv ? 'Fornsök/RAÄ (Kulturmiljöregistret) för daterade lämningar intill bytomten' : 'Fornsök/RAÄ heritage register for dated remains by the toft'}</li>
-              </ul>
-              <p>
-                {sv
-                  ? 'Fler verifierade punkter → möjlighet att skilja tidiga från sena namn och att mäta per landskap i stället för hela landet på en gång.'
-                  : 'More verified points → separate early from late names and measure per province.'}
+              <p className="text-xs text-gold/90 mt-2">
+                {sv ? '► Prova: jämför makt-led (-tuna, husby) mot baslinjen (-by, -sta, -torp) i första kortet.' : '► Try: compare power elements (-tuna, husby) against the baseline (-by, -sta, -torp) in the first card below.'}
               </p>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
 
-        {/* ===== FILOLOG-AGENTEN (egen sektion) ===== */}
-        <div className="mb-10">
-          <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
-            <Languages className="h-7 w-7 text-gold" />
-            {sv ? 'Filolog-agenten' : 'The philologist agent'}
-          </h2>
-          <div className="h-0.5 w-16 bg-gold/60 rounded mb-3" />
-          <p className="text-sm text-muted-foreground max-w-3xl mb-2">
-            {sv
-              ? 'Att låta en filolog (språkvetare och ortnamnsforskare) gå igenom namnen är mer än att söka led. Det är historisk-komparativ metod: jämför nordiska, germanska och indoeuropeiska kognater, räknar baklänges med ljudlagar (Grimms lag) till *rekonstruerade urformer, och skiljer strikt belagt (äldsta skriftbelägg med år och källa) från *rekonstruktion och från obelagt. Sjö- och ånamn (hydronymer) är det äldsta språkskiktet och kan bära för-indoeuropeiskt substrat. En folketymologi blir aldrig en etymologi.'
-              : 'Letting a philologist go through the names is more than element-matching. It is the historical-comparative method: comparing Nordic, Germanic and Indo-European cognates, working backwards via sound laws (Grimm’s law) to *reconstructed proto-forms, and strictly separating attested (earliest written form with year and source) from *reconstruction and from unattested. Hydronyms are the oldest layer and may carry pre-Indo-European substrate. A folk etymology never becomes an etymology.'}
-          </p>
-          <p className="text-xs text-muted-foreground max-w-3xl mb-4 opacity-80">
-            {sv
-              ? <>Metoden drivs källkritiskt av vår AI-filolog — människa-i-loopen: agenten utreder och föreslår, en människa granskar och beslutar, och inget skrivs som fakta utan belägg. Läs om agentflottan på <a href="/ai-agenter" className="text-gold hover:underline">/ai-agenter</a>. Verktyget nedan prövar om ett namnled <em>klustrar</em> kring ett epicentrum — med en skarp, falsifierbar kant i stället för cirkelbevis.</>
-              : <>The method is run source-critically by our AI philologist — human-in-the-loop. See <a href="/ai-agenter" className="text-gold hover:underline">/ai-agenter</a>. The tool below tests whether a name element <em>clusters</em> around an epicentre — with a sharp, falsifiable edge rather than circular reasoning.</>}
-          </p>
-          <OnomasticClusterCard />
-        </div>
+            {/* Vad grupperna betyder */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+              {GROUP_DEFS.map((g) => (
+                <Card key={g.key} className="viking-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2" style={{ color: g.color }}>
+                      ● {sv ? g.sv : g.en}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-xs text-muted-foreground space-y-2">
+                    <p>{sv ? g.desc : g.descEn}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {g.els.map((k) => (
+                        <span key={k} className="px-1.5 py-0.5 rounded border border-slate-600 text-slate-300">{elementLabel(k)}</span>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <DistanceStatsCard sv={sv} />
+            <FreeDistanceStatsCard sv={sv} />
+            <ChurchDistanceCard sv={sv} />
+            <HeritageProximityCard sv={sv} />
+            <SaintCentralityCard sv={sv} />
+            <RunicCorpusCard sv={sv} cohort={runicCohort} onChange={setRunicCohort} />
+            <RunicWordCard sv={sv} cohort={runicCohort} />
+            <RunicTransitionCard sv={sv} />
+            <EliteMonumentsCard sv={sv} />
+            <WordRefineCard sv={sv} />
+
+            {/* Så förbättrar vi urvalet */}
+            <Card className="viking-card border-sky-700/40">
+              <CardContent className="py-4 text-sm text-muted-foreground space-y-2">
+                <p className="text-foreground font-medium">{sv ? 'Så gör vi urvalet bättre' : 'How we improve the sample'}</p>
+                <p>
+                  {sv
+                    ? 'Dagens punkter kommer mest från OSM-gazetteern, som är ojämn i precision och saknar ålder. Starkare statistik kräver fler verifierade punkter från auktoritativa källor:'
+                    : 'Today’s points come mostly from the OSM gazetteer, uneven in precision and without age. Stronger statistics need more verified points from authoritative sources:'}
+                </p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>{sv ? 'Lantmäteriets ortnamn och Isof Ortnamnsregistret (kanonisk namnform + koordinat)' : 'Lantmäteriet place names & Isof name register'}</li>
+                  <li>{sv ? 'Jordbruksverkets blockdatabas (bytomter/åkermark → bebyggelsepunkt)' : 'Jordbruksverket block database (village tofts / arable → settlement point)'}</li>
+                  <li>{sv ? 'Fornsök/RAÄ (Kulturmiljöregistret) för daterade lämningar intill bytomten' : 'Fornsök/RAÄ heritage register for dated remains by the toft'}</li>
+                </ul>
+                <p>
+                  {sv
+                    ? 'Fler verifierade punkter → möjlighet att skilja tidiga från sena namn och att mäta per landskap i stället för hela landet på en gång.'
+                    : 'More verified points → separate early from late names and measure per province.'}
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ---- FLIK 2: ORTNAMNSKLUSTER ---- */}
+          <TabsContent value="kluster">
+            <div className="viking-card rounded-lg border border-accent/30 p-4 mb-5">
+              <p className="text-sm text-foreground font-medium mb-1">{sv ? 'Vad svarar det här på?' : 'What does this answer?'}</p>
+              <p className="text-sm text-muted-foreground max-w-3xl">
+                {sv
+                  ? 'Klumpar ett namnled ihop sig kring en punkt (ett epicentrum, t.ex. en borg eller centralort), eller är det jämnt spritt över landskapet? Verktyget ritar en pricktavla och en radiell profil — hur tätheten avtar med avståndet — och jämför mot vad ren slump skulle ge (ett binomialband). Det letar en skarp, falsifierbar kant där mönstret bryts, i stället för att resonera i cirkel ("namnen ligger nära för att de hör ihop").'
+                  : 'Does a name element clump around a point (an epicentre such as a fort or central place), or is it evenly spread? The tool draws a scatter plot and a radial profile — how density falls with distance — compared to what pure chance would give (a binomial band). It seeks a sharp, falsifiable edge rather than circular reasoning.'}
+              </p>
+              <p className="text-xs text-gold/90 mt-2">
+                {sv ? '► Prova: -by kring Sandby borg (skarp kant ~5 km) eller -torp kring Gråborg. Ismantorp ger ingen klustring — en äkta negativ kontroll.' : '► Try: -by around Sandby borg (sharp edge ~5 km) or -torp around Gråborg. Ismantorp yields no cluster — a genuine negative control.'}
+              </p>
+            </div>
+            <OnomasticClusterCard />
+          </TabsContent>
+
+          {/* ---- FLIK 3: AI FILOLOG-AGENT ---- */}
+          <TabsContent value="filolog">
+            <div className="viking-card rounded-lg border border-gold/30 p-4 mb-4">
+              <p className="text-sm text-foreground font-medium mb-1">{sv ? 'Vad är det här?' : 'What is this?'}</p>
+              <p className="text-sm text-muted-foreground max-w-3xl">
+                {sv
+                  ? 'Att låta en filolog (språkvetare och ortnamnsforskare) gå igenom namnen är mer än att söka led. Det är historisk-komparativ metod: jämför nordiska, germanska och indoeuropeiska kognater, räknar baklänges med ljudlagar (Grimms lag) till *rekonstruerade urformer, och skiljer strikt belagt (äldsta skriftbelägg med år och källa) från *rekonstruktion och från obelagt. Sjö- och ånamn (hydronymer) är det äldsta språkskiktet och kan bära för-indoeuropeiskt substrat. En folketymologi blir aldrig en etymologi.'
+                  : 'Letting a philologist go through the names is more than element-matching. It is the historical-comparative method: comparing Nordic, Germanic and Indo-European cognates, working backwards via sound laws (Grimm’s law) to *reconstructed proto-forms, and strictly separating attested from *reconstruction and from unattested. Hydronyms are the oldest layer and may carry pre-Indo-European substrate. A folk etymology never becomes an etymology.'}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              {[
+                { t: sv ? '1. Belägg' : '1. Attested', d: sv ? 'Äldsta skriftliga formen med år och källa (Isof, SOL, jordeböcker). Utgångspunkten — inte den moderna stavningen.' : 'The earliest written form with year and source. The starting point, not the modern spelling.' },
+                { t: sv ? '2. Rekonstruktion' : '2. Reconstruction', d: sv ? 'Ljudlagar baklänges → *urform (märkt med asterisk). Jämförs med kognater i besläktade språk.' : 'Sound laws backwards → *proto-form (asterisked), compared with cognates.' },
+                { t: sv ? '3. Osäkerhet' : '3. Uncertainty', d: sv ? 'Belagt, rekonstruerat och obelagt hålls isär. Folketymologier avfärdas uttryckligen.' : 'Attested, reconstructed and unattested kept apart. Folk etymologies rejected explicitly.' },
+              ].map((s) => (
+                <Card key={s.t} className="viking-card">
+                  <CardHeader className="pb-1"><CardTitle className="text-sm text-gold">{s.t}</CardTitle></CardHeader>
+                  <CardContent className="text-xs text-muted-foreground">{s.d}</CardContent>
+                </Card>
+              ))}
+            </div>
+            <Card className="viking-card border-gold/30">
+              <CardContent className="py-4 text-sm text-muted-foreground space-y-2">
+                <p>
+                  {sv
+                    ? <><strong className="text-foreground">Så fungerar agenten:</strong> metoden drivs källkritiskt av vår AI-filolog med <strong>människa-i-loopen</strong> — agenten utreder och föreslår, en människa granskar och beslutar, och inget skrivs som fakta utan belägg. Det är alltså en agent vi kör på begäran, inte en självbetjänings-chatt (än). Läs om hela agentflottan på <a href="/ai-agenter" className="text-gold hover:underline">/ai-agenter</a>.</>
+                    : <><strong className="text-foreground">How the agent works:</strong> the method is run source-critically by our AI philologist with a <strong>human in the loop</strong> — it investigates and proposes, a human reviews and decides, and nothing is written as fact without evidence. It is an agent we run on request, not a self-service chatbot (yet). See <a href="/ai-agenter" className="text-gold hover:underline">/ai-agenter</a>.</>}
+                </p>
+                <p className="text-xs opacity-80">
+                  {sv
+                    ? 'Verktyget "Ortnamnskluster" i grannfliken är den kvantitativa halvan av filologens arbete: det prövar om ett led klustrar kring ett epicentrum med en skarp, falsifierbar kant i stället för cirkelbevis.'
+                    : 'The "Name clustering" tab is the quantitative half of the philologist’s work: it tests whether an element clusters around an epicentre with a sharp, falsifiable edge.'}
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Metod (kondenserad) */}
         <Section title={sv ? 'Så här gör vi (metod)' : 'How we work (method)'}>
