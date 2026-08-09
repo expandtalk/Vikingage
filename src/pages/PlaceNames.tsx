@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock, ChevronDown, FlaskConical } from 'lucide-react';
+import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock, ChevronDown, FlaskConical, Languages } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
 import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceNameAttestations';
@@ -23,6 +23,7 @@ import { RunicCorpusCard } from '@/components/placenames/RunicCorpusCard';
 import { EliteMonumentsCard } from '@/components/placenames/EliteMonumentsCard';
 import { RunicTransitionCard } from '@/components/placenames/RunicTransitionCard';
 import { WordRefineCard } from '@/components/placenames/WordRefineCard';
+import OnomasticClusterCard from '@/components/placenames/OnomasticClusterCard';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import { setElementTest } from '@/hooks/useElementTest';
 import {
@@ -278,6 +279,26 @@ const PlaceNames = () => {
               </p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* ===== FILOLOG-AGENTEN (egen sektion) ===== */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
+            <Languages className="h-7 w-7 text-gold" />
+            {sv ? 'Filolog-agenten' : 'The philologist agent'}
+          </h2>
+          <div className="h-0.5 w-16 bg-gold/60 rounded mb-3" />
+          <p className="text-sm text-muted-foreground max-w-3xl mb-2">
+            {sv
+              ? 'Att låta en filolog (språkvetare och ortnamnsforskare) gå igenom namnen är mer än att söka led. Det är historisk-komparativ metod: jämför nordiska, germanska och indoeuropeiska kognater, räknar baklänges med ljudlagar (Grimms lag) till *rekonstruerade urformer, och skiljer strikt belagt (äldsta skriftbelägg med år och källa) från *rekonstruktion och från obelagt. Sjö- och ånamn (hydronymer) är det äldsta språkskiktet och kan bära för-indoeuropeiskt substrat. En folketymologi blir aldrig en etymologi.'
+              : 'Letting a philologist go through the names is more than element-matching. It is the historical-comparative method: comparing Nordic, Germanic and Indo-European cognates, working backwards via sound laws (Grimm’s law) to *reconstructed proto-forms, and strictly separating attested (earliest written form with year and source) from *reconstruction and from unattested. Hydronyms are the oldest layer and may carry pre-Indo-European substrate. A folk etymology never becomes an etymology.'}
+          </p>
+          <p className="text-xs text-muted-foreground max-w-3xl mb-4 opacity-80">
+            {sv
+              ? <>Metoden drivs källkritiskt av vår AI-filolog — människa-i-loopen: agenten utreder och föreslår, en människa granskar och beslutar, och inget skrivs som fakta utan belägg. Läs om agentflottan på <a href="/ai-agenter" className="text-gold hover:underline">/ai-agenter</a>. Verktyget nedan prövar om ett namnled <em>klustrar</em> kring ett epicentrum — med en skarp, falsifierbar kant i stället för cirkelbevis.</>
+              : <>The method is run source-critically by our AI philologist — human-in-the-loop. See <a href="/ai-agenter" className="text-gold hover:underline">/ai-agenter</a>. The tool below tests whether a name element <em>clusters</em> around an epicentre — with a sharp, falsifiable edge rather than circular reasoning.</>}
+          </p>
+          <OnomasticClusterCard />
         </div>
 
         {/* Metod (kondenserad) */}
