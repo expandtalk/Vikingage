@@ -20,6 +20,7 @@ import { PaleoShorelinesLayer } from "./layers/PaleoShorelinesLayer";
 import { ShorelinePeriodControl } from "./ShorelinePeriodControl";
 import { WhatsHereProbe } from "./WhatsHereProbe";
 import { useIsMobile } from "@/hooks/useMediaQuery";
+import { useDrivingMode } from "@/hooks/useDrivingMode";
 import { useShorelineOverlay } from "@/hooks/useShorelineOverlay";
 import L from 'leaflet';
 import { useTradeRoutes } from "@/hooks/useTradeRoutes";
@@ -31,7 +32,7 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
   onMarkerClick,
   className = "",
   isVikingMode = false,
-  enabledLegendItems = { runic_inscriptions: true },
+  enabledLegendItems: enabledLegendItemsRaw = { runic_inscriptions: true },
   selectedPeriod = 'all',
   selectedTimePeriod = 'viking_age',
   onLegendDataChange,
@@ -41,6 +42,18 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
 }) => {
 
   useMapValidation({ selectedTimePeriod });
+
+  // KÖR-LÄGE (road-first): när billäget är på maskas ALLA kartlager AV (aldrig på → följer
+  // legend-invarianten) så vägen syns. Legendens kryss (enabledLegendItemsRaw) bevaras för när
+  // man lämnar körläget; Near me-rutten/objekten ritas separat och påverkas inte. Alla nedströms-
+  // användningar läser `enabledLegendItems` (maskad), ingen annan ändring behövs.
+  const driving = useDrivingMode();
+  const enabledLegendItems = React.useMemo(
+    () => driving
+      ? Object.fromEntries(Object.keys(enabledLegendItemsRaw).map((k) => [k, false]))
+      : enabledLegendItemsRaw,
+    [driving, enabledLegendItemsRaw],
+  );
 
   // Trade routes integration - use timeline year
   const [tradeRoutesYear, setTradeRoutesYear] = React.useState(850);
