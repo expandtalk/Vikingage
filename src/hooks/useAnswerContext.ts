@@ -6,10 +6,16 @@ import { supabase } from '@/integrations/supabase/client';
 export interface AnswerCtx {
   center: { lat: number; lng: number } | null;
   page: { slug: string; title: string } | null;
+  // Tematisk sökning ("poesi", "diktmått" …) → temavy i stället för geografisk radie. null = platsläge.
+  theme: { slug: string; name: string } | null;
   inscriptions: { id: string; signum: string | null; label: string; lat: number; lng: number; place: string | null }[];
   // Notabla heritage-monument i trakten (prominence-ordnat) — t.ex. Visby ringmur för "Gotland".
   sites: { id: string; name: string; type: string | null; lat: number; lng: number }[];
-  images: { url: string; desc: string | null }[];
+  // media_type (photo/image/teckning) + source driver galleriets tier-behandling (foto=standard,
+  // teckning=pappersmatta). Valfria → äldre RPC-svar utan fälten kraschar inte.
+  images: { url: string; desc: string | null; type?: string | null; source?: string | null }[];
+  // Inskrifter i scope UTAN bild → galleriet renderar Tier-5 typkort (runsignum) i st f tomrum.
+  missing?: { signum: string | null; label: string }[];
   research: { id: string; name: string; role: string | null; affiliation: string | null }[];
   // documents-länkad litteratur (böcker om den sökta entiteten) — isbn driver "Hitta boken"-länk.
   literature: { id: string; title: string; author: string | null; year: number | null; isbn: string | null; kind: string | null }[];
@@ -23,7 +29,7 @@ export const useAnswerContext = (name?: string) =>
     queryFn: async (): Promise<AnswerCtx> => {
       const { data, error } = await (supabase as any).rpc('entity_answer_context', { p_name: name });
       if (error) throw error;
-      return (data ?? { center: null, page: null, inscriptions: [], sites: [], images: [], research: [], literature: [], count: 0 }) as AnswerCtx;
+      return (data ?? { center: null, page: null, theme: null, inscriptions: [], sites: [], images: [], missing: [], research: [], literature: [], count: 0 }) as AnswerCtx;
     },
     staleTime: 5 * 60 * 1000,
   });

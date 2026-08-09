@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Network, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { AnswerContext } from '../components/search/AnswerContext';
 
 // Temasida (/tema/:slug): "se hela temat" — temats beskrivning + alla noder i
 // kunskapsgrafen som är kopplade via has_theme (graph_neighborhood), grupperade
@@ -57,6 +58,7 @@ const ThemePage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { language } = useLanguage();
   const sv = language === 'sv';
+  const navigate = useNavigate();
 
   const { data: theme, isLoading } = useQuery({
     queryKey: ['theme-page', slug],
@@ -92,7 +94,7 @@ const ThemePage = () => {
       />
       <Header />
       <Breadcrumbs />
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         {isLoading && (
           <div className="flex items-center gap-2 text-muted-foreground py-16 justify-center">
             <Loader2 className="h-5 w-5 animate-spin" />{sv ? 'Laddar tema…' : 'Loading theme…'}
@@ -109,6 +111,15 @@ const ThemePage = () => {
                 {renderThemeText((sv ? theme.description : (theme.description_en ?? theme.description)) as string)}
               </div>
             )}
+
+            {/* Grafisk temavy: karta + kopplade runstenar + bilder. Återanvänder AnswerContext
+                (samma motor som hero-sökets svarspanel) → temat får en riktig grafisk sida på en
+                egen URL. Självdöljande om temat saknar kopplat kart-/bildinnehåll (t.ex. rena
+                källteman). Skickar temats kanoniska (svenska) namn så RPC:n resolvar temat oavsett
+                gränssnittsspråk. */}
+            <div className="mb-6 overflow-hidden rounded-lg border border-slate-700">
+              <AnswerContext query={theme.name} onGo={(r) => navigate(r)} />
+            </div>
 
             <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
               <Network className="h-4 w-4 text-gold" />

@@ -839,7 +839,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                   {renderResults('', false, true)}
                 </div>
                 <div className="min-h-0 overflow-y-auto">
-                  <AnswerContext query={query} onGo={go} />
+                  <AnswerContext query={query} onGo={go} onQuery={(q) => { setQuery(q); setTheme(null); }} />
                 </div>
                 <aside className="hidden min-h-0 flex-col overflow-y-auto border-l border-slate-800 lg:flex">
                   {/* Kunskapspanelen (träffens egen destination) äger toppen. */}
