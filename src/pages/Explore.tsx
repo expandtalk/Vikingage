@@ -36,6 +36,15 @@ const Explore = () => {
 
   if (redirectChurches) return <Navigate to="/sv/kyrkor" replace />;
 
+  // focus=oland utan center → centrera på Öland (annars öppnas Sverige-vyn med Öland-lagren på
+  // men utanför bild). Öland-öns ungefärliga mitt; zoom 9 ramar in hela ön.
+  if (focus === 'oland' && !searchParams.get('center')) {
+    const p = new URLSearchParams(searchParams);
+    p.set('center', '56.75,16.65');
+    p.set('zoom', '9');
+    return <Navigate to={`/explore?${p.toString()}`} replace />;
+  }
+
   if (loading || roleLoading) {
     return (
       <div className="min-h-screen viking-bg flex items-center justify-center">

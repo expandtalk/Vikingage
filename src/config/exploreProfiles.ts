@@ -450,6 +450,39 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         beacon_sites: false,
       });
       break;
+    case "oland":
+      // Öland-vy: surfa Ölands kärndata i Explore (motsvarar /sv/oland-modellen med befintliga
+      // lager) — centralorter (Köpingsvik m.fl.), fornborgar (Gråborg/Ismantorp/Sandby/Eketorp),
+      // vägnät, sjömärken/vårdkasar, solidi-guldet, kyrkor, runstenar + paleo-strandlinje.
+      // Släck rikstäckande brus så Öland blir fokus.
+      Object.assign(o, {
+        central_places: true,
+        viking_fortresses: true,
+        viking_roads: true,
+        beacon_sites: true,
+        coins: true,
+        runic_inscriptions: true,
+        ecclesiastical_churches: true,
+        heritage_sites: true,
+        viking_cities: true,
+        paleo_shoreline: true,
+        // Brus av: rikstäckande region-/folklager, floder och andra leder som inte hör Öland till.
+        viking_regions: false,
+        hundreds: false,
+        parishes: false,
+        folk_groups: false,
+        germanic_groups: false,
+        germanic_timeline: false,
+        eriksgatan: false,
+        river_routes: false,
+        water_routes: false,
+        trade_routes: false,
+        historical_events: false,
+        gods: false,
+        carvers: false,
+        place_names: false,
+      });
+      break;
     case "eriksgatan":
       // Ren Eriksgata-vy: den kungliga riksrundan + vägar/städer som kontext, inget annat brus.
       // Uttömmande släck-lista (som inscriptions/rivers) — annars läcker profilens tunga
