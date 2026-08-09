@@ -24,7 +24,7 @@ const R = [
   ['Flundran (ö)','island','natural',56.645956,16.329063,null,null,'belagt','medium',null,'Belagt namn ~1939–40 (foto). Äldre namn obelagt (kräver Isof).'],
 
   // §2 Landväg på sandås: Husgatan → Kungsgatan → Sandåsgatan → Södra vägen
-  ['Husgatan (f.d.) S','road','multi_period',56.658369,16.353698,'esker_road',1,'tradition','medium',null,'Namnkedja: Husgatan → Kungsgatan → Sandåsgatan → Södra vägen. Följer sandås (esker) — TOLKNING.'],
+  ['Husgatan (f.d.) S','road','multi_period',56.658369,16.353698,'esker_road',1,'tradition','medium',null,'Namnkedja: Husgatan → Kungsgatan → Sandåsgatan → Södra vägen. Vägkorridoren följer en rullstensås (esker) och är gammal (stödd av sekundärkällor); gatunamnen yngre etiketter. Skilj vägens ålder från namnets.'],
   ['Husgatan (f.d.) N','road','multi_period',56.658774,16.353471,'esker_road',2,'tradition','medium',null,null],
   ['Kungsgatan 1','road','multi_period',56.658871,16.353332,'esker_road',3,'tradition','medium',null,null],
   ['Kungsgatan 13C','road','multi_period',56.660926,16.347455,'esker_road',4,'tradition','medium',null,null],
@@ -46,6 +46,7 @@ const R = [
   ['Järnvägsgatan (hamnomr.) S','street','medieval',56.659331,16.359034,'medeltidshamn_area',3,'tradition','low',null,null],
   ['Tjärhovsgatan 5 a','street','medieval',56.658365,16.359417,'medeltidshamn_area',4,'tradition','low',null,null],
   ['Tjärhovsgatan 5 b','street','medieval',56.658073,16.358196,'medeltidshamn_area',5,'tradition','low',null,null],
+  ['Systraströmmen','channel','medieval',56.665393,16.358616,null,null,'belagt','high',null,'Uppkallad efter nunneklostret: holmen hette urspr. Systraholmen (S:t Johannes nunnekloster, grundat 1299). Belagt (Kalmar läns museum). Medeltida institutionsminne. Ordenstillhörighet dubbelkolla.'],
 
   // §6 Gamla stans gatunät (medeltida)
   ['Västerlånggatan 1','street','medieval',56.661789,16.355191,'vasterlanggatan',1,'tradition','medium',null,'"lär ha varit" gammal gata (D. Larsson) — tradition, obekräftat medeltida.'],
@@ -66,7 +67,7 @@ const R = [
   ['Slottsvägen 3D','street','medieval',56.659803,16.353558,'osterlanggatan',5,'tradition','medium',null,null],
 
   // §6b Spikgatan (Kvarnholmen — nya staden)
-  ['Spikgatan 4 a','street','new_town_1600s',56.6644,16.354496,'spikgatan',1,'tradition','medium',null,'Kvarnholmen (nya staden 1640-tal), EJ medeltida. "lär vara en av Kalmars äldsta gator".'],
+  ['Spikgatan 4 a','street','new_town_1600s',56.6644,16.354496,'spikgatan',1,'tradition','medium',null,'Kvarnholmen (nya staden). Gatunamnet/rutnätet är 1600-tal (stadsplan Wärnschöld 1651), MEN Spikgatans riktning/linje följer den äldre medeltidsgatan (D. Larsson) — linjen bevarar ett äldre vägdrag även om namnet är yngre. Morfologisk persistens.'],
   ['Spikgatan 4 b','street','new_town_1600s',56.664471,16.354359,'spikgatan',2,'tradition','medium',null,null],
   ['Spikgatan 6','street','new_town_1600s',56.664486,16.35413,'spikgatan',3,'tradition','medium',null,null],
   ['Spikgatan 8','street','new_town_1600s',56.664506,16.353745,'spikgatan',4,'tradition','medium',null,null],
@@ -109,8 +110,8 @@ const R = [
   ['Stora Vitskäret a','island','natural',56.682465,16.448293,null,null,'belagt','medium',null,'Skär vid Öland-sidans landning.'],
   ['Stora Vitskäret b','island','natural',56.679582,16.444616,null,null,'belagt','medium',null,null],
   ['Färjestaden hamn','harbor','crossing',56.649993,16.464264,null,null,'belagt','medium',null,'Öland-sidans färjeläge (överfart: Ölandskajen ↔ Färjestaden). Exakt medeltida läge kräver källa.'],
-  ['Jutnabben','headland','hypothesis',56.684771,16.368351,null,null,'hypotes','low',null,'Jut- = jutar/danskar? Namnpar med Svensknabben → Kalmarsund som dansk–svensk gränszon. Kräver Isof/SOL.'],
-  ['Svensknabben','headland','hypothesis',56.691873,16.372046,null,null,'hypotes','low',null,'Svensk- = svenskar? Par med Jutnabben.'],
+  ['Jutnabben','headland','hypothesis',56.684771,16.368351,null,null,'hypotes','low',null,'Tradition (obelagd, folketymologi-risk): knyts till Kalmarkriget 1611 — skansen på Jutnabben föll för danskarna 23 juli, en del flydde till Svensknabben. Källan saknar belägg. Jut- = jutar/danskar EJ belagt; kan vara äldre. Kräver Isof.'],
+  ['Svensknabben','headland','hypothesis',56.691873,16.372046,null,null,'hypotes','low',null,'Tradition (obelagd): par med Jutnabben, Kalmarkriget 1611 (svenska styrkan). Svensk- = svenskar EJ belagt; kan vara äldre. Kräver Isof.'],
   ['Stora Rör × Isgärdevägen','locality','natural',56.754728,16.537725,null,null,'belagt','medium',null,'Ölands västkust N om Färjestaden.'],
   ['Stora Rör (hamn, "bra segling")','harbor','natural',56.756419,16.527934,null,null,'belagt','medium',null,'Naturlig hamn/landning Öland V; gynnsam segling (Färjestadens segelsällskap).'],
   ['Ispeudde fyr','headland','natural',56.74381,16.513331,null,null,'belagt','medium',null,'Udde/sjömärke Öland V (fyren modern; udden naturlig navigationspunkt).'],
@@ -137,7 +138,7 @@ const R = [
   ['Stävlö slott','estate','multi_period',56.752405,16.361647,null,null,'belagt','medium',null,'Gods/herrgård N om Kalmar. Möjlig estates/maktgeografi-koppling.'],
   ['Björnö slott','estate','multi_period',56.770506,16.383533,null,null,'belagt','medium',null,'Gods N om Kalmar (herrgårdskedja Stävlö → Björnö).'],
   ['Revsudden','headland','natural',56.775291,16.474949,null,null,'belagt','medium',null,'Udde vid Drags kanal (§14).'],
-  ['Vadstenalund','locality','hypothesis',56.775185,16.440324,null,null,'hypotes','low',null,'Ev. vad- = vadställe/ford (fler överfartsnamn)? Obelagt — kan vara Vadstena/personnamn.'],
+  ['Vadstenalund','locality','hypothesis',56.775185,16.440324,null,null,'hypotes','low',null,'Namnformen belagd på karta (D. Larsson). Etymologi öppen: vad- = vadställe? / Vadstena / personnamn + -lund (yngre typ). Obelagd etymologi.'],
 
   // §14 andra båtdraget
   ['Drags kanal (Revsudden)','portage','crossing',56.779471,16.416487,null,null,'belagt','medium',null,'Andra båtdraget: bebyggelse "Drag" + Drags kanal → drag- = portage (SOL). Kanal modern; förhistoriskt drag = hypotes.'],
