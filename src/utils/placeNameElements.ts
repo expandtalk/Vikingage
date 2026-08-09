@@ -88,6 +88,12 @@ export const PLACE_NAME_ELEMENTS: PlaceNameElement[] = [
     patterns: ['fröja', 'fröje'], excludes: ['fröjd', 'fröjde', 'fröjda', 'fröjden', 'fröjds'],
   },
   {
+    key: 'skede', label: 'Skede- (skeið, hästkult)', category: 'sacral', evidenceLayer: 'extended',
+    sacralConfidence: 'low', isControl: false, contested: true, boundaryRule: 'prefix',
+    etymology: 'Fornnordiska *skeið* "kappränning/löpning" — traditionellt kopplat till hästkapplöpning och hästkult (Skedemosse, Skedås, Skedstad på Öland; jfr Skedvi). OMTVISTAT: *skede* kan även vara topografiskt ("gräns/skifte, avdelning"). Vid Skedemosse offrades merparten häst; strandvallarna tolkas som möjlig kappränningsbana (Fallgren, hypotes).',
+    patterns: ['skede', 'sked'], excludes: ['skedala'],
+  },
+  {
     key: 'ull', label: 'Ull(e)-', category: 'sacral', evidenceLayer: 'core',
     sacralConfidence: 'high', isControl: false, contested: false, boundaryRule: 'prefix',
     etymology: 'Guden Ull. Ullevi, Ulleråker, Ullunda.',
