@@ -16,7 +16,7 @@ import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl'
 import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { KalmarsundCrossing } from '@/components/kalmar/KalmarsundCrossing';
-import { createPlaceMedallion, featureIcon, markerColor } from '@/utils/map/placeMarker';
+import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 
 // /sv/kalmar — forskningshubb för det tidiga/medeltida Kalmar i Möre. Binder ihop:
 //  - Ortnamnsforskningen kring Hossmo (husaby-nukleusen, SOL 2003, kalmar_place_names)
@@ -301,25 +301,58 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
       fieldG.current.clearLayers();
       const feats = (data as FieldFeat[]).filter((f) => f.lat != null && f.lng != null);
 
-      // Linjära features (route_group) → polyline i guldton, ordnad på seq (drag, esker-väg, gatunät).
+      // Linjära features (route_group) → EN stilad polyline per grupp, ordnad på seq. Stilen bär
+      // typen (gata/väg/befästning/drag) så det inte blir en enda grov guldklump. Runda hörn/ändar
+      // (lineCap/Join 'round') tar bort det "blaffiga" kantiga utseendet.
+      const LINE_STYLE: Record<string, { color: string; weight: number; dash?: string }> = {
+        street: { color: '#d4a63c', weight: 3 },               // medeltida gator (stadskärnan)
+        road: { color: '#b5651d', weight: 4 },                 // väg (åsväg/Kungsgatan/Södra vägen, Ölandsleden)
+        fortification: { color: '#8b5cf6', weight: 4 },        // 1600-talsbefästningen (Kvarnholmen)
+        portage: { color: '#38bdf8', weight: 3, dash: '6 6' }, // båtdrag (vattenpassage)
+      };
+      const GROUP_LABEL: Record<string, string> = {
+        esker_road: 'Åsvägen – Kungsgatan/Södra vägen (vägen söderut)',
+        olandsleden: 'Ölandsleden (modern)',
+        kvarnholmen_befast: 'Kvarnholmens befästning (1600-tal)',
+        medeltidshamn_area: 'Medeltida hamnområdet',
+        osterlanggatan: 'Österlånggatan (medeltida)',
+        vasterlanggatan: 'Västerlånggatan (medeltida)',
+        spikgatan: 'Spikgatan (1600-tal)',
+        stenso_drag: 'Båtdraget över Stensö-halvön',
+      };
       const byGroup = new Map<string, FieldFeat[]>();
       feats.forEach((f) => {
         if (!f.route_group) return;
         const arr = byGroup.get(f.route_group) ?? [];
         arr.push(f); byGroup.set(f.route_group, arr);
       });
-      byGroup.forEach((arr) => {
+      byGroup.forEach((arr, group) => {
         const sorted = [...arr].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
         if (sorted.length < 2) return;
-        L.polyline(sorted.map((f) => [f.lat!, f.lng!] as [number, number]), { color: '#d4a63c', weight: 3, opacity: 0.8, dashArray: '5 5' })
+        const st = LINE_STYLE[sorted[0].feature_type] ?? { color: '#d4a63c', weight: 3 };
+        const label = GROUP_LABEL[group] ?? sorted[0].name;
+        L.polyline(sorted.map((f) => [f.lat!, f.lng!] as [number, number]), {
+          color: st.color, weight: st.weight, opacity: 0.9, dashArray: st.dash, lineCap: 'round', lineJoin: 'round',
+        })
+          .bindTooltip(label, { sticky: true, direction: 'top', className: 'ang-clabel' })
+          .bindPopup(`<b>${label}</b>`)
           .addTo(fieldG.current);
       });
 
-      // Punkter (alla) → medaljong. Formen (featureIcon) bär feature_type; färgen via markerColor.
-      feats.forEach((f) => {
-        const glyph = featureIcon(f.feature_type);
+      // Endast FRISTÅENDE punkter (utan route_group) → LÄTT cirkelmarkör (inte tung mörk medaljong,
+      // som blir "svarta plumpar" i tät fältdata). Färgen bär feature_type; tunn vit kant för läsbarhet.
+      // Linjevertexerna ritas som linjen ovan, inte som varsin markör.
+      const POINT_COLOR: Record<string, string> = {
+        harbor: '#3f8194', quay: '#3f8194', channel: '#38bdf8', shoal: '#5aa0b4', portage: '#38bdf8',
+        island: '#6b8f71', headland: '#8a9078',
+        castle: '#a9762f', fortification: '#8b5cf6', estate: '#9a7b3c',
+        cemetery: '#7c8577', chapel: '#7b3f00', square: '#a07d34', locality: '#8a7f6a',
+      };
+      feats.filter((f) => !f.route_group).forEach((f) => {
+        const col = POINT_COLOR[f.feature_type] ?? '#9a7b3c';
         const d = (f.note ?? '').slice(0, 240);
-        L.marker([f.lat!, f.lng!], { icon: createPlaceMedallion({ color: markerColor(glyph), icon: glyph, label: f.name, prominent: false, hairline: true }) })
+        L.circleMarker([f.lat!, f.lng!], { radius: 5, color: '#ffffff', weight: 1.5, fillColor: col, fillOpacity: 0.9 })
+          .bindTooltip(f.name, { direction: 'top', offset: [0, -4], className: 'ang-clabel' })
           .bindPopup(`<b>${f.name}</b> <span style="font-size:10px;color:#888">${f.feature_type}${f.time_layer ? ` · ${f.time_layer}` : ''}</span>${d ? `<br/><span style="font-size:11px;color:#666">${d}${(f.note ?? '').length > 240 ? '…' : ''}</span>` : ''}`)
           .addTo(fieldG.current);
       });
