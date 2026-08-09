@@ -26,3 +26,18 @@ export const useWindClimatology = (location = 'Kalmarsund') =>
     },
     staleTime: 60 * 60 * 1000,
   });
+
+// Alla farvatten som har en vindros (distinkta locations) — driver "vind per farvatten"-panelen.
+export const useWindLocations = () =>
+  useQuery({
+    queryKey: ['wind-locations'],
+    queryFn: async (): Promise<string[]> => {
+      const { data, error } = await (supabase as any)
+        .from('wind_climatology').select('location').order('location');
+      if (error) throw error;
+      const seen = new Set<string>(); const out: string[] = [];
+      for (const r of (data ?? [])) { if (r.location && !seen.has(r.location)) { seen.add(r.location); out.push(r.location); } }
+      return out;
+    },
+    staleTime: 60 * 60 * 1000,
+  });

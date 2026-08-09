@@ -1,14 +1,17 @@
-import React from 'react';
-import { useWindClimatology } from '@/hooks/useWindClimatology';
+import React, { useState } from 'react';
+import { useWindClimatology, useWindLocations } from '@/hooks/useWindClimatology';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Wind, Minus } from 'lucide-react';
 
 // Vindros (SMHI-klimatologi). Stapel per sektor = andel av observationer där vinden
 // KOM FRÅN den riktningen (meteorologisk konvention). N upp, Ö höger. Källkritiskt:
 // visar bara det datan säger — ingen tillrättalagd "naturlig" riktning.
-export const WindRose: React.FC<{ location?: string }> = ({ location = 'Kalmarsund' }) => {
+// Minimerbar (Daniel: frigör kartyta) — fälls ihop till en liten vind-chip.
+export const WindRose: React.FC<{ location?: string; defaultOpen?: boolean }> = ({ location = 'Kalmarsund', defaultOpen = true }) => {
   const { data } = useWindClimatology(location);
   const { language } = useLanguage();
   const sv = language === 'sv';
+  const [open, setOpen] = useState(defaultOpen);
   if (!data || data.length === 0) return null;
 
   const max = Math.max(1, ...data.map((d) => Number(d.frequency_pct) || 0));
@@ -16,12 +19,28 @@ export const WindRose: React.FC<{ location?: string }> = ({ location = 'Kalmarsu
   const meta = data[0];
   const cx = 60, cy = 60, R = 46;
 
+  // Hopfälld: liten chip (vind-ikon + förhärskande riktning) som frigör kartyta.
+  if (!open) {
+    return (
+      <button onClick={() => setOpen(true)}
+        title={sv ? `Förhärskande vind · ${location}` : `Prevailing wind · ${location}`}
+        className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/90 px-2.5 py-1.5 text-[11px] font-medium text-slate-200 hover:bg-slate-800">
+        <Wind className="h-3.5 w-3.5 text-amber-300" />
+        <span>{sv ? 'Vind' : 'Wind'} {top.sector} · {Number(top.frequency_pct).toFixed(0)} %</span>
+      </button>
+    );
+  }
+
   return (
-    <div className="inline-block rounded-lg border border-slate-700 bg-slate-900/90 p-3 text-slate-200 w-[230px]">
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+    <div className="relative inline-block rounded-lg border border-slate-700 bg-slate-900/90 p-2.5 text-slate-200 w-[176px]">
+      <button onClick={() => setOpen(false)} title={sv ? 'Minimera' : 'Minimize'}
+        className="absolute right-1.5 top-1.5 rounded p-0.5 text-slate-400 hover:bg-slate-700 hover:text-slate-100">
+        <Minus className="h-3.5 w-3.5" />
+      </button>
+      <div className="mb-1 pr-5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
         {sv ? 'Förhärskande vind' : 'Prevailing wind'} · {location}
       </div>
-      <svg viewBox="0 0 120 120" className="h-auto w-full">
+      <svg viewBox="0 0 120 120" className="mx-auto h-auto w-[70%]">
         <circle cx={cx} cy={cy} r={R} fill="none" stroke="#334155" strokeWidth="0.5" />
         <circle cx={cx} cy={cy} r={R * 0.5} fill="none" stroke="#334155" strokeWidth="0.5" />
         {data.map((d) => {
@@ -41,10 +60,29 @@ export const WindRose: React.FC<{ location?: string }> = ({ location = 'Kalmarsu
         <text x={5} y={cy + 2.5} textAnchor="middle" fontSize="7" fill="#94a3b8">V</text>
       </svg>
       <div className="mt-1 text-[10px] leading-tight text-slate-400">
-        {sv ? `Mest från ${top.sector} (${Number(top.frequency_pct).toFixed(0)} %). Sundet kanaliserar N–S.`
+        {sv ? `Mest från ${top.sector} (${Number(top.frequency_pct).toFixed(0)} %).${location === 'Kalmarsund' ? ' Sundet kanaliserar N–S.' : ''}`
             : `Mostly from ${top.sector} (${Number(top.frequency_pct).toFixed(0)} %).`}
         {' '}{meta.source || 'SMHI'}{meta.station ? ` · ${meta.station}` : ''}
         {meta.period_from ? ` ${String(meta.period_from).slice(0, 4)}–${String(meta.period_to).slice(0, 4)}` : ''}.
+      </div>
+    </div>
+  );
+};
+
+// Alla farvattens vindrosor sida vid sida — visar att förhärskande vind SKILJER sig per sund/hav
+// (Kalmarsund N pga kanalisering, öppet hav V/SV). Varje ros bär sin station + period (källkritik).
+export const WindRoses: React.FC = () => {
+  const { data: locations = [] } = useWindLocations();
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  if (!locations.length) return null;
+  return (
+    <div>
+      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+        {sv ? 'Förhärskande vind per farvatten (SMHI-klimatologi)' : 'Prevailing wind by sea area (SMHI climatology)'}
+      </div>
+      <div className="flex flex-wrap gap-3">
+        {locations.map((loc) => <WindRose key={loc} location={loc} />)}
       </div>
     </div>
   );

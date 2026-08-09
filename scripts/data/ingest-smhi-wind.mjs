@@ -9,10 +9,18 @@ import pg from 'pg';
 import { readFileSync } from 'node:fs';
 
 const APPLY = process.argv.includes('--apply');
-const CENTER = { lat: 56.70, lng: 16.50 };           // Kalmarsund
-const NAME_RE = /ölan|kalmar/i;
 const BASE = 'https://opendata-download-metobs.smhi.se/api/version/1.0/parameter/3';
 const SECTORS = ['N', 'NO', 'O', 'SO', 'S', 'SV', 'V', 'NV'];  // 0,45,…,315
+
+// Ett farvatten = en region med en SMHI-station i närheten (nearest matchande namn till center).
+// Stationsnamnen VERIFIERAS mot SMHI:s stationslista; matchar inget → regionen hoppas (aldrig påhittad ros).
+const REGIONS = [
+  { location: 'Kalmarsund',        center: { lat: 56.70, lng: 16.50 }, nameRe: /ölan|kalmar/i },
+  { location: 'Öresund',           center: { lat: 55.75, lng: 12.85 }, nameRe: /falsterbo|malmö|barseb|helsingborg|lund|vellinge/i },
+  { location: 'Öland–Gotland',     center: { lat: 57.10, lng: 17.70 }, nameRe: /ölands södra grund|hoburg|hoburgen|visby|näsudden|östergarn|fårö/i },
+  { location: 'Hanöbukten (Bornholm)', center: { lat: 55.75, lng: 14.70 }, nameRe: /utklippan|hanö|simrishamn|ölands södra grund/i },
+  { location: 'Ålands hav',        center: { lat: 59.45, lng: 19.40 }, nameRe: /svenska högarna|understen|söderarm|gotska sandön|örskär/i },
+];
 
 const env = Object.fromEntries(
   readFileSync(new URL('../../.env', import.meta.url), 'utf8')
@@ -23,14 +31,11 @@ const env = Object.fromEntries(
 const dist = (a, b) => Math.hypot(a.lat - b.lat, a.lng - b.lng);
 const sectorOf = (deg) => { const d = ((deg % 360) + 360) % 360; return Math.round(d / 45) % 8; };
 
-async function pickStation() {
-  const r = await fetch(`${BASE}.json`, { headers: { 'User-Agent': 'VikingageBot/1.0 (vikingage.se)' } });
-  const j = await r.json();
-  const cand = (j.station || [])
-    .filter(s => NAME_RE.test(s.name) && s.latitude && s.longitude)
-    .map(s => ({ key: String(s.key), name: s.name, lat: s.latitude, lng: s.longitude, d: dist({ lat: s.latitude, lng: s.longitude }, CENTER) }))
+function pickStations(all, nameRe, center) {
+  return (all || [])
+    .filter(s => nameRe.test(s.name) && s.latitude && s.longitude)
+    .map(s => ({ key: String(s.key), name: s.name, lat: s.latitude, lng: s.longitude, d: dist({ lat: s.latitude, lng: s.longitude }, center) }))
     .sort((a, b) => a.d - b.d);
-  return cand;
 }
 
 async function fetchCsv(key) {
@@ -67,42 +72,44 @@ function computeRose(csv) {
 }
 
 async function main() {
-  const cand = await pickStation();
-  if (!cand.length) { console.error('Ingen station matchade.'); process.exit(1); }
-  let chosen = null, rose = null;
-  for (const s of cand.slice(0, 6)) {
-    const csv = await fetchCsv(s.key);
-    if (!csv) { console.log(`  ${s.name} (${s.key}): ingen vinddata`); continue; }
-    const r = computeRose(csv.text);
-    if (r && r.n > 500) { chosen = { ...s, period: csv.period }; rose = r; break; }
-    console.log(`  ${s.name} (${s.key}): ${r ? r.n : 0} obs — för tunt`);
-  }
-  if (!chosen) { console.error('Ingen station med tillräcklig vinddata.'); process.exit(1); }
+  const r0 = await fetch(`${BASE}.json`, { headers: { 'User-Agent': 'VikingageBot/1.0 (vikingage.se)' } });
+  const all = (await r0.json()).station || [];
+  console.log(`SMHI param 3: ${all.length} stationer. Läge: ${APPLY ? 'APPLY' : 'DRY-RUN'}.\n`);
 
-  console.log(`\nVald station: ${chosen.name} (${chosen.key}), ${chosen.d.toFixed(2)}° från Kalmarsund. Period ${chosen.period}.`);
-  console.log(`Obs: ${rose.n}, ${rose.dmin} → ${rose.dmax}`);
-  SECTORS.forEach((s, i) => console.log(`  ${s.padEnd(2)} ${String(rose.pct[i]).padStart(5)} %`));
-
-  if (!APPLY) { console.log('\nDRY-RUN — kör med --apply för att skriva.'); return; }
-
-  const client = new pg.Client({
+  const client = APPLY ? new pg.Client({
     host: 'aws-0-eu-north-1.pooler.supabase.com', port: 5432,
     user: 'postgres.mnuifmcjspeaauzehasj', password: env.SUPABASE_DB_PASSWORD, database: 'postgres',
     ssl: { rejectUnauthorized: false }, statement_timeout: 120000,
-  });
-  await client.connect();
+  }) : null;
+  if (client) await client.connect();
+
   try {
-    for (let i = 0; i < 8; i++) {
-      await client.query(
-        `INSERT INTO wind_climatology (location, station, station_id, lat, lng, sector, sector_deg, frequency_pct, n_obs, period_from, period_to, source, source_license)
-         VALUES ('Kalmarsund',$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'SMHI','CC BY 4.0')
-         ON CONFLICT (location, sector) DO UPDATE SET
-           station=excluded.station, station_id=excluded.station_id, lat=excluded.lat, lng=excluded.lng,
-           sector_deg=excluded.sector_deg, frequency_pct=excluded.frequency_pct, n_obs=excluded.n_obs,
-           period_from=excluded.period_from, period_to=excluded.period_to`,
-        [chosen.name, chosen.key, chosen.lat, chosen.lng, SECTORS[i], i * 45, rose.pct[i], rose.counts[i], rose.dmin, rose.dmax]);
+    for (const region of REGIONS) {
+      const cand = pickStations(all, region.nameRe, region.center);
+      let chosen = null, rose = null;
+      for (const s of cand.slice(0, 8)) {
+        const csv = await fetchCsv(s.key);
+        if (!csv) continue;
+        const rr = computeRose(csv.text);
+        if (rr && rr.n > 500) { chosen = { ...s, period: csv.period }; rose = rr; break; }
+      }
+      if (!chosen) { console.log(`✗ ${region.location}: ingen station m. tillräcklig vinddata (kandidater: ${cand.slice(0, 4).map(c => c.name).join(', ') || '—'})`); continue; }
+      const topI = rose.pct.indexOf(Math.max(...rose.pct));
+      console.log(`✓ ${region.location.padEnd(22)} ${chosen.name} (${chosen.key}) obs ${rose.n} ${rose.dmin}→${rose.dmax} · mest ${SECTORS[topI]} ${rose.pct[topI]}%`);
+      if (client) {
+        for (let i = 0; i < 8; i++) {
+          await client.query(
+            `INSERT INTO wind_climatology (location, station, station_id, lat, lng, sector, sector_deg, frequency_pct, n_obs, period_from, period_to, source, source_license)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'SMHI','CC BY 4.0')
+             ON CONFLICT (location, sector) DO UPDATE SET
+               station=excluded.station, station_id=excluded.station_id, lat=excluded.lat, lng=excluded.lng,
+               sector_deg=excluded.sector_deg, frequency_pct=excluded.frequency_pct, n_obs=excluded.n_obs,
+               period_from=excluded.period_from, period_to=excluded.period_to`,
+            [region.location, chosen.name, chosen.key, chosen.lat, chosen.lng, SECTORS[i], i * 45, rose.pct[i], rose.counts[i], rose.dmin, rose.dmax]);
+        }
+      }
     }
-    console.log('\n✅ Skrivet till wind_climatology.');
-  } finally { await client.end(); }
+    console.log(APPLY ? '\n✅ Skrivet till wind_climatology.' : '\nDRY-RUN — kör med --apply för att skriva.');
+  } finally { if (client) await client.end(); }
 }
 main().catch(e => { console.error(e); process.exit(1); });
