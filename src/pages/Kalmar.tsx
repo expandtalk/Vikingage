@@ -16,6 +16,7 @@ import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl'
 import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { KalmarsundCrossing } from '@/components/kalmar/KalmarsundCrossing';
+import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 
 // /sv/kalmar — forskningshubb för det tidiga/medeltida Kalmar i Möre. Binder ihop:
 //  - Ortnamnsforskningen kring Hossmo (husaby-nukleusen, SOL 2003, kalmar_place_names)
@@ -267,8 +268,9 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
         .filter((h) => h.lat != null && h.lng != null)
         .forEach((h) => {
           const d = (h.description ?? '').slice(0, 240);
-          L.circleMarker([h.lat!, h.lng!], { radius: 6, color: '#831843', weight: 2, fillColor: '#f472b6', fillOpacity: 0.8 })
-            .bindTooltip(h.name, { direction: 'top', offset: [0, -6], className: 'ang-clabel' })
+          // Medaljong: färgen bär lagret (kulturarv = rosa, matchar legenden), FORMEN (featureIcon)
+          // bär typen (begravningsplats/fästning/torg…) → typerna skiljs på form, ej bara färg (WCAG 1.4.1).
+          L.marker([h.lat!, h.lng!], { icon: createPlaceMedallion({ color: '#f472b6', icon: featureIcon(h.raa_type), label: h.name, prominent: false, hairline: true }) })
             .bindPopup(`<b>${h.name}</b> <span style="font-size:10px;color:#888">${h.raa_type}</span>${d ? `<br/><span style="font-size:11px;color:#666">${d}${(h.description ?? '').length > 240 ? '…' : ''}</span>` : ''}`)
             .addTo(heritageG.current);
         });

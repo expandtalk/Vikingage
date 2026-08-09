@@ -14,6 +14,7 @@ import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 
 // /sv/gota-landsvag — forskningssida + utflyktsmål om Göta landsväg, den medeltida landsvägen
 // Stockholm–Södertälje över Södertörn. Hållpunkterna ligger i DB (road_waypoints) — INTE hårdkodade —
@@ -109,8 +110,10 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
 
     nodes.forEach((n) => {
       const c = (KIND[n.kind] ?? KIND.endpoint).color;
-      L.circleMarker([n.lat, n.lng], { radius: 6, color: c, weight: 2, fillColor: c, fillOpacity: 0.7 })
-        .bindTooltip(n.name, { direction: 'top', offset: [0, -8], className: 'ang-clabel' })
+      // Medaljong: färgen bär nodtypen (matchar legenden), FORMEN (kind→glyf via featureIcon:
+      // rune→rune, church→church, bridge→bro, fort→hus_slott, thing→scales, endpoint→dot) bär typen
+      // också → skiljs på form, ej bara färg (WCAG 1.4.1). Hover-namn (tät rutt, ej permanent).
+      L.marker([n.lat, n.lng], { icon: createPlaceMedallion({ color: c, icon: featureIcon(n.kind), label: n.name, prominent: false, hairline: true }) })
         .bindPopup(`<b>${n.name}</b><br/><span style="font-size:11px">${n.note}</span>`)
         .addTo(groupsRef.current[n.kind] ?? roadRef.current);
     });

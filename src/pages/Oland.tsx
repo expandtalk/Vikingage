@@ -21,6 +21,7 @@ import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl'
 import { WindRose } from '@/components/explorer/WindRose';
 import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
+import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 
 // Öland-modellen — forskningssida. Testar hypotesen om vikingatidens vägnät och
 // centralplatser via runstenar, fornborgar, guldfynd, Frö-namn och kyrkor. Imperativ
@@ -304,19 +305,15 @@ const OlandMap: React.FC<{
     points.filter((p) => enabled[p.kind]).forEach((p) => {
       const s = KIND_STYLE[p.kind] ?? { color: '#94a3b8', radius: 3, label: p.kind };
       const isFort = p.kind === 'hillfort';
-      const m = L.circleMarker([p.lat, p.lng], {
-        radius: isFort ? 7 : s.radius,
-        color: isFort ? '#ffffff' : s.color,
-        weight: isFort ? 2 : (p.kind === 'find' ? 2 : 1),
-        fillColor: s.color,
-        fillOpacity: isFort ? 0.92 : (p.kind === 'find' ? 0.9 : 0.55),
-      })
-        .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${s.label}${p.note ? ` · ${p.note}` : ''}</span>${isFort && p.id ? `<br/><a href="/fortresses/${p.id}" style="font-size:11px;color:#38bdf8;font-weight:600">Dateringar, fynd &amp; källor →</a>` : ''}`);
-      // Fornborgar får permanent namn-etikett på kartan (inte bara i popup).
-      if (isFort && p.name) {
-        m.bindTooltip(p.name, { permanent: true, direction: 'right', offset: [6, 0], className: 'oland-fort-label' });
-      }
-      m.addTo(layer);
+      // Medaljong: färgen bär lagret (matchar legenden), FORMEN (featureIcon: runestone→rune,
+      // church→church, hillfort→fort, fro_name→grain, find→coin, cult→idol) bär typen → skiljs på
+      // form, ej bara färg (WCAG 1.4.1). Fornborgar = huvudnoder → permanent namn; övriga hover.
+      L.marker([p.lat, p.lng], { icon: createPlaceMedallion({
+        color: s.color, icon: featureIcon(p.kind), label: p.name,
+        prominent: isFort, hairline: true, size: isFort ? 34 : (p.kind === 'find' ? 28 : 24),
+      }) })
+        .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${s.label}${p.note ? ` · ${p.note}` : ''}</span>${isFort && p.id ? `<br/><a href="/fortresses/${p.id}" style="font-size:11px;color:#38bdf8;font-weight:600">Dateringar, fynd &amp; källor →</a>` : ''}`)
+        .addTo(layer);
     });
   }, [points, enabled]);
 
