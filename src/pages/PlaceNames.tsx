@@ -25,6 +25,7 @@ import { EliteMonumentsCard } from '@/components/placenames/EliteMonumentsCard';
 import { RunicTransitionCard } from '@/components/placenames/RunicTransitionCard';
 import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import OnomasticClusterCard from '@/components/placenames/OnomasticClusterCard';
+import AngermanlandClusterResults from '@/components/placenames/AngermanlandClusterResults';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import { setElementTest } from '@/hooks/useElementTest';
 import { setClusterCase } from '@/hooks/useClusterCase';
@@ -372,6 +373,7 @@ const PlaceNames = () => {
               </p>
             </div>
             <div id="cluster-card" className="scroll-mt-24"><OnomasticClusterCard /></div>
+            <AngermanlandClusterResults sv={sv} />
           </TabsContent>
 
           {/* ---- FLIK 3: AI FILOLOG-AGENT ---- */}

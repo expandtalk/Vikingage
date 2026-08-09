@@ -17,6 +17,7 @@ import { useReliefOverlay } from '@/hooks/useReliefOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { supabase } from '@/integrations/supabase/client';
 import { OrtnamnVerification } from '@/components/OrtnamnVerification';
+import AngermanlandClusterResults from '@/components/placenames/AngermanlandClusterResults';
 import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 
 // Centralortsprojektet Ångermanland — delbar forskningssida. Läser central_places
@@ -278,6 +279,9 @@ const Angermanland = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Per-nod klusterresultat (live), skarp kant + nollkontroll — attribution + förbehåll. */}
+        <AngermanlandClusterResults sv />
 
         {/* ATT GRANSKA MOT SOL — forskarens arbetslista (hon äger besluten, SOL är referens) */}
         {solDiff.length > 0 && (
