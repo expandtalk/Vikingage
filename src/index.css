@@ -197,6 +197,11 @@
   background-color: rgb(37 99 235) !important; /* blue-600 */
 }
 
+/* Kartan bildar en EGEN stacking-context (isolation) → Leaflets interna z-index (paneler,
+   markörer upp till 2020 nedan) kan aldrig måla ovanför den sticky headern (z-1150). Utan
+   detta "läcker" markör-z-index upp i rot-kontexten och lägger sig över menyn. */
+.leaflet-container { isolation: isolate; }
+
 /* Medaljong-markörer ska ligga ÖVER vanliga prickar/kluster (Leaflet sätter inline
    z-index per markör efter latitud; !important vinner). Kungaplatser och
    monumentstenar högst — de viktigaste ikonerna får aldrig döljas av mindre. */

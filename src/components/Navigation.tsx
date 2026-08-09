@@ -180,6 +180,13 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Share2, category: 'science',
   },
   {
+    pathEn: '/researchers', pathSv: '/forskare',
+    labelSv: 'Forskare', labelEn: 'Researchers',
+    descSv: 'Forskare och källor bakom materialet — runologer, arkeologer och historiker med deras verk.',
+    descEn: 'The researchers and sources behind the material — runologists, archaeologists and historians with their works.',
+    icon: BookOpen, category: 'science',
+  },
+  {
     pathEn: '/ai-agents', pathSv: '/ai-agenter',
     labelSv: 'AI-agenter', labelEn: 'AI agents',
     descSv: 'Vilka typer av AI-agenter plattformen använder och hur — produkt-AI (runinskrifts-analys, sök) och källkritiska specialistagenter (arkeologi, datakvalitet, GIS, QA). AI beskriver, människan verifierar.',
@@ -227,13 +234,6 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Metoden att inte släppa in dålig data — tio principer, attribution och ägande, proveniens och forensik, samt källkritisk FAQ.',
     descEn: 'The method for keeping bad data out — ten principles, attribution and ownership, provenance and forensics, and a source-critical FAQ.',
     icon: Microscope, category: 'science',
-  },
-  {
-    pathEn: '/researchers', pathSv: '/forskare',
-    labelSv: 'Forskare', labelEn: 'Researchers',
-    descSv: 'Forskare och källor bakom materialet — runologer, arkeologer och historiker med deras verk.',
-    descEn: 'The researchers and sources behind the material — runologists, archaeologists and historians with their works.',
-    icon: BookOpen, category: 'science',
   },
   {
     pathEn: '/statistics', pathSv: '/sv/statistik',

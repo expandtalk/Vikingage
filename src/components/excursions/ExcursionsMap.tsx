@@ -38,8 +38,11 @@ export const ExcursionsMap: React.FC<ExcursionsMapProps> = ({ onSelect }) => {
       maxZoom: 18,
     }).addTo(map);
 
-    // Kontextlager: kultplatser/kyrkor/källor
-    RELIGIOUS_PLACES.forEach((p) => {
+    const ok = (a?: number, b?: number) => Number.isFinite(a) && Number.isFinite(b);
+
+    // Kontextlager: kultplatser/kyrkor/källor. Filtrera bort poster utan giltig koordinat
+    // (en enda [undefined, undefined] får Leaflet att kasta → hela sidan blir vit skärm).
+    RELIGIOUS_PLACES.filter((p) => p.coordinates && ok(p.coordinates.lat, p.coordinates.lng)).forEach((p) => {
       L.circleMarker([p.coordinates.lat, p.coordinates.lng], {
         radius: 3,
         color: '#3b82f6',
@@ -52,7 +55,7 @@ export const ExcursionsMap: React.FC<ExcursionsMapProps> = ({ onSelect }) => {
     });
 
     // Kontextlager: arkeologiska fynd
-    ARCHAEOLOGICAL_FINDS.forEach((f) => {
+    ARCHAEOLOGICAL_FINDS.filter((f) => ok(f.lat, f.lng)).forEach((f) => {
       L.circleMarker([f.lat, f.lng], {
         radius: 3,
         color: '#d97706',
@@ -65,7 +68,7 @@ export const ExcursionsMap: React.FC<ExcursionsMapProps> = ({ onSelect }) => {
     });
 
     // Utflyktsmål ovanpå
-    EXCURSIONS.forEach((e) => {
+    EXCURSIONS.filter((e) => e.coords && ok(e.coords.lat, e.coords.lng)).forEach((e) => {
       const icon = L.divIcon({
         html: `<div style="
           background:#ea580c;

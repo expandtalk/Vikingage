@@ -57,7 +57,7 @@ export const Header = () => {
   const t = texts[language] || texts.en;
 
   return (
-    <header className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50">
+    <header className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-[1150]">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center space-x-2 shrink-0">
