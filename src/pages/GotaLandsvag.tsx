@@ -25,7 +25,7 @@ import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 const CORRIDOR_BBOX: [number, number, number, number] = [17.55, 59.15, 18.15, 59.35];
 const GOTA_ROAD_ID = '97b4a769-7eed-4d64-b97e-978d5b957e7d';
 
-type Kind = 'endpoint' | 'bridge' | 'thing' | 'rune' | 'church' | 'fort' | 'milestone' | 'execution' | 'trace';
+type Kind = 'endpoint' | 'bridge' | 'thing' | 'rune' | 'church' | 'fort' | 'milestone' | 'execution' | 'trace' | 'probable';
 // Noden bär sekvens + väg-not (ur DB). ENTITETERNA (kyrka/runsten) resolveras dessutom live via
 // signum → runic_inscriptions / church → ecclesiastical_sites för thumbnail, byggår och "Läs mer"-länk.
 interface Node { name: string; lat: number; lng: number; kind: Kind; note: string; signum?: string; church?: string; offRoute?: boolean; order: number; }
@@ -69,10 +69,12 @@ const KIND: Record<Kind, { color: string; label: string }> = {
   milestone: { color: '#9a7b3c', label: 'Milstolpe (1700-tal)' },
   execution: { color: '#8a5a5a', label: 'Avrättningsplats (galgbacke)' },
   trace: { color: '#eab308', label: 'Bevarat namnspår (moderna gatan)' },
+  probable: { color: '#f97316', label: 'Trolig landväg (S:t Botvids väg)' },
 };
 
-// Punkttyper som ritas som medaljong-markörer (trace ritas som linje, ej markör → utesluts).
-const GL_KIND_KEYS = (Object.keys(KIND) as Kind[]).filter((k) => k !== 'trace');
+// Punkttyper som ritas som medaljong-markörer. trace + probable ritas som LINJER (ej markörer) → utesluts.
+const LINE_KINDS: Kind[] = ['trace', 'probable'];
+const GL_KIND_KEYS = (Object.keys(KIND) as Kind[]).filter((k) => !LINE_KINDS.includes(k));
 
 const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -81,6 +83,7 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
   const groupsRef = useRef<Record<string, L.LayerGroup>>({});
   const roadRef = useRef<L.LayerGroup>(L.layerGroup());
   const traceRef = useRef<L.LayerGroup>(L.layerGroup());
+  const probableRef = useRef<L.LayerGroup>(L.layerGroup());
   const [shoreYear, setShoreYear] = useState<number | null>(null);
   useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', CORRIDOR_BBOX);
 
@@ -88,6 +91,7 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
   const LEGEND: LegendLayerDef[] = [
     { key: 'road', label: 'Ankarlinje mellan hållpunkter (ej belagd sträckning)', color: '#d4a63c', defaultOn: true },
     { key: 'trace', label: 'Bevarat namnspår – moderna Götalandsvägen (Isof)', color: '#eab308', defaultOn: true },
+    { key: 'probable', label: 'Trolig landväg – Sankt Botvids väg (Huddinge)', color: '#f97316', defaultOn: true },
     ...GL_KIND_KEYS.map((k) => ({ key: k, label: KIND[k].label, color: KIND[k].color, defaultOn: true })),
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
   ];
@@ -109,15 +113,17 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
     if (!map || !nodes.length) return;
     roadRef.current.clearLayers();
     traceRef.current.clearLayers();
+    probableRef.current.clearLayers();
     GL_KIND_KEYS.forEach((k) => groupsRef.current[k]?.clearLayers());
 
-    // Väglinjen genom noderna (utom off-route-punkter) → egen togglebar grupp
+    // Ankarlinjen genom noderna (utom off-route) — SCHEMATISK, streckad och nedtonad (opacity 0.5).
+    // En landsväg simmar inte över vatten; de raka segmenten är bara en visuell koppling mellan
+    // hållpunkter, INTE en belagd sträckning. Belagt/troligt visas av de solida linjerna nedan.
     L.polyline(nodes.filter((n) => !n.offRoute).map((n) => [n.lat, n.lng] as [number, number]), {
-      color: '#d4a63c', weight: 3, opacity: 0.85, dashArray: '6 6',
+      color: '#d4a63c', weight: 2, opacity: 0.5, dashArray: '3 7',
     }).addTo(roadRef.current);
 
-    // Bevarat namnspår (moderna Götalandsvägen) — SOLID linje, skild från den streckade ankarlinjen.
-    // Namnkontinuitet (gällande gatunamn, Isof), inte påstådd medeltida vägkropp.
+    // Bevarat namnspår (moderna Götalandsvägen) — SOLID linje. Namnkontinuitet (Isof), ej vägkropp.
     const trace = nodes.filter((n) => n.kind === 'trace').sort((a, b) => a.order - b.order);
     if (trace.length > 1) {
       L.polyline(trace.map((n) => [n.lat, n.lng] as [number, number]), { color: '#eab308', weight: 4, opacity: 0.9 })
@@ -125,7 +131,16 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
         .addTo(traceRef.current);
     }
 
-    nodes.filter((n) => n.kind !== 'trace').forEach((n) => {
+    // Trolig LANDväg via Sankt Botvids väg (Huddinge) — SOLID orange. Realistisk sträckning på land
+    // mellan Flottsbro och Botkyrka; vägen gick INTE över Albysjön/Långsjön.
+    const probable = nodes.filter((n) => n.kind === 'probable').sort((a, b) => a.order - b.order);
+    if (probable.length > 1) {
+      L.polyline(probable.map((n) => [n.lat, n.lng] as [number, number]), { color: '#f97316', weight: 4, opacity: 0.9 })
+        .bindPopup('<b>Trolig landväg — Sankt Botvids väg</b><br/><span style="font-size:11px">Realistisk landsträckning (dagens Södertäljevägen/Botkyrkaleden) mellan Flottsbro och Botkyrka. En landsväg passerade på land/broar, inte över öppet vatten.</span>')
+        .addTo(probableRef.current);
+    }
+
+    nodes.filter((n) => !LINE_KINDS.includes(n.kind)).forEach((n) => {
       const c = (KIND[n.kind] ?? KIND.endpoint).color;
       // Medaljong: färgen bär nodtypen (matchar legenden), FORMEN (kind→glyf via featureIcon:
       // rune→rune, church→church, bridge→bro, fort→hus_slott, thing→scales, endpoint→dot) bär typen
@@ -157,6 +172,7 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
     };
     toggleG(enabled.road, roadRef.current);
     toggleG(enabled.trace, traceRef.current);
+    toggleG(enabled.probable, probableRef.current);
     GL_KIND_KEYS.forEach((k) => toggleG(enabled[k], groupsRef.current[k]));
   }, [enabled]);
 
@@ -245,10 +261,13 @@ const GotaLandsvag = () => {
           <CardContent>
             <GotaLandsvagMap nodes={nodes} />
             <p className="text-xs text-muted-foreground mt-2 opacity-75">
-              <strong className="text-amber-300/90">Den gula linjen är en ungefärlig ankarlinje mellan hållpunkterna — inte en belagd
-              vägsträckning.</strong> Den verkliga vägen slingrade runt Bornsjön, ned i Glömstadalen och i serpentiner
-              uppför Korkskruven; bara enstaka avsnitt (Årstafältets vägbank, Korkskruvens vägrest, brolägena vid Glömsta/Flottsbro)
-              är fysiskt belagda (se evidensklass nedan). Hållpunkter: kyrkor ur <code>ecclesiastical_sites</code>, runstenar ur
+              <strong className="text-amber-300/90">Den tunna streckade linjen är en schematisk ankarlinje mellan hållpunkterna — inte en
+              belagd vägsträckning, och inte vägens verkliga väg.</strong> En landsväg gick på land och broar, den
+              <em> simmade inte</em> över Långsjön, Albysjön eller andra vatten. De verkliga sträckorna slingrade runt sjöarna:{' '}
+              <strong className="text-orange-300/90">den solida orange linjen</strong> visar den troliga landvägen via Sankt Botvids väg
+              (dagens Södertäljevägen/Botkyrkaleden) mellan Flottsbro och Botkyrka, och{' '}
+              <strong className="text-yellow-300/90">den solida gula</strong> det bevarade namnspåret (moderna Götalandsvägen).
+              Bara enstaka avsnitt (Årstafältets vägbank, Korkskruvens vägrest, brolägena vid Glömsta/Flottsbro) är fysiskt belagda (se evidensklass nedan). Hållpunkter: kyrkor ur <code>ecclesiastical_sites</code>, runstenar ur
               runkorpusen (Sö 300/304/306/311/312), Årstafältet/Flottsbro ur sv.wikipedia, Svartlöten RAÄ Botkyrka 389:1,
               Ragnhildsborg RAÄ Östertälje 220:1. <strong>Milstolparna (1700-tal, RAÄ)</strong> restes långt efter medeltiden men
               markerar hur vägen då gick. Start-/slutpunkter approximativa. Reglaget lägger på en <strong>paleo-strandlinje</strong>.
@@ -409,7 +428,7 @@ const GotaLandsvag = () => {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              {nodes.filter((n) => !['endpoint', 'milestone', 'execution', 'trace'].includes(n.kind)).map((n) => {
+              {nodes.filter((n) => !['endpoint', 'milestone', 'execution', 'trace', 'probable'].includes(n.kind)).map((n) => {
                 const e = enrich[n.name];
                 return (
                   <li key={n.name} className="flex gap-3">
