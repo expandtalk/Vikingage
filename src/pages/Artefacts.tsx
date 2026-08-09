@@ -230,7 +230,10 @@ const ArtefactsPage = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {typesInView.map((a) => (
-                  <Card key={a.id} className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-colors cursor-pointer" onClick={() => setSelected(a)}>
+                  <Card key={a.id} role="button" tabIndex={0} aria-label={a.name}
+                    className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60"
+                    onClick={() => setSelected(a)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(a); } }}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-white text-lg">{a.name}</CardTitle>
                     </CardHeader>

@@ -203,15 +203,31 @@ export const NamedStonesSection: React.FC = () => {
           const clusters = clusterByName(g.items);   // monument-kluster (flerstens-namn → ett kort)
           const isOpen = !!expanded[g.title];
           const visible = isOpen ? clusters : clusters.slice(0, COLLAPSED_COUNT);
+          // Kort MED bild och kort UTAN bild renderas i skilda rutnät. I ETT gemensamt rutnät
+          // sträckte grid-raden de bildlösa korten till den höga bild-kortshöjden (aspect 3/4) →
+          // "för höga, ojämn typografi" (Daniel). Bildlösa hamnar nu i ett eget, kompakt 4-i-rad-
+          // rutnät (jämn typografi); bild-korten behåller sin form. Ordningen (Wiki-artikel/bild
+          // först) är redan satt av itemSort.
+          const renderCluster = (c: Cluster) => (c.members.length > 1 ? renderMonument(c) : renderCard(c.members[0]));
+          const clusterHasImg = (c: Cluster) => c.members.some((m) => !!m.image_url);
+          const withImg = visible.filter(clusterHasImg);
+          const noImg = visible.filter((c) => !clusterHasImg(c));
           return (
             <div key={g.title}>
               <h3 className="text-xl font-bold text-foreground mb-1">
                 {g.title} <span className="text-sm font-normal text-muted-foreground">· {g.items.length}</span>
               </h3>
               <div className="h-0.5 w-16 bg-accent/60 rounded mb-4" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {visible.map((c) => (c.members.length > 1 ? renderMonument(c) : renderCard(c.members[0])))}
-              </div>
+              {withImg.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {withImg.map(renderCluster)}
+                </div>
+              )}
+              {noImg.length > 0 && (
+                <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 items-start ${withImg.length > 0 ? 'mt-4' : ''}`}>
+                  {noImg.map(renderCluster)}
+                </div>
+              )}
               {clusters.length > COLLAPSED_COUNT && (
                 <button
                   onClick={() => setExpanded((e) => ({ ...e, [g.title]: !isOpen }))}

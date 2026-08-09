@@ -7,7 +7,6 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRunicCorpusStats } from '@/hooks/useRunicCorpusStats';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Map, ScrollText, Users, ChevronRight } from 'lucide-react';
 import { YOUNGER, ELDER } from '@/data/futhark';
 import { RuneWriter } from '@/components/runes/RuneWriter';
@@ -228,20 +227,22 @@ const Runes: React.FC = () => {
         {/* Utvalda runstenar */}
         <section className="mb-10">
           <h2 className="text-2xl font-semibold text-gold mb-3">{L('Utvalda runstenar', 'Notable runestones')}</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
+          {/* Hela kortet är EN länk (klickbart + tangentbords-nåbart via ankaret) → inskriftssidan.
+              Kompakt, bildlöst rutnät ~4 i rad så typografin blir jämn. */}
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
             {FEATURED.map((f) => (
-              <Card key={f.signum} className="viking-card">
-                <CardHeader className="pb-1">
-                  <CardTitle className="text-base text-gold">
-                    <Link to={insLink(f.signum)} className="hover:underline">{f.name}</Link>
-                    <span className="ml-2 text-xs font-normal text-muted-foreground tabular-nums">{f.signum}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  <p className="text-xs leading-relaxed">{L(f.sv, f.en)}</p>
-                  <Link to={insLink(f.signum)} className="mt-1 inline-block text-xs text-gold hover:underline">{L('Läs inskriften →', 'Read the inscription →')}</Link>
-                </CardContent>
-              </Card>
+              <Link
+                key={f.signum}
+                to={insLink(f.signum)}
+                className="viking-card group block rounded-lg border border-border p-3 transition-colors hover:bg-card/80"
+              >
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-base font-semibold text-gold group-hover:underline">{f.name}</span>
+                  <span className="shrink-0 text-xs font-normal text-muted-foreground tabular-nums">{f.signum}</span>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-3">{L(f.sv, f.en)}</p>
+                <span className="mt-1 inline-block text-xs text-gold group-hover:underline">{L('Läs inskriften →', 'Read the inscription →')}</span>
+              </Link>
             ))}
           </div>
         </section>

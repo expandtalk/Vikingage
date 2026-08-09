@@ -175,6 +175,24 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   });
   // Tidsreglage (Lotsen, spår 2): scrubba "visa fram till år N" → landskapet växer fram över tid.
   const [yearMax, setYearMax] = useState<number | null>(null);
+  // "Dela" (Community/Bidra): mobil → native share-ark (navigator.share); desktop/utan stöd →
+  // kopiera URL till urklipp + kort "Länk kopierad"-bekräftelse. Övriga bidra-knappar = fas 2.
+  const [shareCopied, setShareCopied] = useState(false);
+  const doShare = async () => {
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    if (!url) return;
+    const title = (data as any)?.page?.title || (data as any)?.theme?.name || query || 'Viking Age';
+    const nav = typeof navigator !== 'undefined' ? (navigator as any) : undefined;
+    if (nav?.share) {
+      try { await nav.share({ title, url }); return; }
+      catch { return; } // användaren avbröt delningen — kopiera inte i onödan
+    }
+    try {
+      await nav?.clipboard?.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch { /* urklipp blockerat (t.ex. utan https) — tyst */ }
+  };
   const timeBounds = (() => {
     const ys: number[] = [];
     const push = (v: unknown) => { const n = Number(v); if (Number.isFinite(n) && n > -4000 && n < 2100) ys.push(n); };
@@ -576,11 +594,19 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             {sv ? 'Skriv om platsen, ge betyg, skicka foto, mät en position, dela. Kommer via granskningskö + licenssamtycke — bidrag märks overifierade tills de granskats.'
                 : 'Write about the place, rate it, submit a photo, measure a position, share. Coming via a moderation queue with licence consent.'}
           </p>
-          <div className="flex flex-wrap gap-1.5">
-            {[sv ? 'Skriv' : 'Write', sv ? 'Ge betyg' : 'Rate', sv ? 'Skicka foto' : 'Photo', sv ? 'Mät position' : 'Position', sv ? 'Dela' : 'Share'].map((b) => (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[sv ? 'Skriv' : 'Write', sv ? 'Ge betyg' : 'Rate', sv ? 'Skicka foto' : 'Photo', sv ? 'Mät position' : 'Position'].map((b) => (
               <button key={b} disabled title={sv ? 'Kommer snart' : 'Coming soon'}
                 className="cursor-not-allowed rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-500">{b}</button>
             ))}
+            {/* Dela är aktiv (till skillnad från övriga bidra-knapparna som är fas 2). */}
+            <button type="button" onClick={doShare} title={sv ? 'Dela länken till den här vyn' : 'Share the link to this view'}
+              className="rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-200 transition-colors hover:border-amber-500/50 hover:text-amber-100">
+              {sv ? 'Dela' : 'Share'}
+            </button>
+            {shareCopied && (
+              <span className="text-xs text-emerald-300">{sv ? 'Länk kopierad' : 'Link copied'}</span>
+            )}
           </div>
         </section>
       </div>
