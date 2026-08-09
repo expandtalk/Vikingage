@@ -9,6 +9,7 @@ export interface OlandPoint {
   lat: number;
   lng: number;
   note: string | null;
+  id: string | null; // fornborgs-id (swedish_hillforts.id) för hillfort-rader; annars null
 }
 
 export const useOlandModel = () =>
@@ -19,7 +20,7 @@ export const useOlandModel = () =>
       const sb = supabase as unknown as {
         from: (t: string) => { select: (c: string) => Promise<{ data: OlandPoint[] | null; error: unknown }> };
       };
-      const { data, error } = await sb.from('v_oland_model').select('kind,name,lat,lng,note');
+      const { data, error } = await sb.from('v_oland_model').select('kind,name,lat,lng,note,id');
       if (error) throw error;
       return (data ?? []).filter((p) => p.lat != null && p.lng != null);
     },

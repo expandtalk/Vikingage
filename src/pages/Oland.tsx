@@ -311,7 +311,7 @@ const OlandMap: React.FC<{
         fillColor: s.color,
         fillOpacity: isFort ? 0.92 : (p.kind === 'find' ? 0.9 : 0.55),
       })
-        .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${s.label}${p.note ? ` · ${p.note}` : ''}</span>`);
+        .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${s.label}${p.note ? ` · ${p.note}` : ''}</span>${isFort && p.id ? `<br/><a href="/fortresses/${p.id}" style="font-size:11px;color:#38bdf8;font-weight:600">Dateringar, fynd &amp; källor →</a>` : ''}`);
       // Fornborgar får permanent namn-etikett på kartan (inte bara i popup).
       if (isFort && p.name) {
         m.bindTooltip(p.name, { permanent: true, direction: 'right', offset: [6, 0], className: 'oland-fort-label' });
