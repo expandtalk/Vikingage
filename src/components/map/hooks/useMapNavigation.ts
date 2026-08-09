@@ -1,15 +1,19 @@
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import L from 'leaflet';
 
 interface UseMapNavigationProps {
   map: L.Map | null;
-  onMapNavigate?: (navFunction: (lat: number, lng: number, zoom: number) => void) => void;
+  onMapNavigate?: (navFunction: (lat: number, lng: number, zoom: number, label?: string) => void) => void;
 }
 
 export const useMapNavigation = ({ map, onMapNavigate }: UseMapNavigationProps) => {
+  // Highlight-markör för den plats sökningen faktiskt löste upp. Utan denna centrerades bara
+  // kartan (setView) och en granne kunde visuellt utge sig för att vara resultatet (Nicolai→Birgitta-buggen).
+  const highlightRef = useRef<L.CircleMarker | null>(null);
+
   // Set up map navigation function with proper validation
-  const handleMapNavigate = useCallback((lat: number, lng: number, zoom: number) => {
+  const handleMapNavigate = useCallback((lat: number, lng: number, zoom: number, label?: string) => {
     // Validate coordinates before attempting to navigate
     if (!map) {
       console.warn('Map not initialized for navigation');
@@ -39,6 +43,14 @@ export const useMapNavigation = ({ map, onMapNavigate }: UseMapNavigationProps) 
 
     try {
       map.setView([lat, lng], zoom, { animate: true, duration: 1.5 });
+      // Rensa ev. tidigare highlight, och markera den upplösta platsen om ett namn gavs.
+      if (highlightRef.current) { try { map.removeLayer(highlightRef.current); } catch { /* noop */ } highlightRef.current = null; }
+      if (label) {
+        const m = L.circleMarker([lat, lng], { radius: 9, color: '#f59e0b', weight: 3, fillColor: '#f59e0b', fillOpacity: 0.25 });
+        m.bindTooltip(label, { permanent: true, direction: 'top', offset: [0, -6], className: 'search-highlight-label' });
+        m.addTo(map);
+        highlightRef.current = m;
+      }
     } catch (error) {
       console.error('Error navigating map:', error, { lat, lng, zoom });
     }

@@ -7,7 +7,6 @@ import { FilterPanel } from '../filters/FilterPanel';
 import { DraggableLegend } from '../legend/DraggableLegend';
 import { ProximityControl } from './ProximityControl';
 import { ElementSpotlightControl } from './ElementSpotlightControl';
-import { RulerControl } from './RulerControl';
 import { NearMeControl } from './NearMeControl';
 import { FieldNavControl } from './FieldNavControl';
 import { ChurchYearControl } from './ChurchYearControl';
@@ -117,7 +116,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
       {/* "Mina punkter" är nu inbakat i Near me (Mina platser) → fristående kontrollen borttagen. */}
       {!isMobile && churchesOn && <ChurchYearControl />}
       {!isMobile && <ElementSpotlightControl />}
-      {!isMobile && <RulerControl />}
+      {/* Linjalen flyttad till breadcrumb-raden (RulerBar i Explore) — inte längre flytande på kartan. */}
       <NearMeControl enabledLayers={enabledLayers} />
       <FieldNavControl />
       {!isMobile && <ClusterLegendControl onLegendToggle={onLegendToggle} enabledLayers={enabledLayers} />}

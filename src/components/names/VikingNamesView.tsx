@@ -5,9 +5,97 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Search, Crown, Heart, Shield, Loader2 } from 'lucide-react';
+import { Users, Search, Crown, Heart, Shield, Loader2, ScrollText, ShieldCheck } from 'lucide-react';
 import { useVikingNames, useVikingNamesStats, type VikingName } from '@/hooks/useVikingNames';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
+
+// Attesterade namn UR runkorpusen (runic_name_attestations via attested_runic_names-RPC). Grupperar
+// stavningsvarianter på fold_key klientsidan. KÄLLKRITIK: frekvens = antal inskrifter där namnformen
+// är attesterad (approx), per landskap — INTE befolkningsstatistik. Fornnordiska former.
+interface AttestedRow { name_form: string; fold_key: string; n_inscriptions: number; regions: Record<string, number> | null; sample_signums: string[] | null; }
+const AttestedRunicNames: React.FC<{ region: string }> = ({ region }) => {
+  const { language } = useLanguage();
+  const sv = language === 'sv';
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ['attested-runic-names'],
+    queryFn: async () => {
+      const { data } = await (supabase as any).rpc('attested_runic_names', { p_limit: 200, p_region: null });
+      return (data ?? []) as AttestedRow[];
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const groups = useMemo(() => {
+    const m = new Map<string, { fold: string; n: number; forms: string[]; regions: Record<string, number>; signums: string[] }>();
+    for (const r of rows) {
+      const g = m.get(r.fold_key) ?? { fold: r.fold_key, n: 0, forms: [], regions: {}, signums: [] };
+      g.n += r.n_inscriptions;
+      g.forms.push(r.name_form);
+      for (const [k, v] of Object.entries(r.regions ?? {})) g.regions[k] = (g.regions[k] ?? 0) + (v as number);
+      for (const s of r.sample_signums ?? []) if (!g.signums.includes(s)) g.signums.push(s);
+      m.set(r.fold_key, g);
+    }
+    let out = [...m.values()];
+    if (region !== 'all') out = out.filter((g) => g.regions[region]);
+    return out.sort((a, b) => (region !== 'all' ? (b.regions[region] ?? 0) - (a.regions[region] ?? 0) : b.n - a.n)).slice(0, 60);
+  }, [rows, region]);
+
+  if (isLoading) return <div className="flex items-center gap-2 py-8 text-slate-400"><Loader2 className="h-5 w-5 animate-spin" />{sv ? 'Laddar attesterade namn…' : 'Loading attested names…'}</div>;
+  if (!groups.length) return null;
+
+  return (
+    <Card className="bg-white/10 backdrop-blur-md border-white/20">
+      <CardHeader>
+        <CardTitle className="text-white flex items-center gap-2 text-lg">
+          <ScrollText className="h-5 w-5 text-amber-400" />
+          {sv ? 'Namn attesterade i runinskrifterna' : 'Names attested in the runic corpus'}
+        </CardTitle>
+        <p className="flex items-start gap-1.5 text-xs text-slate-400">
+          <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400/70" />
+          {sv
+            ? 'Fornnordiska namnformer, härledda direkt ur inskrifternas normalisering och räknade per landskap. Talet = antal inskrifter där namnet är belagt (approximativt; stavningsvarianter grupperade) — ett mått på belägg i runmaterialet, inte på befolkningens namnskick.'
+            : 'Old Norse name-forms derived directly from the inscriptions’ normalization, counted per province. The number = inscriptions where the name is attested (approximate; spelling variants grouped) — a measure of attestation in the runic material, not of population naming.'}
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {groups.map((g) => {
+            const topRegions = Object.entries(g.regions).sort((a, b) => b[1] - a[1]).slice(0, 3);
+            return (
+              <div key={g.fold} className="rounded-lg border border-slate-600/30 bg-slate-800/60 p-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <h4 className="font-semibold text-white">{g.forms[0]}</h4>
+                  <Badge variant="outline" className="shrink-0 text-slate-300">{g.n} {sv ? 'inskr.' : 'inscr.'}</Badge>
+                </div>
+                {g.forms.length > 1 && (
+                  <p className="mt-0.5 text-[11px] text-slate-500">{sv ? 'även' : 'also'} {g.forms.slice(1, 4).join(', ')}</p>
+                )}
+                {topRegions.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {topRegions.map(([r, c]) => (
+                      <Badge key={r} variant="secondary" className="text-[10px]">{r} · {c}</Badge>
+                    ))}
+                  </div>
+                )}
+                {g.signums.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
+                    <span className="text-slate-500">{sv ? 'stenar:' : 'stones:'}</span>
+                    {g.signums.slice(0, 4).map((s) => (
+                      <Link key={s} to={`/inscription/${encodeURIComponent(s)}`} className="text-amber-300 hover:underline">{s}</Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 interface VikingNamesViewProps {
   onNameSelect?: (name: string) => void;
@@ -335,6 +423,9 @@ export const VikingNamesView: React.FC<VikingNamesViewProps> = ({ onNameSelect }
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Attesterat ur runkorpusen — separat, källkritiskt märkt sektion. */}
+      <AttestedRunicNames region={selectedRegion} />
     </div>
   );
 };

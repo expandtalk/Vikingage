@@ -30,8 +30,8 @@ export const LegendItemComponent: React.FC<LegendItemProps> = ({
       }`}
       style={{ paddingLeft: `${indent + 8}px` }}
     >
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        <div className="flex items-center justify-center w-4 h-4 flex-shrink-0">
+      <div className="flex items-start gap-2 flex-1 min-w-0">
+        <div className="flex items-center justify-center w-4 h-4 flex-shrink-0 mt-0.5">
           <IconComponent 
             className="h-3 w-3" 
             style={{ 
@@ -42,7 +42,7 @@ export const LegendItemComponent: React.FC<LegendItemProps> = ({
         </div>
         <Label 
           htmlFor={`legend-${item.id}`} 
-          className={`text-xs cursor-pointer flex-1 truncate leading-4 hover:text-gray-100 transition-colors font-medium ${
+          className={`text-xs cursor-pointer flex-1 leading-tight break-words hover:text-gray-100 transition-colors font-medium ${
             item.enabled ? 'text-gray-100' : 'text-gray-300'
           }`}
           title={cleanedLabel}

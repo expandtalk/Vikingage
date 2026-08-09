@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Map, ToggleLeft, ToggleRight, ExternalLink, Save, RotateCcw } from 'lucide-react';
+import { Map, ToggleLeft, ToggleRight, ExternalLink, Save, RotateCcw, Sparkles } from 'lucide-react';
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useTravelMode, setTravelMode, TRAVEL_MODE_LABELS, type TravelMode } from '@/hooks/useTravelMode';
 import { saveModePreset, clearModePreset, useHasModePreset } from '@/hooks/useModePresets';
 import { LegendItemComponent } from './legend/LegendItem';
@@ -58,6 +59,7 @@ export const MapLegend: React.FC<MapLegendProps> = ({
 }) => {
   const { t, language } = useLanguage();
   const sv = language === 'sv';
+  const isMobile = useIsMobile();
   const travelMode = useTravelMode();
   const hasPreset = useHasModePreset(travelMode);
   // Gå-läge: fyll alla lager + släck historiska rasterkartor (de täcker vägarna). Engångsåtgärd
@@ -130,19 +132,25 @@ export const MapLegend: React.FC<MapLegendProps> = ({
       ? <LegendCategory key={item.id} item={item} onToggleItem={onToggleItem} expandedCategories={expandedCategories} onCategoryToggle={handleCategoryToggle} />
       : item.type === 'link'
       ? (
-        // Länk-typ: ingen switch/räknare — öppnar href i ny flik. Stilkonsekvent med
-        // LegendItemComponents "på"-rad (bg-slate-800/90 + border), men klickbar hela raden.
+        // Länk-typ: ingen switch/räknare — öppnar href i ny flik. Speglar LegendItemComponents
+        // rad-design (vänster ikon-kolumn + label + höger-affordans) så den inte bryter mot övriga
+        // rader (Daniel: "följer inte designen på resten av legenden"). Höger = ExternalLink i st.f. switch.
         <a
           key={item.id}
           href={item.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-between gap-2 py-2 px-2 rounded-md bg-slate-800/90 border border-slate-600/50 shadow-sm text-gray-100 hover:bg-slate-700/90 hover:text-white transition-all duration-200"
+          className="flex items-center justify-between py-2 px-2 rounded-md bg-slate-800/90 border border-slate-600/50 shadow-sm text-gray-100 hover:bg-slate-700/90 hover:text-white transition-all duration-200"
         >
-          <span className="text-xs flex-1 truncate leading-4 font-medium" title={item.label}>
-            {item.label}
-          </span>
-          <ExternalLink className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <div className="flex items-center justify-center w-4 h-4 flex-shrink-0 mt-0.5">
+              <Sparkles className="h-3 w-3" style={{ color: '#d97706' }} />
+            </div>
+            <span className="text-xs flex-1 leading-tight break-words font-medium" title={item.label}>
+              {item.label}
+            </span>
+          </div>
+          <ExternalLink className="h-3.5 w-3.5 text-slate-400 flex-shrink-0 ml-2" />
         </a>
       )
       : <LegendItemComponent key={item.id} item={item} onToggleItem={onToggleItem} />
@@ -174,7 +182,9 @@ export const MapLegend: React.FC<MapLegendProps> = ({
           </Button>
         </div>
 
-        {/* Färdsätt (Gå/Cykla/Kör) — delas med Near me. Gå fyller alla lager + släcker historiska kartor. */}
+        {/* Färdsätt (Gå/Cykla/Kör) + spara egen vy — BARA på mobil (fält/billäge). Desktop behöver
+            det inte (Daniel); där räcker legend-lagren + eget sparläge via konto. */}
+        {isMobile && (
         <div className="pt-1">
           <div className="flex gap-1">
             {(['foot', 'bike', 'car'] as TravelMode[]).map((m) => {
@@ -211,6 +221,7 @@ export const MapLegend: React.FC<MapLegendProps> = ({
             <p className="px-1 pt-0.5 text-[10px] text-gray-500">{sv ? 'Gåläge: alla lager på, historiska kartor av.' : 'Walking: all layers on, historical maps off.'}</p>
           )}
         </div>
+        )}
       </CardHeader>
       
       <CardContent className="p-0 pb-2">

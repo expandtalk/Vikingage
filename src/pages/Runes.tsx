@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Map, ScrollText, Users, ChevronRight } from 'lucide-react';
 import { YOUNGER, ELDER } from '@/data/futhark';
 import { RuneWriter } from '@/components/runes/RuneWriter';
+import { RunestoneChurchHypothesis } from '@/components/runes/RunestoneChurchHypothesis';
 
 // /sv/runor + /en/runes — kunskapshubb om runor & futharken, byggd på HELA runstenskorpusen
 // (count_runestones() = sanningskälla via runic_atlas_stats). Evergreen-innehåll (futhark, hur
@@ -80,7 +81,7 @@ const Runes: React.FC = () => {
       <Header />
       <Breadcrumbs />
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
         <h1 className="text-4xl font-bold text-foreground mb-3">
           {L('Runor och futharken', 'Runes and the futhark')}
         </h1>
@@ -244,6 +245,9 @@ const Runes: React.FC = () => {
             ))}
           </div>
         </section>
+
+        {/* Forskningshypotes: runstenar & kyrkan över landskapen (Öland-mönstret, nationellt) */}
+        <RunestoneChurchHypothesis />
 
         {/* FAQ */}
         <section className="mb-10">

@@ -98,8 +98,13 @@ export const LayoutContent: React.FC<LayoutContentProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const [legendMinimized, setLegendMinimized] = React.useState(false);
-  const [legendPosition, setLegendPosition] = React.useState({ x: 880, y: 60 });
   const [legendSize, setLegendSize] = React.useState({ width: 340, height: 520 });
+  // Default högerflushad mot kartans (max-w-7xl, centrerad) högerkant så legenden använder ytan i
+  // stället för att ligga mitt på kartan (Daniel: "så långt åt höger som möjligt på desktop").
+  const [legendPosition, setLegendPosition] = React.useState(() => {
+    const inner = Math.min(typeof window !== 'undefined' ? window.innerWidth : 1280, 1280) - 32;
+    return { x: Math.max(360, inner - 340 - 8), y: 60 };
+  });
   // Använd props för legend state, med fallback till lokal state
   const showLegend = showLegendProp ?? false;
   const handleToggleLegend = onToggleLegendProp ?? (() => {});

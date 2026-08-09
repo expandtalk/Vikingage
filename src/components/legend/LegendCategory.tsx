@@ -47,7 +47,7 @@ export const LegendCategory: React.FC<LegendCategoryProps> = ({
           </span>
 
           <span
-            className={`text-xs flex-1 truncate leading-4 font-semibold transition-colors ${
+            className={`text-xs flex-1 leading-tight break-words font-semibold transition-colors ${
               item.enabled ? 'text-white' : 'text-slate-200'
             }`}
             title={item.label}

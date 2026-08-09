@@ -16,6 +16,8 @@ import { setDrivingMode, useCourseUp, setCourseUp } from '@/hooks/useDrivingMode
 import { useTravelMode, setTravelMode, type TravelMode } from '@/hooks/useTravelMode';
 import { useNearbyPages } from '@/hooks/useNearbyPages';
 import { useCustomPoints, addCustomPoint, removeCustomPoint } from '@/hooks/useCustomPoints';
+import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
 import { setProbe, setProbeShape, setProbeRadiusKm } from '@/hooks/useProximityProbe';
 import { useDraggable } from '@/hooks/useDraggable';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -121,6 +123,9 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   const { rootRef, dragHandleProps, style: dragStyle } = useDraggable('vikingage_nearme_pos_v1');
   // Mina platser (localStorage) — ersätter fristående "Mina punkter"-kontrollen.
   const savedPlaces = useCustomPoints();
+  // Discovery + ruttplanering är öppet för alla; att SPARA egna platser/vyer kräver konto
+  // (Daniel: kontrollerat sparande, konsekvent med Fas 1). Geolokalisering/rutt gate:as EJ.
+  const { user } = useAuth();
   const [placeName, setPlaceName] = useState('');
   // Bil: Översikt (stanna & planera på den breda kartan) vs Kör (med mål → rutt + korridor).
   const [carView, setCarView] = useState<'overview' | 'drive'>('overview');
@@ -320,38 +325,18 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   }, []); // en gång vid montering
 
   if (!open) {
-    // STOR CTA bara vid förstagång PÅ MOBIL (där den är den primära gesten). Desktop, återbesök och
-    // nekad plats → kompakt pill-länk (Daniel: "bara ha en länk till platsåtkomst", inte en stor
-    // ruta som ligger framme hela tiden på desktop).
-    if (!consented() && !denied && isMobile) {
-      return (
-        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[1050] w-[min(92%,360px)] text-center">
-          <button
-            onClick={() => { sessionDismissed = false; openNearMe(); locate(); }}
-            className="w-full flex items-center justify-center gap-2 px-5 py-4 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white text-base font-semibold border-2 border-sky-300 shadow-2xl"
-            style={{ minHeight: 56 }}
-          >
-            <LocateFixed className="h-6 w-6" />Near me — vad finns omkring mig?
-          </button>
-          <label className="mt-2 flex items-center justify-center gap-2 text-xs text-white/90 bg-slate-900/80 rounded-lg px-3 py-1.5 backdrop-blur-md cursor-pointer select-none">
-            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="accent-sky-500" />
-            Kom ihåg mitt val (lokalisera automatiskt vid återbesök)
-          </label>
-          <p className="mt-2 text-xs text-white/90 bg-slate-900/80 rounded-lg px-3 py-1.5 backdrop-blur-md">
-            Visar runstenar, gravar, kyrkor & fornlämningar inom {radiusKm} km från dig. Din plats används bara här — vi följer dig inte.
-          </p>
-        </div>
-      );
-    }
+    // EN kompakt pill (mobil + desktop) — ingen stor CTA-ruta med mörka textblock som täcker kartan
+    // (Daniel: två mörkblå bakgrunder tog ~1/4 av mobilytan). Kom-ihåg + integritetsnotis bor i den
+    // öppnade panelen i stället. Knappen är sky-färgad = läsbar mot kartan utan egen mörk platta.
     return (
       <button
-        onClick={() => { openNearMe(); locate(); }}
+        onClick={() => { sessionDismissed = false; openNearMe(); locate(); }}
         title="Near me — vad finns omkring?"
         aria-label="Near me"
-        className="absolute z-[1050] bottom-2 right-4 flex items-center gap-2 p-2 sm:px-3.5 sm:py-2.5 rounded-full bg-sky-600/80 hover:bg-sky-600 text-white text-sm font-medium border-2 border-sky-400 shadow-lg backdrop-blur-md"
+        className="absolute z-[1050] bottom-3 right-4 flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-sky-600/90 hover:bg-sky-600 text-white text-sm font-medium border-2 border-sky-400 shadow-lg backdrop-blur-md"
         style={{ minWidth: 44, minHeight: 44 }}
       >
-        <LocateFixed className="h-5 w-5" /><span className="hidden sm:inline">Near me</span>
+        <LocateFixed className="h-5 w-5" /><span>Near me</span>
       </button>
     );
   }
@@ -478,24 +463,33 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
           spara nuvarande referenspunkt, centrera Near me där, eller analysera 9 km (hexagon). */}
       {pos && !error && (
         <div className="px-4 pb-2 border-t border-slate-700/60 pt-2">
-          <div className="flex items-center gap-1">
-            <input value={placeName} onChange={(e) => setPlaceName(e.target.value)} placeholder="Namnge & spara denna plats"
-              className="flex-1 min-w-0 px-2 py-1.5 rounded border border-slate-700 bg-slate-800 text-slate-100 text-xs placeholder:text-slate-500" style={{ minHeight: 34 }} />
-            <button type="button" onClick={() => { if (pos) { addCustomPoint(placeName || 'Min plats', pos.lat, pos.lng); setPlaceName(''); } }}
-              className="shrink-0 px-2.5 rounded bg-amber-600 hover:bg-amber-500 text-white text-xs" style={{ minHeight: 34 }}>Spara</button>
-          </div>
-          {savedPlaces.length > 0 && (
-            <ul className="mt-1 space-y-0.5 max-h-28 overflow-y-auto">
-              {savedPlaces.map((p) => (
-                <li key={p.id} className="flex items-center gap-1 text-xs">
-                  <button onClick={() => setNearMePos(p.lat, p.lng, 0)} title="Centrera Near me här"
-                    className="flex-1 min-w-0 truncate text-left text-slate-200 hover:text-white px-1" style={{ minHeight: 32 }}>📍 {p.name}</button>
-                  <button onClick={() => { setProbe(p.lat, p.lng, p.name); setProbeShape('hexagon'); setProbeRadiusKm(9); }} title="Analysera 9 km (hexagon)"
-                    className="shrink-0 px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500 text-amber-200 text-[10px]">9 km</button>
-                  <button onClick={() => removeCustomPoint(p.id)} title="Ta bort" className="shrink-0 px-1 text-slate-500 hover:text-rose-400">✕</button>
-                </li>
-              ))}
-            </ul>
+          {user ? (
+            <>
+              <div className="flex items-center gap-1">
+                <input value={placeName} onChange={(e) => setPlaceName(e.target.value)} placeholder="Namnge & spara denna plats"
+                  className="flex-1 min-w-0 px-2 py-1.5 rounded border border-slate-700 bg-slate-800 text-slate-100 text-xs placeholder:text-slate-500" style={{ minHeight: 34 }} />
+                <button type="button" onClick={() => { if (pos) { addCustomPoint(placeName || 'Min plats', pos.lat, pos.lng); setPlaceName(''); } }}
+                  className="shrink-0 px-2.5 rounded bg-amber-600 hover:bg-amber-500 text-white text-xs" style={{ minHeight: 34 }}>Spara</button>
+              </div>
+              {savedPlaces.length > 0 && (
+                <ul className="mt-1 space-y-0.5 max-h-28 overflow-y-auto">
+                  {savedPlaces.map((p) => (
+                    <li key={p.id} className="flex items-center gap-1 text-xs">
+                      <button onClick={() => setNearMePos(p.lat, p.lng, 0)} title="Centrera Near me här"
+                        className="flex-1 min-w-0 truncate text-left text-slate-200 hover:text-white px-1" style={{ minHeight: 32 }}>📍 {p.name}</button>
+                      <button onClick={() => { setProbe(p.lat, p.lng, p.name); setProbeShape('hexagon'); setProbeRadiusKm(9); }} title="Analysera 9 km (hexagon)"
+                        className="shrink-0 px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500 text-amber-200 text-[10px]">9 km</button>
+                      <button onClick={() => removeCustomPoint(p.id)} title="Ta bort" className="shrink-0 px-1 text-slate-500 hover:text-rose-400">✕</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          ) : (
+            /* Sparande kräver konto — discovery + rutt ovan är fortfarande öppet för alla. */
+            <p className="text-[11px] text-slate-400 leading-snug">
+              <Link to="/auth" className="text-sky-300 underline hover:text-sky-200">Logga in</Link> för att spara egna platser och vyer.
+            </p>
           )}
         </div>
       )}

@@ -5,7 +5,7 @@ import { FiltersStatusSection } from './FiltersStatusSection';
 import { ExplorerPanels } from './ExplorerPanels';
 import { TimelineModule } from '../modules/TimelineModule';
 import { GodCardsGrid } from '../gods/GodCardsGrid';
-import { WindRose } from './WindRose';
+import { WindRoses } from './WindRose';
 import { CultSitesView } from '../gods/CultSitesView';
 import { PanelLayoutSelector } from '../panels/PanelLayoutSelector';
 import { usePanelManager } from '@/hooks/usePanelManager';
@@ -281,6 +281,27 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   const moduleFocus = currentFocus === 'gods' || currentFocus === 'cultSites'
     || currentFocus === 'rivers' || currentFocus === 'fortresses';
 
+  // Intresseprofilen (profil-header med profilväljare + inbäddat sök). Extraherad så den kan
+  // placeras SIST på namn-fokus (Daniel: "interest profile kan väl visas sist på sidan?").
+  const desktopHeader = !isMobile ? (
+    <LayoutHeader
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      handleSearch={handleSearchWithResults}
+      isLoading={isLoading}
+      totalInscriptions={totalInscriptions}
+      isExplorerMode={isExplorerMode}
+      onGodNameSearchWithLegend={handleGodNameSearchWithLegend}
+      onLegendToggle={onLegendToggle}
+      isSearchMinimized={isSearchMinimized}
+      setIsSearchMinimized={setIsSearchMinimized}
+      shouldShowTimeline={false}
+      mapNavigate={mapNavigate}
+      isTimelineMinimized={isTimelineMinimized}
+      setIsTimelineMinimized={setIsTimelineMinimized}
+    />
+  ) : null;
+
   return (
     <div className="max-w-7xl mx-auto space-y-3">
       {moduleFocus && (
@@ -293,26 +314,9 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
       )}
       {/* cultSites: runstenssöket är irrelevant (platserna är innehållet) —
           behåll profilväljaren men släck sök-/tidslinjemodulen (Daniel 2026-07-20). */}
-      {currentFocus === 'cultSites' ? (
-        <PanelLayoutSelector />
-      ) : (!isMobile ? (
-        <LayoutHeader
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          handleSearch={handleSearchWithResults}
-          isLoading={isLoading}
-          totalInscriptions={totalInscriptions}
-          isExplorerMode={isExplorerMode}
-          onGodNameSearchWithLegend={handleGodNameSearchWithLegend}
-          onLegendToggle={onLegendToggle}
-          isSearchMinimized={isSearchMinimized}
-          setIsSearchMinimized={setIsSearchMinimized}
-          shouldShowTimeline={false}
-          mapNavigate={mapNavigate}
-          isTimelineMinimized={isTimelineMinimized}
-          setIsTimelineMinimized={setIsTimelineMinimized}
-        />
-      ) : null)}
+      {/* Intresseprofilen + explore-kontrollerna flyttade SIST på sidan (fotband, se slutet) för alla
+          vyer utom cultSites — kartan först (Daniel: "interest profile och explore längst ner"). */}
+      {currentFocus === 'cultSites' ? <PanelLayoutSelector /> : null}
 
       {/* Mobil: profil-headern (intresseprofil + sök) döljs ovanför kartan — den bor nu i "Min sida"-
           arket (avatar-ikonen). Sök finns kvar via förstoringsglaset i sidhuvudet. */}
@@ -438,10 +442,10 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
         </div>
       )}
 
-      {/* Vindros på farleds-/marinvyerna — förhärskande vind i Kalmarsund (SMHI). */}
+      {/* Vindrosor på farleds-/marinvyerna — förhärskande vind PER farvatten (SMHI), inte bara Kalmarsund. */}
       {(currentFocus === 'rivers' || currentFocus === 'marine') && (
         <div className="mt-4">
-          <WindRose location="Kalmarsund" />
+          <WindRoses />
         </div>
       )}
 
@@ -460,6 +464,12 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
 
       {/* Eventlinjen ("Events over time") borttagen på begäran (Daniel) — större karta.
           Komponenten EventTimeline finns kvar i repo; återinför här vid behov. */}
+
+      {/* FOTBAND: intresseprofil + explore-kontroller (profilväljare + sök) SIST på sidan, under
+          kartan/innehållet — alla vyer utom cultSites (som har sin egen överst). Kartan först. */}
+      {currentFocus !== 'cultSites' && desktopHeader && (
+        <div className="mt-6 pt-4 border-t border-slate-700/50">{desktopHeader}</div>
+      )}
 
     </div>
   );

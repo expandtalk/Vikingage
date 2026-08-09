@@ -5,6 +5,7 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { ChevronDown } from 'lucide-react';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
+import { RulerBar } from '../components/overlay/RulerBar';
 import { Footer } from '../components/Footer';
 import { RunicExplorerSimple } from '../components/RunicExplorerSimple';
 import { ResearchNotes } from '../components/ResearchNotes';
@@ -52,7 +53,13 @@ const Explore = () => {
   return (
     <div className="min-h-screen viking-bg">
       {!driving && <Header />}
-      {!driving && !isMobile && <Breadcrumbs />}
+      {/* Breadcrumb + linjal på SAMMA rad (Daniel: linjalen upp i linje med breadcrumb, chrome-typografi). */}
+      {!driving && !isMobile && (
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <Breadcrumbs bare />
+          <RulerBar />
+        </div>
+      )}
 
       <main className={`container mx-auto px-4 ${driving ? 'py-2' : 'py-8'}`}>
         <NavigatorHud />
@@ -118,7 +125,8 @@ const Explore = () => {
         )}
       </main>
 
-      {!driving && <Footer />}
+      {/* Footern döljs på mobil (Daniel) — frigör vertikal yta åt kartan. Full footer på desktop. */}
+      {!driving && !isMobile && <Footer />}
     </div>
   );
 };

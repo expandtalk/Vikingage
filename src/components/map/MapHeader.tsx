@@ -3,8 +3,8 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin } from "lucide-react";
-import { ARCHAEOLOGICAL_PERIODS } from "@/utils/archaeologicalFinds/periods";
 import { useIsMobile } from "@/hooks/useMediaQuery";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MapHeaderProps {
   isVikingMode: boolean;
@@ -13,36 +13,6 @@ interface MapHeaderProps {
   selectedTimePeriod?: string;
   totalInscriptions?: number;
 }
-
-// Function to get period display info
-const getPeriodDisplayInfo = (selectedTimePeriod: string) => {
-  const period = ARCHAEOLOGICAL_PERIODS.find(p => p.id === selectedTimePeriod);
-  if (!period) {
-    return {
-      name: 'Okänd period',
-      nameEn: 'Unknown period',
-      years: ''
-    };
-  }
-
-  const startYear = Math.abs(period.startYear);
-  const endYear = Math.abs(period.endYear);
-  
-  let yearsDisplay = '';
-  if (period.startYear < 0 && period.endYear < 0) {
-    yearsDisplay = `${startYear}-${endYear} f.Kr.`;
-  } else if (period.startYear < 0 && period.endYear > 0) {
-    yearsDisplay = `${startYear} f.Kr.-${endYear} e.Kr.`;
-  } else {
-    yearsDisplay = `${period.startYear}-${period.endYear} e.Kr.`;
-  }
-
-  return {
-    name: period.name,
-    nameEn: period.nameEn,
-    years: yearsDisplay
-  };
-};
 
 export const MapHeader: React.FC<MapHeaderProps> = ({
   isVikingMode,
@@ -54,30 +24,12 @@ export const MapHeader: React.FC<MapHeaderProps> = ({
   // På mobil: dölj hela kartrubriken (titel "…Map" + platser/länder/inskrifter-badges)
   // — tar onödig yta och stats behövs inte i fält (Daniel).
   const isMobile = useIsMobile();
+  const { language } = useLanguage();
   if (isMobile) return null;
 
-  // Get correct period info based on selectedTimePeriod
-  const periodInfo = getPeriodDisplayInfo(selectedTimePeriod);
-  
-  const getTitle = () => {
-    if (isVikingMode) {
-      if (selectedTimePeriod === 'viking_age') {
-        return `Vikingatiden (${periodInfo.years})`;
-      } else {
-        return `${periodInfo.name} (${periodInfo.years})`;
-      }
-    } else {
-      if (selectedTimePeriod === 'all') {
-        return 'Runic Inscriptions Map';
-      } else {
-        return `${periodInfo.nameEn} (${periodInfo.years})`;
-      }
-    }
-  };
-
-  console.log('MapHeader: Selected time period:', selectedTimePeriod);
-  console.log('MapHeader: Period info:', periodInfo);
-  console.log('MapHeader: Generated title:', getTitle());
+  // Kartrubriken är sajtens sektionsnamn, inte en period — sajten heter redan Viking Age,
+  // så rubriken ska vara "Explore"/"Utforska" (Daniel). Perioden syns i tidsfiltret/badgesen.
+  const getTitle = () => (language === 'sv' ? 'Utforska' : 'Explore');
 
   return (
     <CardHeader>

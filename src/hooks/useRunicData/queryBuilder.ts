@@ -64,7 +64,7 @@ export const buildQuery = (filters: UseRunicDataProps) => {
       query = supabase
         .from('runic_inscriptions')
         .select('*')
-        .or(`signum.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,transliteration.ilike.%${searchTerm}%,municipality.ilike.%${searchTerm}%,parish.ilike.%${searchTerm}%`);
+        .or(`signum.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,transliteration.ilike.%${searchTerm}%,municipality.ilike.%${searchTerm}%,parish.ilike.%${searchTerm}%,socken.ilike.%${searchTerm}%`);
     }
     // Check if it's a time period search
     else if (['paleolithic', 'mesolithic', 'neolithic', 'bronze', 'iron', 'roman', 'migration', 'vendel', 'viking', 'medieval', 'modern'].some(period => searchTerm.toLowerCase().includes(period))) {
@@ -97,7 +97,7 @@ export const buildQuery = (filters: UseRunicDataProps) => {
       query = supabase
         .from('runic_inscriptions')
         .select('*')
-        .or(`signum.ilike.%${translatedSearchTerm}%,location.ilike.%${translatedSearchTerm}%,landscape.ilike.%${translatedSearchTerm}%,municipality.ilike.%${translatedSearchTerm}%,parish.ilike.%${translatedSearchTerm}%,transliteration.ilike.%${translatedSearchTerm}%,translation_en.ilike.%${translatedSearchTerm}%,translation_sv.ilike.%${translatedSearchTerm}%,country.ilike.%${translatedSearchTerm}%`);
+        .or(`signum.ilike.%${translatedSearchTerm}%,location.ilike.%${translatedSearchTerm}%,landscape.ilike.%${translatedSearchTerm}%,municipality.ilike.%${translatedSearchTerm}%,parish.ilike.%${translatedSearchTerm}%,socken.ilike.%${translatedSearchTerm}%,transliteration.ilike.%${translatedSearchTerm}%,translation_en.ilike.%${translatedSearchTerm}%,translation_sv.ilike.%${translatedSearchTerm}%,country.ilike.%${translatedSearchTerm}%`);
     }
   } else {
     // VIKTIGT: Hämta ALLA inskrifter utan begränsning för att visa alla 2141

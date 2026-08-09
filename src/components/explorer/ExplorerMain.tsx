@@ -250,10 +250,14 @@ export const ExplorerMain: React.FC = () => {
         //   monument/inskrifter/museiföremål) och centrerar PÅ platsen med lämplig zoom. Löser t.ex.
         //   "Kalmars dominikankonvent (Svartbrödraklostret)" som tidigare inte gick att nå (Daniel).
         //   Ingen exakt entitet → fall igenom till exakt inskrifts-träff, annars resultatens TYNGDPUNKT.
+        // mapNavigate accepterar ett valfritt 4:e label-argument (highlight-markör) i den underliggande
+        // implementationen; typen är smalare i props-kedjan → lokal vidgning här.
+        const navMark = mapNavigate as (lat: number, lng: number, zoom: number, label?: string) => void;
         supabase.rpc('resolve_place', { p_q: query })
-          .then(({ data }: { data: Array<{ lat: number; lng: number; zoom: number }> | null }) => {
+          .then(({ data }: { data: Array<{ lat: number; lng: number; zoom: number; kind?: string; place_name?: string }> | null }) => {
             const hit = data?.[0];
-            if (hit?.lat != null && hit?.lng != null) { mapNavigate(hit.lat, hit.lng, hit.zoom ?? 12); return; }
+            // Pinna den UPPLÖSTA platsen (inte bara centrera) så en granne inte kan utge sig för att vara den.
+            if (hit?.lat != null && hit?.lng != null) { navMark(hit.lat, hit.lng, hit.zoom ?? 12, hit.place_name); return; }
             // Exakt inskrifts-träff (namn/signum/vardagsnamn = "Karlevistenen") → centrera PÅ stenen
             // (zoom 13). Annars drog en fuzzy-bimatch (Sigtunadosan i norr) tyngdpunkten ut i havet
             // → tom karta (Daniel: "visar i princip ingenting, zoomar inte in på stenen").
@@ -261,7 +265,7 @@ export const ExplorerMain: React.FC = () => {
               (i.name && i.name.toLowerCase() === query)
               || (i.signum && i.signum.toLowerCase() === query)
               || (Array.isArray(i.also_known_as) && i.also_known_as.some((a: string) => (a || '').toLowerCase() === query)));
-            if (exact) { const c = getEnhancedCoordinates(exact, false); if (c) { mapNavigate(c.lat, c.lng, 13); return; } }
+            if (exact) { const c = getEnhancedCoordinates(exact, false); if (c) { navMark(c.lat, c.lng, 13, exact.name || exact.signum); return; } }
             const pts = inscriptions
               .map((i: any) => getEnhancedCoordinates(i, false))
               .filter(Boolean) as CoordinatesWithZoom[];
