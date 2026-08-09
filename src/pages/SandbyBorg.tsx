@@ -423,6 +423,35 @@ const SandbyBorg = () => {
         </CardContent>
       </Card>
 
+      {/* Getsymbolik — källkritik: håll isär fornnordisk kontext från anakronistisk djävuls-läsning */}
+      <Card className="viking-card mb-4 border-amber-600/40">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-amber-300"><ScrollText className="h-5 w-5" /> Geten som symbol — och varför tänderna INTE är &quot;djävulen&quot;</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            Att får-/gettänder lades i munnen på vissa döda (postmortem) tolkas som en <strong>rituell förnedring/avhumanisering</strong> —
+            att behandla de dräpta <em>som boskap</em>. Det är en <strong>tolkning</strong>; den djupare innebörden är obelagd. Vad det{' '}
+            <strong>inte</strong> är: en koppling till &quot;geten som djävulen&quot;.
+          </p>
+          <p>
+            <strong className="text-foreground">Anakronism-varning:</strong> get = ondska/djävul är en <strong>kristen och senare</strong> föreställning
+            (Matt 25 &quot;fåren och getterna&quot;; syndabocken i 3 Mos 16; djävulens hornade/bockbenta bild lånar från antikens Pan/satyr).
+            Sandby borg är <strong>förkristet (~500 e.Kr.)</strong> — den symboliken fanns inte här.
+          </p>
+          <p>
+            I den <strong className="text-foreground">fornnordiska</strong> horisonten var geten tvärtom <strong>positiv</strong>: Tors bockar
+            Tanngnjóstr &amp; Tanngrisnir (slaktas, äts och återuppstår ur skinnen) och Heidrún i Valhall = <strong>näring, fruktbarhet, förnyelse</strong>
+            (Snorres Edda). En get vid Sandby pekar alltså mot Tor/näring — inte mot ondska.
+          </p>
+          <p className="text-xs opacity-80">
+            <strong>Folktro att avfärda (ej belägg):</strong> att kyrkan &quot;demoniserade den gamla religionens hornade gud&quot; bygger på Margaret Murrays
+            förkastade häxkult-tes; Wiccas &quot;hornade gud&quot; är ett 1900-talskonstrukt. Baphomet med gethuvud är modernt (Éliphas Lévi 1856), och
+            tempelriddarnas &quot;get-dyrkan&quot; (1300-tal) räknas som framtvingade tortyrbekännelser. Inget av detta hör till Sandby.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Relaterat på plattformen */}
       <Card className="viking-card mb-4">
         <CardHeader className="pb-2">
