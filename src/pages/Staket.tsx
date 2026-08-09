@@ -18,10 +18,12 @@ import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegend
 // → havet ~+5 m år 950). Kurerade platser på VERIFIERADE koordinater (Wikipedia/Fornsök/place_names).
 // Hederlighet: Sandéns Stäket-tes redovisas som HYPOTES jämte den traditionella Stockholm-tolkningen.
 
-const MALAREN_BBOX: [number, number, number, number] = [17.55, 59.18, 18.80, 59.72];
+// Vidgad västerut (17.38) så de centrala Mälaröarna (Adelsö/Björkö/Kurön/Ridön) hamnar i den
+// rekonstruerade havsviken — poängen med sidan (de var öar när Mälaren var en vik).
+const MALAREN_BBOX: [number, number, number, number] = [17.38, 59.18, 18.80, 59.72];
 
 interface Site {
-  name: string; lat: number; lng: number; kind: 'royal' | 'sound' | 'fort' | 'city';
+  name: string; lat: number; lng: number; kind: 'royal' | 'sound' | 'fort' | 'city' | 'island';
   note: string; todayM?: number;
 }
 // Verifierade koordinater (Wikipedia P625 / Upplandsmuseet / place_names). Ingen gissning.
@@ -38,12 +40,31 @@ const SITES: Site[] = [
     note: 'Anlagt ~1250. Vid Olavs tid ett brett, förgrenat sundsystem — inte ett enda smalt sund.' },
   { name: 'Telge hus (Ragnhildsborg)', lat: 59.2181, lng: 17.6100, kind: 'fort',
     note: 'Borg i Linasundet, Södertälje — låset för den södra sjövägen (Himmerfjärden) in i Mälaren.' },
+  // Mälaröarna — land som stack upp som öar när Mälaren var en havsvik. Koordinater ur Isof
+  // ortnamnsregistret / Fornsök (verifierade). Ingen gissning.
+  { name: 'Adelsö (Hovgården)', lat: 59.3654, lng: 17.5205, kind: 'island',
+    note: 'Kungsö i Mälaren; Hovgården var Birka-kungarnas gård (Alsnö hus, Alsnö stadga 1280). Isof / Fornsök.' },
+  { name: 'Björkö (Birka)', lat: 59.3355, lng: 17.5460, kind: 'island',
+    note: 'Ö med handelsstaden Birka (~750–970), Sveriges första stad. Isof / Fornsök.' },
+  { name: 'Munsö', lat: 59.3977, lng: 17.5667, kind: 'island',
+    note: 'Ö i Färentuna härad; medeltida rundkyrka. Belägg 1533 (Isof).' },
+  { name: 'Kurön', lat: 59.3201, lng: 17.4895, kind: 'island',
+    note: 'Ö i Mälaren väster om Adelsö. Isof.' },
+  { name: 'Ridön', lat: 59.3312, lng: 17.4135, kind: 'island',
+    note: 'Ö i Mälaren (Strängnäs kommun). Isof.' },
+  { name: 'Lovön', lat: 59.3310, lng: 17.8260, kind: 'island',
+    note: 'Ö i Färentuna härad (Lovö sn); senare Drottningholm. Isof.' },
+  { name: 'Kungshatt', lat: 59.3008, lng: 17.8929, kind: 'island',
+    note: 'Ö i Mälaren (Lovö sn); äldre form Kongshatt. Isof.' },
+  { name: 'Kärsön', lat: 59.3205, lng: 17.9195, kind: 'island',
+    note: 'Ö vid Drottningholm/Ekerö, öster om Lovön. Isof.' },
 ];
 const KIND: Record<Site['kind'], { color: string; label: string }> = {
   royal: { color: '#d4a63c', label: 'Kungsgård / stad' },
   sound: { color: '#38bdf8', label: 'Sund (sagans Stocksund)' },
   fort: { color: '#b45309', label: 'Borg / spärr' },
   city: { color: '#94a3b8', label: 'Senare stad' },
+  island: { color: '#6b8f71', label: 'Mälarö (Isof)' },
 };
 
 const KIND_KEYS = Object.keys(KIND) as Site['kind'][];
@@ -162,7 +183,9 @@ const Staket = () => (
           <p className="text-xs text-muted-foreground mt-2 opacity-75">
             Strandlinjen är <strong>härledd ur höjddata</strong> (Copernicus DEM GLO-30, ~30 m) tröskad mot projektets
             landhöjningsmodell (<code>paleo_rsl</code>, 4,7 mm/år, kontrollpunkt "Mälaren", konfidens hög). Vid år 950
-            stod havet ~+4,9 m. Öar återges som hål i vattnet. Reglaget växlar mellan tidsskivorna.
+            stod havet ~+4,9 m. Öar återges som hål i vattnet. De namngivna <strong>Mälaröarna</strong> (Adelsö, Björkö/Birka,
+            Munsö, Kurön, Ridön, Lovön, Kungshatt, Kärsön; koordinater ur Isof) visar vilket land som stack upp.
+            Reglaget växlar mellan tidsskivorna.
           </p>
         </CardContent>
       </Card>
@@ -237,7 +260,7 @@ const Staket = () => (
 
       <p className="text-xs text-muted-foreground mt-6 opacity-75 flex items-start gap-2">
         <Info className="h-4 w-4 shrink-0 mt-0.5" />
-        <span>Höjd: Copernicus DEM GLO-30 © ESA (fri/CC-BY). Landhöjning: projektets <code>paleo_rsl</code> (SGU-kalibrerad). Koordinater: Wikipedia (P625), RAÄ Fornsök, Upplandsmuseets rapport 2022:15, <code>place_names</code>. Tolkningsdiskussion: Börje Sandén / UKF (ukforsk.se) samt Nils Ahnlund, <em>Stockholms historia före Gustav Vasa</em>. Metoden delas med <a href="/sv/kalmar" className="text-gold hover:underline">Kalmar-sidan</a>.</span>
+        <span>Höjd: Copernicus DEM GLO-30 © ESA (fri/CC-BY). Landhöjning: projektets <code>paleo_rsl</code> (SGU-kalibrerad). Koordinater: Wikipedia (P625), RAÄ Fornsök, Upplandsmuseets rapport 2022:15, <code>place_names</code>, Isof ortnamnsregistret. Tolkningsdiskussion: Börje Sandén / UKF (ukforsk.se) samt Nils Ahnlund, <em>Stockholms historia före Gustav Vasa</em>. Metoden delas med <a href="/sv/kalmar" className="text-gold hover:underline">Kalmar-sidan</a>.</span>
       </p>
     </main>
     <Footer />
