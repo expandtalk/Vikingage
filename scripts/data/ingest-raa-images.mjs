@@ -79,6 +79,11 @@ function parsePresentation(xml) {
   const place = rx(xml, /<pres:placeLabel>([^<]*)<\/pres:placeLabel>/);
   const timeLabel = rx(xml, /<pres:timeLabel>([^<]*)<\/pres:timeLabel>/);
   const contextName = rx(xml, /<pres:nameLabel>([^<]*)<\/pres:nameLabel>/);
+  const motive = rx(xml, /<pres:motive>([^<]*)<\/pres:motive>/);
+  const tags = [];
+  const tagRe = /<pres:tag>([^<]*)<\/pres:tag>/g;
+  let tm;
+  while ((tm = tagRe.exec(xml))) { const t = tm[1].trim(); if (t) tags.push(t); }
   const year = timeLabel && /(\d{4})-\d{2}-\d{2}/.exec(timeLabel);
   const date = year ? `${year[1]}-01-01` : null;
 
@@ -93,7 +98,7 @@ function parsePresentation(xml) {
     const licUrl = rx(block, /<pres:mediaLicenseUrl>([^<]*)<\/pres:mediaLicenseUrl>/);
     if (highres) images.push({ url: highres, byline, licUrl });
   }
-  return { type, itemLabel, desc, place, date, photographer: contextName, images };
+  return { type, itemLabel, desc, place, date, photographer: contextName, motive, tags, images };
 }
 
 async function fetchRowsForStone(insc) {
@@ -134,6 +139,8 @@ async function fetchRowsForStone(insc) {
         photographer: img.byline || pres.photographer || null,
         photo_date: pres.date,
         copyright_info: lic.raw,
+        motive: pres.motive || null,
+        keywords: (pres.tags && pres.tags.length) ? pres.tags : null,
         bucket: lic.bucket,
         sig: insc.sig,
       });
@@ -200,10 +207,10 @@ async function main() {
     let inserted = 0;
     for (const r of kept) {
       const res = await client.query(
-        `INSERT INTO inscription_media (inscription_id, media_url, media_type, description, photographer, photo_date, copyright_info, source_institution)
-         SELECT $1,$2,$3,$4,$5,$6::date,$7,$8
+        `INSERT INTO inscription_media (inscription_id, media_url, media_type, description, photographer, photo_date, copyright_info, source_institution, motive, keywords)
+         SELECT $1,$2,$3,$4,$5,$6::date,$7,$8,$9,$10
          WHERE NOT EXISTS (SELECT 1 FROM inscription_media WHERE media_url=$2)`,
-        [r.inscription_id, r.media_url, r.media_type, r.description, r.photographer, r.photo_date, r.copyright_info, SRC]);
+        [r.inscription_id, r.media_url, r.media_type, r.description, r.photographer, r.photo_date, r.copyright_info, SRC, r.motive, r.keywords]);
       inserted += res.rowCount;
     }
     console.log(`\n✅ APPLY klar: ${inserted} rader insatta (idempotent).`);
