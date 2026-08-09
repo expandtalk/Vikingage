@@ -189,11 +189,14 @@ export interface MedallionOptions {
   size?: number;          // diskdiameter, default 34 (royal: 40)
   royal?: boolean;        // kungaplats → guldring + glöd + större disk (rang; typen bärs av ikonen)
   hairline?: boolean;     // tunn ljus ytterkant på disken → läsbar även mot mörk baskarta (WCAG SC 1.4.11)
+  prominent?: boolean;    // huvudnod → permanent namn; annars visas namnet bara vid hover/fokus (anti-kollision)
   className?: string;     // extra CSS-klass (för lager-specifik gate om behövs)
 }
 
-const HALO = '0 0 2px #fff,0 0 2px #fff,0 0 3px #fff,0 1px 1px #fff,0 -1px 1px #fff,1px 0 1px #fff,-1px 0 1px #fff';
-const SERIF = "'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif";
+// Skarp 1px-kontur (fyra hårda offsets + tunn fyllnad) i st.f. mjuk glöd → ren ram, ej suddig.
+// Sans (ej serif) för bättre läsbarhet smått på skärm och enhetlighet med UI.
+const OUTLINE = '-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 0 2px #fff';
+const SANS = "'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 // Guld för kungaplatser — den enda mättade tonen i en annars dov palett, så den poppar.
 export const ROYAL_GOLD = '#d4a63c';
 
@@ -211,9 +214,13 @@ export const createPlaceMedallion = (o: MedallionOptions): L.DivIcon => {
   // Hairline: tunn ljus ytterkant så disken läses även mot mörk baskarta (ringfärgen ensam räcker ej).
   const shadow = o.hairline ? `${shadowBase},0 0 0 1px rgba(255,255,255,.6)` : shadowBase;
   const disc = `<div style="width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#33414d,#212c35);border:2px solid ${ring};box-shadow:${shadow};">${svg}</div>`;
-  const label = `<div style="position:absolute;top:${size + 2}px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:${SERIF};font-size:13px;font-weight:600;color:#1a222b;text-shadow:${HALO};pointer-events:none;">${esc(o.label)}</div>`;
+  // Bara prominenta/kungaplatser får PERMANENT namn; övriga döljs och visas vid hover/fokus
+  // (löser etikett-kollision vid täthet). Zoom-grind: karta som satt .vp-labels-off döljer hover-namn.
+  const permanent = o.royal || o.prominent;
+  const lblCls = permanent ? 'vp-mlabel' : 'vp-mlabel vp-mlabel--hover';
+  const label = `<div class="${lblCls}" style="position:absolute;top:${size + 2}px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:${SANS};font-size:12.5px;font-weight:600;color:#1a222b;text-shadow:${OUTLINE};pointer-events:none;">${esc(o.label)}</div>`;
   const sub = o.sublabel
-    ? `<div style="position:absolute;top:${size + 18}px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10.5px;font-weight:500;color:#3f4a55;text-shadow:0 0 2px #fff,0 0 2px #fff;pointer-events:none;">${esc(o.sublabel)}</div>`
+    ? `<div class="${lblCls}" style="position:absolute;top:${size + 17}px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:${SANS};font-size:10.5px;font-weight:600;color:#3f4a55;text-shadow:${OUTLINE};pointer-events:none;">${esc(o.sublabel)}</div>`
     : '';
   return L.divIcon({
     html: `<div style="position:relative;">${disc}${label}${sub}</div>`,

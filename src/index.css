@@ -206,6 +206,15 @@
    ligger nu i egna högre panes och vinner ändå. */
 .leaflet-marker-icon.vp-medallion { z-index: 2000 !important; }
 .leaflet-marker-icon.vp-medallion--royal { z-index: 2010 !important; }
+/* Etikett-strategi: bara prominenta/royal syns permanent; övriga (--hover) visas vid hover/fokus
+   (löser namn-kollision vid täthet). Hover-etiketten lyfts över grannar när den syns. */
+.leaflet-marker-icon.vp-medallion .vp-mlabel--hover { opacity: 0; transition: opacity .12s ease; }
+.leaflet-marker-icon.vp-medallion:hover,
+.leaflet-marker-icon.vp-medallion:focus-within { z-index: 2020 !important; }
+.leaflet-marker-icon.vp-medallion:hover .vp-mlabel--hover,
+.leaflet-marker-icon.vp-medallion:focus-within .vp-mlabel--hover { opacity: 1; }
+/* Zoom-grind: en karta som satt .vp-labels-off (t.ex. under en zoomtröskel) döljer hover-namnen helt. */
+.leaflet-container.vp-labels-off .vp-medallion .vp-mlabel--hover { display: none; }
 .leaflet-marker-icon.monumental-stone { z-index: 2020 !important; }
 
 /* Kompakt kartattribution. På mobil kollapsas den långa kreditraden till en tappbar

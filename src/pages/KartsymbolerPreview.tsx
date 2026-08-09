@@ -46,6 +46,9 @@ const PreviewMap: React.FC<{ dark: boolean; hairline: boolean }> = ({ dark, hair
     if (!ref.current || mapRef.current) return;
     const map = L.map(ref.current, { center: [57.0, 16.55], zoom: 9, scrollWheelZoom: true });
     layerRef.current.addTo(map);
+    // Zoom-grind: under nivå 10 döljs hover-namnen (bara prominenta noder namnges).
+    const gate = () => map.getContainer().classList.toggle('vp-labels-off', map.getZoom() < 10);
+    map.on('zoomend', gate); gate();
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };
   }, []);
@@ -63,10 +66,11 @@ const PreviewMap: React.FC<{ dark: boolean; hairline: boolean }> = ({ dark, hair
     // Sprid glyferna på ett rutnät så man kan zooma in/ut och se läsbarheten.
     NEW_GLYPHS.forEach((g, i) => {
       const row = Math.floor(i / 6), col = i % 6;
-      const lat = 57.12 - row * 0.09, lng = 16.30 + col * 0.11;
+      const lat = 57.06 - row * 0.05, lng = 16.34 + col * 0.06; // tätt rutnät → visar att hover-namn ej krockar
       L.marker([lat, lng], {
-        icon: createPlaceMedallion({ color: markerColor(g.key), icon: g.key, label: g.label, hairline }),
-        title: g.label,
+        // Var sjätte nod = prominent (permanent namn); övriga får namn vid hover/fokus.
+        icon: createPlaceMedallion({ color: markerColor(g.key), icon: g.key, label: g.label, hairline, prominent: i % 6 === 0 }),
+        title: g.label, alt: g.label, keyboard: true,
       }).addTo(layerRef.current);
     });
   }, [dark, hairline]);
