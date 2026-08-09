@@ -5,7 +5,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, ShieldCheck, Search, ScrollText, Landmark, Map, Bug, Database, Users, Cpu, Ship, Bone, Dna, Gavel, BookOpen, Compass, Clock, Languages } from 'lucide-react';
+import { Bot, ShieldCheck, Search, ScrollText, Landmark, Map, Bug, Database, Users, Cpu, Ship, Bone, Dna, Gavel, BookOpen, Compass, Clock, Languages, Accessibility } from 'lucide-react';
 
 // /ai-agenter (+ /ai-agents) — transparenssida under Vetenskap: vilka typer av AI-agenter
 // plattformen använder och HUR. Ärlig beskrivning — produkt-AI (live) skiljs från de
@@ -84,6 +84,7 @@ const PLANNED_AGENTS: { icon: React.ComponentType<{ className?: string }>; title
   { icon: BookOpen, title: 'Historiker', focus: 'Skriftliga källor och kronologi med klassisk källkritik; saga skiljs från historia.' },
   { icon: Compass, title: 'Kulturgeograf', focus: 'Landskap, ortnamn och centralplatser; mönster prövas mot slumpbakgrund.' },
   { icon: Languages, title: 'Filolog & ortnamnsforskare (språkvetare)', focus: 'Språkhistoria, etymologi och namnled per landskap; latin, tyska, nordiska, finska, baltiska, samiska. Skiljer äldsta belägg från namnets ålder — slår upp och citerar, gissar aldrig.' },
+  { icon: Accessibility, title: 'UX- & tillgänglighetsdesigner (WCAG)', focus: 'Tillgänglig och tydlig design (WCAG 2.2 AA) + maskinläsbar markup — samma medel tjänar både människor och AI-sök. Kartsymboler, kontrast, tangentbord och skärmläsare. Mäter tillgänglighet, gissar inte.' },
 ];
 
 const AiAgents = () => (
