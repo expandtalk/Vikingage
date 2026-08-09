@@ -113,13 +113,15 @@ const StaketMap: React.FC = () => {
     SITES.forEach((s) => {
       const c = KIND[s.kind].color;
       const royal = s.kind === 'royal';
+      // De GEOPOSITIONERADE öarna/holmarna (Isof) ska vara diskreta — små färgade prickar, ej
+      // dominanta medaljonger. Huvudnoderna (Olav-frågans platser) behåller medaljong.
+      const subtle = s.kind === 'island' || s.kind === 'holme';
       pts.push([s.lat, s.lng]);
-      // Medaljong (som övriga forskningssidor): färg ur KIND[kind].color, glyf per kind.
-      // Etiketten hanteras av bindTooltip nedan (oförändrad) → tom label i medaljongen.
-      L.marker([s.lat, s.lng], { icon: createPlaceMedallion({
-        color: c, icon: KIND_GLYPH[s.kind], label: '', size: royal ? 36 : 28, hairline: true,
-      }) })
-        .bindTooltip(s.name, { permanent: royal, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
+      const marker = subtle
+        ? L.circleMarker([s.lat, s.lng], { radius: 4, color: '#ffffff', weight: 1, fillColor: c, fillOpacity: 0.85 })
+        : L.marker([s.lat, s.lng], { icon: createPlaceMedallion({ color: c, icon: KIND_GLYPH[s.kind], label: '', size: royal ? 36 : 28, hairline: true }) });
+      marker
+        .bindTooltip(s.name, { permanent: royal, direction: 'top', offset: [0, subtle ? -4 : -8], className: 'ang-clabel' })
         .bindPopup(`<b>${s.name}</b><br/><span style="font-size:11px">${s.note}</span>${s.todayM != null ? `<br/><span style="font-size:10px;color:#888">höjd idag ${s.todayM} m ö.h.</span>` : ''}`)
         .addTo(groupsRef.current[s.kind]);
     });
