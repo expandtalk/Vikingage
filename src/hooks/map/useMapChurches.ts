@@ -75,10 +75,11 @@ export const useMapChurches = ({ map, enabledLegendItems, isMapReady }: Props) =
 
     if (!enabled) { layer.clearLayers(); return; }
 
-    // Fokus=churches: zooma in på Sverige EN gång så kyrkorna syns direkt (utan att
-    // kapa vyn i vanliga utforska-läget, som saknar focus-parametern).
+    // Fokus=churches / focus=parishes: zooma in på Sverige EN gång så kyrkorna syns direkt
+    // (utan att kapa vyn i vanliga utforska-läget, som saknar focus-parametern). Sockenvyn
+    // (parishes) delar det rika kyrkolagret och behöver samma inzoomning för att ladda.
     if (!zoomedRef.current && typeof window !== 'undefined'
-        && new URLSearchParams(window.location.search).get('focus') === 'churches'
+        && ['churches', 'parishes'].includes(new URLSearchParams(window.location.search).get('focus') ?? '')
         && map.getZoom() < ZOOM_MIN) {
       zoomedRef.current = true;
       map.setView([58.6, 15.2], ZOOM_MIN);

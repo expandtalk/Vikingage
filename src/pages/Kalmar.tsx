@@ -16,7 +16,7 @@ import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl'
 import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { KalmarsundCrossing } from '@/components/kalmar/KalmarsundCrossing';
-import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
+import { createPlaceMedallion, featureIcon, markerColor } from '@/utils/map/placeMarker';
 
 // /sv/kalmar — forskningshubb för det tidiga/medeltida Kalmar i Möre. Binder ihop:
 //  - Ortnamnsforskningen kring Hossmo (husaby-nukleusen, SOL 2003, kalmar_place_names)
@@ -49,6 +49,9 @@ const parsePoint = (v: Coin['coordinates']): { x: number; y: number } | null => 
   return m ? { x: +m[1], y: +m[2] } : null;
 };
 interface Ev { event_name: string; year_start: number | null; description: string | null; location_status: string | null; }
+// D. Larssons källkritiska fältkorpus (medeltidshamnen, Dragvik, Högås, grund, vägar,
+// avrättningsplatser). Samma tabell som /sv/kalmar/medeltid ritar — här som togglebart lager.
+interface FieldFeat { name: string; feature_type: string; time_layer: string | null; lat: number | null; lng: number | null; route_group: string | null; seq: number | null; note: string | null; }
 
 const CAT_LABEL: Record<string, string> = {
   husaby: 'Husaby', by_administrativt: 'Administrativ by', by: 'By', torp: 'Torp',
@@ -101,6 +104,8 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   const [wallReady, setWallReady] = useState(false);
   const heritageG = useRef<L.LayerGroup>(L.layerGroup());
   const [heritageReady, setHeritageReady] = useState(false);
+  const fieldG = useRef<L.LayerGroup>(L.layerGroup());
+  const [fieldReady, setFieldReady] = useState(false);
   const fittedRef = useRef(false);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   // Kalmar använder den finupplösta DEM-modellen (Copernicus GLO-30 + paleo_rsl),
@@ -114,6 +119,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     { key: 'mynt', label: 'Myntfynd', color: '#f4c430', defaultOn: true },
     { key: 'stadsmur', label: 'Stadsmur (~1400)', color: '#22c55e', defaultOn: true },
     { key: 'kulturarv', label: 'Sevärt & kulturarv', color: '#f472b6', defaultOn: true },
+    { key: 'faltdata', label: 'Fältdata (medeltid)', color: '#d4a63c', defaultOn: true },
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap', defaultOn: true },
   ];
   const { enabled, toggle } = useMapLegendState(LEGEND);
@@ -207,13 +213,14 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
       [enabled.mynt, coinsG.current],
       [enabled.stadsmur, wallRef.current],
       [enabled.kulturarv, heritageG.current],
+      [enabled.faltdata, fieldG.current],
     ];
     for (const [on, g] of pairs) {
       if (!g) continue;
       if (on) { if (!map.hasLayer(g)) map.addLayer(g); }
       else if (map.hasLayer(g)) map.removeLayer(g);
     }
-  }, [enabled.ortnamn, enabled.hamn, enabled.mynt, enabled.stadsmur, enabled.kulturarv, places, harbor, coins, wallReady, heritageReady]);
+  }, [enabled.ortnamn, enabled.hamn, enabled.mynt, enabled.stadsmur, enabled.kulturarv, enabled.faltdata, places, harbor, coins, wallReady, heritageReady, fieldReady]);
 
   // Medeltida stadsmuren (fort_at-RPC, evidensklass-färgad) — samma data som /sv/kalmar-stadsmur,
   // ritad vid ~1400 (peak medeltid). Eget togglebart lager (wallRef deklareras i ref-blocket ovan).
@@ -275,6 +282,48 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
             .addTo(heritageG.current);
         });
       setHeritageReady((v) => !v); // trigga toggle-effekten så lagret läggs på enligt legenden
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fältdata (medeltid) — D. Larssons källkritiska fältkorpus (kalmar_field_features): samma
+  // objekt som /sv/kalmar/medeltid ritar (medeltidshamnen, Dragvik, Högås, grund i sundet,
+  // vägar/drag, avrättningsplatser). Punkter = medaljong (formen bär feature_type), linjära
+  // features (route_group satt) = polyline ordnad på seq så vägarna/dragen syns. Eget lager.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase.from('kalmar_field_features') as unknown as { select: (c: string) => any })
+        .select('name,feature_type,time_layer,lat,lng,route_group,seq,note');
+      if (cancelled || !data || !mapRef.current) return;
+      fieldG.current.clearLayers();
+      const feats = (data as FieldFeat[]).filter((f) => f.lat != null && f.lng != null);
+
+      // Linjära features (route_group) → polyline i guldton, ordnad på seq (drag, esker-väg, gatunät).
+      const byGroup = new Map<string, FieldFeat[]>();
+      feats.forEach((f) => {
+        if (!f.route_group) return;
+        const arr = byGroup.get(f.route_group) ?? [];
+        arr.push(f); byGroup.set(f.route_group, arr);
+      });
+      byGroup.forEach((arr) => {
+        const sorted = [...arr].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
+        if (sorted.length < 2) return;
+        L.polyline(sorted.map((f) => [f.lat!, f.lng!] as [number, number]), { color: '#d4a63c', weight: 3, opacity: 0.8, dashArray: '5 5' })
+          .addTo(fieldG.current);
+      });
+
+      // Punkter (alla) → medaljong. Formen (featureIcon) bär feature_type; färgen via markerColor.
+      feats.forEach((f) => {
+        const glyph = featureIcon(f.feature_type);
+        const d = (f.note ?? '').slice(0, 240);
+        L.marker([f.lat!, f.lng!], { icon: createPlaceMedallion({ color: markerColor(glyph), icon: glyph, label: f.name, prominent: false, hairline: true }) })
+          .bindPopup(`<b>${f.name}</b> <span style="font-size:10px;color:#888">${f.feature_type}${f.time_layer ? ` · ${f.time_layer}` : ''}</span>${d ? `<br/><span style="font-size:11px;color:#666">${d}${(f.note ?? '').length > 240 ? '…' : ''}</span>` : ''}`)
+          .addTo(fieldG.current);
+      });
+      setFieldReady((v) => !v); // trigga toggle-effekten så lagret läggs på enligt legenden
     })();
     return () => { cancelled = true; };
   }, []);

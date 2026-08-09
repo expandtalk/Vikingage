@@ -598,8 +598,10 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
       Object.assign(o, { hundreds: true, runic_inscriptions: true });
       break;
     case "parishes":
-      // Bara socknen — kulturlagren (sockenkyrkor, kloster, vårdkasar…) tänds via legenden.
-      Object.assign(o, { parishes: true, runic_inscriptions: false });
+      // Socknen + det rika kyrkolagret (ecclesiastical_sites: byggår/stift/socken + Commons-bild
+      // + byggnadshistoria) tänt som default — samma lager /sv/kyrkor använder, så sockenvyn faktiskt
+      // visar klickbara kyrkor med bild & historia i st.f. en tom karta. Övriga kulturlager tänds via legenden.
+      Object.assign(o, { parishes: true, ecclesiastical_churches: true, runic_inscriptions: false });
       break;
     case "churches":
       // Rikt kyrkolager (stift & bild) i fokus. Viewport-laddat, zooma in för att se kyrkor.
