@@ -362,7 +362,14 @@ const PlaceNames = () => {
                   onClick={() => tryCluster('n1')}>
                   <Radar className="h-3 w-3 mr-1" />{sv ? 'Ismantorp — negativ kontroll' : 'Ismantorp — negative control'}
                 </Button>
+                <Button size="sm" variant="outline" className="h-7 text-xs border-cyan-500/60 text-cyan-300 hover:bg-cyan-500/10"
+                  onClick={() => tryCluster('a_nora')}>
+                  <Radar className="h-3 w-3 mr-1" />{sv ? 'Ångermanland: Nora (Agnetas centralplats)' : 'Ångermanland: Nora (Agneta’s central place)'}
+                </Button>
               </div>
+              <p className="text-[11px] text-muted-foreground/80 mt-2">
+                {sv ? 'Verktyget stödjer nu Öland (Daniels pilotfall) och Ångermanland (Agneta Nyholms centralplatser som epicentra, kult-/maktled kombinerat, -sjö som nollkontroll). Växla landskap i kortet.' : 'The tool now supports Öland and Ångermanland (Agneta Nyholm’s central places as epicentres). Switch province in the card.'}
+              </p>
             </div>
             <div id="cluster-card" className="scroll-mt-24"><OnomasticClusterCard /></div>
           </TabsContent>
