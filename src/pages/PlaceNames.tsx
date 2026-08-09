@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock, ChevronDown, FlaskConical, Languages, Radar } from 'lucide-react';
+import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock, ChevronDown, FlaskConical, Languages, Radar, BookOpen } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
@@ -26,6 +26,7 @@ import { RunicTransitionCard } from '@/components/placenames/RunicTransitionCard
 import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import OnomasticClusterCard from '@/components/placenames/OnomasticClusterCard';
 import AngermanlandClusterResults from '@/components/placenames/AngermanlandClusterResults';
+import PlaceNameElementExplorer from '@/components/placenames/PlaceNameElementExplorer';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import { setElementTest } from '@/hooks/useElementTest';
 import { setClusterCase } from '@/hooks/useClusterCase';
@@ -215,11 +216,13 @@ const PlaceNames = () => {
             {sv ? 'Rekommenderad arbetsgång — billig kvantitativ screening först, dyr etymologi sist:' : 'Recommended workflow — cheap quantitative screening first, costly etymology last:'}
           </p>
           <div className="flex flex-col sm:flex-row sm:items-stretch gap-2">
-            {[
-              { n: 1, key: 'hypotes', title: sv ? 'Hypotestestaren' : 'Hypothesis tester', d: sv ? 'Screena: korrelerar ledet med något, mot baslinjen?' : 'Screen: does the element correlate, vs the baseline?' },
-              { n: 2, key: 'kluster', title: sv ? 'Ortnamnskluster' : 'Name clustering', d: sv ? 'Lokalisera: klumpar det kring ett epicentrum? Skarp kant.' : 'Localise: does it clump around an epicentre? Sharp edge.' },
-              { n: 3, key: 'filolog', title: sv ? 'AI Filolog-agent' : 'AI philologist', d: sv ? 'Djupdyk: etymologi bara på det som klarade testen.' : 'Deep dive: etymology only on what survived.' },
-            ].map((s, i) => (
+            {([
+              { n: null, Icon: BookOpen, key: 'metod', title: sv ? 'Metoden' : 'The method', d: sv ? 'Varför testet är falsifierbart, inte cirkulärt — evidensskikt, kontroller, källor.' : 'Why the test is falsifiable, not circular — evidence layers, controls, sources.' },
+              { n: null, Icon: Tag, key: 'led', title: sv ? 'Ortnamnsled' : 'Name elements', d: sv ? 'Välj ett led att testa — etymologi, evidensskikt, antal orter.' : 'Pick an element to test — etymology, evidence layer, counts.' },
+              { n: 1, Icon: null, key: 'hypotes', title: sv ? 'Hypotestestaren' : 'Hypothesis tester', d: sv ? 'Screena: korrelerar ledet med något, mot baslinjen?' : 'Screen: does the element correlate, vs the baseline?' },
+              { n: 2, Icon: null, key: 'kluster', title: sv ? 'Ortnamnskluster' : 'Name clustering', d: sv ? 'Lokalisera: klumpar det kring ett epicentrum? Skarp kant.' : 'Localise: does it clump around an epicentre? Sharp edge.' },
+              { n: 3, Icon: null, key: 'filolog', title: sv ? 'AI Filolog-agent' : 'AI philologist', d: sv ? 'Djupdyk: etymologi bara på det som klarade testen.' : 'Deep dive: etymology only on what survived.' },
+            ] as { n: number | null; Icon: React.FC<{ className?: string }> | null; key: string; title: string; d: string }[]).map((s, i) => (
               <React.Fragment key={s.key}>
                 {i > 0 && <div className="hidden sm:flex items-center text-slate-500">→</div>}
                 <button
@@ -227,7 +230,9 @@ const PlaceNames = () => {
                   className={`flex-1 text-left rounded-md border px-3 py-2 transition-colors ${tab === s.key ? 'border-gold/70 bg-gold/10' : 'border-slate-600/60 hover:border-slate-400/60'}`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${tab === s.key ? 'bg-gold text-slate-900' : 'bg-slate-700 text-slate-200'}`}>{s.n}</span>
+                    <span className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${tab === s.key ? 'bg-gold text-slate-900' : 'bg-slate-700 text-slate-200'}`}>
+                      {s.n != null ? s.n : (s.Icon ? <s.Icon className="h-3 w-3" /> : null)}
+                    </span>
                     <span className="text-sm font-medium text-foreground">{s.title}</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">{s.d}</p>
@@ -242,7 +247,13 @@ const PlaceNames = () => {
 
         {/* ===== TRE VERKTYG SOM FLIKAR ===== */}
         <Tabs value={tab} onValueChange={setTab} className="mb-10">
-          <TabsList className="grid w-full grid-cols-3 max-w-3xl mb-4 h-auto">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-5xl mb-4 h-auto">
+            <TabsTrigger value="metod" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
+              <BookOpen className="h-4 w-4" /> {sv ? 'Metoden' : 'The method'}
+            </TabsTrigger>
+            <TabsTrigger value="led" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
+              <Tag className="h-4 w-4" /> {sv ? 'Ortnamnsled' : 'Name elements'}
+            </TabsTrigger>
             <TabsTrigger value="hypotes" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
               <FlaskConical className="h-4 w-4" /> {sv ? 'Hypotestestaren' : 'Hypothesis tester'}
             </TabsTrigger>
@@ -253,6 +264,48 @@ const PlaceNames = () => {
               <Languages className="h-4 w-4" /> {sv ? 'AI Filolog-agent' : 'AI philologist'}
             </TabsTrigger>
           </TabsList>
+
+          {/* ---- FLIK 0: METODEN (ortnamnsmetoden, ej allmän vetenskapsmetodik) ---- */}
+          <TabsContent value="metod">
+            <div className="max-w-3xl space-y-5">
+              <div className="viking-card rounded-lg border border-accent/30 p-4">
+                <p className="mb-1 text-sm font-medium text-foreground">{sv ? 'Metoden — screena → lokalisera → djupdyk' : 'The method — screen → locate → deep-dive'}</p>
+                <p className="text-sm text-muted-foreground">
+                  {sv
+                    ? 'Billig kvantitativ screening först, dyr etymologi sist. Ett namnled prövas i tre steg: (1) Hypotestestaren mäter om ledet korrelerar med något mot en baslinje; (2) Ortnamnsklustret letar en skarp, falsifierbar kant kring ett epicentrum; (3) AI-filologen gör etymologin — men bara på det som klarade steg 1–2. Poängen: ett led "bevisas" inte av att det låter sakralt, utan av att det överlever ett test som kunde ha fällt det.'
+                    : 'Cheap quantitative screening first, costly etymology last. An element is tested in three steps: (1) the Hypothesis tester measures correlation against a baseline; (2) the clustering tool looks for a sharp, falsifiable edge around an epicentre; (3) the AI philologist does the etymology — but only on what survived steps 1–2. The point: an element is not proven by sounding sacral, but by surviving a test that could have falsified it.'}
+                </p>
+              </div>
+              <div>
+                <h3 className="mb-2 text-lg font-semibold text-foreground">{sv ? 'Evidensskikt' : 'Evidence layers'}</h3>
+                {(['core', 'extended', 'control'] as EvidenceLayer[]).map((layer) => {
+                  const m = EVIDENCE_LAYER_META[layer];
+                  const n = PLACE_NAME_ELEMENTS.filter((e) => e.evidenceLayer === layer).length;
+                  return (
+                    <div key={layer} className="mb-2">
+                      <span className="font-medium text-foreground">{sv ? m.label : m.labelEn}</span>{' '}
+                      <span className="text-xs text-muted-foreground">({n} {sv ? 'led' : 'elements'})</span>
+                      <p className="max-w-2xl text-xs text-muted-foreground">{sv ? m.note : m.noteEn}</p>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>{sv ? 'Varje led har en boundary-regel (prefix/suffix) och kända falska träffar bestämda i förväg — urvalet går att upprepa, inte ad hoc.' : 'Each element has a boundary rule and known false hits decided in advance — the selection is reproducible, not ad hoc.'}</p>
+                <p>{sv ? 'Kontrollerna (baslinjen) är vanliga bebyggelsesuffix (-by, -inge, -hem, -sjö) som INTE ska visa signal — de fångar falska positiva.' : 'The controls (baseline) are ordinary settlement suffixes (-by, -inge, -hem, -sjö) that should show NO signal — they catch false positives.'}</p>
+                <p className="text-xs opacity-80">{sv ? 'Källor: Svenskt ortnamnslexikon (SOL 2003); projektets metodrevision; koordinater ur Wikidata (CC0).' : 'Sources: Swedish place-name lexicon (SOL 2003); the project method revision; coordinates from Wikidata (CC0).'}</p>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ---- FLIK 0b: ORTNAMNSLED-UTFORSKARE (välj led → matar steg 1) ---- */}
+          <TabsContent value="led">
+            <PlaceNameElementExplorer
+              elementCounts={elementCounts}
+              sv={sv}
+              onTest={(k) => { setElementTest([k]); setTab('hypotes'); scrollTo('hypothesis-test-card'); }}
+            />
+          </TabsContent>
 
           {/* ---- FLIK 1: HYPOTESTESTAREN ---- */}
           <TabsContent value="hypotes">
@@ -424,31 +477,7 @@ const PlaceNames = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Metod (kondenserad) */}
-        <Section title={sv ? 'Så här gör vi (metod)' : 'How we work (method)'}>
-          <div className="space-y-3 text-sm text-muted-foreground">
-            <p>
-              {sv
-                ? 'Varje namnled har en dokumenterad inklusionsregel (matchningsmönster och kända falska träffar) som bestäms i förväg — inte ad hoc. Urvalet ska gå att upprepa och stavningsvarianterna redovisas.'
-                : 'Each element has a documented inclusion rule decided in advance, not ad hoc. The selection is reproducible and spelling variants are listed.'}
-            </p>
-            <p>
-              {sv
-                ? 'Kategorierna (sakralt, makt, natur) är bästa gissning, inte påståenden. Flera led är etymologiskt omtvistade och märks med ⚠︎.'
-                : 'The categories are best guesses, not claims. Several elements are contested and marked ⚠︎.'}
-            </p>
-            <p>
-              {sv
-                ? 'Data hämtas från öppna källor (främst Wikidata, CC0) med koordinater, och kompletteras med äldsta belägg där det finns.'
-                : 'Data comes from open sources (mainly Wikidata, CC0) with coordinates, plus earliest attestation where available.'}
-            </p>
-            <div className="flex flex-wrap gap-4 pt-2">
-              <span><strong className="text-foreground">{places.length}</strong> {sv ? 'ortnamn' : 'place names'}</span>
-              <span><strong className="text-foreground">{PLACE_NAME_ELEMENTS.length}</strong> {sv ? 'namnled i katalogen' : 'catalogued elements'}</span>
-              <span><strong className="text-foreground">{PLACE_NAME_ELEMENTS.filter((e) => e.contested).length}</strong> {sv ? 'omtvistade' : 'contested'}</span>
-            </div>
-          </div>
-        </Section>
+        {/* Metod flyttad till fliken "Metoden" ovan (steg 0). */}
 
         {/* De äldsta daterade bebyggelsenamnen (kondenserad) */}
         {oldestNames.length > 0 && (
@@ -505,89 +534,7 @@ const PlaceNames = () => {
           </Section>
         )}
 
-        {/* Namnleds-katalog (kondenserad) */}
-        <Section title={sv ? 'Namnleden vi söker' : 'The elements we search for'} count={PLACE_NAME_ELEMENTS.length}>
-        <p className="text-sm text-muted-foreground max-w-3xl mb-6">
-          {sv
-            ? 'Leden är indelade i evidensskikt: den erkända kärnan (teofora/kultiska led), den utvidgade hypotesen (topografi-först/omtvistade), och kontroller (bebyggelsesuffix — baslinjen man mäter signal mot). Varje led har en sakral-konfidens och en boundary-regel som gör matchningen förutsägbar.'
-            : 'Elements are grouped into evidence layers: the recognised core, the extended hypothesis, and controls. Each element has a sacral confidence and a boundary rule.'}
-        </p>
-
-        {(['core', 'extended', 'control'] as EvidenceLayer[]).map((layer) => {
-          const layerMeta = EVIDENCE_LAYER_META[layer];
-          const els = PLACE_NAME_ELEMENTS.filter((e) => e.evidenceLayer === layer);
-          return (
-            <div key={layer} className="mb-8">
-              <h3 className="text-lg font-semibold text-foreground">{sv ? layerMeta.label : layerMeta.labelEn}</h3>
-              <p className="text-xs text-muted-foreground mb-3 max-w-2xl">{sv ? layerMeta.note : layerMeta.noteEn}</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {els.map((el) => {
-                  const meta = ELEMENT_CATEGORY_META[el.category];
-                  const conf = SACRAL_CONFIDENCE_META[el.sacralConfidence];
-                  const inData = elementOptions.find(([k]) => k === el.key);
-                  return (
-                    <Card
-                      key={el.key}
-                      className={`viking-card ${inData ? 'cursor-pointer hover:bg-card/80 transition-colors' : ''} ${elementKey === el.key ? 'ring-2 ring-gold' : ''}`}
-                      onClick={inData ? () => { setElementKey(el.key); scrollToList(); } : undefined}
-                      title={inData ? (sv ? `Visa de ${inData[1]} ortnamnen` : `Show the ${inData[1]} place names`) : undefined}
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-foreground text-lg flex items-center gap-2">
-                          <span style={{ color: meta.color }}>{meta.symbol}</span>
-                          {el.label}
-                          {el.contested && (
-                            <span title={sv ? 'Etymologiskt omtvistad' : 'Etymologically contested'}>
-                              <AlertTriangle className="h-4 w-4 text-amber-400" />
-                            </span>
-                          )}
-                        </CardTitle>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge variant="secondary" className="text-xs" style={{ backgroundColor: meta.color + '22', color: meta.color }}>
-                            {meta.label}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs" style={{ borderColor: conf.color, color: conf.color }}>
-                            {sv ? 'Sakral' : 'Sacral'}: {sv ? conf.label : conf.labelEn}
-                          </Badge>
-                          {el.isControl && (
-                            <Badge variant="outline" className="text-xs border-slate-400 text-slate-300">
-                              {sv ? 'Kontroll' : 'Control'}
-                            </Badge>
-                          )}
-                          {inData && (
-                            <Badge variant="secondary" className="text-xs">{inData[1]}</Badge>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-2">
-                        <p className="text-sm text-muted-foreground">{el.etymology}</p>
-                        <p className="text-xs text-muted-foreground">
-                          <strong>{sv ? 'Matchar' : 'Matches'}</strong> ({el.boundaryRule}): {el.patterns.join(', ')}
-                          {el.excludes.length > 0 && (
-                            <> · <strong>{sv ? 'utesluter' : 'excludes'}:</strong> {el.excludes.join(', ')}</>
-                          )}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Data-kvalitets-varning: nuvarande DB-taggning är preliminär */}
-        <Card className="viking-card mb-10 border-amber-600/40">
-          <CardContent className="py-4 flex gap-3 text-sm text-muted-foreground">
-            <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-            <p>
-              {sv
-                ? 'Obs: taggningen på ortnamnen nedan är preliminär och görs om enligt den reviderade metoden. Den tidigare importen var för generös — t.ex. taggades alla -lund (även sena herrgårdsnamn som Erikslund, Marielund) som "sakralt". Efter omtaggning räknas -lund som sakralt bara med teofor bestämning (Fröslunda), och -inge/-hem/-by behandlas som kontrollgrupp.'
-                : 'Note: the tagging on the place names below is preliminary and being redone with the revised method. The earlier import was too generous — e.g. all -lund names (including late estate names like Erikslund, Marielund) were tagged "sacral". After re-tagging, -lund counts as sacral only with a theophoric qualifier (Fröslunda), and -inge/-hem/-by are treated as a control group.'}
-            </p>
-          </CardContent>
-        </Card>
-        </Section>
+        {/* Namnleds-katalogen flyttad till fliken "Ortnamnsled" ovan (steg 0b). */}
 
         {/* Namnleden i runinskrifterna (kondenserad) */}
         {runic && (
