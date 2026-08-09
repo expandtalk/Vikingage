@@ -256,7 +256,11 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
       const { data } = await (supabase.from('heritage_sites') as unknown as { select: (c: string) => any })
         .select('name,raa_type,lat,lng,description')
         .gte('lat', 56.62).lte('lat', 56.70).gte('lng', 16.33).lte('lng', 16.42)
-        .in('raa_type', ['Begravningsplats', 'Synagoga', 'Fästning/skans', 'Rådhus', 'Torg', 'kyrka', 'kyrkogård', 'Borg/slottslämning', 'Grund/sjömärke']);
+        // OBS: 'kyrka' UTESLUTS avsiktligt — heritage_sites 'kyrka' i Kalmar-bbox:en är moderna byggnader
+        // (Vasakyrkan, Västerportkyrkan, Heliga Korsets, Sankta Birgitta, domkyrkan 1600-tal) och hör inte
+        // hemma på en medeltida/historisk karta. Medeltida S:t Nicolai/Bykyrkan behålls via 'kyrkogård'.
+        // Vill man visa domkyrkan som (post)medeltida landmärke får den kureras in separat.
+        .in('raa_type', ['Begravningsplats', 'Synagoga', 'Fästning/skans', 'Rådhus', 'Torg', 'kyrkogård', 'Borg/slottslämning', 'Grund/sjömärke']);
       if (cancelled || !data || !mapRef.current) return;
       heritageG.current.clearLayers();
       (data as { name: string; raa_type: string; lat: number | null; lng: number | null; description: string | null }[])
