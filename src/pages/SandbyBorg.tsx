@@ -396,6 +396,33 @@ const SandbyBorg = () => {
         </CardContent>
       </Card>
 
+      {/* Tre AI-agenters samlade fynd (forensiker + osteolog + marinarkeolog), källkritiskt */}
+      <Card className="viking-card mb-4 border-gold/30">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><ScanSearch className="h-5 w-5" /> Vad de tre agenterna fann — belagt vs hypotes</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p className="text-xs opacity-80">
+            Forntidsforensiker, osteolog och marinarkeolog har gått igenom fallet källkritiskt mot vår data + publikationerna
+            (Alfsdotter &amp; Kjellström 2019; Alfsdotter, Papmehl-Dufay &amp; Victor 2018). Osteologin är strukturerad i{' '}
+            <code>osteology_observations</code>. Människa-i-loopen — inga tvärsäkra domar.
+          </p>
+          <ul className="space-y-2">
+            <li><strong className="text-foreground">Tid på dygnet:</strong> <span className="text-slate-300">ej avgörbart</span> — härd/måltidsrester bär inte klockslag. <em>(Säsong går: sen vår–tidig höst, ur lamm 3–6 mån + avbrutet mål.)</em></li>
+            <li><strong className="text-foreground">Antal angripare:</strong> <span className="text-slate-300">ej inferbart</span> — bara &quot;organiserad väpnad grupp&quot;. Varje siffra = spekulation.</li>
+            <li><strong className="text-foreground">Land eller sjö:</strong> signaturen (kroppar kvar, guld gömt men aldrig hämtat, platsen tabu) pekar mot en <strong>lokal/regional gärningsman</strong>, ej en fjärran sjörövarflotta. Sista sträckan land/sjö = <em>olöst</em>.</li>
+            <li><strong className="text-foreground">Segelbåtar ~500?</strong> Nej — nordiskt segel belagt först ~700-tal; farkosterna var <strong>rodda</strong>. Inget marinarkeologiskt stöd för sjövägen hit (ingen led före 700, inget folkvandringsvrak, ingen östkusthamn nära borgen).</li>
+            <li><strong className="text-foreground">Mordvapen:</strong> eggvapen (svärd/kniv, ev. yxa) + trubbigt; <strong>halshuggning</strong> av en 10–13-åring; slag <em>bakifrån/ovanifrån</em>, inga försvarsskador → nedhuggna, värnlösa. Inga pilspetsar i ben.</li>
+            <li><strong className="text-foreground">Kult / &quot;Jonestown&quot; / rituellt?</strong> Kultledarledd frivillig massdöd <strong>faller</strong> — förgiftning lämnar inga benspår, men här finns hugg-/trubbtrauma. Däremot en <em>symbolisk</em> dimension: <strong>får-/gettänder instoppade i munnen</strong> på vissa döda (postmortem, tolkas som hån), och guldet lämnat orört (ingen plundring → utplåning/bestraffning, ej rovdrift).</li>
+            <li><strong className="text-foreground">Vilka:</strong> hela bosättningen (spädbarn→äldre). Osteologiskt kön = bara män, men aDNA visar minst en kvinna (snb018) → &quot;bara män&quot; är metodartefakt.</li>
+          </ul>
+          <p className="text-xs opacity-80">
+            Dateringen förblir omtvistad (~480 typologi/numismatik vs ~500–540 ¹⁴C) och redovisas som öppen fråga.
+            Full metod: <Link to="/ai-agenter" className="text-gold hover:underline">AI-agenterna</Link>.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Relaterat på plattformen */}
       <Card className="viking-card mb-4">
         <CardHeader className="pb-2">
