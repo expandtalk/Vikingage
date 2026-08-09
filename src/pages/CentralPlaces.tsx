@@ -151,6 +151,27 @@ const CentralPlaces = () => {
 
         <TradeFlowPanel sv={sv} />
 
+        {/* Nordlig kontrast: Agneta Nyholms ångermanländska kandidater har en ANNAN signatur. */}
+        <Card className="viking-card mb-6 border-violet-700/40">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2" style={{ color: '#7c3aed' }}>
+              <Landmark className="h-5 w-5" /> {sv ? 'Nordlig centralplats — en annan signatur' : 'A northern central place — a different signature'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>
+              {sv
+                ? 'Agneta Nyholms ångermanländska kandidater (Härnösand–Säbrå, Nora, Torsåker) är identifierade via ett ONOMASTISKT kult-/maktkluster — hov, sal, ross, hammar, Tor- och Fröja-namn — inte via emporie-måtten. I tabellen nedan står därför solidi, silverskatter, svartjord och hamn som tomma (—). Det är inte saknad data utan en annan sorts centralplats: en nordlig, namnburen kult-/maktnod i ett landskap som varken har folkvandringstida guld eller svartjords-emporier.'
+                : 'Agneta Nyholm’s Ångermanland candidates (Härnösand–Säbrå, Nora, Torsåker) are identified via an ONOMASTIC cult/power cluster — hov, sal, ross, hammar, Thor and Freyja names — not via emporium metrics. Empty cells (—) below are not missing data but a different kind of central place: a northern, name-borne cult/power node.'}
+            </p>
+            <p className="text-xs opacity-80">
+              {sv
+                ? 'Källa: Agneta Nyholm (ortnamnskluster, Ångermanland), säkerhet: hypotes. Öland-studiens kyrktäthet (~1 kyrka/28 km²) saknar motsvarighet här (~1/220 km²) — därför bär namnklustret, inte kyrknätet, signalen i norr.'
+                : 'Source: Agneta Nyholm (place-name clustering, Ångermanland), confidence: hypothesis. The Öland study’s church density has no counterpart here — so the name cluster, not the church network, carries the signal in the north.'}
+            </p>
+          </CardContent>
+        </Card>
+
         {isLoading ? (
           <p className="text-muted-foreground">{sv ? 'Laddar…' : 'Loading…'}</p>
         ) : (

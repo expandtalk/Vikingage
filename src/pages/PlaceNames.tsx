@@ -202,6 +202,37 @@ const PlaceNames = () => {
           </p>
         </div>
 
+        {/* ===== ARBETSGÅNG (rekommenderad ordning) ===== */}
+        <div className="mb-4 rounded-lg border border-slate-700/50 bg-slate-800/30 p-3">
+          <p className="text-xs font-medium text-muted-foreground mb-2">
+            {sv ? 'Rekommenderad arbetsgång — billig kvantitativ screening först, dyr etymologi sist:' : 'Recommended workflow — cheap quantitative screening first, costly etymology last:'}
+          </p>
+          <div className="flex flex-col sm:flex-row sm:items-stretch gap-2">
+            {[
+              { n: 1, key: 'hypotes', title: sv ? 'Hypotestestaren' : 'Hypothesis tester', d: sv ? 'Screena: korrelerar ledet med något, mot baslinjen?' : 'Screen: does the element correlate, vs the baseline?' },
+              { n: 2, key: 'kluster', title: sv ? 'Ortnamnskluster' : 'Name clustering', d: sv ? 'Lokalisera: klumpar det kring ett epicentrum? Skarp kant.' : 'Localise: does it clump around an epicentre? Sharp edge.' },
+              { n: 3, key: 'filolog', title: sv ? 'AI Filolog-agent' : 'AI philologist', d: sv ? 'Djupdyk: etymologi bara på det som klarade testen.' : 'Deep dive: etymology only on what survived.' },
+            ].map((s, i) => (
+              <React.Fragment key={s.key}>
+                {i > 0 && <div className="hidden sm:flex items-center text-slate-500">→</div>}
+                <button
+                  onClick={() => { setTab(s.key); }}
+                  className={`flex-1 text-left rounded-md border px-3 py-2 transition-colors ${tab === s.key ? 'border-gold/70 bg-gold/10' : 'border-slate-600/60 hover:border-slate-400/60'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${tab === s.key ? 'bg-gold text-slate-900' : 'bg-slate-700 text-slate-200'}`}>{s.n}</span>
+                    <span className="text-sm font-medium text-foreground">{s.title}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">{s.d}</p>
+                </button>
+              </React.Fragment>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground/80 mt-2">
+            {sv ? 'Har du en plats i stället för en namntyp? Börja i steg 2 (kluster) och gå sedan till steg 1.' : 'Have a place rather than a name type? Start at step 2 (clustering), then go to step 1.'}
+          </p>
+        </div>
+
         {/* ===== TRE VERKTYG SOM FLIKAR ===== */}
         <Tabs value={tab} onValueChange={setTab} className="mb-10">
           <TabsList className="grid w-full grid-cols-3 max-w-3xl mb-4 h-auto">
