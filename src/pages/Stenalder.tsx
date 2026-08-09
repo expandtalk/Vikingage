@@ -102,7 +102,7 @@ const Stenalder = () => {
       />
       <Header />
       <Breadcrumbs />
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
             <Gem className="h-8 w-8 text-gold" /> Stenålderns Sverige

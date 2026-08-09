@@ -141,7 +141,7 @@ const SourceLibrary = () => {
       />
       <Header />
       <Breadcrumbs />
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         <h1 className="text-2xl font-bold text-white mb-1">{sv ? 'Texter & källor' : 'Texts & sources'}</h1>
         <p className="text-sm text-gray-400 mb-6">
           {sv

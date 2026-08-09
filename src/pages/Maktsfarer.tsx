@@ -159,7 +159,7 @@ const Maktsfarer = () => {
       />
       <Header />
       <Breadcrumbs />
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3"><Crown className="h-8 w-8 text-gold" /> Maktsfärer &amp; handelsleder</h1>
           <p className="text-gold/90 text-sm font-medium mb-3">Översiktsbilden — noder, bindväv och evidens</p>

@@ -21,7 +21,7 @@ const Podcast = () => (
     />
     <Header />
     <Breadcrumbs />
-    <main className="container mx-auto px-4 py-8 max-w-4xl">
+    <main className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Rekommenderade poddar FÖRE de egna (Daniel). */}
       <Suspense fallback={<div className="h-32 animate-pulse bg-white/10 rounded-lg" />}>
         <RecommendedPodcasts />

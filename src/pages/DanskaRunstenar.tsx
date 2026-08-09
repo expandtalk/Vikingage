@@ -70,7 +70,7 @@ const DanskaRunstenar: React.FC = () => {
       />
       <Header />
       <Breadcrumbs />
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         <h1 className="text-4xl font-bold text-foreground mb-3 flex items-center gap-3">
           <Landmark className="h-8 w-8 text-gold" />
           {L('Danska runstenar', 'Danish runestones')}
