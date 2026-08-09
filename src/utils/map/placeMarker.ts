@@ -27,10 +27,44 @@ export const MARKER_COLORS: Record<string, string> = {
   // Övrigt
   folk: '#7c6f5a', archaeological: '#8a6f3e', event: '#7a5c5c',
   estate: '#9a7b3c', beacon: '#b5651d', default: '#5b6976',
+  // Lantmäteri-symboler (UX-agent, dova toner mätta i bandet L 0.158–0.255 för ≥3:1 mot både ljus/mörk baskarta)
+  fornlamning: '#8a7a5c', kulturminne: '#9a7b3c', begravningsplats: '#7c8577',
+  bebyggelselamning: '#8a7f6a', gruva: '#7c7686', gruvhal: '#7c7686', bro: '#5f7385',
+  vad: '#4f8194', milstolpe: '#9a7b3c', hus_herrgard: '#9a7b3c', hus_slott: '#a9762f',
+  torn: '#8a6f3e', ruin: '#7d7468', vaderkvarn: '#7c8577', riksrose: '#8a7a5c',
+  sevardhet: '#a07d34', badplats: '#3f8194', fyr: '#b5651d',
 };
 
 export const markerColor = (key: string | undefined | null): string =>
   (key && MARKER_COLORS[key]) || MARKER_COLORS.default;
+
+// En sanningskälla: RAÄ raa_type / DB feature_type / lager-kind → glyfnyckel i MARKER_ICONS.
+// Både medaljong-hookar och legenden slår upp mot denna. Okänt → 'dot'. (UX-agent)
+export const FEATURE_ICON: Record<string, string> = {
+  'fornlämning': 'fornlamning', 'fornlamning': 'fornlamning', 'övrig kulturhistorisk lämning': 'fornlamning',
+  'kulturminne': 'kulturminne', 'byggnadsminne': 'kulturminne', 'minnesmärke': 'kulturminne', 'minnessten': 'kulturminne',
+  'gravfält': 'begravningsplats', 'grav': 'begravningsplats', 'gravar': 'begravningsplats',
+  'begravningsplats': 'begravningsplats', 'gravhög': 'begravningsplats', 'stensättning': 'begravningsplats',
+  'bebyggelselämning': 'bebyggelselamning', 'husgrund': 'bebyggelselamning', 'boplats': 'bebyggelselamning',
+  'herrgård': 'hus_herrgard', 'sätesgård': 'hus_herrgard', 'säteri': 'hus_herrgard',
+  'slott': 'hus_slott', 'borg': 'hus_slott', 'kastal': 'torn', 'torn': 'torn',
+  'ruin': 'ruin', 'ruiner': 'ruin', 'väderkvarn': 'vaderkvarn', 'kvarn': 'vaderkvarn',
+  'gruva': 'gruva', 'gruvområde': 'gruva', 'gruvhål': 'gruvhal', 'skärpning': 'gruvhal',
+  'bro': 'bro', 'vad': 'vad', 'vadställe': 'vad',
+  'milstolpe': 'milstolpe', 'milsten': 'milstolpe', 'väghållningssten': 'milstolpe', 'vägmärke': 'milstolpe',
+  'riksröse': 'riksrose', 'gränsmärke': 'riksrose', 'råmärke': 'riksrose',
+  'sevärdhet': 'sevardhet', 'badplats': 'badplats', 'fyr': 'fyr', 'fyrplats': 'fyr',
+  'källa med tradition': 'droplet', 'källa': 'droplet',
+  'runestone': 'rune', 'runsten': 'rune',
+  'church': 'church', 'kyrka': 'church',
+  'hillfort': 'fort', 'fornborg': 'fort',
+  'fro_name': 'grain', 'find': 'coin', 'fynd': 'coin', 'depå': 'coin',
+  'cult': 'idol', 'kultplats': 'idol', 'offerplats': 'idol',
+};
+
+const normFeat = (s?: string | null) => (s || '').toLowerCase().normalize('NFC').trim();
+/** feature_type/raa_type/kind → glyfnyckel (fallback 'dot'). */
+export const featureIcon = (type?: string | null): string => FEATURE_ICON[normFeat(type)] || 'dot';
 
 // Linje-ikoner (24×24, ritas med stroke i pergamentton). Inga emoji — konsekvent & läsbart.
 export const MARKER_ICONS: Record<string, string> = {
@@ -68,6 +102,25 @@ export const MARKER_ICONS: Record<string, string> = {
   wreck: '<path d="M2 15l16-4.5-2 6.5-12.5 2z"/><path d="M9 15L11.5 3.5l3.5 2-3 9.5"/><path d="M2 19.5c2 0 2 1.6 4 1.6s2-1.6 4-1.6 2 1.6 4 1.6 2-1.6 4-1.6"/>',
   idol: '<circle cx="12" cy="5" r="2.3"/><path d="M12 7.3v7.2"/><path d="M8.5 10h7"/><path d="M9 20.5l3-6 3 6"/><path d="M7.5 20.5h9"/>',
   beacon: '<path d="M12 3c1.7 3.2 4.6 4.9 4.6 8.9a4.6 4.6 0 0 1-9.2 0c0-1.7.7-3 1.7-4 .2 1 .8 1.8 1.6 2.2.9-1.6.6-4 1.3-7.1Z"/>',
+  // --- Lantmäteri-symboler, omritade i medaljong-husstil (UX-agent) ---
+  fornlamning: '<path d="M6 21V11"/><path d="M18 21V11"/><path d="M4 8h16v3H4z"/>',
+  kulturminne: '<path d="M7 21V7a5 5 0 0 1 10 0v14"/><path d="M9.5 11h5"/><path d="M9.5 15h5"/><path d="M5 21h14"/>',
+  begravningsplats: '<path d="M6 21V11a6 6 0 0 1 12 0v10"/><path d="M12 6v5M9.5 8h5"/><path d="M4 21h16"/>',
+  bebyggelselamning: '<path d="M4 21V10h3"/><path d="M20 21V10h-3"/><path d="M10 21v-4h4v4"/><path d="M3 21h18"/>',
+  gruva: '<path d="M6 18 16 8"/><path d="M12.5 5.5a6 6 0 0 1 6 3"/><path d="M18 18 8 8"/><path d="M5.5 6h3.5v3.5h-3.5z"/>',
+  gruvhal: '<path d="M3 8h18"/><path d="M6 8 10 19h4L18 8"/>',
+  bro: '<path d="M3 9h18"/><path d="M6 9v4M18 9v4"/><path d="M6 13c3-4 9-4 12 0"/>',
+  vad: '<path d="M2 16c2.5 0 2.5 1.8 5 1.8s2.5-1.8 5-1.8 2.5 1.8 5 1.8 2.5-1.8 5-1.8"/><path d="M7 5v6M12 4v7M17 5v6"/>',
+  milstolpe: '<path d="M9 21V8h6v13"/><path d="M9 8 12 5l3 3"/><path d="M11 12h2M11 15h2"/><path d="M7 21h10"/>',
+  hus_herrgard: '<path d="M4 21V10h16v11"/><path d="M9 10 12 6l3 4"/><path d="M10 21v-5h4v5"/><path d="M2 21h20"/>',
+  hus_slott: '<path d="M3 21V8h5v13"/><path d="M16 21V8h5v13"/><path d="M8 21V12h8v9"/><path d="M11 21v-4h2v4"/>',
+  torn: '<path d="M9 21V7h6v14"/><path d="M9 7V4h1.5v1.5H12V4h1.5v1.5H15V7"/><path d="M11 12h2"/><path d="M7 21h10"/>',
+  ruin: '<path d="M3 21h18"/><path d="M6 21V11a6 6 0 0 1 9-1.5"/><path d="M18 21v-7"/>',
+  vaderkvarn: '<path d="M9 21V11h6v10"/><path d="M9 11 12 7.5l3 3.5"/><path d="M12 7.5 6.5 4M12 7.5 17.5 4M12 7.5 6.5 11M12 7.5 17.5 11"/><path d="M7 21h10"/>',
+  riksrose: '<path d="M12 4 8.5 11h7z"/><path d="M4 14 2 19h4z"/><path d="M20 14 22 19h-4z"/><path d="M9 16 7 21h4z"/><path d="M15 16 17 21h-4z"/>',
+  sevardhet: '<path d="M12 3 14.1 9.3 20.8 9.3 15.4 13.4 17.4 19.8 12 15.9 6.6 19.8 8.6 13.4 3.2 9.3 9.9 9.3z"/>',
+  badplats: '<circle cx="8" cy="8" r="1.8"/><path d="M5 13c2-1.5 3.5 0.5 6-0.5s3.5-2.5 6.5-1.5"/><path d="M2 18.5c2.4 0 2.4 1.6 4.8 1.6s2.4-1.6 4.8-1.6 2.4 1.6 4.8 1.6 2.4-1.6 4.8-1.6"/>',
+  fyr: '<path d="M10 21 10.5 9h3L14 21z"/><path d="M8 21h8"/><path d="M10 9V7h4v2"/><path d="M11 7 12 4l1 3"/><path d="M6 6 3.5 5M18 6l2.5-1M6 9 4 9M18 9h2"/>',
   dot: '<circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/>',
 };
 
@@ -135,6 +188,7 @@ export interface MedallionOptions {
   sublabel?: string;      // valfri underrad (t.ex. gud/typ)
   size?: number;          // diskdiameter, default 34 (royal: 40)
   royal?: boolean;        // kungaplats → guldring + glöd + större disk (rang; typen bärs av ikonen)
+  hairline?: boolean;     // tunn ljus ytterkant på disken → läsbar även mot mörk baskarta (WCAG SC 1.4.11)
   className?: string;     // extra CSS-klass (för lager-specifik gate om behövs)
 }
 
@@ -149,11 +203,13 @@ export const createPlaceMedallion = (o: MedallionOptions): L.DivIcon => {
   const ring = o.royal ? ROYAL_GOLD : o.color;
   const glyph = MARKER_ICONS[o.icon] || MARKER_ICONS.dot;
   const g = Math.round(size * 0.55);
-  const svg = `<svg viewBox="0 0 24 24" width="${g}" height="${g}" fill="none" stroke="#eee7d7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))">${glyph}</svg>`;
+  const svg = `<svg viewBox="0 0 24 24" width="${g}" height="${g}" fill="none" stroke="#eee7d7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))">${glyph}</svg>`;
   // Kungaplats: kraftigare guldglöd + tunn yttre guldring; annars diskret färgglöd.
-  const shadow = o.royal
+  const shadowBase = o.royal
     ? `0 0 12px 0 ${ROYAL_GOLD},0 0 0 3px rgba(212,166,60,.22),0 2px 5px rgba(0,0,0,.45)`
     : `0 0 5px 0 ${ring},0 2px 5px rgba(0,0,0,.4)`;
+  // Hairline: tunn ljus ytterkant så disken läses även mot mörk baskarta (ringfärgen ensam räcker ej).
+  const shadow = o.hairline ? `${shadowBase},0 0 0 1px rgba(255,255,255,.6)` : shadowBase;
   const disc = `<div style="width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#33414d,#212c35);border:2px solid ${ring};box-shadow:${shadow};">${svg}</div>`;
   const label = `<div style="position:absolute;top:${size + 2}px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:${SERIF};font-size:13px;font-weight:600;color:#1a222b;text-shadow:${HALO};pointer-events:none;">${esc(o.label)}</div>`;
   const sub = o.sublabel

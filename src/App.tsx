@@ -41,6 +41,7 @@ const PlaceNames = lazy(() => import("./pages/PlaceNames"));
 const Ontology = lazy(() => import("./pages/Ontology"));
 const AiAgents = lazy(() => import("./pages/AiAgents"));
 const KalmarMedeltid = lazy(() => import("./pages/KalmarMedeltid"));
+const KartsymbolerPreview = lazy(() => import("./pages/KartsymbolerPreview"));
 const HistoricalEvents = lazy(() => import("./pages/HistoricalEvents"));
 const EconomicHistory = lazy(() => import("./pages/EconomicHistory"));
 const Angermanland = lazy(() => import("./pages/Angermanland"));
@@ -152,6 +153,8 @@ const App = () => (
                   <Route path="/sv/kalmar/medeltid" element={<KalmarMedeltid />} />
                   <Route path="/sv/kalmar-medeltid" element={<KalmarMedeltid />} />
                   <Route path="/kalmar-medeltid" element={<KalmarMedeltid />} />
+                  <Route path="/sv/kartsymboler" element={<KartsymbolerPreview />} />
+                  <Route path="/kartsymboler" element={<KartsymbolerPreview />} />
                   <Route path="/historical-events" element={<HistoricalEvents />} />
                   <Route path="/sv/historiska-handelser" element={<HistoricalEvents />} />
                   <Route path="/economic-history" element={<EconomicHistory />} />
