@@ -242,6 +242,47 @@ export const PLACE_NAME_ELEMENTS: PlaceNameElement[] = [
     etymology: 'Beskrivande (Gåsö o.d.). Ingen sakral tradition — ren kontroll.',
     patterns: ['gas', 'gase', 'gasa'], excludes: [],
   },
+  // ── Norrländska/topografiska efterled (baslinje) — dominerar det norrländska namnskiktet.
+  //    Fakta för böle/ånger ur Svenskt ortnamnslexikon (SOL 2003, SOFI); övriga transparenta. ──
+  {
+    key: 'böle', label: '-böle', category: 'nature', evidenceLayer: 'control',
+    sacralConfidence: 'none', isControl: true, contested: false, boundaryRule: 'suffix',
+    etymology: 'Av *bol*, "boplats, gård", ofta "nybygge/nyodling på utmark" (medeltida utmarkskolonisation; Björnböle "bo för vilda djur"). Källa: SOL 2003 (SOFI). Bebyggelse-baslinje.',
+    patterns: ['böle', 'byle'], excludes: [],
+  },
+  {
+    key: 'ånger', label: '-ånger', category: 'nature', evidenceLayer: 'control',
+    sacralConfidence: 'none', isControl: true, contested: false, boundaryRule: 'suffix',
+    etymology: 'Fsv. *anger "(havs)vik" — mycket gammalt kustelement (Ångermanland, Nordingrå). Källa: SOL 2003 (SOFI). Natur/kust-baslinje.',
+    patterns: ['ånger', 'anger'], excludes: [],
+  },
+  {
+    key: 'mo', label: '-mo', category: 'nature', evidenceLayer: 'control',
+    sacralConfidence: 'none', isControl: true, contested: false, boundaryRule: 'suffix',
+    etymology: 'Sandmo/tallhed (fsv. *mór*). Vanligt norrländskt naturord. Baslinje.',
+    patterns: ['mo', 'mon'], excludes: [],
+  },
+  {
+    key: 'sjö', label: '-sjö', category: 'nature', evidenceLayer: 'control',
+    sacralConfidence: 'none', isControl: true, contested: false, boundaryRule: 'suffix',
+    etymology: 'Insjö (fsv. *sjór*). Naturord — baslinje.', patterns: ['sjö', 'sjön'], excludes: [],
+  },
+  {
+    key: 'vik', label: '-vik', category: 'nature', evidenceLayer: 'control',
+    sacralConfidence: 'none', isControl: true, contested: false, boundaryRule: 'suffix',
+    etymology: 'Havs-/sjövik. Kust-/naturord — baslinje.', patterns: ['vik', 'viken'], excludes: [],
+  },
+  {
+    key: 'näs', label: '-näs', category: 'nature', evidenceLayer: 'control',
+    sacralConfidence: 'none', isControl: true, contested: false, boundaryRule: 'suffix',
+    etymology: 'Udde/landtunga. Naturord — baslinje.', patterns: ['näs'], excludes: [],
+  },
+  {
+    key: 'topo', label: 'Topografisk efterled', category: 'nature', evidenceLayer: 'control',
+    sacralConfidence: 'none', isControl: true, contested: false, boundaryRule: 'suffix',
+    etymology: 'Transparent naturord (berg, bäck, ås, holm, dal, fors, träsk, backe, mark). Baslinje/kontroll.',
+    patterns: ['berg', 'bäck', 'ås', 'holm', 'dal', 'fors', 'träsk', 'backe', 'mark'], excludes: [],
+  },
 ];
 
 const ELEMENTS_BY_KEY: Record<string, PlaceNameElement> = Object.fromEntries(
