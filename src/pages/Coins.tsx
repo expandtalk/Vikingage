@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Coins as CoinsIcon, MapPin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useCoins, parseCoinCoord, type Coin } from '@/hooks/useCoins';
+import { useCoins, parseCoinCoord, NUMISMATIC_PHASES, type Coin } from '@/hooks/useCoins';
+import { useHoards, type Hoard } from '@/hooks/useHoards';
 import { useSolidi } from '@/hooks/useSolidi';
 import { useDanishRunicCoins, type RunicCoin } from '@/hooks/useDanishRunicCoins';
 import { MaktikonTimeline } from '@/components/coins/MaktikonTimeline';
@@ -121,7 +122,7 @@ const SolidiSection: React.FC<{ sv: boolean }> = ({ sv }) => {
   }, [solidi]);
 
   if (isLoading || total === 0) return null;
-  const grams = Math.round(total * 4.5), den = (total * 1000).toLocaleString('sv-SE'), modii = Math.round(total * 1000 / 100).toLocaleString('sv-SE');
+  const grams = Math.round(total * 4.5); // solidus ~4,5 g (1/72 romerskt skålpund) — belagd vikt
   return (
     <section className="mb-8">
       <h2 className="text-2xl font-semibold text-foreground mb-2 flex items-center gap-2">
@@ -130,8 +131,8 @@ const SolidiSection: React.FC<{ sv: boolean }> = ({ sv }) => {
       </h2>
       <p className="text-muted-foreground text-sm mb-4 max-w-3xl">
         {sv
-          ? `Individuella guldmynt (400–500-tal) ur SHM:s samlingar (CC BY 4.0) + Fischer. Fyndplats på socken-/bynivå. Summerat: ≈ ${grams} g guld ≈ ${den} denarer (Diocletianus) ≈ ${modii} modii vete. Öland och Gotland dominerar — jämför nedan.`
-          : `Individual gold coins (5th c.) from SHM (CC BY 4.0) + Fischer. Find-place at parish/village level. Total: ≈ ${grams} g gold ≈ ${den} denarii ≈ ${modii} modii of wheat.`}
+          ? `Individuella guldmynt (400–500-tal) ur SHM:s samlingar (CC BY 4.0) + Fischer. Fyndplats på socken-/bynivå. Summerat: ≈ ${grams} g guld (solidus ~4,5 g). Öland och Gotland dominerar — jämför nedan.`
+          : `Individual gold coins (5th c.) from SHM (CC BY 4.0) + Fischer. Find-place at parish/village level. Total: ≈ ${grams} g gold (solidus ~4.5 g).`}
       </p>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-4">
         <div ref={containerRef} className="w-full h-[420px] rounded-lg overflow-hidden border border-white/10" />
@@ -176,7 +177,7 @@ const CATEGORY_COLOR: Record<string, string> = {
 };
 const CATEGORY_ORDER = ['nordic_royal', 'runmynt', 'seal', 'islamic', 'roman_solidus', 'hoard', 'imitation'];
 
-const CoinsMap: React.FC<{ coins: Coin[] }> = ({ coins }) => {
+const CoinsMap: React.FC<{ coins: Coin[]; hoards: Hoard[] }> = ({ coins, hoards }) => {
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<L.LayerGroup>(new L.LayerGroup());
@@ -207,17 +208,121 @@ const CoinsMap: React.FC<{ coins: Coin[] }> = ({ coins }) => {
         .bindPopup(`<strong>${c.name}</strong>${c.mint ? `<br/>${c.mint}` : ''}${c.issuer ? `<br/><em>${c.issuer}</em>` : ''}`)
         .addTo(layerRef.current);
     }
+    // Skatter (hoards) — egen grön romb-markör (skild från enskilda mynt).
+    for (const h of hoards) {
+      const co = parseCoinCoord(h.coordinates);
+      if (!co) continue;
+      pts.push([co.lat, co.lng]);
+      L.marker([co.lat, co.lng], {
+        icon: L.divIcon({
+          className: 'coin-hoard-marker',
+          html: `<div style="width:15px;height:15px;background:#22c55e;border:2px solid #14532d;transform:rotate(45deg);box-shadow:0 0 0 1px rgba(255,255,255,.5)"></div>`,
+          iconSize: [15, 15], iconAnchor: [7, 7],
+        }),
+      })
+        .bindPopup(`<strong>${h.name}</strong>${h.find_place ? `<br/>${h.find_place}` : ''}${h.deposition_tpq != null ? `<br/><em>t.p.q. ${h.deposition_tpq}</em>` : ''}`)
+        .addTo(layerRef.current);
+    }
     if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [40, 40], maxZoom: 6 });
     setTimeout(() => map.invalidateSize(), 100);
-  }, [coins]);
+  }, [coins, hoards]);
 
   return <div ref={containerRef} className="w-full h-[420px] rounded-lg overflow-hidden border border-white/10" />;
+};
+
+// Numismatiskt periodband — kronologisk stratigrafi (numismatic_phase) från romerskt guld till
+// islamiskt silver, västeuropeiska pengar och inhemsk prägling. Källkritiskt: gränserna är
+// forskningskonvention (glidande), inte skarpa fakta. Drivs av coins + hoards + solidi-korpusen.
+const PhaseBand: React.FC<{ sv: boolean; coins: Coin[]; hoards: Hoard[]; solidiCount: number }> = ({ sv, coins, hoards, solidiCount }) => {
+  const counts = useMemo(() => {
+    const c = new Map<string, number>(), h = new Map<string, number>();
+    for (const x of coins) if (x.numismatic_phase) c.set(x.numismatic_phase, (c.get(x.numismatic_phase) || 0) + 1);
+    for (const x of hoards) if (x.numismatic_phase) h.set(x.numismatic_phase, (h.get(x.numismatic_phase) || 0) + 1);
+    return { c, h };
+  }, [coins, hoards]);
+  // Solidi-korpusen (1000+) ligger i egen tabell → räkna in dem i romerskt/bysantinskt guld.
+  const coinCount = (key: string) => (counts.c.get(key) || 0) + (key === 'roman_byzantine_gold' ? solidiCount : 0);
+  const max = Math.max(1, ...NUMISMATIC_PHASES.map((p) => coinCount(p.key)));
+
+  return (
+    <section className="mb-8">
+      <h2 className="text-2xl font-semibold text-foreground mb-2">{sv ? 'Numismatiska perioder' : 'Numismatic phases'}</h2>
+      <p className="text-muted-foreground text-sm mb-4 max-w-3xl">
+        {sv
+          ? 'Myntekonomin i stratigrafi: romerskt silver → romerskt/bysantinskt guld → guldbrakteater → islamiskt silver → västeuropeiska pengar → inhemsk prägling → medeltid. Årtalsgränserna är forskningskonvention (glidande), inte skarpa fakta. Antal avser kurerade poster (solidiskatten räknas i guldfasen).'
+          : 'The coin economy in stratigraphy, from Roman silver through Roman/Byzantine gold, Islamic silver and Western deniers to domestic minting. Date boundaries are scholarly convention (gradual), not sharp facts.'}
+      </p>
+      <div className="space-y-1.5">
+        {NUMISMATIC_PHASES.map((p) => {
+          const nc = coinCount(p.key), nh = counts.h.get(p.key) || 0;
+          return (
+            <div key={p.key} className="flex items-center gap-3 text-sm">
+              <div className="w-52 shrink-0 flex items-center gap-2">
+                <span className="inline-block w-3 h-3 rounded-full shrink-0" style={{ background: p.color }} />
+                <span className="text-slate-200 truncate">{sv ? p.sv : p.en}</span>
+              </div>
+              <span className="w-24 shrink-0 text-[11px] text-muted-foreground tabular-nums">{p.span}</span>
+              <div className="flex-1 min-w-0">
+                <div className="h-3 rounded" style={{ width: `${Math.max(4, (nc / max) * 100)}%`, background: p.color, opacity: nc ? 0.85 : 0.25 }} />
+              </div>
+              <span className="w-28 shrink-0 text-right text-[11px] text-muted-foreground tabular-nums">
+                {nc} {sv ? 'mynt' : 'coins'}{nh ? `, ${nh} ${sv ? 'skatter' : 'hoards'}` : ''}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+};
+
+// Skattfynd (hoards) — egen tabell, skild från enskilda mynt. Komposition + t.p.q.
+const HoardsSection: React.FC<{ sv: boolean; hoards: Hoard[] }> = ({ sv, hoards }) => {
+  if (hoards.length === 0) return null;
+  const phaseLabel = (k: string | null) => (k ? NUMISMATIC_PHASES.find((p) => p.key === k)?.[sv ? 'sv' : 'en'] ?? k : null);
+  return (
+    <section className="mb-8">
+      <h2 className="text-2xl font-semibold text-foreground mb-2 flex items-center gap-2">
+        <span className="inline-block w-3 h-3 rounded-full" style={{ background: '#22c55e' }} />
+        {sv ? 'Skattfynd' : 'Hoards'} <span className="text-muted-foreground text-base">({hoards.length})</span>
+      </h2>
+      <p className="text-muted-foreground text-sm mb-4 max-w-3xl">
+        {sv
+          ? 'Deponerade skatter (egen tabell — komposition och t.p.q. skild från enskilda mynt). Gröna romber på kartan ovan.'
+          : 'Deposited hoards (own table — composition and t.p.q. kept separate from single coins). Green diamonds on the map above.'}
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {hoards.map((h) => (
+          <Card key={h.id} className="viking-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-foreground text-base">{h.name}</CardTitle>
+              <div className="flex flex-wrap gap-1.5">
+                {h.dominant_metal && <Badge variant="outline" className="text-xs">{h.dominant_metal}</Badge>}
+                {h.deposition_tpq != null && <Badge variant="secondary" className="text-xs">t.p.q. {h.deposition_tpq}</Badge>}
+                {phaseLabel(h.numismatic_phase) && <Badge variant="outline" className="text-xs">{phaseLabel(h.numismatic_phase)}</Badge>}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              {h.significance && <div className="text-gold text-xs font-medium">{h.significance}</div>}
+              {h.description && <p className="text-muted-foreground">{h.description}</p>}
+              {h.find_place && (
+                <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{h.find_place}</div>
+              )}
+              {h.sources && <div className="text-[11px] text-muted-foreground/70 italic pt-1">{h.sources}</div>}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
 };
 
 const Coins = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
   const { data: coins = [], isLoading } = useCoins();
+  const { data: hoards = [] } = useHoards();
+  const { data: solidi = [] } = useSolidi();
 
   const byCategory = useMemo(() => {
     const m = new Map<string, Coin[]>();
@@ -269,12 +374,16 @@ const Coins = () => {
         ) : (
           <>
             <div className="mb-8">
-              <CoinsMap coins={coins} />
+              <CoinsMap coins={coins} hoards={hoards} />
             </div>
+
+            <PhaseBand sv={sv} coins={coins} hoards={hoards} solidiCount={solidi.length} />
 
             <MaktikonTimeline coins={coins} />
 
             <SolidiSection sv={sv} />
+
+            <HoardsSection sv={sv} hoards={hoards} />
 
             <DanishRunicSection sv={sv} />
 

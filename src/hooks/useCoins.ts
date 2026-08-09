@@ -22,7 +22,23 @@ export interface Coin {
   description_en: string | null;
   sources: string | null;
   image_url: string | null;
+  numismatic_phase: string | null; // se NUMISMATIC_PHASES (romerskt guld → islamiskt silver → …)
+  issuing_region: string | null;   // utgivarregion (Byzantium, Abbasid Caliphate, Sweden …)
 }
+
+// Kanonisk numismatisk periodisering (kontrollerad enum i DB). Ordnad kronologiskt.
+export const NUMISMATIC_PHASES: { key: string; sv: string; en: string; span: string; color: string }[] = [
+  { key: 'roman_denarii', sv: 'Romerska denarer', en: 'Roman denarii', span: 'ca 50–250', color: '#9ca3af' },
+  { key: 'roman_byzantine_gold', sv: 'Romerskt/bysantinskt guld (solidi)', en: 'Roman/Byzantine gold (solidi)', span: 'ca 400–550', color: '#eab308' },
+  { key: 'gold_bracteates', sv: 'Guldbrakteater', en: 'Gold bracteates', span: 'ca 450–550', color: '#f59e0b' },
+  { key: 'sceattas', sv: 'Sceattas (tidigt västsilver)', en: 'Sceattas', span: 'ca 650–790', color: '#a3a3a3' },
+  { key: 'islamic_silver', sv: 'Islamiskt silver (dirhamer)', en: 'Islamic silver (dirhams)', span: 'ca 800–970', color: '#14b8a6' },
+  { key: 'western_deniers', sv: 'Västeuropeiska pengar', en: 'Western European deniers', span: 'ca 970–1050', color: '#38bdf8' },
+  { key: 'domestic_viking', sv: 'Inhemsk prägling (vikingatid)', en: 'Domestic minting (Viking Age)', span: 'ca 995–1030', color: '#f97316' },
+  { key: 'medieval_swedish', sv: 'Medeltida svensk prägling', en: 'Medieval Swedish coinage', span: 'ca 1150–1520', color: '#c084fc' },
+  { key: 'early_modern', sv: 'Vasatidens riksmynt', en: 'Early-modern realm coinage', span: '1520–1560', color: '#a24b4b' },
+  { key: 'bullion_prestige', sv: 'Prestigeguld / viktekonomi (ej mynt)', en: 'Bullion / prestige gold (non-coin)', span: '—', color: '#b8905b' },
+];
 
 export const useCoins = () =>
   useQuery({
