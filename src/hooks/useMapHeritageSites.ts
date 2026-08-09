@@ -260,6 +260,12 @@ const HERITAGE_TYPE_KEYS: Record<string, string | string[]> = {
   heritage_sparr: 'spärranläggning',
   // Avrättnings- & galgplatser som eget lager (Daniel) — galg-glyf, oberoende av Kulturlager-parenten.
   heritage_avrattning: ['Avrättningsplats', 'Galgplats/galgbacke'],
+  // Kurerade urbana/befästnings-/maritima typer (Fix C): dessa renderades tidigare av inget lager,
+  // så sökta entiteter (kyrkogård/borg/skans/rådhus/torg/grund) blev osynliga och en granne kunde
+  // utge sig för att vara resultatet (Nicolai→Birgitta-buggen). Nu synliga i Kulturlager-parenten.
+  heritage_kyrkogard: 'kyrkogård', heritage_borg: 'Borg/slottslämning',
+  heritage_skans: 'Fästning/skans', heritage_radhus: 'Rådhus',
+  heritage_torg: 'Torg', heritage_grund: 'Grund/sjömärke',
 };
 // Typ-nycklar som hör till "Stenar"-kategorin (parent 'heritage_stones') i st.f.
 // "Kulturlager" (parent 'heritage_sites'). heritage_bildsten flyttad hit i legenden.

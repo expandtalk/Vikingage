@@ -43,6 +43,8 @@ const TYPES = [
   // Skilt från 'grotta med tradition' (folkloregrottor). RAÄ-lämningstyp "Grotta/överhäng".
   { term: 'grotta',          type: 'Grotta/överhäng',   re: /grott|överhäng|h(å|a)la\b/i },
   { term: 'överhäng',        type: 'Grotta/överhäng',   re: /grott|överhäng/i },
+  // Fornvägnät — hålvägar/färdvägar (punktkoord här; linjegeometrier = separat pass mot geometri-API).
+  { term: 'färdväg',         type: 'färdväg',           re: /färdväg|hålväg/i },
 ];
 
 // Regioner: län (countyName) + valfritt landskaps- eller bbox-filter (post-filter på placeLabel/koord).
