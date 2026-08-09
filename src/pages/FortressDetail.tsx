@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Link, useParams } from 'react-router-dom';
@@ -6,9 +6,15 @@ import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
-import { ArrowLeft, MapPin, Layers, Info, Mountain } from 'lucide-react';
+import { ArrowLeft, MapPin, Layers, Info, Mountain, Navigation } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { NEAR_CATS, classifyNear, type NearCat } from '@/utils/nearFeatureCategories';
+import { nearestWithin } from '@/utils/geoDistance';
+import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
+import { PLACE_TYPE_LABEL } from '@/components/excursions/nearbyLabels';
+import { WindRose } from '@/components/explorer/WindRose';
+import { ReferenceList, type RefSource } from '@/components/references/ReferenceList';
 
 // Generisk fornborgs-detaljvy (mall för samtliga borgar), testad på Mossberga.
 // Kartan staplar AUKTORITATIVA, öppna lager: OSM-bas + SGU jordarter (geomorfologiskt material)
@@ -31,6 +37,20 @@ interface Inv { title: string; year_from: number | null; investigation_type: str
 
 const yr = (n: number | null | undefined) => n == null ? '' : n < 0 ? `${-n} f.Kr.` : `${n} e.Kr.`;
 
+// Claim-status → etikett + färg (källkritik: omtvistat/förkastat fryses aldrig till fakta).
+const CLAIM_STATUS: Record<string, { sv: string; en: string; cls: string }> = {
+  verified: { sv: 'belagt', en: 'verified', cls: 'text-emerald-300 border-emerald-500/40' },
+  established: { sv: 'belagt', en: 'established', cls: 'text-emerald-300 border-emerald-500/40' },
+  accepted: { sv: 'belagt', en: 'accepted', cls: 'text-emerald-300 border-emerald-500/40' },
+  corroborated: { sv: 'styrkt', en: 'corroborated', cls: 'text-emerald-300 border-emerald-500/40' },
+  disputed: { sv: 'omtvistat', en: 'disputed', cls: 'text-amber-300 border-amber-500/40' },
+  contested: { sv: 'omtvistat', en: 'contested', cls: 'text-amber-300 border-amber-500/40' },
+  needs_verification: { sv: 'behöver verifieras', en: 'needs verification', cls: 'text-slate-300 border-slate-500/40' },
+  unverified: { sv: 'overifierat', en: 'unverified', cls: 'text-slate-300 border-slate-500/40' },
+  rejected: { sv: 'förkastat', en: 'rejected', cls: 'text-rose-300 border-rose-500/40' },
+  refuted: { sv: 'motbevisat', en: 'refuted', cls: 'text-rose-300 border-rose-500/40' },
+};
+
 const parseLatLng = (co: Fort['coordinates']): [number, number] | null => {
   if (!co) return null;
   if (typeof co === 'string') { const m = co.match(/\(([^,]+),([^)]+)\)/); return m ? [parseFloat(m[2]), parseFloat(m[1])] : null; }
@@ -52,26 +72,103 @@ const FortressDetail = () => {
   const [metal, setMetal] = useState<MetalAn[]>([]);
   const [material, setMaterial] = useState<MaterialAn[]>([]);
   const [invs, setInvs] = useState<Inv[]>([]);
+  // Källkritisk claim-liggare + Wikipedia-stil källförteckning (place_claim → historical_sources).
+  interface Claim { attribute: string | null; statement: string | null; value_text: string | null; verification_status: string | null; source_id: string | null; }
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [refs, setRefs] = useState<RefSource[]>([]);
+  // source_id → fotnotsnummer (index i referenslistan + 1), så [n] länkar till #ref-n.
+  const refNo = useMemo(() => { const m = new Map<string, number>(); refs.forEach((r, i) => m.set(r.id, i + 1)); return m; }, [refs]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  // Fas 1 (porterat från Ismantorp-utflykten): typade sevärdheter + vägnät + legend, centrerat på borgen.
+  const nearbyLayerRef = useRef<L.FeatureGroup | null>(null);
+  const terrLayerRef = useRef<L.FeatureGroup | null>(null);
+  const [radius, setRadius] = useState(3000);
+  const [hiddenCats, setHiddenCats] = useState<Set<string>>(new Set());
+  const toggleCat = (id: string) => setHiddenCats((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const [nearbyDb, setNearbyDb] = useState<{ kind: string; name: string; raa_type: string | null; lat: number; lng: number; dist_m: number }[]>([]);
+  const [roadsNear, setRoadsNear] = useState<{ name: string; raa_type: string | null; len_m: number; geojson: string }[]>([]);
+  const isOland = !!fort && /öland/i.test(`${fort.landscape ?? ''} ${fort.parish ?? ''} ${fort.municipality ?? ''}`);
+
+  // Sevärdheter + vägnät nära borgen (features_near + roads_near), reglerbar radie.
+  useEffect(() => {
+    const ll = fort ? parseLatLng(fort.coordinates) : null;
+    if (!ll) return;
+    let cancelled = false;
+    (async () => {
+      const sb = supabase as any;
+      const [nf, rn] = await Promise.all([
+        sb.rpc('features_near', { p_lat: ll[0], p_lng: ll[1], radius_m: radius }),
+        sb.rpc('roads_near', { p_lat: ll[0], p_lng: ll[1], p_radius_m: radius }),
+      ]);
+      if (cancelled) return;
+      setNearbyDb(nf.data ?? []);
+      setRoadsNear(rn.data ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [fort, radius]);
+
+  interface TypedFeat { cat: NearCat; name: string; type: string; lat: number; lng: number; dist_m: number; link: string; isRune: boolean; }
+  const typedFeatures = useMemo<TypedFeat[]>(() => {
+    const ll = fort ? parseLatLng(fort.coordinates) : null;
+    const out: TypedFeat[] = [];
+    nearbyDb.forEach((f) => {
+      const isRune = f.kind === 'runestone';
+      out.push({ cat: classifyNear(f.kind, f.raa_type), name: f.name, type: isRune ? 'runsten' : (f.raa_type || ''),
+        lat: f.lat, lng: f.lng, dist_m: f.dist_m, isRune,
+        link: isRune ? `/inscription/${encodeURIComponent(f.raa_type || '')}` : `/explore?center=${f.lat},${f.lng}&zoom=15` });
+    });
+    const cult = NEAR_CATS.find((c) => c.id === 'cult')!;
+    if (ll) nearestWithin({ lat: ll[0], lng: ll[1] }, RELIGIOUS_PLACES, (p) => p.coordinates, radius / 1000, 60).forEach(({ item, km }) => {
+      out.push({ cat: cult, name: item.name, type: (PLACE_TYPE_LABEL[item.type]?.[sv ? 'sv' : 'en']) ?? item.type,
+        lat: item.coordinates.lat, lng: item.coordinates.lng, dist_m: Math.round(km * 1000), isRune: false,
+        link: `/explore?center=${item.coordinates.lat},${item.coordinates.lng}&zoom=15` });
+    });
+    return out.sort((a, b) => a.dist_m - b.dist_m);
+  }, [nearbyDb, fort, radius, sv]);
+
+  const presentCats = useMemo(() => {
+    const counts = new Map<string, number>();
+    typedFeatures.forEach((f) => counts.set(f.cat.id, (counts.get(f.cat.id) ?? 0) + 1));
+    if (roadsNear.length) counts.set('road', (counts.get('road') ?? 0) + roadsNear.length);
+    return NEAR_CATS.filter((c) => counts.has(c.id)).map((c) => ({ ...c, n: counts.get(c.id)! }));
+  }, [typedFeatures, roadsNear]);
 
   useEffect(() => {
     if (!id) return;
     (async () => {
-      const { data, error } = await (supabase.from('swedish_hillforts') as any)
+      const sb = supabase as any;
+      const { data, error } = await sb.from('swedish_hillforts')
         .select('id,name,coordinates,raa_number,landscape,parish,municipality,fortress_type,description,period,cultural_significance,source_reference,dating_basis,dating_confidence,nearby_runestones')
         .eq('id', id).maybeSingle();
       if (error) { setErr(error.message); setLoading(false); return; }
-      if (!data) { setErr('Borgen hittades inte'); setLoading(false); return; }
-      setFort(data as Fort);
-      const { count } = await (supabase.from('swedish_hillforts') as any)
-        .select('id', { count: 'exact', head: true }).eq('landscape', (data as Fort).landscape);
-      setSimilar(count ?? null);
+      if (data) {
+        setFort(data as Fort);
+        const { count } = await sb.from('swedish_hillforts')
+          .select('id', { count: 'exact', head: true }).eq('landscape', (data as Fort).landscape);
+        setSimilar(count ?? null);
+        setLoading(false);
+        return;
+      }
+      // Fallback: kurerad viking_fortresses (borgar utan swedish_hillforts-motsvarighet) så deras
+      // /fortresses/:id-länk fungerar (Daniel: fixa fortress-länkarna). Mappar region→landscape m.m.
+      const { data: vf } = await sb.from('viking_fortresses')
+        .select('id,name,coordinates,raa_number,region,fortress_type,description,construction_period,historical_significance')
+        .eq('id', id).maybeSingle();
+      if (!vf) { setErr(sv ? 'Borgen hittades inte' : 'Fortress not found'); setLoading(false); return; }
+      setFort({
+        id: vf.id, name: vf.name, coordinates: vf.coordinates, raa_number: vf.raa_number ?? null,
+        landscape: vf.region ?? '', parish: null, municipality: null, fortress_type: vf.fortress_type ?? null,
+        description: vf.description ?? null, period: vf.construction_period ?? null,
+        cultural_significance: vf.historical_significance ?? null, source_reference: null,
+        dating_basis: null, dating_confidence: null, nearby_runestones: null,
+      } as Fort);
+      setSimilar(null);
       setLoading(false);
     })();
-  }, [id]);
+  }, [id, sv]);
 
   // Forensik-lager (14C, geokemi, arkeometri, undersökningshistorik) — var för sig, tål tomt/fel.
   useEffect(() => {
@@ -98,6 +195,26 @@ const FortressDetail = () => {
     })();
   }, [id]);
 
+  // Källhänvisningar sist på sidan (i st.f. separata källsidor): distinkta källor som citeras i borgens
+  // claim-liggare. Källor är referenser här, inte egna destinationssidor (Daniel: Wikipedia-modell).
+  useEffect(() => {
+    if (!id) return;
+    (async () => {
+      const sb = supabase as any;
+      const { data: pc } = await sb.from('place_claim')
+        .select('attribute, statement, value_text, verification_status, source_id')
+        .eq('entity_id', id);
+      const rows = (pc ?? []) as Claim[];
+      setClaims(rows);
+      const ids = [...new Set(rows.map((r) => r.source_id).filter(Boolean) as string[])];
+      if (!ids.length) { setRefs([]); return; }
+      const { data: srcs } = await sb.from('historical_sources').select('id,title,author,written_year,url').in('id', ids);
+      setRefs(((srcs ?? []) as any[])
+        .map((s) => ({ id: s.id, title: s.title, author: s.author, year: s.written_year, url: s.url } as RefSource))
+        .sort((a, b) => (a.year ?? 9999) - (b.year ?? 9999) || a.title.localeCompare(b.title)));
+    })();
+  }, [id]);
+
   // Karta + auktoritativt lager-stack (SGU öppna WMS som togglebara overlays).
   useEffect(() => {
     if (!fort || !containerRef.current || mapRef.current) return;
@@ -114,8 +231,54 @@ const FortressDetail = () => {
     L.marker(ll).addTo(map).bindPopup(`<b>${fort.name}</b>`).openPopup();
     mapRef.current = map;
     setTimeout(() => map.invalidateSize(), 80);
-    return () => { map.remove(); mapRef.current = null; };
+    return () => { map.remove(); mapRef.current = null; nearbyLayerRef.current = null; terrLayerRef.current = null; };
   }, [fort, sv]);
+
+  // Fas 1: typade sevärdheter + vägnät som LINJER + radiecirkel (togglas via legenden).
+  useEffect(() => {
+    const map = mapRef.current; const ll = fort ? parseLatLng(fort.coordinates) : null;
+    if (!map || !ll) return;
+    if (nearbyLayerRef.current) { try { map.removeLayer(nearbyLayerRef.current); } catch { /* noop */ } }
+    const g = L.featureGroup();
+    L.circle(ll, { radius, color: '#38bdf8', weight: 1, fillColor: '#38bdf8', fillOpacity: 0.05 }).addTo(g);
+    typedFeatures.forEach((f) => {
+      if (hiddenCats.has(f.cat.id)) return;
+      const dist = f.dist_m < 1000 ? `${f.dist_m} m` : `${(f.dist_m / 1000).toFixed(1)} km`;
+      const linkLabel = f.isRune ? (sv ? 'Öppna runinskriften' : 'Open inscription') : (sv ? 'Öppna på kartan' : 'Open on map');
+      L.circleMarker([f.lat, f.lng], { radius: f.cat.r, color: '#0f172a', weight: 1, fillColor: f.cat.color, fillOpacity: 0.9 })
+        .bindPopup(`<strong>${f.cat.glyph} ${f.name}</strong><br/><span style="font-size:11px;color:#666">${f.type ? f.type + ' · ' : ''}${dist}</span><br/><a href="${f.link}" style="font-size:11px">${linkLabel} →</a>`)
+        .addTo(g);
+    });
+    if (!hiddenCats.has('road')) roadsNear.forEach((r) => {
+      let geom; try { geom = JSON.parse(r.geojson); } catch { return; }
+      L.geoJSON(geom, { style: () => ({ color: '#b45309', weight: 4, opacity: 0.9 }) })
+        .bindPopup(`<strong>🛤️ ${r.name || (sv ? 'Färdväg' : 'Road')}</strong><br/><span style="font-size:11px;color:#666">${r.raa_type || 'färdväg'}${r.len_m ? ` · ${r.len_m < 1000 ? r.len_m + ' m' : (r.len_m / 1000).toFixed(1) + ' km'}` : ''}</span>`).addTo(g);
+    });
+    g.addTo(map); nearbyLayerRef.current = g;
+    return () => { try { map.removeLayer(g); } catch { /* noop */ } };
+  }, [typedFeatures, roadsNear, hiddenCats, radius, fort, sv]);
+
+  // Fas 2 (Öland): teoretiska borgterritorier (Voronoi, schematiskt) ur oland_fort_territories.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !isOland || hiddenCats.has('territory')) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase as any).rpc('oland_fort_territories');
+      if (cancelled || !data || !mapRef.current) return;
+      const g = L.featureGroup();
+      (data as any[]).forEach((f) => {
+        let geom; try { geom = JSON.parse(f.geojson); } catch { return; }
+        const style = f.dated ? { color: '#b45309', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.06 }
+          : { color: '#64748b', weight: 1, dashArray: '4 4', fillColor: '#94a3b8', fillOpacity: 0.03 };
+        L.geoJSON(geom, { style: () => style as any })
+          .bindPopup(`<b>${f.fort_name}</b><br/><span style="font-size:11px">Teoretiskt borgterritorium (Voronoi, schematiskt)${f.dated ? '' : '<br/><em>odaterad — vägs lägre</em>'}</span>`).addTo(g);
+      });
+      if (terrLayerRef.current) { try { mapRef.current.removeLayer(terrLayerRef.current); } catch { /* noop */ } }
+      g.addTo(mapRef.current); terrLayerRef.current = g;
+    })();
+    return () => { cancelled = true; if (mapRef.current && terrLayerRef.current) { try { mapRef.current.removeLayer(terrLayerRef.current); } catch { /* noop */ } } };
+  }, [isOland, hiddenCats, fort]);
 
   const row = (label: string, val: React.ReactNode) => val ? (
     <div className="flex gap-2 text-sm"><span className="text-muted-foreground min-w-[130px]">{label}</span><span className="text-foreground">{val}</span></div>
@@ -147,6 +310,11 @@ const FortressDetail = () => {
               <div className="lg:col-span-2">
                 <div className="flex items-center gap-2 text-sm text-foreground mb-2"><Layers className="h-4 w-4 text-gold" />
                   {sv ? 'Karta — tänd SGU-lager för geomorfologi (material) och berggrund' : 'Map — toggle SGU layers for geomorphology and bedrock'}</div>
+                <div className="mb-2 flex items-center gap-2 text-xs">
+                  <span className="text-sky-300 whitespace-nowrap">{sv ? 'Radie' : 'Radius'}: {radius < 1000 ? `${radius} m` : `${(radius / 1000).toFixed(1)} km`}</span>
+                  <input type="range" min={500} max={30000} step={500} value={radius} onChange={(e) => setRadius(Number(e.target.value))} className="flex-1 accent-sky-500" />
+                  <span className="text-muted-foreground whitespace-nowrap">{typedFeatures.length} {sv ? 'sevärdheter' : 'sights'}</span>
+                </div>
                 <div ref={containerRef} className="w-full rounded-lg border border-border" style={{ height: '58vh', minHeight: 420 }} />
                 <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1"><Mountain className="h-3 w-3" />
                   {sv ? 'Kommande lager: LiDAR-terrängskuggning (vallprofiler entydigt), RAÄ lämningsavgränsning (polygon via raa_number), ortofoto, foton. Kustnära borgar: SGU maringeologi/djup.' : 'Coming: LiDAR hillshade, RAÄ site boundary, orthophoto, photos.'}</p>
@@ -186,6 +354,47 @@ const FortressDetail = () => {
                   </div>
                 )}
                 {fort.source_reference && <p className="text-[11px] text-muted-foreground">{sv ? 'Källa' : 'Source'}: {fort.source_reference}</p>}
+
+                {/* Fas 1: typad teckenförklaring (togglebar) + sevärdheter inom räckvidd (som Ismantorp). */}
+                {(typedFeatures.length > 0 || roadsNear.length > 0) && (
+                  <div className="viking-card rounded-lg border border-border p-4">
+                    <h2 className="text-base font-semibold text-foreground mb-1 flex items-center gap-2"><Navigation className="h-4 w-4 text-sky-400" />{sv ? 'Sevärdheter inom räckvidd' : 'Sights within reach'} ({typedFeatures.length})</h2>
+                    <p className="text-xs text-muted-foreground mb-2">{sv ? 'Klicka i teckenförklaringen för att visa/dölja lager. Färg & storlek = typ.' : 'Toggle layers in the legend. Colour & size show type.'}</p>
+                    <ul className="space-y-1 mb-3">
+                      {presentCats.map((c) => { const off = hiddenCats.has(c.id); return (
+                        <li key={c.id}>
+                          <button onClick={() => toggleCat(c.id)} className={`flex w-full items-center gap-2 rounded px-1 py-1 text-left text-sm hover:bg-muted/30 ${off ? 'opacity-40' : ''}`}>
+                            <span className="h-3 w-3 shrink-0 rounded-full border" style={{ backgroundColor: off ? 'transparent' : c.color, borderColor: c.color }} aria-hidden="true" />
+                            <span className="w-4 text-center text-xs" aria-hidden="true">{c.glyph}</span>
+                            <span className="flex-1 text-muted-foreground">{sv ? c.sv : c.en}</span>
+                            <span className="shrink-0 tabular-nums text-xs text-muted-foreground/60">{c.n}</span>
+                          </button>
+                        </li>
+                      ); })}
+                      {isOland && (
+                        <li>
+                          <button onClick={() => toggleCat('territory')} className={`flex w-full items-center gap-2 rounded px-1 py-1 text-left text-sm hover:bg-muted/30 ${hiddenCats.has('territory') ? 'opacity-40' : ''}`}>
+                            <span className="h-3 w-3 shrink-0 rounded-full border" style={{ backgroundColor: 'transparent', borderColor: '#f59e0b' }} aria-hidden="true" />
+                            <span className="w-4 text-center text-xs" aria-hidden="true">▨</span>
+                            <span className="flex-1 text-muted-foreground">{sv ? 'Borgterritorium (Voronoi)' : 'Fort territory (Voronoi)'}</span>
+                          </button>
+                        </li>
+                      )}
+                    </ul>
+                    <div className="max-h-[40vh] overflow-y-auto pr-1 border-t border-border/40 pt-2">
+                      {typedFeatures.map((f, i) => (
+                        <a key={i} href={f.link} title={f.isRune ? (sv ? 'Öppna runinskriften' : 'Open inscription') : (sv ? 'Öppna på kartan' : 'Open on map')}
+                          className={`flex items-baseline gap-2 py-0.5 border-b border-border/40 hover:bg-muted/30 rounded ${hiddenCats.has(f.cat.id) ? 'opacity-40' : ''}`}>
+                          <span className="text-sky-300 font-mono shrink-0 w-14 text-right text-xs">{f.dist_m < 1000 ? `${f.dist_m} m` : `${(f.dist_m / 1000).toFixed(1)} km`}</span>
+                          <span className="min-w-0 text-sm"><span className="mr-1" aria-hidden="true">{f.cat.glyph}</span><span className="hover:underline">{f.name}</span>{f.type && <span className="text-muted-foreground/60 text-xs"> · {f.type}</span>}</span>
+                        </a>
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground/70 mt-2">{sv ? 'Ur RAÄ Fornsök + kyrkor + kultplatser (fågelvägen). Justera radien ovanför kartan.' : 'From the heritage register, churches & cult sites. Adjust the radius above the map.'}</p>
+                  </div>
+                )}
+                {/* Fas 2 (Öland): förhärskande vind (SMHI, Kalmarsund) — minimerbar. */}
+                {isOland && <WindRose location="Kalmarsund" defaultOpen={false} />}
               </div>
             </div>
 
@@ -263,6 +472,30 @@ const FortressDetail = () => {
                 )}
               </div>
             )}
+
+            {/* Källkritisk claim-liggare: varje uppgift med status + inline-fotnot [n] → referenslistan. */}
+            {claims.length > 0 && (
+              <section className="mt-8 max-w-3xl">
+                <h2 className="mb-1 text-lg font-semibold text-foreground">{sv ? 'Uppgifter & källkritik' : 'Data & source criticism'}</h2>
+                <p className="mb-3 text-xs text-muted-foreground">{sv ? 'Varje uppgift bär en status och en fotnot [n] till källan i listan nedan. Omtvistade läsningar fryses aldrig till fakta.' : 'Each statement carries a status and a footnote [n] to the source in the list below.'}</p>
+                <ul className="space-y-2">
+                  {claims.map((c, i) => {
+                    const st = CLAIM_STATUS[(c.verification_status || '').toLowerCase()];
+                    const n = c.source_id ? refNo.get(c.source_id) : undefined;
+                    return (
+                      <li key={i} className="text-sm leading-relaxed">
+                        <span className="text-foreground">{c.statement || c.value_text || c.attribute}</span>
+                        {st && <span className={`ml-2 whitespace-nowrap rounded border px-1.5 py-0.5 text-[10px] ${st.cls}`}>{sv ? st.sv : st.en}</span>}
+                        {n && <a href={`#ref-${n}`} className="ml-1 align-super text-[11px] text-gold hover:underline">[{n}]</a>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
+
+            {/* Källor & referenser SIST på sidan (Wikipedia-modell), med ankare #ref-n för fotnoterna. */}
+            <ReferenceList sources={refs} sv={sv} note={sv ? 'Källor som citeras i borgens uppgifter ovan. Externa länkar öppnas i ny flik och är inte granskade av oss.' : 'Sources cited in this fort’s data above. External links open in a new tab and are not vetted by us.'} />
           </>
         )}
       </main>

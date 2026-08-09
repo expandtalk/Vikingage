@@ -5,7 +5,7 @@ import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
-import { BarChart3, MapPin, Hammer, Landmark, Image as ImageIcon, Loader2, ScrollText, Church, Crown, Coins as CoinsIcon, Dna, Database, Compass, Fingerprint, FlaskConical, Boxes } from 'lucide-react';
+import { BarChart3, MapPin, Hammer, Landmark, Image as ImageIcon, Loader2, ScrollText, Church, Crown, Coins as CoinsIcon, Dna, Database, Compass, Fingerprint, FlaskConical, Boxes, Anchor, Headphones, CalendarClock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -31,7 +31,7 @@ const Statistics = () => {
     queryFn: async () => { const { data, error } = await sb.rpc('runestone_stats_v1'); if (error) throw error; return data as Stats; },
   });
 
-  const grandTotal = plat ? (['runic_total', 'carvers', 'churches', 'heritage_sites', 'place_names', 'coins', 'hillforts', 'fortresses', 'thing_sites', 'beacon_sites', 'harbors', 'ore_sources', 'genetic_individuals', 'kings', 'sources', 'estates', 'picture_stone_reuse'].reduce((s, k) => s + (plat[k] ?? 0), 0)) : 0;
+  const grandTotal = plat ? (['runic_total', 'carvers', 'churches', 'heritage_sites', 'place_names', 'coins', 'hillforts', 'fortresses', 'thing_sites', 'beacon_sites', 'harbors', 'ore_sources', 'genetic_individuals', 'kings', 'sources', 'estates', 'picture_stone_reuse', 'shipwrecks', 'media_items', 'images', 'museum_objects', 'experiences', 'execution_events', 'historical_events', 'documents'].reduce((s, k) => s + (plat[k] ?? 0), 0)) : 0;
 
   // grupperade wow-siffror
   const GROUPS: { title: string; titleEn: string; icon: React.ReactNode; items: [string, string, string, string?][] }[] = [
@@ -52,6 +52,14 @@ const Statistics = () => {
     { title: 'Fynd, metall & DNA', titleEn: 'Finds, metal & DNA', icon: <Dna className="h-5 w-5 text-gold" />, items: [
       ['coins', 'mynt & ädelmetallfynd', 'coins & precious-metal finds'], ['ore_sources', 'malmkällor (proveniens)', 'ore sources'],
       ['genetic_individuals', 'genetiska individer', 'genetic individuals'] ] },
+    { title: 'Marinarkeologi, hav & klimat', titleEn: 'Marine archaeology, sea & climate', icon: <Anchor className="h-5 w-5 text-gold" />, items: [
+      ['shipwrecks', 'skeppsvrak', 'shipwrecks'], ['experiences', 'besöksmål & bad', 'sites & bathing spots'],
+      ['wind_stations', 'vindklimat (stationer)', 'wind climate (stations)'] ] },
+    { title: 'Media & berättande', titleEn: 'Media & storytelling', icon: <Headphones className="h-5 w-5 text-gold" />, items: [
+      ['media_items', 'poddavsnitt & filmer', 'podcast episodes & videos'], ['documents', 'dokument & texter', 'documents & texts'],
+      ['images', 'bilder', 'images'], ['museum_objects', 'museiföremål', 'museum objects'] ] },
+    { title: 'Händelser & rätt', titleEn: 'Events & justice', icon: <CalendarClock className="h-5 w-5 text-gold" />, items: [
+      ['historical_events', 'historiska händelser', 'historical events'], ['execution_events', 'avrättningar', 'executions'] ] },
   ];
 
   const regionLink = (name: string) => `/explore?searchQuery=${encodeURIComponent(name)}`;

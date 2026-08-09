@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
@@ -45,6 +45,7 @@ const SourceDetail = () => {
   const { id, textId } = useParams<{ id?: string; textId?: string }>();
   const { language } = useLanguage();
   const sv = language === 'sv';
+  const navigate = useNavigate();
 
   // /sources/text/:textId → slå upp vilken källa strofen hör till.
   const { data: textRef } = useQuery({
@@ -81,6 +82,24 @@ const SourceDetail = () => {
       return (data ?? []) as TextRow[];
     },
   });
+
+  // Citerande entitet (claim-liggaren): en bara-referens (utan egen fulltext) ska inte vara en egen
+  // sida/dead-end — redirecta till den entitet som citerar källan (Daniel: Wikipedia-modell).
+  const { data: citing } = useQuery({
+    queryKey: ['source-citing', sourceId],
+    enabled: !!sourceId,
+    queryFn: async () => {
+      const { data } = await sb.from('place_claim').select('entity_type, entity_id').eq('source_id', sourceId).limit(1);
+      return (Array.isArray(data) && data[0]) as { entity_type: string; entity_id: string } | null;
+    },
+  });
+  useEffect(() => {
+    if (textId || !source || texts === undefined) return;   // vänta tills vi vet om källan har egen fulltext
+    if (texts.length > 0) return;                            // primärtext (Eddan m.fl.) → behåll egen sida
+    if (citing && (citing.entity_type === 'hillfort' || citing.entity_type === 'fortress')) {
+      navigate(`/fortresses/${citing.entity_id}#references`, { replace: true });
+    }
+  }, [source, texts, citing, textId, navigate]);
 
   // Deep-link till strof: scrolla + markera när texterna laddats.
   useEffect(() => {

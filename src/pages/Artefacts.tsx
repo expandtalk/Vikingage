@@ -17,11 +17,13 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getCategoryForObjectType } from '@/utils/objectCategories';
 
 // Kategori-först UX (Daniel 2026-07-20): 8 kategorikort → typlista i kategorin →
-// inskrifter per typ. Kategorikorten bär IKONER, inte foton — vi saknar äkta
-// objektbilder, och en påhittad bild skulle antyda dokumentation vi inte har.
-// Data via artefact_types_v1 + get_artefact_inscriptions.
+// inskrifter per typ. Data via artefact_types_v1 + get_artefact_inscriptions.
+// Kategorikorten visar ett RIKTIGT objektfoto ur museum_objects där vi har ett (klassat via
+// getCategoryForObjectType), med IKON-fallback där vi saknar bild — aldrig en påhittad bild
+// (samma ärlighetsprincip som det tierade galleriet; uppdaterat 2026-08-07 sedan SHM-bilderna kom).
 
 interface ArtefactType { id: string; name: string; category: string | null; inscription_count: number; }
 interface ArtefactInscription { id: string; signum: string; name: string | null; socken: string | null; landscape: string | null; translation_sv: string | null; }
@@ -82,6 +84,33 @@ const ArtefactsPage = () => {
       .map((k) => ({ key: k, ...m.get(k)! }))
       .sort((a, b) => (a.key === OTHER ? 1 : b.key === OTHER ? -1 : b.inscriptions - a.inscriptions));
   }, [artefacts]);
+
+  // Representativt objektfoto per kategori: klassa fotade museiföremål (namn/titel/kategori/material)
+  // in i de 8 kategorierna och behåll första bilden per kategori. Icke-klassade → 'other' (ikon annars).
+  const { data: objThumbs } = useQuery({
+    queryKey: ['artefact-category-thumbs'],
+    staleTime: 60 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('museum_objects')
+        .select('name,title,category,material,image_url')
+        .not('image_url', 'is', null)
+        .limit(1000);
+      if (error) throw error;
+      return (data ?? []) as { name: string | null; title: string | null; category: string | null; material: string | null; image_url: string }[];
+    },
+  });
+  const categoryImages = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const o of objThumbs ?? []) {
+      if (!o.image_url) continue;
+      const hay = [o.name, o.title, o.category, o.material].filter(Boolean).join(' ');
+      const cat = getCategoryForObjectType(hay);
+      const key = cat ? cat.id : OTHER;
+      if (!map[key]) map[key] = o.image_url;
+    }
+    return map;
+  }, [objThumbs]);
 
   // Typerna i vald kategori (eller sökträffar globalt)
   const q = searchTerm.trim().toLowerCase();
@@ -153,14 +182,26 @@ const ArtefactsPage = () => {
               const Icon = meta.icon;
               return (
                 <button key={c.key} onClick={() => setActiveCat(c.key)}
-                  className="viking-card rounded-lg border border-border p-5 text-left hover:bg-card/80 transition-colors group">
-                  <Icon className={`h-8 w-8 ${meta.color} mb-3`} />
+                  className="viking-card overflow-hidden rounded-lg border border-border text-left hover:bg-card/80 transition-colors group">
+                  {/* Foto-banner (riktigt objektfoto) med IKON-fallback bakom — ikonen syns om bild saknas/dör */}
+                  {categoryImages[c.key] ? (
+                    <div className="relative flex h-28 items-center justify-center border-b border-border bg-card/60">
+                      <Icon className={`absolute h-8 w-8 ${meta.color}`} aria-hidden="true" />
+                      <img src={categoryImages[c.key]} alt="" loading="lazy"
+                        className="relative h-28 w-full object-cover"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                    </div>
+                  ) : (
+                    <div className="px-5 pt-5"><Icon className={`h-8 w-8 ${meta.color}`} /></div>
+                  )}
+                  <div className="p-5 pt-3">
                   <h2 className="text-lg font-semibold text-foreground group-hover:text-gold transition-colors">{sv ? meta.sv : meta.en}</h2>
                   <p className="text-xs text-muted-foreground mt-0.5 mb-2">{sv ? meta.descSv : meta.descEn}</p>
                   <div className="flex items-center gap-1.5 text-sm text-slate-300">
                     <ScrollText className="h-3.5 w-3.5 text-amber-400" />
                     {fmt(c.inscriptions)} {sv ? 'inskrifter' : 'inscriptions'}
                     <span className="text-muted-foreground/60">· {c.types} {sv ? 'typer' : 'types'}</span>
+                  </div>
                   </div>
                 </button>
               );

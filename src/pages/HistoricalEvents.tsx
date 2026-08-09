@@ -59,7 +59,7 @@ const STATUS_STYLE: Record<string, { color: string; dash?: string; label: string
   omtvistad: { color: '#eab308', dash: '4 4', label: 'omtvistat läge' },
   legendarisk: { color: '#94a3b8', dash: '1 5', label: 'legendariskt/okänt läge' },
 };
-const EventsMap: React.FC<{ items: TItem[]; focus: { lat: number; lng: number } | null }> = ({ items, focus }) => {
+const EventsMap: React.FC<{ items: TItem[]; focus: { lat: number; lng: number } | null; sv: boolean }> = ({ items, focus, sv }) => {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
@@ -102,7 +102,31 @@ const EventsMap: React.FC<{ items: TItem[]; focus: { lat: number; lng: number } 
     if (focus && mapRef.current) mapRef.current.flyTo([focus.lat, focus.lng], 8, { duration: 0.7 });
   }, [focus]);
 
-  return <div ref={ref} className="w-full rounded-lg border border-border mb-6" style={{ height: '55vh', minHeight: 380 }} />;
+  // Legend över kartans lägeskodning (status + kandidatlägen). Samma bevis-ärlighet som markörerna:
+  // fyllt = belagt, streckat = omtvistat, punktat = legendariskt, ring = konkurrerande kandidatläge.
+  const legend: { label: string; color: string; border: string; fill: string }[] = [
+    { label: sv ? 'belagt läge' : 'attested', color: '#22c55e', border: 'solid', fill: '#22c55e' },
+    { label: sv ? 'omtvistat läge' : 'disputed', color: '#eab308', border: 'dashed', fill: 'transparent' },
+    { label: sv ? 'legendariskt/okänt' : 'legendary/unknown', color: '#94a3b8', border: 'dotted', fill: 'transparent' },
+    { label: sv ? 'kandidatläge (konkurrerande)' : 'candidate location', color: '#eab308', border: 'dashed', fill: 'transparent' },
+  ];
+  return (
+    <div className="relative w-full mb-6">
+      <div ref={ref} className="w-full rounded-lg border border-border" style={{ height: '55vh', minHeight: 380 }} />
+      <div className="absolute bottom-3 left-3 z-[1000] rounded-md border border-slate-600/70 bg-slate-900/85 px-3 py-2 backdrop-blur-sm">
+        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gold/80">{sv ? 'Läge' : 'Location'}</div>
+        <ul className="space-y-1">
+          {legend.map((l) => (
+            <li key={l.label} className="flex items-center gap-2 text-[11px] text-slate-200">
+              <span className="inline-block h-3 w-3 shrink-0 rounded-full"
+                style={{ backgroundColor: l.fill, border: `1.5px ${l.border} ${l.color}` }} />
+              {l.label}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 };
 
 const HistoricalEvents = () => {
@@ -232,7 +256,7 @@ const HistoricalEvents = () => {
                 {sv
                   ? `${located.length} lokaliserade händelser — klicka en post i tidslinjen för att flyga dit. Fyllt = belagt läge, streckat = omtvistat, punktat = legendariskt/okänt. Gula ringar = konkurrerande kandidatlägen (t.ex. Svolder Öresund vs Rügen).`
                   : `${located.length} located events — click an entry below to fly there. Solid = attested, dashed = disputed, dotted = legendary/unknown. Yellow rings = competing candidate locations.`}</p>
-              <EventsMap items={located} focus={focus} />
+              <EventsMap items={located} focus={focus} sv={sv} />
             </div>
           );
         })()}

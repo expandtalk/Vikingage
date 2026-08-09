@@ -790,6 +790,16 @@ const Fortresses = () => {
                       )}
                     </div>
 
+                    {/* Klickbar → borgens egen sida (Daniel: kunna läsa mer). /fortresses/:id resolvar
+                        viking_fortresses via FortressDetails fallback. */}
+                    <a
+                      href={`/fortresses/${fortress.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-sm font-medium text-gold hover:underline"
+                    >
+                      {sv ? 'Läs mer om borgen' : 'Read more'} →
+                    </a>
+
                     {fortress.historical_significance && (
                       <div className="pt-2 border-t border-border">
                         <p className="text-xs text-muted-foreground">

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
@@ -12,7 +12,7 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Badge } from '@/components/ui/badge';
 import { MeterBadge } from '@/components/inscription/MeterBadge';
-import { MapPin, Calendar, Compass, ArrowLeft, ExternalLink, Scroll, BookOpen, Crown, Navigation, Sparkles, Landmark } from 'lucide-react';
+import { MapPin, Calendar, Compass, ArrowLeft, ExternalLink, Scroll, Crown, Navigation, Sparkles, Landmark } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EXCURSIONS } from '@/data/excursions';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +21,8 @@ import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData
 import { ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFinds';
 import { PLACE_TYPE_LABEL, FIND_TYPE_LABEL } from '@/components/excursions/nearbyLabels';
 import { ExcursionProse, excerptText } from '@/components/excursions/ExcursionProse';
+import { NEAR_CATS, classifyNear, type NearCat } from '@/utils/nearFeatureCategories';
+import { ReferenceList } from '@/components/references/ReferenceList';
 
 const ATTR_LABEL: Record<string, { sv: string; en: string }> = {
   signed: { sv: 'signerad', en: 'signed' },
@@ -57,8 +59,10 @@ const ExcursionDetail = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const radiusLayerRef = useRef<L.FeatureGroup | null>(null);
   const [shoreYear, setShoreYear] = useState<number | null>(excursion?.defaultShoreYear ?? null);
-  const [radius, setRadius] = useState(500);
+  const [radius, setRadius] = useState(2000);  // 500 m var för tätt på landsbygden → tom panel; 2 km ger sevärdheter
   const [relief, setRelief] = useState(false);
+  const [hiddenCats, setHiddenCats] = useState<Set<string>>(new Set());
+  const toggleCat = (id: string) => setHiddenCats((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   useShorelineOverlay(mapRef, shoreYear);
   // Byt utflykt (id-param) → återställ strandlinjen till utflyktens default.
   useEffect(() => { setShoreYear(excursion?.defaultShoreYear ?? null); }, [excursion?.id]);
@@ -74,6 +78,48 @@ const ExcursionDetail = () => {
       return (data ?? []) as { kind: string; name: string; raa_type: string | null; lat: number; lng: number; dist_m: number }[];
     },
   });
+
+  // Typade sevärdheter: features_near (klassade) + kultplatser ur RELIGIOUS_PLACES inom radien
+  // (Torslunda/Skedemosse m.fl. plottas nu på kartan, inte bara i listan). Sorterade på avstånd.
+  interface TypedFeat { cat: NearCat; name: string; type: string; lat: number; lng: number; dist_m: number; link: string; isRune: boolean; }
+  const typedFeatures = useMemo<TypedFeat[]>(() => {
+    const out: TypedFeat[] = [];
+    (nearbyDb ?? []).forEach((f) => {
+      const isRune = f.kind === 'runestone';
+      out.push({
+        cat: classifyNear(f.kind, f.raa_type), name: f.name, type: isRune ? 'runsten' : (f.raa_type || ''),
+        lat: f.lat, lng: f.lng, dist_m: f.dist_m, isRune,
+        link: isRune ? `/inscription/${encodeURIComponent(f.raa_type || '')}` : `/explore?center=${f.lat},${f.lng}&zoom=15`,
+      });
+    });
+    const cult = NEAR_CATS.find((c) => c.id === 'cult')!;
+    if (excursion) {
+      nearestWithin(excursion.coords, RELIGIOUS_PLACES, (p) => p.coordinates, radius / 1000, 60).forEach(({ item, km }) => {
+        out.push({ cat: cult, name: item.name, type: (PLACE_TYPE_LABEL[item.type]?.[sv ? 'sv' : 'en']) ?? item.type,
+          lat: item.coordinates.lat, lng: item.coordinates.lng, dist_m: Math.round(km * 1000), isRune: false,
+          link: `/explore?center=${item.coordinates.lat},${item.coordinates.lng}&zoom=15` });
+      });
+    }
+    return out.sort((a, b) => a.dist_m - b.dist_m);
+  }, [nearbyDb, excursion, radius, sv]);
+
+  // Färdväg-LINJER nära (Borgvägen mot Ismantorp m.fl.) — RITAS SOM LINJER, inte punkter (Daniel).
+  const { data: roadsNear } = useQuery({
+    queryKey: ['excursion-roads-near', excursion?.coords.lat, excursion?.coords.lng, radius],
+    enabled: !!excursion,
+    queryFn: async () => {
+      const { data } = await (supabase.rpc as any)('roads_near', { p_lat: excursion!.coords.lat, p_lng: excursion!.coords.lng, p_radius_m: radius });
+      return (data ?? []) as { name: string; raa_type: string | null; register_id: string | null; len_m: number; geojson: string }[];
+    },
+  });
+
+  const presentCats = useMemo(() => {
+    const counts = new Map<string, number>();
+    typedFeatures.forEach((f) => counts.set(f.cat.id, (counts.get(f.cat.id) ?? 0) + 1));
+    // Väglinjer (roads_near) räknas in i 'road' även om inga väg-PUNKTER finns i radien.
+    if (roadsNear?.length) counts.set('road', (counts.get('road') ?? 0) + roadsNear.length);
+    return NEAR_CATS.filter((c) => counts.has(c.id)).map((c) => ({ ...c, n: counts.get(c.id)! }));
+  }, [typedFeatures, roadsNear]);
 
   // Runsten (inskrift + ristare + edda-länkar) via RPC
   const { data: stone } = useQuery({
@@ -113,7 +159,7 @@ const ExcursionDetail = () => {
     enabled: !!excursion?.relatedSources?.length,
     queryFn: async () => {
       const { data, error } = await supabase.from('historical_sources')
-        .select('title, title_en, author, written_year, description, reliability')
+        .select('id, title, title_en, author, written_year, description, reliability, url')
         .in('title', excursion!.relatedSources!);
       if (error) throw error;
       return data;
@@ -303,7 +349,7 @@ const ExcursionDetail = () => {
         return null;
       };
       supabase.from('viking_fortresses')
-        .select('name, fortress_type, status, excavated, description, coordinates')
+        .select('id, name, fortress_type, status, excavated, description, coordinates')
         .ilike('region', `%${excursion.fortressRegion}%`)
         .then(({ data }) => {
           if (cancelled || !mapRef.current || !data?.length) return;
@@ -311,8 +357,11 @@ const ExcursionDetail = () => {
           for (const f of data) {
             const ll = parsePoint(f.coordinates);
             if (!ll) continue;
+            // Klickbar → borgens egen sida (Daniel: "läsa mer om de specifika fornborgarna").
+            // /fortresses/:id resolvar viking_fortresses via FortressDetails fallback.
+            const readMore = `<br/><a href="/fortresses/${f.id}" style="font-size:11px;color:#0ea5e9">${sv ? 'Läs mer om borgen' : 'Read more'} →</a>`;
             L.circleMarker(ll, { radius: 7, color: '#1c1917', weight: 1, fillColor: statusColor(f), fillOpacity: 0.9 })
-              .bindPopup(`<strong>${f.name}</strong><br/>${f.status === 'reconstructed' ? (sv ? 'Rekonstruerad' : 'Reconstructed') : f.excavated ? (sv ? 'Utgrävd' : 'Excavated') : (sv ? 'Ej utgrävd' : 'Not excavated')}${f.description ? `<br/><em>${f.description}</em>` : ''}`)
+              .bindPopup(`<strong>${f.name}</strong><br/>${f.status === 'reconstructed' ? (sv ? 'Rekonstruerad' : 'Reconstructed') : f.excavated ? (sv ? 'Utgrävd' : 'Excavated') : (sv ? 'Ej utgrävd' : 'Not excavated')}${f.description ? `<br/><em>${f.description}</em>` : ''}${readMore}`)
               .addTo(group);
           }
           group.addTo(mapRef.current);
@@ -342,24 +391,32 @@ const ExcursionDetail = () => {
     return () => { try { map.removeLayer(group); } catch { /* noop */ } };
   }, [hypotheses, excursion, sv]);
 
-  // Räckviddscirkel + närbelägna lämningar/kyrkor ur DB (reglerbar radie).
+  // Räckviddscirkel + TYPADE närbelägna sevärdheter (färg/storlek per kategori, legend-togglebart).
   useEffect(() => {
     const map = mapRef.current; if (!map || !excursion) return;
     if (radiusLayerRef.current) { try { map.removeLayer(radiusLayerRef.current); } catch { /* noop */ } radiusLayerRef.current = null; }
     const g = L.featureGroup();
     L.circle([excursion.coords.lat, excursion.coords.lng], { radius, color: '#38bdf8', weight: 1, fillColor: '#38bdf8', fillOpacity: 0.06 }).addTo(g);
-    (nearbyDb ?? []).forEach((f) => {
-      const church = f.kind === 'church', isRune = f.kind === 'runestone', isRock = /hällrist/i.test(f.raa_type || '');
-      const fill = church ? '#38bdf8' : isRune ? '#eab308' : isRock ? '#f97316' : '#22d3ee';
-      const link = isRune ? `/inscription/${encodeURIComponent(f.raa_type || '')}` : `/explore?center=${f.lat},${f.lng}&zoom=15`;
-      const linkLabel = isRune ? (sv ? 'Öppna runinskriften' : 'Open inscription') : (sv ? 'Öppna på kartan' : 'Open on map');
-      L.circleMarker([f.lat, f.lng], { radius: church || isRune ? 6 : 4, color: isRune ? '#78350f' : '#0c4a6e', weight: 1, fillColor: fill, fillOpacity: 0.85 })
-        .bindPopup(`<strong>${church ? '⛪ ' : isRune ? 'ᚱ ' : isRock ? '🪨 ' : ''}${f.name}</strong><br/><span style="font-size:11px;color:#666">${isRune ? '' : (f.raa_type || '') + ' · '}${f.dist_m < 1000 ? f.dist_m + ' m' : (f.dist_m / 1000).toFixed(1) + ' km'}</span><br/><a href="${link}" style="font-size:11px">${linkLabel} →</a>`)
+    typedFeatures.forEach((f) => {
+      if (hiddenCats.has(f.cat.id)) return;
+      const linkLabel = f.isRune ? (sv ? 'Öppna runinskriften' : 'Open inscription') : (sv ? 'Öppna på kartan' : 'Open on map');
+      const dist = f.dist_m < 1000 ? `${f.dist_m} m` : `${(f.dist_m / 1000).toFixed(1)} km`;
+      L.circleMarker([f.lat, f.lng], { radius: f.cat.r, color: '#0f172a', weight: 1, fillColor: f.cat.color, fillOpacity: 0.9 })
+        .bindPopup(`<strong>${f.cat.glyph} ${f.name}</strong><br/><span style="font-size:11px;color:#666">${f.type ? f.type + ' · ' : ''}${dist}</span><br/><a href="${f.link}" style="font-size:11px">${linkLabel} →</a>`)
         .addTo(g);
     });
+    // Vägnät som LINJER (Borgvägen m.fl.) — samma kategori/färg som väg-punkterna, togglas med 'road'.
+    if (!hiddenCats.has('road')) {
+      (roadsNear ?? []).forEach((r) => {
+        let geom; try { geom = JSON.parse(r.geojson); } catch { return; }
+        L.geoJSON(geom, { style: () => ({ color: '#b45309', weight: 4, opacity: 0.9 }) })
+          .bindPopup(`<strong>🛤️ ${r.name || (sv ? 'Färdväg' : 'Road')}</strong><br/><span style="font-size:11px;color:#666">${r.raa_type || 'färdväg'}${r.len_m ? ` · ${r.len_m < 1000 ? r.len_m + ' m' : (r.len_m / 1000).toFixed(1) + ' km'}` : ''}</span>`)
+          .addTo(g);
+      });
+    }
     g.addTo(map); radiusLayerRef.current = g;
     return () => { try { map.removeLayer(g); } catch { /* noop */ } };
-  }, [nearbyDb, radius, excursion, sv]);
+  }, [typedFeatures, roadsNear, hiddenCats, radius, excursion, sv]);
 
   if (!excursion) {
     return (
@@ -440,6 +497,44 @@ const ExcursionDetail = () => {
               <a href={`https://www.openstreetmap.org/?mlat=${excursion.coords.lat}&mlon=${excursion.coords.lng}#map=15/${excursion.coords.lat}/${excursion.coords.lng}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-gold hover:underline"><ExternalLink className="h-3 w-3" />OpenStreetMap</a>
             </div>
           </div>
+          {(typedFeatures.length > 0 || (roadsNear?.length ?? 0) > 0) && (
+            <aside className="lg:col-span-1 space-y-4">
+              {/* Teckenförklaring — togglebar per kategori (Fas 1: löser "allt ser likadant ut"). */}
+              <div className="viking-card rounded-lg border border-border p-4">
+                <h2 className="text-lg font-semibold text-foreground mb-1">{sv ? 'Teckenförklaring' : 'Legend'}</h2>
+                <p className="text-xs text-muted-foreground mb-3">{sv ? 'Klicka för att visa/dölja lager. Färg & storlek visar typ.' : 'Click to show/hide layers. Colour & size show type.'}</p>
+                <ul className="space-y-1">
+                  {presentCats.map((c) => {
+                    const off = hiddenCats.has(c.id);
+                    return (
+                      <li key={c.id}>
+                        <button onClick={() => toggleCat(c.id)} className={`flex w-full items-center gap-2 rounded px-1 py-1 text-left text-sm hover:bg-muted/30 ${off ? 'opacity-40' : ''}`}>
+                          <span className="h-3 w-3 shrink-0 rounded-full border" style={{ backgroundColor: off ? 'transparent' : c.color, borderColor: c.color }} aria-hidden="true" />
+                          <span className="w-4 text-center text-xs" aria-hidden="true">{c.glyph}</span>
+                          <span className="flex-1 text-muted-foreground">{sv ? c.sv : c.en}</span>
+                          <span className="shrink-0 tabular-nums text-xs text-muted-foreground/60">{c.n}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+              {/* Sevärdheter inom räckvidd — flyttad hit, bredvid kartan (Daniel). */}
+              <div className="viking-card rounded-lg border border-border p-4">
+                <h2 className="text-base font-semibold text-foreground mb-2 flex items-center gap-2"><Navigation className="h-4 w-4 text-sky-400" />{sv ? 'Sevärdheter inom räckvidd' : 'Sights within reach'} ({typedFeatures.length})</h2>
+                <div className="max-h-[46vh] overflow-y-auto pr-1">
+                  {typedFeatures.map((f, i) => (
+                    <a key={i} href={f.link} title={f.isRune ? (sv ? 'Öppna runinskriften' : 'Open inscription') : (sv ? 'Öppna på kartan' : 'Open on map')}
+                      className={`flex items-baseline gap-2 py-0.5 border-b border-border/40 hover:bg-muted/30 rounded ${hiddenCats.has(f.cat.id) ? 'opacity-40' : ''}`}>
+                      <span className="text-sky-300 font-mono shrink-0 w-14 text-right text-xs">{f.dist_m < 1000 ? `${f.dist_m} m` : `${(f.dist_m / 1000).toFixed(1)} km`}</span>
+                      <span className="min-w-0 text-sm"><span className="mr-1" aria-hidden="true">{f.cat.glyph}</span><span className="hover:underline">{f.name}</span>{f.type && <span className="text-muted-foreground/60 text-xs"> · {f.type}</span>}</span>
+                    </a>
+                  ))}
+                </div>
+                <p className="text-[11px] text-muted-foreground/70 mt-2">{sv ? 'Ur RAÄ Fornsök + kyrkor + kultplatser (fågelvägen). Justera radien ovanför kartan; klicka i teckenförklaringen för att filtrera.' : 'From the heritage register, churches & cult sites. Adjust the radius above the map; toggle layers in the legend.'}</p>
+              </div>
+            </aside>
+          )}
           {excursion.monumentTypes && excursion.monumentTypes.length > 0 && (
             <aside className="lg:col-span-1">
               <div className="viking-card rounded-lg border border-border p-4">
@@ -578,41 +673,8 @@ const ExcursionDetail = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Sevärdheter inom räckvidd (features_near, reglerbar radie) */}
-          {nearbyDb && nearbyDb.length > 0 && (
-            <Section icon={<Navigation className="h-5 w-5 text-sky-400" />} title={`${sv ? 'Sevärdheter inom räckvidd' : 'Sights within reach'} (${nearbyDb.length})`}>
-              <div className="max-h-64 overflow-y-auto pr-1">
-                {nearbyDb.map((f, i) => {
-                  const isRune = f.kind === 'runestone';
-                  const to = isRune ? `/inscription/${encodeURIComponent(f.raa_type || '')}` : `/explore?center=${f.lat},${f.lng}&zoom=15`;
-                  const icon = f.kind === 'church' ? '⛪' : isRune ? 'ᚱ' : /hällrist/i.test(f.raa_type || '') ? '🪨' : '▪';
-                  return (
-                    <a key={i} href={to} title={isRune ? (sv ? 'Öppna runinskriften' : 'Open inscription') : (sv ? 'Öppna på kartan' : 'Open on map')}
-                      className="flex items-baseline gap-2 text-sm py-0.5 border-b border-border/40 hover:bg-muted/30 rounded">
-                      <span className="text-sky-300 font-mono shrink-0 w-14 text-right text-xs">{f.dist_m < 1000 ? `${f.dist_m} m` : `${(f.dist_m / 1000).toFixed(1)} km`}</span>
-                      <span className="hover:underline"><span className={isRune ? 'text-amber-500' : ''}>{icon}</span> {f.name} {!isRune && <span className="text-muted-foreground/60 text-xs">{f.raa_type || ''}</span>}</span>
-                    </a>
-                  );
-                })}
-              </div>
-              <p className="text-[11px] text-muted-foreground/70 mt-2">{sv ? 'Ur RAÄ Fornsök + kyrkor (fågelvägen). Justera radien ovanför kartan. Klicka för att öppna på huvudkartan.' : 'From the heritage register + churches. Adjust the radius above the map.'}</p>
-            </Section>
-          )}
-          {/* Källor */}
-          {sources && sources.length > 0 && (
-            <Section icon={<BookOpen className="h-5 w-5 text-gold" />} title={sv ? 'Källor' : 'Sources'}>
-              <ul className="space-y-3">
-                {sources.map((s) => (
-                  <li key={s.title} className="text-sm">
-                    <div className="font-semibold text-foreground">{sv ? s.title : (s.title_en || s.title)}</div>
-                    <div className="text-xs text-muted-foreground">{s.author}{s.written_year ? ` (${s.written_year})` : ''}</div>
-                    {s.description && <p className="text-sm text-muted-foreground mt-1">{s.description}</p>}
-                  </li>
-                ))}
-              </ul>
-            </Section>
-          )}
-
+          {/* "Sevärdheter inom räckvidd" flyttad till högerkolumnen bredvid kartan (Fas 1).
+              Källor flyttade till en delad ReferenceList SIST på sidan (Wikipedia-modell, se nedan). */}
           {/* Personer */}
           {kings && kings.length > 0 && (
             <Section icon={<Crown className="h-5 w-5 text-gold" />} title={sv ? 'Personer' : 'People'}>
@@ -695,6 +757,12 @@ const ExcursionDetail = () => {
             </Section>
           )}
         </div>
+
+        {/* Källor & referenser SIST på sidan (delad ReferenceList, Wikipedia-modell). */}
+        <ReferenceList
+          sv={sv}
+          sources={(sources ?? []).map((s: any) => ({ id: s.id, title: sv ? s.title : (s.title_en || s.title), author: s.author, year: s.written_year, url: s.url }))}
+        />
       </main>
       <Footer />
     </div>
