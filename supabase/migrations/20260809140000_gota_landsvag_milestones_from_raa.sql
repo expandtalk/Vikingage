@@ -1,0 +1,12 @@
+-- Milstolpar (1700-tal, RAÄ/kulturarvsdata CC0) längs Göta landsväg — visar vägens SENARE
+-- sträckning (de restes långt efter medeltiden men markerar hur vägen då gått). Endast stolpar
+-- inom ~900 m av den rekonstruerade sträckningen. kind='milestone', off_route=true så de INTE
+-- ingår i ankarlinjen. Koordinater verifierade ur heritage_sites (Fornsök) — aldrig ur minne.
+insert into road_waypoints (road_id, waypoint_order, name, kind, waypoint_type, description, off_route, coordinates) values
+('97b4a769-7eed-4d64-b97e-978d5b957e7d', 41, 'Milstolpe – Södertälje (V)', 'milestone', 'landmark', 'Milstolpe, tidigmodern (ca 1700-tal). Markerar Göta landsvägs senare sträckning nära Södertälje. Källa: kulturarvsdata.se/raa/lamning/ae91568e-0278-4569-bc1f-515136a666f6 (RAÄ, CC0).', true, point(17.60955, 59.19652)),
+('97b4a769-7eed-4d64-b97e-978d5b957e7d', 42, 'Milstolpe – Södertälje', 'milestone', 'landmark', 'Milstolpe, tidigmodern (ca 1700-tal). Källa: kulturarvsdata.se/raa/lamning/57de258f-6e56-4c38-955b-f9c7b52dcdb5 (RAÄ, CC0).', true, point(17.61642, 59.19196)),
+('97b4a769-7eed-4d64-b97e-978d5b957e7d', 43, 'Milstolpe – Salem (Bornsjö-sidan)', 'milestone', 'landmark', 'Milstolpe, tidigmodern (ca 1700-tal). Ligger 44 m från den rekonstruerade sträckningen (Bergaholmsvägen-stråket). Källa: kulturarvsdata.se/raa/lamning/de7332b9-5ad4-4fb0-a853-f22fde00553f (RAÄ, CC0).', true, point(17.66783, 59.21967)),
+('97b4a769-7eed-4d64-b97e-978d5b957e7d', 44, 'Milstolpe – Salem', 'milestone', 'landmark', 'Milstolpe, tidigmodern (ca 1700-tal). Källa: kulturarvsdata.se/raa/lamning/dd16164e-21b6-4301-9c92-e034a15e9958 (RAÄ, CC0).', true, point(17.67223, 59.22004)),
+('97b4a769-7eed-4d64-b97e-978d5b957e7d', 45, 'Milstolpe – Salem (Bergaholm)', 'milestone', 'landmark', 'Milstolpe, tidigmodern (ca 1700-tal). Nära Bergaholm längs Bergaholmsvägen. Källa: kulturarvsdata.se/raa/lamning/2bb3aa59-44c3-42d9-9277-0e0794ffdbc3 (RAÄ, CC0).', true, point(17.70731, 59.23251)),
+('97b4a769-7eed-4d64-b97e-978d5b957e7d', 46, 'Milstolpe – Salem (Ö)', 'milestone', 'landmark', 'Milstolpe, tidigmodern (ca 1700-tal). Källa: kulturarvsdata.se/raa/lamning/c2b143dc-11e9-428f-a2b6-19b59583cd90 (RAÄ, CC0).', true, point(17.74436, 59.22184)),
+('97b4a769-7eed-4d64-b97e-978d5b957e7d', 47, 'Milstolpe – Botkyrka', 'milestone', 'landmark', 'Milstolpe, tidigmodern (ca 1700-tal). Nära Botkyrka längs stråket mot Salem. Källa: kulturarvsdata.se/raa/lamning/ec85bdf6-d500-482d-a7de-a0bea46bbc8c (RAÄ, CC0).', true, point(17.82795, 59.24079));

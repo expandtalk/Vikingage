@@ -51,7 +51,7 @@ export const FEATURE_ICON: Record<string, string> = {
   'ruin': 'ruin', 'ruiner': 'ruin', 'väderkvarn': 'vaderkvarn', 'kvarn': 'vaderkvarn',
   'gruva': 'gruva', 'gruvområde': 'gruva', 'gruvhål': 'gruvhal', 'skärpning': 'gruvhal',
   'bro': 'bro', 'vad': 'vad', 'vadställe': 'vad',
-  'milstolpe': 'milstolpe', 'milsten': 'milstolpe', 'väghållningssten': 'milstolpe', 'vägmärke': 'milstolpe',
+  'milstolpe': 'milstolpe', 'milsten': 'milstolpe', 'väghållningssten': 'milstolpe', 'vägmärke': 'milstolpe', 'milestone': 'milstolpe',
   'riksröse': 'riksrose', 'gränsmärke': 'riksrose', 'råmärke': 'riksrose',
   'sevärdhet': 'sevardhet', 'badplats': 'badplats', 'fyr': 'fyr', 'fyrplats': 'fyr',
   'källa med tradition': 'droplet', 'källa': 'droplet',

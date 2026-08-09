@@ -25,7 +25,7 @@ import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 const CORRIDOR_BBOX: [number, number, number, number] = [17.55, 59.15, 18.15, 59.35];
 const GOTA_ROAD_ID = '97b4a769-7eed-4d64-b97e-978d5b957e7d';
 
-type Kind = 'endpoint' | 'bridge' | 'thing' | 'rune' | 'church' | 'fort';
+type Kind = 'endpoint' | 'bridge' | 'thing' | 'rune' | 'church' | 'fort' | 'milestone';
 // Noden bär sekvens + väg-not (ur DB). ENTITETERNA (kyrka/runsten) resolveras dessutom live via
 // signum → runic_inscriptions / church → ecclesiastical_sites för thumbnail, byggår och "Läs mer"-länk.
 interface Node { name: string; lat: number; lng: number; kind: Kind; note: string; signum?: string; church?: string; offRoute?: boolean; }
@@ -62,9 +62,10 @@ const KIND: Record<Kind, { color: string; label: string }> = {
   endpoint: { color: '#94a3b8', label: 'Ändpunkt (approx.)' },
   bridge: { color: '#38bdf8', label: 'Bro / vadställe' },
   thing: { color: '#d4a63c', label: 'Tingsplats' },
-  rune: { color: '#b45309', label: 'Runsten (brobygge)' },
+  rune: { color: '#b45309', label: 'Runsten' },
   church: { color: '#7b3f00', label: 'Medeltidskyrka' },
   fort: { color: '#8b5cf6', label: 'Borg (kontrollpunkt)' },
+  milestone: { color: '#9a7b3c', label: 'Milstolpe (1700-tal)' },
 };
 
 const GL_KIND_KEYS = Object.keys(KIND) as Kind[];
@@ -80,7 +81,7 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
 
   // Återanvändbar legend: väglinje + en togglebar grupp per nodtyp + baskarta.
   const LEGEND: LegendLayerDef[] = [
-    { key: 'road', label: 'Göta landsväg (~31,9 km)', color: '#d4a63c', defaultOn: true },
+    { key: 'road', label: 'Ankarlinje mellan hållpunkter (ej belagd sträckning)', color: '#d4a63c', defaultOn: true },
     ...GL_KIND_KEYS.map((k) => ({ key: k, label: KIND[k].label, color: KIND[k].color, defaultOn: true })),
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
   ];
@@ -227,9 +228,13 @@ const GotaLandsvag = () => {
           <CardContent>
             <GotaLandsvagMap nodes={nodes} />
             <p className="text-xs text-muted-foreground mt-2 opacity-75">
-              Tolv verifierade hållpunkter (kyrkor ur <code>ecclesiastical_sites</code>, runstenar ur runkorpusen — Sö 300/304/306/311/312,
-              Årstafältet/Flottsbro ur sv.wikipedia, Svartlöten ur RAÄ Botkyrka 389:1, Ragnhildsborg ur RAÄ Östertälje 220:1). Start-/slutpunkter approximativa.
-              Reglaget kan lägga på en <strong>paleo-strandlinje</strong> — vid vikingatida havsnivå var stråket delvis vattenland.
+              <strong className="text-amber-300/90">Den gula linjen är en ungefärlig ankarlinje mellan hållpunkterna — inte en belagd
+              vägsträckning.</strong> Den verkliga vägen slingrade runt Bornsjön, ned i Glömstadalen och i serpentiner
+              uppför Korkskruven; bara enstaka avsnitt (Årstafältets vägbank, Korkskruvens vägrest, brolägena vid Glömsta/Flottsbro)
+              är fysiskt belagda (se evidensklass nedan). Hållpunkter: kyrkor ur <code>ecclesiastical_sites</code>, runstenar ur
+              runkorpusen (Sö 300/304/306/311/312), Årstafältet/Flottsbro ur sv.wikipedia, Svartlöten RAÄ Botkyrka 389:1,
+              Ragnhildsborg RAÄ Östertälje 220:1. <strong>Milstolparna (1700-tal, RAÄ)</strong> restes långt efter medeltiden men
+              markerar hur vägen då gick. Start-/slutpunkter approximativa. Reglaget lägger på en <strong>paleo-strandlinje</strong>.
             </p>
           </CardContent>
         </Card>
@@ -253,6 +258,67 @@ const GotaLandsvag = () => {
               Källkritik: brofunktionen på 1000-talet är belagd via runstenarna (lämning + Rundata-datering); att just denna
               korridor var i <em>kontinuerligt</em> bruk 1000-tal→medeltid är sannolik tolkning, då den utgrävda banken bara går
               tillbaka till 1600-talet och medeltida fynd inte säkert kan knytas till linjen (SLM 2025).
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="viking-card mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-gold"><ScrollText className="h-5 w-5" /> Runstenarna — vilka handlar om vägen?</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2 text-xs">
+            <p>
+              Bara två av runmonumenten längs stråket <em>talar om</em> väg och bro: <strong>Sö 300</strong> (Glömsta,
+              "lät göra bron") och <strong>Holmfast-ristningarna Sö 311/312</strong> (Södertälje, "lät röja väg och göra bro").
+              Det är dessa som belägger väghållning på 1000-talet.
+            </p>
+            <p className="opacity-80">
+              <strong>Sö 304</strong> (Oxelby, "Gute lät resa denna sten efter Orökja, sin son"; snävt daterad 1010–1050) och{' '}
+              <strong>Sö 306</strong> (Söderby) är däremot <em>minnesstenar</em> — de nämner varken väg eller bro. De fungerar som
+              <em> rumsliga ankare</em>: monumenttätheten indikerar ett förhistoriskt vägstråk, men stenarna är inte texter om vägen.
+              Skillnaden är källkritiskt viktig och märks nu ut som "Runsten" (ej "brobygge") i kartlegenden.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="viking-card mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-gold"><RouteIcon className="h-5 w-5" /> Delsträckor &amp; evidensklass</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2 text-xs">
+            <p>
+              Vägen består av namngivna delsträckor med <em>olika</em> beläggsgrad. <strong className="text-emerald-300/90">Belagt</strong> =
+              fysiskt dokumenterad vägkropp/lämning · <strong className="text-amber-300/90">Tolkat</strong> = sannolik sträckning ur
+              karta/namn/monument · <strong className="text-slate-300/80">Obelagt</strong> = ren ankarlinje.
+            </p>
+            <ul className="space-y-1">
+              <li><span className="text-emerald-300/90">● Belagt:</span> Årstafältets vägbank (RAÄ Brännkyrka 34:1) · Korkskruvens bevarade vägrest i Älvsjöskogens naturreservat · brolägena Glömsta (Sö 300) och Flottsbro · milstolparna (RAÄ) · Bergaholms bevarade vägfragment.</li>
+              <li><span className="text-amber-300/90">● Tolkat:</span> Skanstull→Johanneshov (namngivna backar) · Årstafältet→Brännkyrka (namnkontinuitet i moderna Götalandsvägen) · <strong>Botkyrka↔Salem via S:t Botvids väg</strong> (pilgrimsleden följer <em>delvis</em> medeltidsvägen) · <strong>Salem→Bergaholm→Oxelby via Bergaholmsvägen</strong>.</li>
+              <li><span className="text-slate-300/80">● Obelagt/ankarlinje:</span> de raka linjeavsnitten mellan hållpunkterna (kartans gula streck).</li>
+            </ul>
+            <p className="opacity-70">
+              S:t Botvids pilgrimsled (invigd 2017, ~7,5 km Botkyrka↔Salem) knyter samman de medeltida kyrkorna men är
+              <em> inte</em> identisk med den medeltida vägen — den följer den bara delvis. Källa: Svenska kyrkan; SLM 2025.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="viking-card mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-gold"><Footprints className="h-5 w-5" /> Cykelbarhet (planeringsnivå)</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2 text-xs">
+            <p>
+              Rutten är i huvudsak cyklingsbar på moderna vägar och cykelbanor, men har <strong>två brott i den historiska linjen</strong>:
+            </p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li><strong className="text-amber-300/90">Årstafältet (tillfälligt):</strong> gc-vägen över fältet är avstängd sedan 2 juni 2025 pga stadsbygget; omledning via Åbyvägen. Öppnar tidigast hösten 2026.</li>
+              <li><strong className="text-red-300/90">Flottsbro (permanent):</strong> den historiska flottbron finns inte kvar — sundet Albysjön↔Tullingesjön kan inte passeras på gamla linjen (vägen flyttades själv till Fittjanäset på 1660-talet). Kräver omledning.</li>
+            </ul>
+            <p className="opacity-80">
+              Därtill: pilgrimsledens spång-/stigpartier (Botkyrka↔Salem) är delvis <em>fot-only</em>, och <strong>Bornsjön är Stockholms
+              vattentäkt</strong> (vattenskyddsområde) med färdselrestriktioner — verifiera gällande föreskrifter innan Bergaholmsvägen-avsnittet
+              körs/cyklas. Bedömningen är på planeringsnivå (kart- och namnbaserad), inte fältgången.
             </p>
           </CardContent>
         </Card>
@@ -326,7 +392,7 @@ const GotaLandsvag = () => {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              {nodes.filter((n) => n.kind !== 'endpoint').map((n) => {
+              {nodes.filter((n) => n.kind !== 'endpoint' && n.kind !== 'milestone').map((n) => {
                 const e = enrich[n.name];
                 return (
                   <li key={n.name} className="flex gap-3">
@@ -392,7 +458,8 @@ const GotaLandsvag = () => {
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-1 text-xs">
             <p>• <strong>Start-/slutpunkter (Skanstull, Södertälje) är approximativa</strong> — endast mellanpunkterna är koordinatverifierade.</p>
-            <p>• <strong>Långsjön/Korkskruven</strong> beskrivs i texten men saknar egen kartpunkt tills en verifierad koordinat finns (bracketas av Brännkyrka och Glömsta). Det är Långsjön — <em>inte</em> Långbro/Långbrodal, som saknar belägg som vägläge.</p>
+            <p>• <strong>Långsjön/Korkskruven</strong> beskrivs i texten men saknar egen kartpunkt tills en verifierad koordinat finns (bracketas av Brännkyrka och Glömsta). Det är Långsjön — <em>inte</em> Långbro/Långbrodal, som saknar belägg som vägläge. Vintertid valdes ofta <strong>isleden över Långsjön</strong> i stället för den branta Korkskruven.</p>
+            <p>• <strong>Sekvens Söderby/Oxelby:</strong> ankarlinjen ger en synlig backtrack kring Bornsjön (Söderbystenen Sö 306 ligger öster om Salem). Söderbystenen hör geometriskt sett till Botkyrka–Salem-infarten snarare än efter Salem; ordningen är en öppen fråga och linjen ska läsas som ankare, inte belagd följd.</p>
             <p>• <strong>Historisk linje vs modern promenad:</strong> den historiska vägen följde ungefär Johanneshovsvägen; strandvägen längs Årstaviken (Årstavägen) är ett modernt, naturskönt alternativ, inte den gamla vägen.</p>
             <p>• <strong>Årstafältet – aktuellt:</strong> gc-vägen över fältet är permanent avstängd sedan 2 juni 2025 (stadsbygget); omledning via Åbyvägen och söder om Östbergavägen. Vallastråket öppnar tidigast hösten 2026.</p>
             <p>• <strong>Årstafältets vägbank</strong> dateras till minst 1600-talet; medeltida fynd finns men det är <em>osäkert</em> om de direkt kan kopplas till vägens medeltida sträckning (liknande vid Glömsta). Källa: SLM 2025.</p>
