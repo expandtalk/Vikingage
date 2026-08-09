@@ -14,7 +14,7 @@ import { useRunestoneBrowser, type BrowserStone } from '@/hooks/useRunestoneBrow
 /* ---------- Ärlig normalisering (signum-serie = landskapsindelningen i runologin) ---------- */
 
 type LandKey = string;
-interface LandDef { key: LandKey; sv: string; en: string; region: 'svealand' | 'gotaland' | 'norrland' | 'oar' | 'norden'; }
+interface LandDef { key: LandKey; sv: string; en: string; region: 'svealand' | 'gotaland' | 'norrland' | 'oar' | 'norden' | 'utland'; }
 
 // Nyckel = uppercasad ledande bokstavsdel i signum (som RPC returnerar).
 const SERIES_TO_LAND: Record<string, LandDef> = {
@@ -45,8 +45,19 @@ const SERIES_TO_LAND: Record<string, LandDef> = {
   GR:  { key: 'GR', sv: 'Grönland',      en: 'Greenland',      region: 'norden' },
   FR:  { key: 'FR', sv: 'Färöarna',      en: 'Faroe Islands',  region: 'norden' },
   KJ:  { key: 'KJ', sv: 'Urnordiska (äldre futhark)', en: 'Proto-Norse (Elder Futhark)', region: 'norden' },
+  // Utland — vikingafärdernas inskrifter (serie-koder bekräftade mot exempel-signum i Rundata).
+  E:   { key: 'E',  sv: 'England',        en: 'England',        region: 'utland' },
+  SC:  { key: 'SC', sv: 'Skottland',      en: 'Scotland',       region: 'utland' },
+  OR:  { key: 'OR', sv: 'Orkney',         en: 'Orkney',         region: 'utland' },
+  IR:  { key: 'IR', sv: 'Irland',         en: 'Ireland',        region: 'utland' },
+  IM:  { key: 'IM', sv: 'Isle of Man',    en: 'Isle of Man',    region: 'utland' },
+  BR:  { key: 'BR', sv: 'Brittiska öarna', en: 'British Isles', region: 'utland' },
+  RU:  { key: 'RU', sv: 'Ryssland (Rus)', en: 'Russia (Rus)',   region: 'utland' },
+  UA:  { key: 'UA', sv: 'Ukraina',        en: 'Ukraine',        region: 'utland' },
+  HAGIA: { key: 'HAGIA', sv: 'Bysans (Istanbul)', en: 'Byzantium (Istanbul)', region: 'utland' },
+  PL:  { key: 'PL', sv: 'Polen',          en: 'Poland',         region: 'utland' },
 };
-const OVRIGT: LandDef = { key: 'OVRIGT', sv: 'Övrigt / utanför Norden', en: 'Other / outside the Nordic area', region: 'norden' };
+const OVRIGT: LandDef = { key: 'OVRIGT', sv: 'Övrigt / oidentifierad serie', en: 'Other / unidentified series', region: 'utland' };
 
 function landOf(series: string | null): LandDef {
   if (!series) return OVRIGT;
@@ -58,7 +69,8 @@ const REGION_ORDER: Array<{ key: LandDef['region']; sv: string; en: string }> = 
   { key: 'gotaland', sv: 'Götaland', en: 'Götaland' },
   { key: 'oar',      sv: 'Öland & Gotland', en: 'Öland & Gotland' },
   { key: 'norrland', sv: 'Norrland', en: 'Norrland' },
-  { key: 'norden',   sv: 'Övriga Norden & utland', en: 'Rest of the Nordics & abroad' },
+  { key: 'norden',   sv: 'Övriga Norden', en: 'Rest of the Nordics' },
+  { key: 'utland',   sv: 'Utland (vikingafärder)', en: 'Abroad (Viking voyages)' },
 ];
 
 /* Ornamentstil (Gräslund) — primär stil ur ev. kombinerad bedömning. */

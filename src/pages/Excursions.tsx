@@ -63,7 +63,7 @@ const Excursions = () => {
       >
         {/* Thumbnail med rubriken i vit text ovanpå. Mörk gradient-scrim garanterar
             WCAG-läsbarhet oavsett foto. Bildlösa mål får en deterministisk platta. */}
-        <Link to={`/excursions/${e.id}`} className="block relative h-44 w-full overflow-hidden">
+        <Link to={`/${sv ? 'utflykter' : 'excursions'}/${e.id}`} className="block relative h-44 w-full overflow-hidden">
           {e.photoDir ? (
             <img
               src={`/excursion-photos/${e.photoDir}/${e.thumbFile ?? 'thumb.jpg'}`}
@@ -105,7 +105,7 @@ const Excursions = () => {
 
           <div className="flex flex-wrap gap-3 pt-1">
             <Link
-              to={`/excursions/${e.id}`}
+              to={`/${sv ? 'utflykter' : 'excursions'}/${e.id}`}
               className="inline-flex items-center gap-1 text-xs text-gold hover:underline font-medium"
             >
               <MapPin className="h-3 w-3" />

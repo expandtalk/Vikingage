@@ -61,6 +61,12 @@ const parseLatLng = (co: Fort['coordinates']): [number, number] | null => {
 const SGU_JORD = 'https://resource.sgu.se/service/wms/130/jordarter-25-100-tusen';
 const SGU_BERG = 'https://resource.sgu.se/service/wms/130/berggrund-50-250-tusen';
 
+// Foton som Daniel laddat upp ligger i /excursion-photos/<dir>/ (manifest.json). Koppla borg-UUID →
+// fotomapp så samma unika bilder som utflyktssidan visar även på den kanoniska fortsidan.
+const FORT_PHOTO_DIR: Record<string, string> = {
+  '6660de5b-9d2e-4fa4-b58e-f327fd256ae3': 'ismantorp-borg-oland', // Ismantorps borg
+};
+
 const FortressDetail = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
@@ -72,6 +78,7 @@ const FortressDetail = () => {
   const [metal, setMetal] = useState<MetalAn[]>([]);
   const [material, setMaterial] = useState<MaterialAn[]>([]);
   const [invs, setInvs] = useState<Inv[]>([]);
+  const [photos, setPhotos] = useState<string[]>([]);
   // Källkritisk claim-liggare + Wikipedia-stil källförteckning (place_claim → historical_sources).
   interface Claim { attribute: string | null; statement: string | null; value_text: string | null; verification_status: string | null; source_id: string | null; }
   const [claims, setClaims] = useState<Claim[]>([]);
@@ -280,6 +287,18 @@ const FortressDetail = () => {
     return () => { cancelled = true; if (mapRef.current && terrLayerRef.current) { try { mapRef.current.removeLayer(terrLayerRef.current); } catch { /* noop */ } } };
   }, [isOland, hiddenCats, fort]);
 
+  // Fotogalleri: läs manifestet och plocka mappen för denna borg (om någon finns).
+  useEffect(() => {
+    const dir = id ? FORT_PHOTO_DIR[id] : undefined;
+    if (!dir) { setPhotos([]); return; }
+    let cancelled = false;
+    fetch('/excursion-photos/manifest.json')
+      .then((r) => r.ok ? r.json() : {})
+      .then((m: Record<string, string[]>) => { if (!cancelled) setPhotos((m?.[dir] ?? []).map((f) => `/excursion-photos/${dir}/${f}`)); })
+      .catch(() => { if (!cancelled) setPhotos([]); });
+    return () => { cancelled = true; };
+  }, [id]);
+
   const row = (label: string, val: React.ReactNode) => val ? (
     <div className="flex gap-2 text-sm"><span className="text-muted-foreground min-w-[130px]">{label}</span><span className="text-foreground">{val}</span></div>
   ) : null;
@@ -304,6 +323,17 @@ const FortressDetail = () => {
               {[fort.fortress_type === 'ring_fortress' ? (sv ? 'Ringborg' : 'Ring fort') : (sv ? 'Fornborg' : 'Hillfort'),
                 fort.period, fort.parish && `${fort.parish} sn`, fort.landscape].filter(Boolean).join(' · ')}
             </p>
+
+            {/* Foton (samma unika bilder som utflyktssidan) — fortsidan är kanonisk sida för platsen. */}
+            {photos.length > 0 && (
+              <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                {photos.map((src, i) => (
+                  <a key={src} href={src} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-lg border border-border">
+                    <img src={src} alt={`${fort.name} — ${sv ? 'foto' : 'photo'} ${i + 1}`} loading="lazy" className="h-32 w-full object-cover transition-opacity hover:opacity-90" />
+                  </a>
+                ))}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Karta med lager-stack */}
