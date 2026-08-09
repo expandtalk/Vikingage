@@ -7,6 +7,7 @@ import { RunicExplorerSimple } from '../components/RunicExplorerSimple';
 import { NamedStonesSection } from '../components/inscriptions/NamedStonesSection';
 import { RunestonePoetrySection } from '../components/inscriptions/RunestonePoetrySection';
 import { DatingCategoriesSection } from '../components/inscriptions/DatingCategoriesSection';
+import { RunestoneBrowser } from '../components/inscriptions/RunestoneBrowser';
 import { FingerprintDialog } from '../components/forensics/FingerprintDialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -54,9 +55,24 @@ const Inscriptions = () => {
         {/* Datering-kategorisering (Gräslunds stilkronologi) */}
         <DatingCategoriesSection />
 
-        {/* Nivå 2: hela materialet med sök/filter */}
-        <h2 className="text-2xl font-bold text-white mb-4">
-          {language === 'sv' ? 'Alla inskrifter' : 'All inscriptions'}
+        {/* Nivå 2: fasetterad runstensbläddrare — hela geopositionerade korpusen (~7 400) på en
+            nationell klustrad karta + vänsterpanel att sortera på landskap (signum-serie),
+            ornamentstil (Gräslund) och objektkategori. Klick → /inscription/:signum. */}
+        <div className="mb-3">
+          <h2 className="text-2xl font-bold text-white">
+            {language === 'sv' ? 'Runstensbläddrare' : 'Runestone browser'}
+          </h2>
+          <p className="text-slate-400 text-sm mt-1 max-w-3xl">
+            {language === 'sv'
+              ? 'Hela den geopositionerade korpusen på kartan. Filtrera i vänsterpanelen på landskap (signum-serie), ornamentstil eller objektkategori — kartan och listan uppdateras direkt.'
+              : 'The entire geolocated corpus on the map. Filter in the left panel by province (signum series), ornament style or object category — the map and list update instantly.'}
+          </p>
+        </div>
+        <RunestoneBrowser />
+
+        {/* Nivå 3: den generella utforskaren (alla lager, tidskontroll) */}
+        <h2 className="text-2xl font-bold text-white mb-4 mt-10">
+          {language === 'sv' ? 'Avancerad utforskare (alla lager)' : 'Advanced explorer (all layers)'}
         </h2>
         <RunicExplorerSimple />
       </main>
