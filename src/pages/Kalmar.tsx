@@ -15,6 +15,7 @@ import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
+import { KalmarsundCrossing } from '@/components/kalmar/KalmarsundCrossing';
 
 // /sv/kalmar — forskningshubb för det tidiga/medeltida Kalmar i Möre. Binder ihop:
 //  - Ortnamnsforskningen kring Hossmo (husaby-nukleusen, SOL 2003, kalmar_place_names)
@@ -97,6 +98,8 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   const coinsG = useRef<L.LayerGroup>(L.layerGroup());
   const wallRef = useRef<L.LayerGroup | null>(null);
   const [wallReady, setWallReady] = useState(false);
+  const heritageG = useRef<L.LayerGroup>(L.layerGroup());
+  const [heritageReady, setHeritageReady] = useState(false);
   const fittedRef = useRef(false);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   // Kalmar använder den finupplösta DEM-modellen (Copernicus GLO-30 + paleo_rsl),
@@ -109,6 +112,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     { key: 'hamn', label: 'Hamn (Kättilen)', color: '#38bdf8', defaultOn: true },
     { key: 'mynt', label: 'Myntfynd', color: '#f4c430', defaultOn: true },
     { key: 'stadsmur', label: 'Stadsmur (~1400)', color: '#22c55e', defaultOn: true },
+    { key: 'kulturarv', label: 'Sevärt & kulturarv', color: '#f472b6', defaultOn: true },
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap', defaultOn: true },
   ];
   const { enabled, toggle } = useMapLegendState(LEGEND);
@@ -201,13 +205,14 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
       [enabled.hamn, harborG.current],
       [enabled.mynt, coinsG.current],
       [enabled.stadsmur, wallRef.current],
+      [enabled.kulturarv, heritageG.current],
     ];
     for (const [on, g] of pairs) {
       if (!g) continue;
       if (on) { if (!map.hasLayer(g)) map.addLayer(g); }
       else if (map.hasLayer(g)) map.removeLayer(g);
     }
-  }, [enabled.ortnamn, enabled.hamn, enabled.mynt, enabled.stadsmur, places, harbor, coins, wallReady]);
+  }, [enabled.ortnamn, enabled.hamn, enabled.mynt, enabled.stadsmur, enabled.kulturarv, places, harbor, coins, wallReady, heritageReady]);
 
   // Medeltida stadsmuren (fort_at-RPC, evidensklass-färgad) — samma data som /sv/kalmar-stadsmur,
   // ritad vid ~1400 (peak medeltid). Eget togglebart lager (wallRef deklareras i ref-blocket ovan).
@@ -236,6 +241,34 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
       }
       wallRef.current = grp;
       setWallReady((v) => !v); // trigga toggle-effekten så muren läggs på enligt legenden
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Sevärt & kulturarv — kurerade heritage_sites i Kalmar (Gamla stan + Kvarnholmen + sundet):
+  // judiska begravningsplatsen, synagogorna, S:t Nicolai/Bykyrkan, gamla Stortorget, rådhuset,
+  // Grimskärs skans, Skansgrundet, slottet, domkyrkan. Bbox + raa_type-filter (ej hela FMIS-floden).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase.from('heritage_sites') as unknown as { select: (c: string) => any })
+        .select('name,raa_type,lat,lng,description')
+        .gte('lat', 56.62).lte('lat', 56.70).gte('lng', 16.33).lte('lng', 16.42)
+        .in('raa_type', ['Begravningsplats', 'Synagoga', 'Fästning/skans', 'Rådhus', 'Torg', 'kyrka', 'kyrkogård', 'Borg/slottslämning', 'Grund/sjömärke']);
+      if (cancelled || !data || !mapRef.current) return;
+      heritageG.current.clearLayers();
+      (data as { name: string; raa_type: string; lat: number | null; lng: number | null; description: string | null }[])
+        .filter((h) => h.lat != null && h.lng != null)
+        .forEach((h) => {
+          const d = (h.description ?? '').slice(0, 240);
+          L.circleMarker([h.lat!, h.lng!], { radius: 6, color: '#831843', weight: 2, fillColor: '#f472b6', fillOpacity: 0.8 })
+            .bindTooltip(h.name, { direction: 'top', offset: [0, -6], className: 'ang-clabel' })
+            .bindPopup(`<b>${h.name}</b> <span style="font-size:10px;color:#888">${h.raa_type}</span>${d ? `<br/><span style="font-size:11px;color:#666">${d}${(h.description ?? '').length > 240 ? '…' : ''}</span>` : ''}`)
+            .addTo(heritageG.current);
+        });
+      setHeritageReady((v) => !v); // trigga toggle-effekten så lagret läggs på enligt legenden
     })();
     return () => { cancelled = true; };
   }, []);
@@ -340,7 +373,7 @@ const Kalmar = () => {
       />
       <Header />
       <Breadcrumbs />
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
             <Crown className="h-8 w-8 text-gold" />
@@ -580,6 +613,11 @@ const Kalmar = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* ÖVERFART KALMARSUND — interaktiv driftmodell (hypotes, källbelagda ankarpunkter) */}
+        <div className="mb-6">
+          <KalmarsundCrossing />
+        </div>
 
         <p className="text-xs text-muted-foreground mt-6 opacity-75 flex items-start gap-2">
           <Info className="h-4 w-4 shrink-0 mt-0.5" />
