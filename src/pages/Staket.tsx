@@ -11,6 +11,7 @@ import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
+import { createPlaceMedallion } from '@/utils/map/placeMarker';
 
 // /sv/staket — forskningssida om Mälaren som havsvik ~1000 e.Kr. och frågan om var Olav
 // Haraldssons seglats 1007–08 ägde rum (Almarestäket kontra Norrström/Stockholm).
@@ -82,6 +83,12 @@ const KIND: Record<Site['kind'], { color: string; label: string }> = {
 
 const KIND_KEYS = Object.keys(KIND) as Site['kind'][];
 
+// Medaljong-glyf per platstyp (FORMEN bär typen; färgen tas ur KIND[kind].color, som förr).
+// Mälaröarna får 'droplet' (land i vattnet) för att skiljas från innerstadsholmarnas 'dot'.
+const KIND_GLYPH: Record<Site['kind'], string> = {
+  royal: 'crown', sound: 'wave', fort: 'fort', city: 'house', island: 'droplet', holme: 'dot',
+};
+
 const StaketMap: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -107,9 +114,11 @@ const StaketMap: React.FC = () => {
       const c = KIND[s.kind].color;
       const royal = s.kind === 'royal';
       pts.push([s.lat, s.lng]);
-      L.circleMarker([s.lat, s.lng], {
-        radius: royal ? 8 : 6, color: c, weight: 2, fillColor: c, fillOpacity: royal ? 0.5 : 0.65,
-      })
+      // Medaljong (som övriga forskningssidor): färg ur KIND[kind].color, glyf per kind.
+      // Etiketten hanteras av bindTooltip nedan (oförändrad) → tom label i medaljongen.
+      L.marker([s.lat, s.lng], { icon: createPlaceMedallion({
+        color: c, icon: KIND_GLYPH[s.kind], label: '', size: royal ? 36 : 28, hairline: true,
+      }) })
         .bindTooltip(s.name, { permanent: royal, direction: 'top', offset: [0, -8], className: 'ang-clabel' })
         .bindPopup(`<b>${s.name}</b><br/><span style="font-size:11px">${s.note}</span>${s.todayM != null ? `<br/><span style="font-size:10px;color:#888">höjd idag ${s.todayM} m ö.h.</span>` : ''}`)
         .addTo(groupsRef.current[s.kind]);

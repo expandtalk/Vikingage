@@ -159,6 +159,17 @@ const CATEGORY_LABEL: Record<string, { sv: string; en: string }> = {
   roman_solidus: { sv: 'Romerska solidi', en: 'Roman solidi' },
   hoard: { sv: 'Skatter', en: 'Hoards' },
   imitation: { sv: 'Imitationer', en: 'Imitations' },
+  // Övriga kategorier som finns i datan (tidigare osynliga i listan).
+  roman_solidus_group: { sv: 'Romerska solidi', en: 'Roman solidi' },
+  roman_denar: { sv: 'Romerska denarer', en: 'Roman denarii' },
+  'romerskt mynt': { sv: 'Romerska mynt', en: 'Roman coins' },
+  guldfynd: { sv: 'Guldfynd (viktekonomi)', en: 'Gold finds (bullion)' },
+  prestige_gold: { sv: 'Prestigeguld', en: 'Prestige gold' },
+  'depåfynd': { sv: 'Depåfynd', en: 'Hoard/depot finds' },
+  myntskatt: { sv: 'Myntskatt', en: 'Coin hoard' },
+  redskap: { sv: 'Redskap (kontext)', en: 'Tools (context)' },
+  medeltida: { sv: 'Medeltida mynt', en: 'Medieval coins' },
+  brakteat: { sv: 'Brakteater', en: 'Bracteates' },
 };
 const CATEGORY_COLOR: Record<string, string> = {
   nordic_royal: '#f59e0b', runmynt: '#a855f7', seal: '#b45309', islamic: '#14b8a6', roman_solidus: '#eab308', hoard: '#22c55e', imitation: '#0ea5e9',
@@ -214,7 +225,11 @@ const Coins = () => {
       if (!m.has(c.category)) m.set(c.category, []);
       m.get(c.category)!.push(c);
     }
-    return CATEGORY_ORDER.filter((k) => m.has(k)).map((k) => ({ key: k, coins: m.get(k)! }));
+    // Kända kategorier i kuraterad ordning FÖRST, därefter alla ÖVRIGA kategorier som faktiskt
+    // finns (annars göms rader vars kategori saknas i CATEGORY_ORDER — t.ex. guldfynd, roman_denar,
+    // brakteat, medeltida). Ingen rad ska försvinna ur listan.
+    const rest = [...m.keys()].filter((k) => !CATEGORY_ORDER.includes(k)).sort();
+    return [...CATEGORY_ORDER, ...rest].filter((k) => m.has(k)).map((k) => ({ key: k, coins: m.get(k)! }));
   }, [coins]);
 
   const catLabel = (k: string) => CATEGORY_LABEL[k]?.[sv ? 'sv' : 'en'] ?? k;

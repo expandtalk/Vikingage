@@ -106,6 +106,9 @@ const TYPE_COLOR: Record<string, string> = {
 // gravfält=högar, sten/domarring=ring, skepp=båt, rest sten=bautasten, megalit=dolmen.
 const GLYPH: Record<string, string> = {
   cross:  '<path d="M10.5 4h3v4.5H18v3h-4.5V20h-3v-8.5H6v-3h4.5z" fill="#fff"/>',
+  // Kyrka: gavlad kyrkbyggnad med kors i nocken + dörröppning — samma "hus med kors"-form
+  // som medaljongsystemets 'church' på övriga sidor (skild från kapellets mindre gavelhus).
+  church: '<path d="M12 2.2v4.2M10 3.6h4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><path d="M12 6l5 3.8V20h-3.2v-3.9h-3.6V20H7V9.8z" fill="#fff"/>',
   sign:   '<path d="M11 3h2v2h5.2l2 2.5-2 2.5H13v11h-2v-11H5.8l-2-2.5 2-2.5H11z" fill="#fff"/>',
   mounds: '<path d="M2 17c1.4-3 4.4-3 5.8 0M9.1 17c1.4-3 4.4-3 5.8 0M16.2 17c1.4-3 4.4-3 5.8 0" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
   ring:   '<circle cx="12" cy="12" r="6.5" stroke="#fff" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="1.6" fill="#fff"/>',
@@ -128,7 +131,7 @@ const GLYPH: Record<string, string> = {
   labyrinth:'<rect x="4.5" y="4.5" width="15" height="15" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/><rect x="8.5" y="8.5" width="7" height="7" rx="1.2" stroke="#fff" stroke-width="1.5" fill="none"/><path d="M12 19.5v-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>',
 };
 const TYPE_GLYPH: Record<string, keyof typeof GLYPH> = {
-  kyrka: 'cross', kapell: 'chapel', kloster: 'cross', kyrkoruin: 'cross', klosterruin: 'cross',
+  kyrka: 'church', kapell: 'chapel', kloster: 'cross', kyrkoruin: 'cross', klosterruin: 'cross',
   'vägmärke': 'sign', milstolpe: 'sign', 'väghållningssten': 'sign', 'gränsmärke': 'sign',
   'gravfält': 'mounds',
   'stensättning': 'ring', domarring: 'ring',

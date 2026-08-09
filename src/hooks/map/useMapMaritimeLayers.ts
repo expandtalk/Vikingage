@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import { createPlaceMedallion } from '@/utils/map/placeMarker';
@@ -7,6 +8,10 @@ import { registerLayerBounds } from '@/utils/map/layerViewport';
 // Punktlagren (noder/vrak/hansa) zoom-gate:as: dolda i översikt, dyker upp vid inzoomning
 // (Daniel: rivers-vyn "för mycket objekt ovanpå"). Farlederna (linjer) visas på alla zoom.
 const POINT_MIN_ZOOM = 8;
+// UNDANTAG: när /explore?focus=rivers är aktivt är hela poängen att vattennätet + dess
+// hamnar/noder/vrak ska synas redan i översikt (annars ser vyn tom ut). Då sänks grinden.
+// Endast i det läget — normalläget behåller 8 (ingen regression).
+const RIVERS_OVERVIEW_MIN_ZOOM = 6;
 
 // Marinarkeologi-lager (Kalmarsund-forskningen): maritima noder (hamn/ö/grund) med
 // FINGERPRINT-popup, skeppshaverier, farleder (moderna + historiska/Hansa) och
@@ -45,14 +50,18 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
   const onHist = !!enabledLegendItems['fairways_historical'];
   const onHansa = !!enabledLegendItems['hanseatic_cities'];
 
-  // Zoom-gate för punktlagren: sant först när man zoomat in ≥ POINT_MIN_ZOOM.
+  // Grinden är villkorad av focus: rivers-vyn sänker den till översiktsnivå, annars 8.
+  const [searchParams] = useSearchParams();
+  const gate = searchParams.get('focus') === 'rivers' ? RIVERS_OVERVIEW_MIN_ZOOM : POINT_MIN_ZOOM;
+
+  // Zoom-gate för punktlagren: sant först när man zoomat in ≥ gate.
   const [zoomOk, setZoomOk] = useState(true);
   useEffect(() => {
     const m = map; if (!m) return;
-    const upd = () => setZoomOk(m.getZoom() >= POINT_MIN_ZOOM);
+    const upd = () => setZoomOk(m.getZoom() >= gate);
     upd(); m.on('zoomend', upd);
     return () => { m.off('zoomend', upd); };
-  }, [map]);
+  }, [map, gate]);
 
   // 1) Maritima noder + fingerprint-popup
   useEffect(() => {
