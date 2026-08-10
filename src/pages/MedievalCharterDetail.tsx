@@ -4,23 +4,37 @@ import { Header } from '@/components/Header';
 import { PageMeta } from '@/components/PageMeta';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCharterDetail } from '@/hooks/useMedievalCharters';
+import { useCharterFacsimile } from '@/hooks/useCharterFacsimile';
 import { CharterAttribution } from '@/components/medeltidsbrev/CharterAttribution';
+import { CharterFacsimile } from '@/components/medeltidsbrev/CharterFacsimile';
+import { FormulaBadge } from '@/components/medeltidsbrev/FormulaBadge';
+import { CharterSignaLegend } from '@/components/medeltidsbrev/CharterSignaLegend';
 
 const MedievalCharterDetail: React.FC = () => {
   const sv = useLanguage().language === 'sv';
   const { sdhk } = useParams();
   const id = Number(sdhk);
-  const { data, isLoading } = useCharterDetail(Number.isFinite(id) ? id : null);
+  const validId = Number.isFinite(id) ? id : null;
+  const { data, isLoading } = useCharterDetail(validId);
+  const facsimile = useCharterFacsimile(validId, true);
   const base = sv ? '/sv/medeltidsbrev' : '/en/medieval-charters';
-  const raa = `https://sok.riksarkivet.se/sdhk?SDHK=${id}`;
+  // A digitised original (resolved via IIIF) is a real, catalogued letter — the SDHK
+  // deep link is reliable for it. Without one (formula letters, undigitised originals)
+  // the same deep link has been observed to 404, so fall back to the general search
+  // rather than assert a specific record page exists (step 2 verification, 2026-08-10).
+  const raa = facsimile.imageUrl
+    ? `https://sok.riksarkivet.se/sdhk?SDHK=${id}`
+    : 'https://sok.riksarkivet.se/sdhk';
 
   const t = sv
     ? { back: '← Alla medeltidsbrev', notFound: 'Brevet hittades inte.', regest: 'Regest', full: 'Brevtext (edition)',
         noFull: 'Endast regest — full brevtext finns inte hos oss. Se tryckt edition:', refs: 'Referenser',
-        raa: 'Visa på Riksarkivet (SDHK)', date: 'Datum', place: 'Utfärdandeort', lang: 'Språk', author: 'Utfärdare' }
+        raa: 'Visa på Riksarkivet (SDHK)', raaSearch: 'Sök på Riksarkivet (SDHK)',
+        date: 'Datum', place: 'Utfärdandeort', lang: 'Språk', author: 'Utfärdare' }
     : { back: '← All charters', notFound: 'Charter not found.', regest: 'Abstract', full: 'Letter text (edition)',
         noFull: 'Abstract only — we do not hold the full text. See printed edition:', refs: 'References',
-        raa: 'View at Riksarkivet (SDHK)', date: 'Date', place: 'Issued at', lang: 'Language', author: 'Issuer' };
+        raa: 'View at Riksarkivet (SDHK)', raaSearch: 'Search at Riksarkivet (SDHK)',
+        date: 'Date', place: 'Issued at', lang: 'Language', author: 'Issuer' };
 
   return (
     <div className="min-h-screen viking-bg">
@@ -39,13 +53,19 @@ const MedievalCharterDetail: React.FC = () => {
           <p className="text-slate-300">{t.notFound}</p>
         ) : (
           <>
-            <h1 className="text-2xl font-bold text-white">SDHK {data.sdhk_id}</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl font-bold text-white">SDHK {data.sdhk_id}</h1>
+              {data.is_formula && <FormulaBadge />}
+            </div>
             <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-              <dt className="text-slate-500">{t.date}</dt><dd className="text-slate-200">{data.date_raw || '—'} {data.year ? `(${data.year})` : ''}</dd>
+              <dt className="text-slate-500">{t.date}</dt>
+              <dd className="text-slate-200" title={data.date_raw ?? undefined}>{data.date_display || '—'}</dd>
               <dt className="text-slate-500">{t.place}</dt><dd className="text-slate-200">{data.place_raw || '—'}</dd>
               <dt className="text-slate-500">{t.lang}</dt><dd className="text-slate-200">{data.lang_raw || '—'}</dd>
               <dt className="text-slate-500">{t.author}</dt><dd className="text-slate-200">{data.author_raw || '—'}</dd>
             </dl>
+
+            <CharterFacsimile sdhkId={data.sdhk_id} facsimile={facsimile} />
 
             <section>
               <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-400">{t.regest}</h2>
@@ -75,8 +95,9 @@ const MedievalCharterDetail: React.FC = () => {
 
             <a href={raa} target="_blank" rel="noopener noreferrer"
                className="inline-block rounded-lg border border-slate-600 px-3 py-1.5 text-sm text-slate-200 hover:border-[hsl(var(--gold))]">
-              {t.raa}
+              {facsimile.imageUrl ? t.raa : t.raaSearch}
             </a>
+            <CharterSignaLegend />
             <CharterAttribution />
           </>
         )}

@@ -3,13 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { buildCharterBrowseArgs, type CharterBrowseParams } from './medievalChartersArgs';
 
 export interface CharterRow {
-  sdhk_id: number; year: number | null; date_raw: string | null;
-  place_raw: string | null; lang_raw: string | null; regest: string | null;
+  sdhk_id: number; year: number | null; date_raw: string | null; date_display: string | null;
+  is_formula: boolean; place_raw: string | null; lang_raw: string | null; regest: string | null;
   has_fulltext: boolean; total_count: number;
 }
 export interface CharterStatRow { century: number | null; n: number; n_fulltext: number; }
 export interface CharterDetail {
-  sdhk_id: number; date_raw: string | null; year: number | null; place_raw: string | null;
+  sdhk_id: number; date_raw: string | null; date_display: string | null; is_formula: boolean;
+  year: number | null; place_raw: string | null;
   lang_raw: string | null; author_raw: string | null; summary: string | null;
   comments: string | null; edition_text: string | null; print_ref: string | null;
   translation_ref: string | null; seals: string | null; original_ref: string | null;

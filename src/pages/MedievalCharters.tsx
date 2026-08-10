@@ -6,6 +6,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCharterBrowse } from '@/hooks/useMedievalCharters';
 import { CenturyStats } from '@/components/medeltidsbrev/CenturyStats';
 import { CharterAttribution } from '@/components/medeltidsbrev/CharterAttribution';
+import { FormulaBadge } from '@/components/medeltidsbrev/FormulaBadge';
+import { CharterSignaLegend } from '@/components/medeltidsbrev/CharterSignaLegend';
 import type { CharterSort, CharterDir } from '@/hooks/medievalChartersArgs';
 
 const PAGE_SIZE = 30;
@@ -53,10 +55,10 @@ const MedievalCharters: React.FC = () => {
     patch({ sort: col, dir: sort === col && dir === 'asc' ? 'desc' : 'asc' });
 
   const label = sv
-    ? { title: 'Medeltidsbrev', sdhk: 'SDHK-nr', year: 'År', date: 'Datum', place: 'Ort',
+    ? { title: 'Medeltidsbrev', sdhk: 'SDHK-nr', date: 'Datum', place: 'Ort',
         lang: 'Språk', regest: 'Regest', ft: 'Fulltext', ftOnly: 'Endast med fulltext',
         search: 'Sök i regest, ort, utfärdare…', none: 'Inga träffar', of: 'av', prev: 'Föregående', next: 'Nästa' }
-    : { title: 'Medieval charters', sdhk: 'SDHK no.', year: 'Year', date: 'Date', place: 'Place',
+    : { title: 'Medieval charters', sdhk: 'SDHK no.', date: 'Date', place: 'Place',
         lang: 'Language', regest: 'Abstract', ft: 'Full text', ftOnly: 'Only with full text',
         search: 'Search abstract, place, issuer…', none: 'No matches', of: 'of', prev: 'Previous', next: 'Next' };
 
@@ -97,8 +99,7 @@ const MedievalCharters: React.FC = () => {
             <thead className="bg-slate-900 text-slate-400">
               <tr>
                 <th className="cursor-pointer px-3 py-2 text-left" onClick={() => toggleSort('sdhk')}>{label.sdhk}{arrow('sdhk')}</th>
-                <th className="cursor-pointer px-3 py-2 text-left" onClick={() => toggleSort('year')}>{label.year}{arrow('year')}</th>
-                <th className="px-3 py-2 text-left">{label.date}</th>
+                <th className="cursor-pointer px-3 py-2 text-left" onClick={() => toggleSort('year')}>{label.date}{arrow('year')}</th>
                 <th className="cursor-pointer px-3 py-2 text-left" onClick={() => toggleSort('place')}>{label.place}{arrow('place')}</th>
                 <th className="px-3 py-2 text-left">{label.lang}</th>
                 <th className="px-3 py-2 text-left">{label.regest}</th>
@@ -114,8 +115,10 @@ const MedievalCharters: React.FC = () => {
                     onClick={() => navigate(`${base}/${r.sdhk_id}`)}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`${base}/${r.sdhk_id}`); } }}>
                   <td className="whitespace-nowrap px-3 py-2 text-[hsl(var(--gold))]">{r.sdhk_id}</td>
-                  <td className="whitespace-nowrap px-3 py-2">{r.year ?? '—'}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-slate-400">{r.date_raw ?? '—'}</td>
+                  <td className="whitespace-nowrap px-3 py-2" title={r.date_raw ?? undefined}>
+                    <span>{r.date_display ?? '—'}</span>
+                    {r.is_formula && <FormulaBadge className="ml-2" />}
+                  </td>
                   <td className="px-3 py-2">{r.place_raw || '—'}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-slate-400">{r.lang_raw || '—'}</td>
                   <td className="px-3 py-2"><span className="line-clamp-2 text-slate-300">{r.regest ?? '—'}</span></td>
@@ -123,7 +126,7 @@ const MedievalCharters: React.FC = () => {
                 </tr>
               ))}
               {!isLoading && rows.length === 0 && (
-                <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">{label.none}</td></tr>
+                <tr><td colSpan={6} className="px-3 py-8 text-center text-slate-400">{label.none}</td></tr>
               )}
             </tbody>
           </table>
@@ -139,6 +142,7 @@ const MedievalCharters: React.FC = () => {
           </div>
         </div>
 
+        <CharterSignaLegend />
         <CharterAttribution />
       </div>
     </div>
