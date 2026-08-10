@@ -368,6 +368,17 @@ const SandbyBorg = () => {
             döden skulle bero på <strong>vidskepelse eller &quot;magiskt&quot; glas är ren motivspekulation</strong> — inte
             prövbart ur fynden. Glaset gav <em>social och politisk</em> makt, inte övernaturlig.
           </p>
+          <p>
+            <strong className="text-foreground">Pärlor som pengar — och varför rån ändå faller.</strong> Glaspärlorna
+            var <strong>eftertraktad, lättburen rikedom</strong> (importerat glas från Främre Orienten, statusmarkör) och
+            gångbara i utbyte. Men i ~500 var det formella värdemyntet <strong>guld</strong> (solidi, brakteater), inte
+            pärlor — så &quot;betalningsmedel&quot; i strikt mening är för starkt (egentliga pärlverkstäder i handelsplatser som
+            Ribe/Åhus dyker upp först ~700-tal; Sandbys verkstad är ~200 år tidigare och därför ovanlig). Att{' '}
+            <em>kontrollera</em> en sådan tidig produktion var ändå en <strong>förmögenhetskälla</strong> → ett skäl att
+            bli måltavla. Men själva motivet var knappast <strong>rån</strong>: de fem depåerna med guld <em>och</em>{' '}
+            pärlor <strong>lämnades orörda i marken</strong> — hade man velat åt rikedomen hade man tagit den. Kvar står{' '}
+            <strong>utplåning/maktdemonstration</strong>, inte plundring. (Tolkning.)
+          </p>
           <p className="text-xs opacity-80">
             Källkritik: glasverkstaden och hallen kommer ur <strong>senare säsonger (2016–2017)</strong>, inte rapport VII
             (2015). &quot;Hövding&quot; och &quot;Sveriges äldsta glasverkstad&quot; är rapporterade bedömningar/tolkningar, inte slutbevis.
