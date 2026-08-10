@@ -436,7 +436,10 @@ const SandbyBorg = () => {
             <em>kontrollera</em> en sådan tidig produktion var ändå en <strong>förmögenhetskälla</strong> → ett skäl att
             bli måltavla. Men själva motivet var knappast <strong>rån</strong>: de fem depåerna med guld <em>och</em>{' '}
             pärlor <strong>lämnades orörda i marken</strong> — hade man velat åt rikedomen hade man tagit den. Kvar står{' '}
-            <strong>utplåning/maktdemonstration</strong>, inte plundring. (Tolkning.)
+            <strong>utplåning/maktdemonstration</strong>, inte plundring. En besläktad läsning: syftet kan ha varit att
+            slå ut själva <strong>produktionen och kunnandet</strong> — hantverkarna och verkstaden — snarare än att ta
+            bytet. Det passar faktiskt fynden (kapaciteten utplånad, guldet kvar), men förblir en obevisbar
+            motivhypotes; jämförelsen med kolonial pärl-/wampumhandel är en <em>analogi</em>, inte belägg för 400-talets Öland. (Tolkning.)
           </p>
           <p className="text-xs opacity-80">
             Källkritik: glasverkstaden och hallen kommer ur <strong>senare säsonger (2016–2017)</strong>, inte rapport VII
