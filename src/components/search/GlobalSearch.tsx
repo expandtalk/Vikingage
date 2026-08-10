@@ -765,15 +765,32 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     );
   };
 
-  // HERO: riktigt inline-sökfält. Man skriver direkt i rutan; träffarna fälls ut under.
-  // Vid träffar breddas rutan mot nästan full skärmbredd och listan får nästan hela höjden
-  // (Daniel: "använd hela skärmen") — kort-sektionen under kollapsar (styrs i Welcome).
+  // HERO: riktigt inline-sökfält. EN stabil <input>-nod för hela hero-varianten — den
+  // renderas alltid vid SAMMA position i trädet (aldrig i en villkorlig gren som byts ut),
+  // bara omgivningens CSS-klasser (pill vs. helskärms-topprad) växlar. Detta fixar buggen
+  // "inputrutan stängs efter en bokstav / man ser inte vad man fyller i" (Daniel, rapporterad
+  // två gånger): den GAMLA koden monterade en HELT NY <input autoFocus> i en separat
+  // fixed-overlay så snart frågan nådde 2 tecken, vilket avmonterade fältet användaren just
+  // skrev i (tappat fokus, virtuellt tangentbord stängs på mobil) och samtidigt gömde den
+  // gamla pillen bakom overlayns solida bakgrund — därav "stängs"/"syns inte". Overlayn
+  // öppnas nu vid FOKUS (inte vid tecken-tröskeln) och härbärgerar både förslag (tom fråga)
+  // och resultat (>=2 tecken) inuti SAMMA träd, så fältet aldrig monteras om.
   if (variant === 'hero') {
     const hasResults = query.trim().length >= 2 || !!theme;
     return (
-      <div ref={heroWrapRef} className={`relative w-full mx-auto transition-all ${hasResults ? 'max-w-5xl' : 'max-w-xl'}`}>
-        <div className="flex items-center gap-3 rounded-full bg-white border border-slate-200 shadow-lg hover:shadow-xl focus-within:shadow-xl px-5 py-3.5 transition-shadow">
-          <Search className="h-5 w-5 text-slate-400 shrink-0" />
+      <div
+        ref={heroWrapRef}
+        className={heroActive
+          ? 'fixed inset-0 z-[80] flex flex-col bg-slate-900'
+          : `relative w-full mx-auto transition-all ${hasResults ? 'max-w-5xl' : 'max-w-xl'}`}
+      >
+        {/* Sökraden — alltid barn nr 1 här, aldrig i en utbytbar gren → <input> monteras aldrig om. */}
+        <div
+          className={heroActive
+            ? 'shrink-0 flex items-center gap-3 border-b border-slate-700 px-4 py-3'
+            : 'flex items-center gap-3 rounded-full bg-white border border-slate-200 shadow-lg hover:shadow-xl focus-within:shadow-xl px-5 py-3.5 transition-shadow'}
+        >
+          <Search className={`h-5 w-5 shrink-0 ${heroActive ? 'text-amber-400' : 'text-slate-400'}`} />
           <input
             ref={inputRef}
             value={query}
@@ -783,100 +800,87 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
             placeholder={sv
               ? 'Sök allt — runsten, ort, socken, gud, kung, mynt…'
               : 'Search everything — runestone, place, parish, god, king, coin…'}
-            className="flex-1 min-w-0 bg-transparent text-base text-slate-800 placeholder-slate-400 outline-none"
+            className={`flex-1 min-w-0 bg-transparent text-base outline-none ${heroActive ? 'text-white placeholder-slate-500' : 'text-slate-800 placeholder-slate-400'}`}
           />
-          {loading && <Loader2 className="h-4 w-4 animate-spin text-amber-500 shrink-0" />}
+          {loading && <Loader2 className={`h-4 w-4 animate-spin shrink-0 ${heroActive ? 'text-amber-400' : 'text-amber-500'}`} />}
+          {heroActive && (
+            <button
+              type="button"
+              onClick={() => setHeroActive(false)}
+              aria-label={sv ? 'Stäng sökning' : 'Close search'}
+              className="rounded-full p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 shrink-0"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
-        {heroActive && hasResults && (
-          // Helskärms-overlay: hela skärmen, EN solid mörk bakgrund (ingen blå sida bakom
-          // träffarna) → konsekvent och WCAG-läsbart. Egen sökrad + stäng-knapp överst.
-          <div className="fixed inset-0 z-[80] bg-slate-900 flex flex-col">
-            <div className="shrink-0 border-b border-slate-700 px-4 py-3 flex items-center gap-3">
-              <Search className="h-5 w-5 text-amber-400 shrink-0" />
-              <input
-                value={query}
-                onChange={(e) => { setQuery(e.target.value); if (e.target.value) setTheme(null); }}
-                autoFocus
-                aria-label={sv ? 'Sök' : 'Search'}
-                placeholder={sv
-                  ? 'Sök allt — runsten, ort, socken, gud, kung, mynt…'
-                  : 'Search everything — runestone, place, parish, god, king, coin…'}
-                className="flex-1 min-w-0 bg-transparent text-base text-white placeholder-slate-500 outline-none"
-              />
-              {loading && <Loader2 className="h-4 w-4 animate-spin text-amber-400 shrink-0" />}
-              <button
-                type="button"
-                onClick={() => setHeroActive(false)}
-                aria-label={sv ? 'Stäng sökning' : 'Close search'}
-                className="rounded-full p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 shrink-0"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              {/* AI-summary auto ÖVERST (spänner alla kolumner) — sammanfattning före resultatet */}
-              {!theme && query.trim().length >= 3 && (aiLoading || aiAnswer) && (
-                <div className="shrink-0 max-h-[36vh] overflow-y-auto border-b border-slate-800 bg-slate-900 px-4 py-3 text-left">
-                  {aiLoading && !aiAnswer && (
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                      <Loader2 className="h-4 w-4 animate-spin text-amber-400" />{sv ? 'AI läser källorna…' : 'AI reading the sources…'}
-                    </div>
-                  )}
-                  {aiAnswer && (
-                    <div className="text-sm text-slate-200">
-                      <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
-                        <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
+
+        {/* Innehållet — barn nr 2, en syskon-nod till sökraden (rör aldrig fältet ovan). */}
+        {heroActive && (
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            {hasResults ? (
+              <>
+                {/* AI-summary auto ÖVERST (spänner alla kolumner) — sammanfattning före resultatet */}
+                {!theme && query.trim().length >= 3 && (aiLoading || aiAnswer) && (
+                  <div className="shrink-0 max-h-[36vh] overflow-y-auto border-b border-slate-800 bg-slate-900 px-4 py-3 text-left">
+                    {aiLoading && !aiAnswer && (
+                      <div className="flex items-center gap-2 text-sm text-slate-400">
+                        <Loader2 className="h-4 w-4 animate-spin text-amber-400" />{sv ? 'AI läser källorna…' : 'AI reading the sources…'}
                       </div>
-                      <p className="whitespace-pre-wrap leading-relaxed text-[15px] text-slate-100">{aiAnswer}</p>
-                      <p className="mt-1 text-[10px] text-slate-500">{sv ? 'AI-genererat ur källorna — verifiera via träffarna.' : 'AI-generated from the sources — verify via the results.'}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-              {/* 3 kolumner: träfflista (söksvar) · karta (platsnod) · verktyg */}
-              <div className="flex-1 min-h-0 grid overflow-hidden lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)_248px]">
-                <div className="min-h-0 overflow-y-auto lg:border-r lg:border-slate-800">
-                  {renderResults('', false, true)}
-                </div>
-                <div className="min-h-0 overflow-y-auto">
-                  <AnswerContext query={query} onGo={go} onQuery={(q) => { setQuery(q); setTheme(null); }} />
-                </div>
-                <aside className="hidden min-h-0 flex-col overflow-y-auto border-l border-slate-800 lg:flex">
-                  {/* Kunskapspanelen (träffens egen destination) äger toppen. */}
-                  {topEntity && !theme && <KnowledgePanel hit={topEntity} thumb={thumbs[topEntity.entity_id]} onGo={go} sv={sv} />}
-                  {/* Runverktyget är ett fördjupningsverktyg, inte kopplat till träffen → sekundärt,
-                      längst ner (Daniel: "ägde primärpositionen utan att förtjäna den"). */}
-                  <div className="mt-auto border-t border-slate-800 p-3">
-                    <button
-                      onClick={() => go('/sv/runor')}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:border-amber-500/50 hover:text-amber-100"
-                    >
-                      <Hammer className="h-3.5 w-3.5" /> {sv ? 'Öppna runverktyget' : 'Open the rune tool'}
-                    </button>
+                    )}
+                    {aiAnswer && (
+                      <div className="text-sm text-slate-200">
+                        <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+                          <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
+                        </div>
+                        <p className="whitespace-pre-wrap leading-relaxed text-[15px] text-slate-100">{aiAnswer}</p>
+                        <p className="mt-1 text-[10px] text-slate-500">{sv ? 'AI-genererat ur källorna — verifiera via träffarna.' : 'AI-generated from the sources — verify via the results.'}</p>
+                      </div>
+                    )}
                   </div>
-                </aside>
+                )}
+                {/* 3 kolumner: träfflista (söksvar) · karta (platsnod) · verktyg */}
+                <div className="flex-1 min-h-0 grid overflow-hidden lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)_248px]">
+                  <div className="min-h-0 overflow-y-auto lg:border-r lg:border-slate-800">
+                    {renderResults('', false, true)}
+                  </div>
+                  <div className="min-h-0 overflow-y-auto">
+                    <AnswerContext query={query} onGo={go} onQuery={(q) => { setQuery(q); setTheme(null); }} />
+                  </div>
+                  <aside className="hidden min-h-0 flex-col overflow-y-auto border-l border-slate-800 lg:flex">
+                    {/* Kunskapspanelen (träffens egen destination) äger toppen. */}
+                    {topEntity && !theme && <KnowledgePanel hit={topEntity} thumb={thumbs[topEntity.entity_id]} onGo={go} sv={sv} />}
+                    {/* Runverktyget är ett fördjupningsverktyg, inte kopplat till träffen → sekundärt,
+                        längst ner (Daniel: "ägde primärpositionen utan att förtjäna den"). */}
+                    <div className="mt-auto border-t border-slate-800 p-3">
+                      <button
+                        onClick={() => go('/sv/runor')}
+                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:border-amber-500/50 hover:text-amber-100"
+                      >
+                        <Hammer className="h-3.5 w-3.5" /> {sv ? 'Öppna runverktyget' : 'Open the rune tool'}
+                      </button>
+                    </div>
+                  </aside>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                  {sv ? 'Förslag' : 'Suggestions'}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(sv ? SUGGESTIONS_SV : SUGGESTIONS_EN).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => { setTheme(null); setQuery(s); inputRef.current?.focus(); }}
+                      className="rounded-full border border-slate-600 px-3 py-1 text-sm text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-        )}
-        {heroActive && !hasResults && (
-          <div className="absolute left-0 right-0 z-[60] mt-2 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden">
-            <div className="p-3">
-              <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                {sv ? 'Förslag' : 'Suggestions'}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {(sv ? SUGGESTIONS_SV : SUGGESTIONS_EN).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => { setTheme(null); setQuery(s); inputRef.current?.focus(); }}
-                    className="rounded-full border border-slate-600 px-3 py-1 text-sm text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
           </div>
         )}
       </div>
