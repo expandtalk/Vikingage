@@ -123,7 +123,9 @@ const ForensicIndividualsTable: React.FC = () => {
 
   if (rows === null) return <p className="text-xs text-muted-foreground">Laddar individdata…</p>;
   if (!rows.length) return null;
-  const sorted = [...rows].sort((a, b) => ageRank(a) - ageRank(b));
+  // Status/ålder fallande: hövding + äldst överst, ned till spädbarnet sist.
+  const statusRank = (r: ForensicRow) => (/hövding/i.test(r.individual_label ?? '') ? 1 : 0);
+  const sorted = [...rows].sort((a, b) => statusRank(b) - statusRank(a) || ageRank(b) - ageRank(a));
 
   return (
     <div className="overflow-x-auto">
@@ -349,11 +351,9 @@ const SandbyBorg = () => {
             smyckedepåerna och glashantverket (Hus 4) fanns.
           </p>
           <p>
-            <strong className="text-foreground">Men ingen kyrka.</strong> Borgen är <strong>förkristen (~500 e.Kr.)</strong> —
-            kristendomen når Sverige först ~500 år senare. Jämförelsen med hansastaden Kalmar (kyrka, gillestuga och
-            torg i mitten) är en <em>medeltida stadsmodell</em> och blir anakronistisk här. Folkvandringstidens
-            motsvarighet till &quot;maktcentrum i mitten&quot; är just <strong>hövdingahallen</strong>: fest, politik, rit och
-            högsäte i ett — inte kyrka/torg. Ringmuren + portarna är försvars- och mobiliseringsdelen, precis som du är inne på.
+            <strong className="text-foreground">Men ingen kyrka.</strong> Borgen är <strong>förkristen (~500 e.Kr.)</strong>.
+            Folkvandringstidens motsvarighet till &quot;maktcentrum i mitten&quot; är <strong>hövdingahallen</strong>: fest,
+            politik, rit och högsäte i ett. Ringmuren + portarna är försvars- och mobiliseringsdelen, precis som du är inne på.
           </p>
           <p>
             <strong className="text-foreground">Portarna:</strong> tre säkra portöppningar (+ möjligen en fjärde).
@@ -493,7 +493,9 @@ const SandbyBorg = () => {
 
           <p>
             <strong className="text-foreground">Djuren.</strong> Djur (lamm, svin, häst) lämnades instängda
-            och dog kvar.
+            och dog kvar. Att man inte ens tog med sig den <em>levande boskapen</em> — lättdriven, värdefull
+            proviant — talar (liksom det orörda guldet) <strong>emot ett rov-/svältmotiv</strong>: angriparna var
+            inte ute efter mat eller byte, utan efter att <strong>utplåna</strong> platsen (tolkning).
           </p>
 
           <p>
@@ -548,19 +550,23 @@ const SandbyBorg = () => {
             och en kan stärkas eller falla på nya data.
           </p>
           <div className="space-y-2">
-            <div className="rounded border border-amber-900/30 p-3">
-              <p><strong className="text-foreground">(a) Intern maktkamp</strong> — <span className="text-gold">svagt belagd.</span> Inget i materialet pekar särskilt mot en uppgörelse inifrån.</p>
-            </div>
             <div className="rounded border border-amber-900/50 bg-amber-950/20 p-3">
-              <p><strong className="text-foreground">(b) Extern eller beordrad avrättning</strong> — <span className="text-gold">starkast stödd.</span> Effektivt och riktat våld, guld och kroppar lämnade kvar, och platsen tabubelagd efteråt.</p>
+              <p><strong className="text-foreground">1. Extern eller beordrad avrättning</strong> — <span className="text-gold">starkast stödd.</span> Effektivt och riktat våld, guld <em>och</em> levande boskap lämnade kvar, kropparna obegravda och platsen tabubelagd efteråt.</p>
             </div>
             <div className="rounded border border-amber-900/30 p-3">
-              <p><strong className="text-foreground">(c) Klimatkris 536</strong> — <span className="text-gold">kontext, ej bevis.</span> Ger en möjlig historisk ram men bevisar ingen orsak här. (Notera: om ¹⁴C-dateringen 500–540 håller ligger händelsen nära 536.)</p>
+              <p><strong className="text-foreground">2. Intern maktkamp</strong> — <span className="text-gold">svagt belagd.</span> Inget i materialet pekar särskilt mot en uppgörelse inifrån.</p>
+            </div>
+            <div className="rounded border border-amber-900/30 p-3">
+              <p><strong className="text-foreground">3. Klimatkris 536</strong> — <span className="text-gold">kontext, ej bevis.</span> Ger en möjlig historisk ram men bevisar ingen orsak här. (Om ¹⁴C-dateringen 500–540 håller ligger händelsen nära 536.)</p>
             </div>
           </div>
           <p className="text-xs bg-amber-950/20 border border-amber-900/30 rounded p-3">
-            <strong className="text-gold">Prövad och avförd: slavtagning.</strong> Slavtagning som motiv prövas
-            men avförs — hela befolkningen dödades (inklusive barn) och guldet lämnades kvar.
+            <strong className="text-gold">Slavtagning som <em>primärt</em> motiv: avförd.</strong> Hela befolkningen dödades
+            (inklusive barn) och guldet lämnades kvar — det var ingen slavräd. <strong>Men kvinnorna är påfallande
+            underrepresenterade</strong> bland de döda. aDNA (minst en kvinna) och ett spädbarn visar att kvinnor{' '}
+            <em>fanns</em> i borgen — så &quot;bara män&quot; är delvis en metodartefakt (litet, osteologiskt svårkönat urval;
+            &lt;10 % utgrävt). Att kvinnor/unga <strong>förts bort som fångar</strong> är en möjlig delförklaring (jfr att
+            överlevande tycks ha förts bort); att de skulle varit <em>medkonspiratörer</em> som skonades är spekulativt och svagt stött.
           </p>
           <p>
             <strong className="text-foreground">Sammanfattning.</strong> Att våldet var organiserat och riktat
@@ -850,9 +856,9 @@ const SandbyBorg = () => {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Individ för individ (Sandby borg VII 2016), <strong>sorterad yngst→äldst</strong>. Traumaklassen är en
-            forensisk differentialbedömning — inte en dom om ett specifikt vapen; kolumnen <em>Tolkning</em> är
-            uttryckligen tolkning, inte fakta.
+            Individ för individ (Sandby borg VII 2016), <strong>sorterad efter status/ålder</strong> (hövdingen och de
+            äldsta överst, ned till spädbarnet sist). Traumaklassen är en forensisk differentialbedömning — inte en dom
+            om ett specifikt vapen; kolumnen <em>Tolkning</em> är uttryckligen tolkning, inte fakta.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
             <strong className="text-foreground">Åldersprofilen talar.</strong> De döda spänner från <strong>spädbarn
