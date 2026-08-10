@@ -400,9 +400,13 @@ const Oland = () => {
           </p>
         </div>
 
-        {/* Interaktiva kartan högst upp på sidan (Daniel) — legenden ligger på kartan (delad MapLegend) */}
+        {/* Interaktiva kartan högst upp på sidan (Daniel) — legenden ligger på kartan (delad MapLegend).
+            Platshållaren reserverar kartans yta under inladdning så sidan inte hoppar/"överladdas"
+            när datan kommer (samma grepp som /sv/angermanland). */}
         {isLoading ? (
-          <p className="text-muted-foreground">Laddar kartan…</p>
+          <div className="viking-card rounded-lg border border-border mb-2 flex items-center justify-center" style={{ minHeight: 420 }}>
+            <div className="animate-pulse text-sm text-muted-foreground">Laddar Öland-kartan…</div>
+          </div>
         ) : (
           <OlandMap points={points} solidi={olandSolidi} />
         )}
