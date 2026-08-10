@@ -513,8 +513,9 @@ const SandbyBorg = () => {
             <strong> inte myntskatter</strong>. De fem depåerna består alltså mest av föremål, inte mynt.
           </p>
           <p>
-            <strong className="text-foreground">Hus 4.</strong> Hus 4 rymde Sveriges äldsta kända
-            glas-/pärlverkstad med ädelmetallhantverk.
+            <strong className="text-foreground">Hus 4.</strong> Hus 4 rymde en glas-/pärlverkstad med
+            ädelmetallhantverk — glaspärletillverkningen dateras till <strong>slutet av 400-talet</strong> och är det{' '}
+            <strong>äldsta säkert daterade belägget för glaspärletillverkning i Skandinavien</strong> (RAÄ Fornsök).
           </p>
           <p className="flex gap-2">
             <Coins className="h-4 w-4 mt-0.5 shrink-0 text-gold/80" />
@@ -539,6 +540,61 @@ const SandbyBorg = () => {
               håller, ligger guldet en generation före.
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* RAÄ Fornsök — gravfält under borgen + lök från 600-talet */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Layers className="h-5 w-5" /> Ett gravfält under borgen — och en lök från 600-talet</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            <strong className="text-foreground">Byggd på de dödas mark.</strong> 2017 visade sig ett av husen i
+            centralkvarteret delvis ligga <strong>ovanpå ett gravfält daterat 100–200 e.Kr.</strong> — ett par sekel
+            innan borgen byggdes. Boplatsen restes alltså delvis över äldre gravar; om det var medvetet (anknytning
+            till förfäder) eller likgiltigt är <em>obelagt</em>.
+          </p>
+          <p>
+            <strong className="text-foreground">Övergavs — men glömdes inte helt.</strong> En <strong>förkolnad lök
+            daterad till 600-talet</strong> visar att borgen <strong>besöktes efter övergivandet</strong> (vendel- och
+            vikingatid), tillsammans med enstaka senare lösfynd. Den <em>återbeboddes</em> aldrig som borg (till
+            skillnad från Eketorp) — men var inte helt bortglömd. Det passar bilden av en <em>laddad, delvis undviken</em> plats.
+          </p>
+          <p className="text-[11px] text-muted-foreground/70">
+            Källa: RAÄ Fornsök <strong>L1956:3453</strong> (Sandby 45:1), Kalmar läns museum 2010–2018.{' '}
+            <a href="https://app.raa.se/open/fornsok/lamning/d1f52dbc-317e-47a9-bf9c-ea7fca7dc9c7" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline inline-flex items-center gap-1">öppna posten <ExternalLink className="h-3 w-3" /></a>
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Formen & anfallsvägarna — oval borg, portar, landskap */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Shield className="h-5 w-5" /> Formen och anfallsvägarna</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            <strong className="text-foreground">Oval — men ingen kapplöpningsbana.</strong> Borgen är oval (~120×90 m,
+            NV–SÖ), och formen kan påminna om en arena. Men insidan var <strong>fullpackad med ~53 hus</strong> bakom en
+            försvarsmur — det är en tätbebyggd <strong>ringborg</strong>, inte en öppen bana. Den ovala formen följer
+            strandvallen och försvarslogiken, inte en ceremoniell ellips. (Öländsk hästkult hör snarare till{' '}
+            <strong>Skedemosse</strong> — en annan plats och kontext.)
+          </p>
+          <p>
+            <strong className="text-foreground">Vägen in.</strong> Borgen ligger på den flacka kustremsan —{' '}
+            <strong>Stora Alvaret i väster, Östersjön i öster</strong>. Huvudporten i NV och den norra porten vetter mot{' '}
+            <strong>grannbygderna på land</strong>; sjöporten mot havet. Att <em>smyga</em> på borgen är svårt — den
+            öppna betesmarken ger föga skydd, så ett överfall byggde rimligen på <strong>mörker och snabbhet</strong>,
+            inte på att gömma sig i terrängen. En lokal/regional styrka kunde komma <strong>längs kusten (N/S) eller
+            över alvarkanten (V)</strong>.
+          </p>
+          <p className="text-xs opacity-80">
+            Källkritik: de vägar/stråk som syns på moderna kartor är till stor del <strong>odaterade</strong> (RAÄ
+            färdvägar) — inte säkert 400-tal. Anfallsvägen är därför en <strong>topografisk hypotes</strong>, inte
+            belagd. Att gärningsmannen var lokal/regional (inte en fjärran sjöflotta) följer av signaturen + att segel
+            saknas i Norden före ~700.
+          </p>
         </CardContent>
       </Card>
 
