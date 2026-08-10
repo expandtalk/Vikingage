@@ -4,6 +4,8 @@ import L from 'leaflet';
 import { useFieldNav, setFieldNavFollowing } from '@/hooks/useFieldNav';
 import { coneRotationDeg } from '@/utils/fieldNav';
 import { haversineKm } from '@/utils/geoDistance';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import { useTravelMode } from '@/hooks/useTravelMode';
 
 // Ritar fältlägets position: noggrannhetsring + blå prick med en riktningskägla som roterar med
 // färdriktningen. Pannar kartan med mig när `following`. Norr-upp; ingen kartrotation.
@@ -23,6 +25,18 @@ const positionIcon = (headingDeg: number | null) => {
   });
 };
 
+// "Här"-ikon: grön skiva + vit riktningspil. Alltid-på-markör (mobil/billäge) — oberoende av om
+// fältläget (HUD) är aktivt. headingDeg == null → pilen står still och pekar upp (norr).
+const hereIcon = (headingDeg: number | null) => {
+  const rot = headingDeg == null ? 0 : coneRotationDeg(headingDeg);
+  return L.divIcon({
+    className: 'here-marker',
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    html: `<div class="here-wrap"><div class="here-disc"><div class="here-arrow" style="transform:rotate(${rot}deg)"></div></div></div>`,
+  });
+};
+
 // Målmarkör för "Led mig hit" (amber). Egen färg/form så den inte förväxlas med min position.
 const targetIcon = () => L.divIcon({
   className: 'field-nav-target',
@@ -33,6 +47,8 @@ const targetIcon = () => L.divIcon({
 
 export const useMapFieldNav = ({ map, isMapReady }: Props) => {
   const { active, pos, following, target } = useFieldNav();
+  const isMobile = useIsMobile();
+  const mode = useTravelMode();
   const layerRef = useRef<L.LayerGroup | null>(null);
   const flownRef = useRef(false); // första fixen per session → zooma in en gång
 
@@ -52,14 +68,26 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
     if (!layerRef.current) layerRef.current = L.layerGroup().addTo(map);
     const layer = layerRef.current;
     layer.clearLayers();
-    if (!active || !pos) return;
+    if (!pos) return;
 
-    // GPS-noggrannhetsring (hederlighet: visa hur säker positionen är)
+    // "Här"-markören (grön/vit pil) visas alltid på mobil/i billäge, oberoende av om fältläget
+    // (HUD) är aktivt — det är den alltid-på nuvarande-position-markören. Annars, i aktivt
+    // fältläge på icke-mobil/icke-bil, blå prick + riktningskägla (som tidigare). ALDRIG båda
+    // samtidigt — det ska bara finnas EN positionsmarkör.
+    const showHereMarker = isMobile || mode === 'car';
+
+    // GPS-noggrannhetsring (hederlighet: visa hur säker positionen är) — så fort vi har en fix.
     if (pos.accuracy != null) {
       L.circle([pos.lat, pos.lng], { radius: pos.accuracy, color: '#2563eb', weight: 1, fillColor: '#2563eb', fillOpacity: 0.12, dashArray: '4 3', interactive: false }).addTo(layer);
     }
-    // Position + riktningskägla (icke-interaktiv — ska inte fånga klick)
-    L.marker([pos.lat, pos.lng], { icon: positionIcon(pos.headingDeg), interactive: false, keyboard: false }).addTo(layer);
+    // Position (icke-interaktiv — ska inte fånga klick)
+    if (showHereMarker) {
+      L.marker([pos.lat, pos.lng], { icon: hereIcon(pos.headingDeg), interactive: false, keyboard: false }).addTo(layer);
+    } else if (active) {
+      L.marker([pos.lat, pos.lng], { icon: positionIcon(pos.headingDeg), interactive: false, keyboard: false }).addTo(layer);
+    }
+
+    if (!active) return; // Följning/zoom/"led mig hit" hör bara till det opt-in aktiva fältläget (HUD)
 
     // Första fixen: zooma in till körnivå. Därefter bara panorera (behåll användarens zoom).
     if (!flownRef.current) {
@@ -91,7 +119,7 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
     }
 
     return () => { layer.clearLayers(); };
-  }, [map, isMapReady, active, pos, following, target]);
+  }, [map, isMapReady, active, pos, following, target, isMobile, mode]);
 
   // Städa lagret när kartan byts/avmonteras.
   useEffect(() => () => {

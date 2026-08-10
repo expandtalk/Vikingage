@@ -250,3 +250,21 @@
   border-bottom: 22px solid rgba(37, 99, 235, .55);
   transform-origin: 50% 100%;
 }
+
+/* "Här"-markör: grön skiva + vit riktningspil. Alltid-på (mobil/billäge) — oberoende av aktivt
+   fältläge — så visuellt skild från den blå .fn-dot att de aldrig kan förväxlas med varandra.
+   Pilen sitter på ett INRE element (.here-arrow) som roterar, precis som .fn-cone ovan. */
+.here-marker .here-wrap { position: relative; width: 36px; height: 36px; }
+.here-marker .here-disc {
+  position: absolute; top: 50%; left: 50%; width: 22px; height: 22px;
+  transform: translate(-50%, -50%); border-radius: 9999px;
+  background: #16a34a; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.3);
+  display: flex; align-items: center; justify-content: center;
+}
+/* Pilen pekar UPP (norr) i grundläget; inre transform (rotate) vrider den till färdriktningen. */
+.here-marker .here-arrow {
+  width: 0; height: 0;
+  border-left: 4px solid transparent; border-right: 4px solid transparent;
+  border-bottom: 9px solid #fff;
+  transform-origin: 50% 60%;
+}
