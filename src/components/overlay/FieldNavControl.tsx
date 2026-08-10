@@ -34,8 +34,8 @@ export const FieldNavControl: React.FC = () => {
     return (
       <button
         onClick={async () => { await requestCompassPermission(); startFieldNav(); }}
-        title="Följ min färd — visa färdriktning"
-        aria-label="Följ färd"
+        title="Kompass till punkt — visa färdriktning och riktning till mål"
+        aria-label="Kompass till punkt"
         className="absolute z-[1050] bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center p-2 rounded-full bg-emerald-600/80 hover:bg-emerald-600 text-white border-2 border-emerald-400 shadow-lg backdrop-blur-md"
         style={{ minWidth: 44, minHeight: 44 }}
       >
@@ -51,7 +51,7 @@ export const FieldNavControl: React.FC = () => {
     >
       <div className="flex items-center justify-between">
         <span className="text-white text-sm font-semibold flex items-center gap-2">
-          <Navigation2 className="h-4 w-4 text-emerald-400" />Följer färd
+          <Navigation2 className="h-4 w-4 text-emerald-400" />Kompass till punkt
         </span>
         <button onClick={stopFieldNav} aria-label="Avsluta fältläge"
           className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
