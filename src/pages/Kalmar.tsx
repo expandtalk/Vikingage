@@ -106,6 +106,8 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   const [heritageReady, setHeritageReady] = useState(false);
   const fieldG = useRef<L.LayerGroup>(L.layerGroup());
   const [fieldReady, setFieldReady] = useState(false);
+  const agesG = useRef<L.LayerGroup>(L.layerGroup());
+  const [agesReady, setAgesReady] = useState(false);
   const fittedRef = useRef(false);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   // Kalmar använder den finupplösta DEM-modellen (Copernicus GLO-30 + paleo_rsl),
@@ -120,6 +122,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     { key: 'stadsmur', label: 'Stadsmur (~1400)', color: '#22c55e', defaultOn: true },
     { key: 'kulturarv', label: 'Sevärt & kulturarv', color: '#f472b6', defaultOn: true },
     { key: 'faltdata', label: 'Fältdata (medeltid)', color: '#d4a63c', defaultOn: true },
+    { key: 'ages', label: 'AGES-grävningar (gamla stan, CC BY)', color: '#e11d48', defaultOn: false },
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap', defaultOn: true },
   ];
   const { enabled, toggle } = useMapLegendState(LEGEND);
@@ -214,13 +217,31 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
       [enabled.stadsmur, wallRef.current],
       [enabled.kulturarv, heritageG.current],
       [enabled.faltdata, fieldG.current],
+      [enabled.ages, agesG.current],
     ];
     for (const [on, g] of pairs) {
       if (!g) continue;
       if (on) { if (!map.hasLayer(g)) map.addLayer(g); }
       else if (map.hasLayer(g)) map.removeLayer(g);
     }
-  }, [enabled.ortnamn, enabled.hamn, enabled.mynt, enabled.stadsmur, enabled.kulturarv, enabled.faltdata, places, harbor, coins, wallReady, heritageReady, fieldReady]);
+  }, [enabled.ortnamn, enabled.hamn, enabled.mynt, enabled.stadsmur, enabled.kulturarv, enabled.faltdata, enabled.ages, places, harbor, coins, wallReady, heritageReady, fieldReady, agesReady]);
+
+  // AGES-grävningar (Swedigarch/Uppsala univ., CC BY 4.0) — nedladdade GPKG:er (Kalmar gamla stad)
+  // omprojicerade SWEREF99TM→WGS84 → public/data/kalmar-ages.geojson. Byggs en gång, togglas via legenden.
+  useEffect(() => {
+    let alive = true;
+    fetch('/data/kalmar-ages.geojson').then((r) => (r.ok ? r.json() : null)).then((gj) => {
+      if (!alive || !gj) return;
+      agesG.current.clearLayers();
+      L.geoJSON(gj, {
+        style: { color: '#e11d48', weight: 1, fillColor: '#e11d48', fillOpacity: 0.2 },
+        pointToLayer: (_f, latlng) => L.circleMarker(latlng, { radius: 3, color: '#e11d48', weight: 1, fillOpacity: 0.6 }),
+        onEachFeature: (f, layer) => layer.bindPopup(`<b>Arkeologisk grävning (AGES)</b><br/>Uppdrag: ${f.properties?.uppdrag ?? '—'}<br/><span style="font-size:11px">Swedigarch / Uppsala universitet · CC BY 4.0</span>`),
+      }).addTo(agesG.current);
+      setAgesReady((v) => !v);
+    }).catch(() => { /* noop */ });
+    return () => { alive = false; };
+  }, []);
 
   // Medeltida stadsmuren (fort_at-RPC, evidensklass-färgad) — samma data som /sv/kalmar-stadsmur,
   // ritad vid ~1400 (peak medeltid). Eget togglebart lager (wallRef deklareras i ref-blocket ovan).
