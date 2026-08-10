@@ -261,6 +261,49 @@ const SandbyBorg = () => {
         </CardContent>
       </Card>
 
+      {/* De andra husen — varje hus sin berättelse (senare säsonger 2016–17) */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Layers className="h-5 w-5" /> De andra husen — glasverkstad och en hövding i hallen</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            Mycket här kretsar kring <strong>Hus 40</strong> (det enda helt utgrävda 2015), men de andra undersökta
+            husen berättar var sitt — och tillsammans tecknar de en <strong>rik, specialiserad</strong> boplats:
+          </p>
+          <ul className="space-y-2">
+            <li>
+              <strong className="text-foreground">Hus 4 — glashantverk.</strong> Här påträffades belägg för{' '}
+              <strong>glaspärletillverkning och ädelmetallhantverk</strong>: pärlor gjorda av en yrkesperson <em>samt</em>{' '}
+              klumpar av råglas — verkstadsindikatorer. Det tolkas som ett <strong>ovanligt tidigt glashantverk för
+              Norden</strong> (rapporterat som ett av Sveriges äldsta). Utgrävt 2016; ~10 individer i och utanför huset.
+            </li>
+            <li>
+              <strong className="text-foreground">Hus 52 — hallen.</strong> En hallbyggnad med en <strong>guldgömma
+              och romerskt glas</strong>. Vid högsätet låg en <strong>äldre man (möjligen en hövding)</strong> som
+              slagits ned med trubbigt våld mot huvudet och fallit in i den <em>ännu brinnande</em> härden.
+            </li>
+            <li>
+              <strong className="text-foreground">Hus 40 — festmåltiden.</strong> Lammen, vävstolen och nio döda (se ovan).
+            </li>
+          </ul>
+          <p>
+            <strong className="text-foreground">Gav hantverket dem makt — och gjorde dem till måltavla?</strong> Att
+            kontrollera <em>exotiskt</em> hantverk och import (glas, guld, romerska kontakter) var en reell{' '}
+            <strong>maktbas</strong> i folkvandringstidens prestigevaruekonomi. Att borgen var rik och specialiserad är
+            därför en rimlig del av <em>varför</em> den blev måltavla (tolkning) — en demonstrativ utplåning av en
+            välmående konkurrent passar signaturen (guldet lämnat orört, döda obegravda, platsen tabu). Att däremot
+            döden skulle bero på <strong>vidskepelse eller &quot;magiskt&quot; glas är ren motivspekulation</strong> — inte
+            prövbart ur fynden. Glaset gav <em>social och politisk</em> makt, inte övernaturlig.
+          </p>
+          <p className="text-xs opacity-80">
+            Källkritik: glasverkstaden och hallen kommer ur <strong>senare säsonger (2016–2017)</strong>, inte rapport VII
+            (2015). &quot;Hövding&quot; och &quot;Sveriges äldsta glasverkstad&quot; är rapporterade bedömningar/tolkningar, inte slutbevis.
+            Källor: Current World Archaeology; National Geographic; Kalmar läns museum (Sandby borg VIII–XI).
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Massakern */}
       <Card id="massakern" className="viking-card mb-4 scroll-mt-24">
         <CardHeader className="pb-2">
