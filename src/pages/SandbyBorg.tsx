@@ -32,6 +32,8 @@ const LNG = 16.63926;
 const SandbyBorgMap: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const agesRef = useRef<L.Layer | null>(null);
+  const [showAges, setShowAges] = React.useState(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -50,9 +52,27 @@ const SandbyBorgMap: React.FC = () => {
     return () => { map.remove(); mapRef.current = null; };
   }, []);
 
+  // Swedigarch AGES (CC BY 4.0) — grävningspunkter som WMS-togglelager. Extern tjänst, attribuerad.
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    if (showAges && !agesRef.current) {
+      const wms = L.tileLayer.wms('https://swedigarch-ages.arkeologi.uu.se/geoserver/swedigarch/wms', {
+        layers: 'swedigarch-point2', format: 'image/png', transparent: true, version: '1.1.1', opacity: 0.85,
+        attribution: 'Grävdata: Swedigarch AGES / Uppsala universitet (CC BY 4.0)',
+      });
+      wms.addTo(map); agesRef.current = wms;
+    } else if (!showAges && agesRef.current) {
+      map.removeLayer(agesRef.current); agesRef.current = null;
+    }
+  }, [showAges]);
+
   return (
     <div>
       <div ref={containerRef} className="w-full h-[420px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 420 }} />
+      <label className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground cursor-pointer">
+        <input type="checkbox" checked={showAges} onChange={(e) => setShowAges(e.target.checked)} className="accent-gold" />
+        Visa arkeologiska grävningar i området (Swedigarch AGES, CC BY 4.0)
+      </label>
       <p className="text-xs text-muted-foreground mt-2 opacity-75">
         Ölands sydöstra kust, mot Östersjön. Den streckade cirkeln är ringvallens <strong>ungefärliga omfång</strong>{' '}
         (schematiskt); borgens ~53 hus (radiellt längs muren + centralkvarter) går <strong>inte</strong> att rita ut
