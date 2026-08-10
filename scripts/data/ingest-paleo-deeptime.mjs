@@ -56,7 +56,13 @@ const env = Object.fromEntries(
 const PW = env.SUPABASE_DB_PASSWORD;
 if (!PW) { console.error('SUPABASE_DB_PASSWORD saknas i .env'); process.exit(1); }
 
-const BBOX = process.env.BBOX || '16.5,59.2,18.7,60.5';       // Mälardalen/Uppland (lng,lat,lng,lat)
+// FIX (Öland-bbox, task-4-verifiering 2026-08-11): ursprunglig default ärvde
+// Mälardalen-bboxen från ingest-paleo-shorelines.mjs, som INTE täcker Öland/Kalmarsund.
+// Verifierat mot SGU (probe 2026-08-11): alla tre collections HAR djuptidsdata för exakt
+// Öland-bboxen (16.3,56.1,17.2,57.5) — samtliga år, inga inlandsis-celler (kod 5) där.
+// Vidgad default täcker nu BÅDE Mälardalen och Öland/Kalmarsund/sydöstra Sverige i en
+// och samma additiva körning (unionsmängd, ingen data tappas).
+const BBOX = process.env.BBOX || '15.5,55.5,19.7,61.4';       // Mälardalen–Öland/Kalmarsund (lng,lat,lng,lat)
 const CRS = 'http://www.opengis.net/def/crs/EPSG/0/4326';
 const SIMPLIFY_DEG = 0.0015;                                   // ~150 m, samma som befintlig pipeline
 const LICENSE = 'CC-BY-4.0';                                    // se licens-kommentar ovan — INTE CC0
@@ -109,7 +115,7 @@ async function main() {
   const client = new pg.Client({
     host: 'aws-0-eu-north-1.pooler.supabase.com', port: 5432,
     user: 'postgres.mnuifmcjspeaauzehasj', password: PW, database: 'postgres',
-    ssl: { rejectUnauthorized: false }, statement_timeout: 300000,
+    ssl: { rejectUnauthorized: false }, statement_timeout: 600000, // 10 min — vidgad bbox ⇒ 30–40x fler celler per union
   });
   await client.connect();
   try {
@@ -141,6 +147,13 @@ async function main() {
     if (yrs.some(y => y >= 0)) throw new Error(`Oväntat year_ce >= 0 bland hämtade celler: ${yrs.filter(y => y >= 0)} — avbryter (skydd mot att röra befintliga skivor).`);
     // BBOX-SCOPAD + YEAR-SCOPAD DELETE (samma additiva mönster som ingest-paleo-shorelines.mjs):
     // rör bara rader vars year_ce är bland de NYA (negativa) åren OCH vars geom skär denna bbox.
+    // VARNING (lärdom 2026-08-11, Öland-bbox-fixen): kör ALDRIG två körningar av detta skript
+    // mot samma year_ce-intervall SAMTIDIGT med olika BBOX. Om körning B:s INSERT committar
+    // efter att körning A:s DELETE redan kört (men innan A:s INSERT), ser B:s DELETE inga rader
+    // att ersätta -> två separata rader per (year_ce, water_body_type) i stället för en union.
+    // Detta hände en gång (bred SE-Sverige-körning + en snävare Öland-körning i olika
+    // agent-turer) och krävde en manuell efterstädning (radera den mindre av två rader per
+    // grupp, rankat på ST_Area). Kör sekventiellt, eller kör bara EN bbox-bredd i taget.
     const [bx1, by1, bx2, by2] = BBOX.split(',').map(Number);
     const del = await client.query(
       `DELETE FROM paleo_shorelines WHERE model_version=$6 AND year_ce = ANY($1)
