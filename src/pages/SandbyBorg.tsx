@@ -261,6 +261,60 @@ const SandbyBorg = () => {
         </CardContent>
       </Card>
 
+      {/* Så var borgen organiserad — layout, maktcentrum, portar, kroppar, motiv */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Landmark className="h-5 w-5" /> Så var borgen organiserad — och vad det säger om motivet</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            Georadar visar en tydlig plan: ~36–37 hus <strong>radiellt längs ringmuren</strong> och ~16–17 hus i ett
+            samlat <strong>centralkvarter</strong>. Din intuition stämmer — <strong>makten satt i mitten</strong>: där
+            låg <strong>hallen (Hus 52)</strong> med högsäte, guldgömma och romerskt glas, omgiven av de hus där
+            smyckedepåerna och glashantverket (Hus 4) fanns.
+          </p>
+          <p>
+            <strong className="text-foreground">Men ingen kyrka.</strong> Borgen är <strong>förkristen (~500 e.Kr.)</strong> —
+            kristendomen når Sverige först ~500 år senare. Jämförelsen med hansastaden Kalmar (kyrka, gillestuga och
+            torg i mitten) är en <em>medeltida stadsmodell</em> och blir anakronistisk här. Folkvandringstidens
+            motsvarighet till &quot;maktcentrum i mitten&quot; är just <strong>hövdingahallen</strong>: fest, politik, rit och
+            högsäte i ett — inte kyrka/torg. Ringmuren + portarna är försvars- och mobiliseringsdelen, precis som du är inne på.
+          </p>
+          <p>
+            <strong className="text-foreground">Portarna:</strong> tre säkra portöppningar (+ möjligen en fjärde).
+            Huvudporten var troligen den i <strong>nordväst</strong>; de norra/nordvästra portarna vetter mot{' '}
+            <strong>samtida grannbygder</strong> på fastsidan, medan <strong>sjöporten</strong> mot Östersjön kan ha lett till en hamn.
+          </p>
+          <p>
+            <strong className="text-foreground">Var låg de döda?</strong> De begravdes aldrig utan blev liggande{' '}
+            <em>där de föll</em> — <strong>inne i husen och utspridda på gatorna</strong> mellan dem. Av tre helt
+            undersökta hus kommer ~15 individer, och ungefär lika många ur ben spridda i gaturummet. Folk dräptes
+            alltså <em>runt om i borgen</em>, inte samlat vid en port — vilket talar emot en snabb, samlad reträtt mot en enda utgång.
+          </p>
+          <p>
+            <strong className="text-foreground">Kom de sjövägen?</strong> Läget vid vattnet + sjöporten gör din
+            hypotes rimlig att ställa. Men signaturen (guldet lämnat orört, döda obegravda, platsen tabu) och att{' '}
+            <strong>segel saknas i Norden före ~700</strong> (farkosterna var rodda) pekar snarare mot en{' '}
+            <strong>lokal/regional gärningsman</strong> — grannar eller rivaler över land eller kort rodd — än en
+            fjärran sjöburen flotta. De inlandsvända portarna stärker det. <em>Öppen fråga.</em>
+          </p>
+          <p>
+            <strong className="text-foreground">Romartidskopplingen som motiv?</strong> Borgen bär tydliga{' '}
+            <strong>senromerska trådar</strong>: guldsolidi (Leo I m.fl.), <strong>romerskt glas</strong>, och två
+            unga män med romerska mynt — tolkade som hemvända <strong>legosoldater</strong> ur romersk tjänst (~476,
+            Västroms fall). Att kontrollera sådana exotiska kontakter var en <strong>maktbas</strong> → en rimlig del
+            av <em>varför</em> borgen blev måltavla. Och skändningen — <strong>djurtänder i de dödas munnar</strong> —
+            tolkas som en hånfull förvrängning av den <strong>romerska seden att lägga ett mynt i den dödes mun</strong>.
+            Allt detta är <em>tolkning</em>; själva motivet förblir obelagt.
+          </p>
+          <p className="text-[11px] text-muted-foreground/70">
+            Källor: Viberg et al. 2014 (georadar — radial- + centralkvarter, portar); Wikipedia / Current World
+            Archaeology (kroppar i hus + gata; portar mot grannbygd/hav); Gunnarsson, Victor &amp; Alfsdotter 2016.
+            Kyrkfrånvaron = kronologi (förkristet ~500). &quot;Segel före ~700&quot; + lokal gärningsman = plattformens agent-syntes.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* De andra husen — varje hus sin berättelse (senare säsonger 2016–17) */}
       <Card className="viking-card mb-4">
         <CardHeader className="pb-2">
