@@ -39,7 +39,11 @@ export const NavigatorHud: React.FC = () => {
   const { pos, active } = useFieldNav();
   const startRef = React.useRef<{ route: unknown; ms: number }>({ route: null, ms: 0 });
   if (startRef.current.route !== route) startRef.current = { route, ms: new Date().getTime() };
-  const posLL = pos ? { lat: pos.lat, lng: pos.lng } : null;
+  // useMemo keyad på de faktiska lat/lng-talen — annars fick useSpokenDirections en ny
+  // objektreferens varje render (pos-objektet från useFieldNav byts ut vid varje GPS-tick) och
+  // dess effekt trodde "pos" alltid hade ändrats.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const posLL = React.useMemo(() => (pos ? { lat: pos.lat, lng: pos.lng } : null), [pos?.lat, pos?.lng]);
   // Hook måste anropas ovillkorligt (Rules of Hooks) — den avlyssnar tyst tills muted/route/pos
   // säger annat, så det är säkert att alltid montera den här.
   const { muted, setMuted } = useSpokenDirections(route, posLL);
@@ -54,8 +58,12 @@ export const NavigatorHud: React.FC = () => {
         onClick={() => { setDrivingMode(true); if (!active) startFieldNav(); }}
         title="Följ färd — visa rutt-HUD med kompass och talad vägledning"
         aria-label="Följ färd"
-        className="fixed z-[1200] bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-3 rounded-full bg-emerald-600/90 hover:bg-emerald-600 text-white border-2 border-emerald-400 shadow-2xl backdrop-blur-md"
-        style={{ marginBottom: 'env(safe-area-inset-bottom)', minHeight: 44 }}
+        className="fixed z-[1200] left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-3 rounded-full bg-emerald-600/90 hover:bg-emerald-600 text-white border-2 border-emerald-400 shadow-2xl backdrop-blur-md"
+        // Samma bottom-offset som den fulla HUD:ens nedre rad (se kommentar därnere): rensar
+        // NearMeControls minimerade footer (bottom-0, ~64 px) OCH sitter ovanför FieldNavControls
+        // "Kompass till punkt"-pill (bottom-2) — utan detta överlappade knapparna på mobil
+        // (bugg hittad i review av Task 6).
+        style={{ bottom: 'calc(88px + env(safe-area-inset-bottom))', minHeight: 44 }}
       >
         <Navigation2 className="h-5 w-5" aria-hidden />
         <span className="text-sm font-semibold">Följ färd</span>

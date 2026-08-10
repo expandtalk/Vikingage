@@ -160,10 +160,19 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // Enda sättet att rensa en aktiv rutt är nu den explicita "Avsluta resa"-knappen (endTrip).
   // Billäge: map-first-läget slås på när man kör (bil-läge + öppet). Strippar chrome + zoomar in
   // + startar Följ färd (live-position + riktningskägla; GPS-kurs räcker i bil, ingen kompassgest).
+  // AVSTÄNGNING är MEDVETET inte bara "on"-villkorets negation: att stänga (minimera/X) panelen
+  // (open→false) ska INTE döda en aktiv körsession — t.ex. en startad via NavigatorHud:s egna,
+  // fristående "Följ färd"-knapp (den är oberoende av den här panelens öppen/stängd-tillstånd).
+  // Bara ett explicit bortval — byt färdsätt bort från bil, eller lämna Kör-vyn (Översikt-knappen
+  // eller endTrip, båda sätter carView='overview') — stänger av. `open` triggar alltså bara PÅ.
   useEffect(() => {
-    const on = open && mode === 'car' && carView === 'drive';
-    setDrivingMode(on);
-    if (on) startFieldNav(); else stopFieldNav();
+    if (open && mode === 'car' && carView === 'drive') {
+      setDrivingMode(true);
+      startFieldNav();
+    } else if (mode !== 'car' || carView !== 'drive') {
+      setDrivingMode(false);
+      stopFieldNav();
+    }
   }, [open, mode, carView]);
   useEffect(() => () => { setDrivingMode(false); stopFieldNav(); }, []);
   const activeMode = TRAVEL_MODES.find((m) => m.key === mode) ?? TRAVEL_MODES[0];
