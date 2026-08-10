@@ -7,7 +7,8 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, MapPin, Coins, AlertTriangle, ScrollText, ExternalLink, Landmark, Mountain, BookOpen, Microscope, Bot, Users, Swords, CalendarClock, Layers, ScanSearch } from 'lucide-react';
+import { Shield, MapPin, Coins, AlertTriangle, ScrollText, ExternalLink, Landmark, Mountain, BookOpen, Microscope, Bot, Users, Swords, CalendarClock, Layers, ScanSearch, Utensils, Bone } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 // /sv/sandby-borg — forskningssida + utflyktsmål om Sandby borg, ringborgen på sydöstra Öland
 // där en massaker under folkvandringstid lämnade de dödade obegravda och platsen övergiven.
@@ -61,6 +62,88 @@ const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, c
     <span className="text-sm text-foreground">{children}</span>
   </div>
 );
+
+// forensic_individuals är inte i genererade types än → otypad cast (jfr övriga sidor).
+const sb = supabase as unknown as { from: (t: string) => any };
+
+interface ForensicRow {
+  individual_label: string | null;
+  find_number: string | null;
+  age: string | null;
+  sex_dna: string | null;
+  sex_osteo: string | null;
+  stature_cm: string | null;
+  trauma_type: string | null;
+  trauma_description: string | null;
+  interpretation: string | null;
+}
+
+// Färg per traumaklass — differentialbedömning, ej dom.
+const TRAUMA_COLOR: Record<string, string> = {
+  skarp: 'text-red-300',
+  trubbig: 'text-orange-300',
+  'trubbig/skarp (mix)': 'text-amber-300',
+  oklar: 'text-slate-400',
+  'ingen påvisad': 'text-slate-500',
+};
+const indivOrder = (r: ForensicRow): number => {
+  const m = /Individ\s+(\d+)/.exec(r.individual_label ?? '');
+  return m ? Number(m[1]) : 999; // F-nummer o.dyl. sist
+};
+
+// Per-individ forensik ur DB (forensic_individuals), Sandby borg / Hus 40.
+const ForensicIndividualsTable: React.FC = () => {
+  const [rows, setRows] = React.useState<ForensicRow[] | null>(null);
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data } = await sb.from('forensic_individuals')
+        .select('individual_label,find_number,age,sex_dna,sex_osteo,stature_cm,trauma_type,trauma_description,interpretation')
+        .eq('site_name', 'Sandby borg');
+      if (alive) setRows((data ?? []) as ForensicRow[]);
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  if (rows === null) return <p className="text-xs text-muted-foreground">Laddar individdata…</p>;
+  if (!rows.length) return null;
+  const sorted = [...rows].sort((a, b) => indivOrder(a) - indivOrder(b));
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm border-collapse">
+        <thead>
+          <tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
+            <th className="py-2 pr-3 font-medium">Individ</th>
+            <th className="py-2 pr-3 font-medium">Ålder</th>
+            <th className="py-2 pr-3 font-medium">Kön</th>
+            <th className="py-2 pr-3 font-medium">Längd</th>
+            <th className="py-2 pr-3 font-medium">Trauma (perimortem)</th>
+            <th className="py-2 font-medium">Tolkning</th>
+          </tr>
+        </thead>
+        <tbody className="align-top">
+          {sorted.map((r, i) => (
+            <tr key={i} className="border-b border-border/50">
+              <td className="py-2 pr-3 whitespace-nowrap text-foreground font-medium">
+                {r.individual_label}
+                {r.find_number && r.find_number !== '—' ? <span className="text-muted-foreground font-normal"> · {r.find_number}</span> : null}
+              </td>
+              <td className="py-2 pr-3 whitespace-nowrap">{r.age || '—'}</td>
+              <td className="py-2 pr-3 whitespace-nowrap">{r.sex_dna || r.sex_osteo || '—'}</td>
+              <td className="py-2 pr-3 whitespace-nowrap">{r.stature_cm ? `${r.stature_cm} cm` : '—'}</td>
+              <td className="py-2 pr-3">
+                {r.trauma_type ? <span className={`font-medium ${TRAUMA_COLOR[r.trauma_type] ?? 'text-slate-300'}`}>{r.trauma_type}</span> : '—'}
+                {r.trauma_description ? <span className="text-muted-foreground"> — {r.trauma_description}</span> : null}
+              </td>
+              <td className="py-2 text-muted-foreground italic">{r.interpretation || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 const SandbyBorg = () => {
   // Hash-scroll: facett-chips i sökmotorn länkar hit med #massakern / #skatter.
@@ -229,6 +312,32 @@ const SandbyBorg = () => {
             skador (perimortem trauma) och fyndkontexten är belagt (osteologi, aDNA, ¹⁴C). <em>Att</em> det var
             en riktad avrättning och <em>varför</em> borgen sedan lämnades är forskningens tolkning av fynden,
             inte ett dokumenterat händelseförlopp. Gärningsmän och motiv är okända.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Den frusna festmåltiden — lammen (finds A7868) */}
+      <Card className="viking-card mb-4 border-gold/30">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Utensils className="h-5 w-5" /> Den frusna festmåltiden</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            Längst in i Hus 40 låg en behållare med <strong>minst åtta slaktade och styckade lamm</strong> (A7868). Att
+            slakta så många djur på en gång är inte ett vardagsmål — det är en <strong>festmåltid under förberedelse</strong>{' '}
+            (tolkning). Lammens ålder, <strong>3–6 månader</strong>, pekar dessutom mot att massakern skedde under{' '}
+            <strong>sommarhalvåret</strong>.
+          </p>
+          <p>
+            Lamm i sig var inte elitmat — får var det vanligaste husdjuret. Men <em>mängden</em>, tillsammans med borgens
+            högstatusfynd (brännförgyllda silverspännen, en romersk guldsolidus, peltahänget), tecknar ett <strong>välbärgat
+            samhälle mitt i förberedelsen av en fest</strong>. Det är just det som gör platsen så gripande: ögonblicksbilden
+            fryser i sekunden <em>före</em> katastrofen — överflöd och liv, avbrutet av våld.
+          </p>
+          <p className="text-xs opacity-80">
+            Källkritik: &quot;festmåltid&quot; och &quot;sommar&quot; är rapportens <strong>tolkningar</strong> (byggda på antalet lamm, deras
+            ålder, den marginella styckningen och det avbrutna målet) — inte belagda som datum. Bittert eko: samma djurslag
+            (får/get) återkommer i skändningen, med tänder instoppade i de dödas munnar (se rutan om geten nedan).
           </p>
         </CardContent>
       </Card>
@@ -458,6 +567,24 @@ const SandbyBorg = () => {
           <p className="text-xs opacity-80">
             Dateringen förblir omtvistad (~480 typologi/numismatik vs ~500–540 ¹⁴C) och redovisas som öppen fråga.
             Full metod: <Link to="/ai-agenter" className="text-gold hover:underline">AI-agenterna</Link>.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Per-individ forensik ur DB (forensic_individuals) — Hus 40 */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Bone className="h-5 w-5" /> Individerna i Hus 40 — forensisk översikt</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Det enda helt undersökta huset, individ för individ (Sandby borg VII 2016). Traumaklassen är en forensisk
+            differentialbedömning — inte en dom om ett specifikt vapen; kolumnen <em>Tolkning</em> är uttryckligen tolkning, inte fakta.
+          </p>
+          <ForensicIndividualsTable />
+          <p className="text-[11px] text-muted-foreground/70">
+            Källa: Gunnarsson, Victor &amp; Alfsdotter 2016 (Sandby borg VII, Kalmar läns museum). Strukturerat i{' '}
+            <code>forensic_individuals</code> — spädbarnet (Ind 25) är starkaste belägget för att kvinnor fanns i borgen.
           </p>
         </CardContent>
       </Card>
