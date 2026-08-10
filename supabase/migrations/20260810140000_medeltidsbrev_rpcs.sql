@@ -59,8 +59,8 @@ as $$
     case when sort='place' and dir='desc' then place_raw end desc nulls last,
     case when sort='sdhk'  and dir='desc' then sdhk_id end desc,
     sdhk_id asc
-  limit  greatest(1, least(100, page_size))
-  offset greatest(0, (greatest(1, page) - 1) * greatest(1, least(100, page_size)));
+  limit  greatest(1, least(100, coalesce(page_size, 30)))
+  offset greatest(0, (greatest(1, coalesce(page, 1)) - 1) * greatest(1, least(100, coalesce(page_size, 30))));
 $$;
 
 create or replace function public.medieval_charters_stats()
