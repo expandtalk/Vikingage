@@ -73,7 +73,7 @@ const ExcursionDetail = () => {
   const [relief, setRelief] = useState(false);
   const [hiddenCats, setHiddenCats] = useState<Set<string>>(new Set());
   const toggleCat = (id: string) => setHiddenCats((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
-  useShorelineOverlay(mapRef, shoreYear);
+  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear);
   // Byt utflykt (id-param) → återställ strandlinjen till utflyktens default.
   useEffect(() => { setShoreYear(excursion?.defaultShoreYear ?? null); }, [excursion?.id]);
   useReliefOverlay(mapRef, relief);
@@ -516,8 +516,8 @@ const ExcursionDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
             <div className="mb-2 flex flex-col gap-2">
-              <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} /></div>
-              <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" /></div>
+              <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} /></div>
+              <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} /></div>
               <label className="inline-flex items-center gap-1.5 text-xs text-emerald-300 cursor-pointer"><input type="checkbox" checked={relief} onChange={(e) => setRelief(e.target.checked)} /> {sv ? 'Höjdrelief (terräng — strandvallar)' : 'Elevation hillshade (terrain)'}</label>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-sky-300 whitespace-nowrap">{sv ? 'Radie' : 'Radius'}: {radius < 1000 ? `${radius} m` : `${(radius / 1000).toFixed(1)} km`}</span>

@@ -33,7 +33,7 @@ const BirkaMap: React.FC = () => {
   const tileRef = useRef<L.TileLayer | null>(null);
   const birkaG = useRef<L.LayerGroup>(L.layerGroup());
   const [shoreYear, setShoreYear] = useState<number | null>(900);
-  useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', BIRKA_BBOX);
+  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', BIRKA_BBOX);
 
   const LEGEND: LegendLayerDef[] = [
     { key: 'birka', label: 'Birka (Björkö)', color: '#f59e0b', defaultOn: true },
@@ -71,12 +71,12 @@ const BirkaMap: React.FC = () => {
   return (
     <div>
       <div className="hidden sm:block">
-        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} />
       </div>
       <div className="relative">
         {/* Mobil: flytande strandlinje-kontroll (frigör kartytan) — inline på desktop ovan. */}
         <div className="sm:hidden absolute left-2 top-16 z-[1105]">
-          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" />
+          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} />
         </div>
         <div ref={containerRef} className="w-full h-[460px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 460 }} />
         <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} mapRef={mapRef} />

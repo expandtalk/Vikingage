@@ -103,7 +103,7 @@ const OlandMap: React.FC<{
   const snackRef = useRef<L.LayerGroup>(L.layerGroup());
   const snackDataRef = useRef<any[] | null>(null);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
-  useShorelineOverlay(mapRef, shoreYear);
+  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear);
 
   const LEGEND: LegendLayerDef[] = [
     ...OL_KIND_KEYS.map((k) => ({ key: k, label: KIND_STYLE[k].label, color: KIND_STYLE[k].color, defaultOn: true })),
@@ -345,12 +345,12 @@ const OlandMap: React.FC<{
         .oland-fort-label::before { display:none; }
       `}</style>
       <div className="hidden sm:block">
-        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} />
       </div>
       <div className="relative">
         {/* Mobil: flytande strandlinje-kontroll (frigör kartytan) — inline på desktop ovan. */}
         <div className="sm:hidden absolute left-2 top-16 z-[1105]">
-          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" />
+          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} />
         </div>
         <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
         <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} mapRef={mapRef} />

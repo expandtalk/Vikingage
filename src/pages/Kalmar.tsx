@@ -112,7 +112,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   // Kalmar använder den finupplösta DEM-modellen (Copernicus GLO-30 + paleo_rsl),
   // inte SGU:s grova/statiska raster. Bbox regionavgränsar så Mälaren-lagret inte dras hit.
-  useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', [16.18, 56.55, 16.46, 56.72]);
+  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', [16.18, 56.55, 16.46, 56.72]);
 
   // Återanvändbar legend: tematiska lager + baskarta. Cap/seed sköts av useMapLegendState.
   const LEGEND: LegendLayerDef[] = [
@@ -385,12 +385,12 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   return (
     <div>
       <div className="hidden sm:block">
-        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} />
       </div>
       <div className="relative">
         {/* Mobil: flytande strandlinje-kontroll (frigör kartytan) — inline på desktop ovan. */}
         <div className="sm:hidden absolute left-2 top-16 z-[1105]">
-          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" />
+          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} />
         </div>
         <div ref={containerRef} className="w-full h-[460px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 460 }} />
         <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} mapRef={mapRef} />

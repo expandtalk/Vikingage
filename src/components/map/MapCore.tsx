@@ -96,7 +96,7 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
   const isMobile = useIsMobile();
   const shoreMapRef = React.useRef<L.Map | null>(null);
   React.useEffect(() => { shoreMapRef.current = map; }, [map]);
-  useShorelineOverlay(shoreMapRef, shoreYear);
+  const { status: shoreStatus } = useShorelineOverlay(shoreMapRef, shoreYear);
 
   const shouldShowTradeRoutes = enabledLegendItems.trade_routes !== false;
   
@@ -168,7 +168,7 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
               som en flytande vågknapp (nedan) — inline-raden tog annars ~20 % av kartytan (Daniel). */}
           {!isMobile && (
             <div className="px-3 pt-2 pb-1">
-              <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+              <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} />
             </div>
           )}
           <MapContainer mapContainer={mapContainer} />
@@ -211,7 +211,7 @@ export const MapCore: React.FC<InteractiveMapProps> = ({
       {/* Mobil: flytande strandlinje-kontroll (topp-vänster, under "Anpassa karta") i st.f. inline-rad. */}
       {isMobile && (
         <div className="absolute left-2 top-2 z-[1105]">
-          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" />
+          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} />
         </div>
       )}
 

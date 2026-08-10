@@ -53,7 +53,7 @@ const KalmarWall = () => {
 
   // Dåtida strandlinje (DEM-modellen, samma som /sv/kalmar) — landhöjningen som kontext till muren.
   // Ritas i botten (bringToBack) så mur/halo-panerna ligger över. Kalmar-bbox regionavgränsar.
-  useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', [16.18, 56.55, 16.46, 56.72]);
+  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', [16.18, 56.55, 16.46, 56.72]);
 
   // Init karta + halo/mur-paner (halo under linjerna).
   useEffect(() => {
@@ -142,8 +142,8 @@ const KalmarWall = () => {
         </div>
 
         <div className="mb-2">
-          <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} /></div>
-          <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" /></div>
+          <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} /></div>
+          <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} /></div>
           <span className="block text-[11px] text-muted-foreground opacity-70">
             {sv ? 'Strandlinjen är DEM-härledd (Copernicus + landhöjning). Vid murens tid (1300–1600-tal) stod havet bara ~0,5–0,7 m högre; vikingatidsskivan (~950) visas som djuptidskontext.'
                 : 'Shoreline is DEM-derived (Copernicus + land uplift). In the wall\'s era (14th–17th c.) the sea stood only ~0.5–0.7 m higher; the Viking-age slice (~950) is shown as deep-time context.'}

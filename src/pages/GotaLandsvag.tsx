@@ -85,7 +85,7 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
   const traceRef = useRef<L.LayerGroup>(L.layerGroup());
   const probableRef = useRef<L.LayerGroup>(L.layerGroup());
   const [shoreYear, setShoreYear] = useState<number | null>(null);
-  useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', CORRIDOR_BBOX);
+  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', CORRIDOR_BBOX);
 
   // Återanvändbar legend: väglinje + en togglebar grupp per nodtyp + baskarta.
   const LEGEND: LegendLayerDef[] = [
@@ -179,12 +179,12 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
   return (
     <div>
       <div className="hidden sm:block">
-        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} />
       </div>
       <div className="relative">
         {/* Mobil: flytande strandlinje-kontroll (frigör kartytan) — inline på desktop ovan. */}
         <div className="sm:hidden absolute left-2 top-16 z-[1105]">
-          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" />
+          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} />
         </div>
         <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
         <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} mapRef={mapRef} />

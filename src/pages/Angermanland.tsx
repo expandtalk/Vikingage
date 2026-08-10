@@ -71,7 +71,7 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[] }> = ({ groups }) => {
   const layerRef = useRef<L.LayerGroup | null>(null);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   const [relief, setRelief] = useState(false);
-  useShorelineOverlay(mapRef, shoreYear);
+  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear);
   useReliefOverlay(mapRef, relief);
   const { enabled, toggle } = useMapLegendState(ANG_LEGEND);
 
@@ -124,8 +124,8 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[] }> = ({ groups }) => {
 
   return (
     <div>
-      <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} /></div>
-      <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" /></div>
+      <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} /></div>
+      <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} /></div>
       <label className="inline-flex items-center gap-1.5 text-xs text-emerald-300 cursor-pointer mb-2"><input type="checkbox" checked={relief} onChange={(e) => setRelief(e.target.checked)} /> Höjdrelief (terräng — Höga kustens strandvallar)</label>
       <div className="relative">
         <div ref={containerRef} className="w-full h-[480px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 480 }} />

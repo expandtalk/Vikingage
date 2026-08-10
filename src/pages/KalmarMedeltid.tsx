@@ -61,7 +61,7 @@ const KalmarMedeltidMap: React.FC<{ feats: Feat[] }> = ({ feats }) => {
   const tileRef = useRef<L.TileLayer | null>(null);
   const groupsRef = useRef<Record<string, L.LayerGroup>>({});
   const [shoreYear, setShoreYear] = useState<number | null>(null);
-  useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', KALMAR_BBOX);
+  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', KALMAR_BBOX);
 
   const LEGEND: LegendLayerDef[] = [
     ...LAYER_KEYS.map((k) => ({ key: k, label: LAYER[k].label, color: LAYER[k].color, defaultOn: true })),
@@ -138,11 +138,11 @@ const KalmarMedeltidMap: React.FC<{ feats: Feat[] }> = ({ feats }) => {
   return (
     <div>
       <div className="hidden sm:block">
-        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} />
+        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} />
       </div>
       <div className="relative">
         <div className="sm:hidden absolute left-2 top-16 z-[1105]">
-          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" />
+          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} />
         </div>
         <div ref={containerRef} className="w-full h-[560px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 560 }} />
         <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} mapRef={mapRef} />

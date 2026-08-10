@@ -1,43 +1,94 @@
 import React, { useState } from 'react';
-import { Waves, X } from 'lucide-react';
+import { Waves, X, AlertTriangle } from 'lucide-react';
 
 // Periodväljare för dåtida strandlinje (landhöjning) på forskningskartorna. null = av.
-// Åren matchar SGU-skivorna (get_paleo_shorelines_nearest snappar till närmaste).
+// Åren matchar SGU-skivorna (get_paleo_shorelines_nearest/_dem snappar till närmaste).
 // variant='inline' (desktop) = raden ovanför kartan. variant='floating' (mobil) = kompakt
 // vågknapp som fäller ut en liten popover → tar inte ~20 % av kartytan (Daniel).
+//
+// Djuptidsgrupp (Task 3, 2026-08-11): Littorina/Ancylus/Yoldia — SGU-modellens strandförskjutning
+// utökad bakåt (Task 2). Baltiska issjön (~-12600) är MEDVETET utelämnad — data saknas
+// (se coordinate-gap-status/paleo-brief); en knapp för den skulle bara trigga guarden nedan.
 
-const PERIODS: { label: string; year: number | null }[] = [
+type PeriodGroup = 'ce' | 'deep';
+
+interface Period {
+  label: string;
+  year: number | null;
+  group?: PeriodGroup;
+  /** Hover-caption (title-attr) — specifik brasklapp per djuptidsstadium. */
+  caption?: string;
+}
+
+const PERIODS: Period[] = [
   { label: 'Av', year: null },
-  { label: 'Rom. järnålder ~250', year: 250 },
-  { label: 'Folkvandring ~450', year: 450 },
-  { label: 'Vendel ~750', year: 750 },
-  { label: 'Vikingatid ~950', year: 950 },
+  { label: 'Rom. järnålder ~250', year: 250, group: 'ce' },
+  { label: 'Folkvandring ~450', year: 450, group: 'ce' },
+  { label: 'Vendel ~750', year: 750, group: 'ce' },
+  { label: 'Vikingatid ~950', year: 950, group: 'ce' },
+  {
+    label: 'Littorinahavet ~−6500', year: -6500, group: 'deep',
+    caption: 'SGU strandförskjutningsmodell — kustlinjens modellerade läge. Littorinahavet: brackvattenhav, föregångare till dagens Östersjön.',
+  },
+  {
+    label: 'Ancylussjön ~−8500', year: -8500, group: 'deep',
+    caption: 'SGU strandförskjutningsmodell — endast kustlinjens läge. Insjöhydrologin (avrinning/tröskelnivå mot Atlanten) är INTE modellerad.',
+  },
+  {
+    label: 'Yoldiahavet ~−9500', year: -9500, group: 'deep',
+    caption: 'SGU strandförskjutningsmodell — endast kustlinjens läge. Insjö-/brackvattenhydrologin är INTE modellerad.',
+  },
 ];
 
+const CE_PERIODS = PERIODS.filter((p) => p.group === 'ce');
+const DEEP_PERIODS = PERIODS.filter((p) => p.group === 'deep');
+const OFF = PERIODS.find((p) => p.year === null)!;
+
 const CAPTION = 'SGU strandförskjutningsmodell (CC-BY) — märkbar i Mälardalen/Norrland, försumbar i söder';
+const DEEP_CAPTION = 'Djuptid — SGU-modell (CC-BY): kustlinjens läge, INTE insjöhydrologin (avrinning/trösklar) i Ancylus/Yoldia';
+const NO_DATA_NOTE = 'Ingen modellerad strandlinje för perioden';
 
 interface Props {
   value: number | null;
   onChange: (y: number | null) => void;
   variant?: 'inline' | 'floating';
+  /** Sant när RPC:n bara hittade en skiva för långt bort (>tolerans) — se useShorelineOverlay. */
+  noData?: boolean;
 }
 
-const PeriodButtons: React.FC<Props> = ({ value, onChange }) => (
+const PeriodButton: React.FC<{ p: Period; active: boolean; onChange: (y: number | null) => void }> = ({ p, active, onChange }) => (
+  <button
+    type="button"
+    onClick={() => onChange(p.year)}
+    title={p.caption}
+    className={`rounded border px-2 py-0.5 transition-colors ${active ? 'border-sky-400 text-sky-200 bg-sky-500/10' : 'border-slate-700 text-muted-foreground'}`}
+  >
+    {p.label}
+  </button>
+);
+
+const PeriodButtons: React.FC<Pick<Props, 'value' | 'onChange'>> = ({ value, onChange }) => (
   <>
-    {PERIODS.map((p) => {
-      const active = value === p.year;
-      return (
-        <button key={p.label} type="button" onClick={() => onChange(p.year)}
-          className={`rounded border px-2 py-0.5 transition-colors ${active ? 'border-sky-400 text-sky-200 bg-sky-500/10' : 'border-slate-700 text-muted-foreground'}`}>
-          {p.label}
-        </button>
-      );
-    })}
+    <PeriodButton p={OFF} active={value === null} onChange={onChange} />
+    {CE_PERIODS.map((p) => <PeriodButton key={p.label} p={p} active={value === p.year} onChange={onChange} />)}
+    <span className="mx-0.5 h-4 w-px self-stretch bg-slate-700" aria-hidden="true" />
+    <span className="text-[10px] uppercase tracking-wide text-muted-foreground opacity-70">Djuptid</span>
+    {DEEP_PERIODS.map((p) => <PeriodButton key={p.label} p={p} active={value === p.year} onChange={onChange} />)}
   </>
 );
 
-export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, variant = 'inline' }) => {
+const NoDataNote: React.FC<{ show?: boolean }> = ({ show }) => {
+  if (!show) return null;
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-300">
+      <AlertTriangle className="h-3 w-3" /> {NO_DATA_NOTE}
+    </span>
+  );
+};
+
+export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, variant = 'inline', noData }) => {
   const [open, setOpen] = useState(false);
+  const showNoData = Boolean(noData) && value != null;
 
   if (variant === 'floating') {
     return (
@@ -51,7 +102,7 @@ export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, varia
         >
           <Waves className="h-5 w-5" />
           {value != null && (
-            <span className="absolute -top-1 -right-1 rounded-full bg-sky-500 px-1 text-[9px] font-semibold text-white">{value}</span>
+            <span className={`absolute -top-1 -right-1 rounded-full px-1 text-[9px] font-semibold text-white ${showNoData ? 'bg-amber-500' : 'bg-sky-500'}`}>{value}</span>
           )}
         </button>
         {open && (
@@ -62,10 +113,12 @@ export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, varia
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="flex flex-wrap gap-1.5 text-xs">
+            <div className="flex flex-wrap items-center gap-1.5 text-xs">
               <PeriodButtons value={value} onChange={(y) => { onChange(y); }} />
             </div>
-            <p className="mt-2 text-[10px] leading-snug text-muted-foreground opacity-80">{CAPTION}</p>
+            {showNoData
+              ? <p className="mt-2"><NoDataNote show /></p>
+              : <p className="mt-2 text-[10px] leading-snug text-muted-foreground opacity-80">{value != null && DEEP_PERIODS.some((p) => p.year === value) ? DEEP_CAPTION : CAPTION}</p>}
           </div>
         )}
       </div>
@@ -76,7 +129,9 @@ export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, varia
     <div className="flex flex-wrap items-center gap-1.5 mb-2 text-xs">
       <span className="inline-flex items-center gap-1 text-sky-300 font-medium"><Waves className="h-3.5 w-3.5" /> Dåtida strandlinje:</span>
       <PeriodButtons value={value} onChange={onChange} />
-      <span className="text-[10px] text-muted-foreground opacity-70">{CAPTION}</span>
+      {showNoData
+        ? <NoDataNote show />
+        : <span className="text-[10px] text-muted-foreground opacity-70">{value != null && DEEP_PERIODS.some((p) => p.year === value) ? DEEP_CAPTION : CAPTION}</span>}
     </div>
   );
 };
