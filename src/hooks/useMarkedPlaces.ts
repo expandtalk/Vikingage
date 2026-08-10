@@ -21,7 +21,13 @@ export function makePlace(
   return { id, lat: input.lat, lng: input.lng, ...(input.label ? { label: input.label } : {}), createdAt };
 }
 
-let places: MarkedPlace[] = typeof window !== 'undefined' ? parsePlaces(window.localStorage.getItem(KEY)) : [];
+// localStorage.getItem kan kasta SecurityError när lagring är helt blockerad (cookieless/privacy).
+// Kör vid modulladdning → måste vara skyddad, annars vitnar hela appen. Jfr useRoadtrip/useTravelMode.
+const loadInitial = (): MarkedPlace[] => {
+  if (typeof window === 'undefined') return [];
+  try { return parsePlaces(window.localStorage.getItem(KEY)); } catch { return []; }
+};
+let places: MarkedPlace[] = loadInitial();
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const persist = () => { if (typeof window !== 'undefined') { try { window.localStorage.setItem(KEY, JSON.stringify(places)); } catch { /* quota */ } } };

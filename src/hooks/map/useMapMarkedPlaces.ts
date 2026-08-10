@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useMarkedPlaces, removeMarkedPlace, type MarkedPlace } from '@/hooks/useMarkedPlaces';
 import { useFieldNav } from '@/hooks/useFieldNav';
 import { route } from '@/services/routing';
-import { setRoadtripResult, setRoadtripSearching, setRoadtripError } from '@/hooks/useRoadtrip';
+import { setRoadtripResult, setRoadtripSearching, setRoadtripError, setRoadtripCorridor } from '@/hooks/useRoadtrip';
 
 // Ritar användarens egna markerade platser (localStorage, Task 1: useMarkedPlaces) som röda nålar.
 // Alltid synligt — inget legend-gate, precis som useMapCustomPoints. Popup: geoposition + kopiera,
@@ -92,6 +92,9 @@ export const useMapMarkedPlaces = ({ map, isMapReady }: Props) => {
             toast.error('Ingen rutt hittades.');
             return;
           }
+          // Rensa ev. gammal korridor (sevärt-längs-vägen) från en tidigare roadtrip — annars
+          // ritas de gula POI:erna kvar relativt en rutt de inte längre hör till.
+          setRoadtripCorridor([]);
           setRoadtripResult({ lat: p.lat, lng: p.lng, label }, result);
         })
         .catch((err) => {
