@@ -15901,8 +15901,10 @@ export type Database = {
         Returns: {
           author_raw: string
           comments: string
+          date_display: string
           date_raw: string
           edition_text: string
+          is_formula: boolean
           lang_raw: string
           original_ref: string
           place_raw: string
@@ -15925,8 +15927,10 @@ export type Database = {
           sort?: string
         }
         Returns: {
+          date_display: string
           date_raw: string
           has_fulltext: boolean
+          is_formula: boolean
           lang_raw: string
           place_raw: string
           regest: string
@@ -16346,6 +16350,11 @@ export type Database = {
           n: number
           patron_saint: string
         }[]
+      }
+      sdhk_date_display: { Args: { date_raw: string }; Returns: string }
+      sdhk_is_formula: {
+        Args: { print_ref: string; summary: string }
+        Returns: boolean
       }
       sdhk_year: { Args: { date_raw: string }; Returns: number }
       search_fold: { Args: { t: string }; Returns: string }
