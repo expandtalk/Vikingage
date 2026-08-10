@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useMediaForTopic } from '@/hooks/useMediaForTopic';
 import { TopicMedia } from '@/components/media/TopicMedia';
-import { ExternalLink, Compass, PenLine } from 'lucide-react';
+import { ExternalLink, Search, PenLine } from 'lucide-react';
 
 // Sök-kaskadens sista lager: när ingen kärnentitet (plats/runsten/…) matchar visar vi ändå media
 // (poddar/video) OCH ett ärligt "sök vidare externt"-block + bidra-CTA. Externt = BARA länk ut
@@ -42,13 +42,13 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
       {/* Lager 4: utanför vår täckning → sök vidare externt + bidra */}
       <div className="mt-6 rounded-xl border border-slate-700 bg-slate-800/60 p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-amber-300">
-          <Compass className="h-4 w-4" />
-          {en ? 'Outside our coverage (for now)' : 'Utanför vår täckning (ännu)'}
+          <Search className="h-4 w-4" />
+          {en ? 'Refine your search' : 'Förfina din sökning'}
         </div>
         <p className="text-xs leading-relaxed text-slate-400">
           {en
-            ? <>We don’t have a place or runestone for <span className="text-slate-200">“{query}”</span>{hadMedia ? ' — but see the podcasts & videos above.' : '.'} Search on externally — the links open in a new tab, so you stay here.</>
-            : <>Vi har ingen plats eller runsten för <span className="text-slate-200">”{query}”</span>{hadMedia ? ' — men se poddar & video ovan.' : '.'} Sök vidare externt — länkarna öppnas i ny flik, så du är kvar här.</>}
+            ? <>No exact match for <span className="text-slate-200">“{query}”</span>{hadMedia ? ' — but see the podcasts & videos above.' : '.'} Try a different spelling, a place name or a runestone signum, or broaden the terms. You can also search on externally — links open in a new tab, so you stay here.</>
+            : <>Ingen exakt träff för <span className="text-slate-200">”{query}”</span>{hadMedia ? ' — men se poddar & video ovan.' : '.'} Prova en annan stavning, ett ortnamn eller ett runsten-signum, eller bredda sökorden. Du kan också söka vidare externt — länkarna öppnas i ny flik, så du är kvar här.</>}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {externalLinks(query).map((l) => (
