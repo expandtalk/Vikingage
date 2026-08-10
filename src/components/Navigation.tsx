@@ -30,6 +30,7 @@ import {
   Cross,
   Microscope,
   Anchor,
+  Mail,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -220,6 +221,13 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Det första skattesystemet: ledungen (roþ/Roden), bryteorganisationen och kyrkans tionde — från roddarfolket ~839 till Kalmarunionen.',
     descEn: 'The first tax system: the levy (roþ/Roden), the steward organisation and the Church tithe — from the rowing people c. 839 to the Kalmar Union.',
     icon: Coins, category: 'history',
+  },
+  {
+    pathEn: '/en/medieval-charters', pathSv: '/sv/medeltidsbrev',
+    labelSv: 'Medeltidsbrev', labelEn: 'Medieval charters',
+    descSv: 'De svenska medeltidsbreven t.o.m. 1540 — 44 264 regester ur SDHK, sökbara med datum, ort och fulltext där den finns.',
+    descEn: 'The Swedish medieval charters up to 1540 — 44,264 abstracts from SDHK, searchable by date, place, with full text where available.',
+    icon: Mail, category: 'history',
   },
   {
     pathEn: '/explore?focus=eriksgatan', pathSv: '/explore?focus=eriksgatan',

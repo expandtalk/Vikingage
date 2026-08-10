@@ -80,6 +80,8 @@ const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ResearcherProfile = lazy(() => import("./pages/ResearcherProfile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const MedievalCharters = lazy(() => import("./pages/MedievalCharters"));
+const MedievalCharterDetail = lazy(() => import("./pages/MedievalCharterDetail"));
 
 const queryClient = new QueryClient();
 
@@ -200,6 +202,10 @@ const App = () => (
                   <Route path="/en/heraldry" element={<Heraldry />} />
                   <Route path="/sv/kalmar" element={<Kalmar />} />
                   <Route path="/kalmar" element={<Kalmar />} />
+                  <Route path="/sv/medeltidsbrev/:sdhk" element={<MedievalCharterDetail />} />
+                  <Route path="/en/medieval-charters/:sdhk" element={<MedievalCharterDetail />} />
+                  <Route path="/sv/medeltidsbrev" element={<MedievalCharters />} />
+                  <Route path="/en/medieval-charters" element={<MedievalCharters />} />
                   <Route path="/sv/staket" element={<Staket />} />
                   <Route path="/en/staket" element={<Staket />} />
                   <Route path="/sv/birka" element={<Birka />} />
