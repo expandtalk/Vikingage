@@ -47,6 +47,10 @@ export const useMapMarkedPlaces = ({ map, isMapReady }: Props) => {
   const buildPopupContent = (p: MarkedPlace, label: string, coordTxt: string): HTMLElement => {
     const container = document.createElement('div');
     container.style.minWidth = '190px';
+    // Markerar containern så useMarkedPlaceTriggers.ts (Task 4) vet att INTE injicera sin egen
+    // "📌 Markera"-knapp här — denna popup TILLHÖR redan en markerad plats, en till knapp skulle
+    // bara skapa en dubblettnål på samma punkt.
+    container.dataset.markedPlacePopup = 'true';
 
     const title = document.createElement('strong');
     title.textContent = label;

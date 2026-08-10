@@ -38,6 +38,8 @@ import { useMapAncestrySites } from './map/useMapAncestrySites';
 import { useMapSolidi } from './map/useMapSolidi';
 import { useMapCustomPoints } from './map/useMapCustomPoints';
 import { useMapMarkedPlaces } from './map/useMapMarkedPlaces';
+import { useMapCreateMarkedPlace } from './map/useMapCreateMarkedPlace';
+import { useMarkedPlaceTriggers } from './map/useMarkedPlaceTriggers';
 import { useRuneDensityLayer } from './map/useRuneDensityLayer';
 import { useMapEstates } from './useMapEstates';
 import { useMapCentralPlaces } from './map/useMapCentralPlaces';
@@ -269,6 +271,10 @@ export const useMapInitialization = ({
   // "Led mig hit": popup-knapp (mobil) + window.__fieldNavTarget-brygga → sätter fältläge-mål.
   useFieldNavTargetTriggers({ map: map.current });
 
+  // "📌 Markera": popup-knapp i ALLA objektpopuper → släpper en röd "markerad plats"-nål på
+  // objektets koordinat (Task 4, väg 2 av 2 — se useMapCreateMarkedPlace nedan för väg 1).
+  useMarkedPlaceTriggers({ map: map.current });
+
   // Per-lager zoom-avsikt (legendens "zooma hit"): punktlager in, farleder/rutter/floder ut.
   useMapLayerViewport({ map: map.current });
 
@@ -302,6 +308,10 @@ export const useMapInitialization = ({
   // Markerade platser (localStorage, "mark my place") — röda nålar, alltid synliga.
   // Popup: geoposition + kopiera, "Väg hit" (bilrutt) och "Ta bort".
   useMapMarkedPlaces({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Skapa en markerad plats genom långtryck (mobil) / Shift+klick (desktop) på tom karta
+  // (Task 4, väg 1 av 2 — se useMarkedPlaceTriggers ovan för väg 2, popup-knappen).
+  useMapCreateMarkedPlace({ map: map.current });
 
   // Runstenstäthet per härad (GIS-analyslager) — centroid-cirklar, gate: legendknappen.
   useRuneDensityLayer({
