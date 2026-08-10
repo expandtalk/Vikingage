@@ -785,7 +785,11 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
       <div
         ref={heroWrapRef}
         className={fullscreen
-          ? 'fixed inset-0 z-[80] flex flex-col bg-slate-900'
+          // z-[1500]: MÅSTE ligga över Header.tsx sticky top-0 z-[1150] — annars täcker headern
+          // helskärmens EGEN topprad (sökfältet), som bara flyter upp bakom/under den globala
+          // navigationen. Bekräftat i webbläsare: elementFromPoint på inputens position gav
+          // Header-navets knapp, inte <input>, när z-[80] < headerns z-[1150] (Daniels bugg).
+          ? 'fixed inset-0 z-[1500] flex flex-col bg-slate-900'
           : `relative w-full mx-auto transition-all ${hasResults ? 'max-w-5xl' : 'max-w-xl'}`}
       >
         {/* Sökraden — alltid barn nr 1 här, aldrig i en utbytbar gren → <input> monteras aldrig om. */}
