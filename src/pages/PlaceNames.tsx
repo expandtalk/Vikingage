@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock, ChevronDown, FlaskConical, Languages, Radar, BookOpen } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { MapPin, Tag, AlertTriangle, Search, X, CalendarClock, ChevronDown, FlaskConical, Languages, Radar, BookOpen, Database } from 'lucide-react';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
 import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceNameAttestations';
@@ -222,6 +222,7 @@ const PlaceNames = () => {
               { n: 1, Icon: null, key: 'hypotes', title: sv ? 'Hypotestestaren' : 'Hypothesis tester', d: sv ? 'Screena: korrelerar ledet med något, mot baslinjen?' : 'Screen: does the element correlate, vs the baseline?' },
               { n: 2, Icon: null, key: 'kluster', title: sv ? 'Ortnamnskluster' : 'Name clustering', d: sv ? 'Lokalisera: klumpar det kring ett epicentrum? Skarp kant.' : 'Localise: does it clump around an epicentre? Sharp edge.' },
               { n: 3, Icon: null, key: 'filolog', title: sv ? 'AI Filolog-agent' : 'AI philologist', d: sv ? 'Djupdyk: etymologi bara på det som klarade testen.' : 'Deep dive: etymology only on what survived.' },
+              { n: null, Icon: Database, key: 'namnbas', title: sv ? 'Namnbasen' : 'The name base', d: sv ? 'Basen av orden verktygen testar mot — korpus + proveniens (OSM-bas vs Isof).' : 'The base of the words the tools test against — corpus + provenance (OSM base vs Isof).' },
             ] as { n: number | null; Icon: React.FC<{ className?: string }> | null; key: string; title: string; d: string }[]).map((s, i) => (
               <React.Fragment key={s.key}>
                 {i > 0 && <div className="hidden sm:flex items-center text-slate-500">→</div>}
@@ -245,25 +246,10 @@ const PlaceNames = () => {
           </p>
         </div>
 
-        {/* ===== TRE VERKTYG SOM FLIKAR ===== */}
+        {/* Verktygen som flikar. Navigeringen sker via arbetsgångs-korten ovan (kontrollerad `tab`-
+            state) — den separata TabsList-raden togs bort (Daniel: "vi har 2 fliksystem, det räcker
+            med det översta"). <Tabs> behålls som innehållsväxlare; korten ovan är enda flikraden. */}
         <Tabs value={tab} onValueChange={setTab} className="mb-10">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-5xl mb-4 h-auto">
-            <TabsTrigger value="metod" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
-              <BookOpen className="h-4 w-4" /> {sv ? 'Metoden' : 'The method'}
-            </TabsTrigger>
-            <TabsTrigger value="led" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
-              <Tag className="h-4 w-4" /> {sv ? 'Ortnamnsled' : 'Name elements'}
-            </TabsTrigger>
-            <TabsTrigger value="hypotes" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
-              <FlaskConical className="h-4 w-4" /> {sv ? 'Hypotestestaren' : 'Hypothesis tester'}
-            </TabsTrigger>
-            <TabsTrigger value="kluster" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
-              <Radar className="h-4 w-4" /> {sv ? 'Ortnamnskluster' : 'Name clustering'}
-            </TabsTrigger>
-            <TabsTrigger value="filolog" className="flex-col sm:flex-row gap-1.5 py-2 text-xs sm:text-sm">
-              <Languages className="h-4 w-4" /> {sv ? 'AI Filolog-agent' : 'AI philologist'}
-            </TabsTrigger>
-          </TabsList>
 
           {/* ---- FLIK 0: METODEN (ortnamnsmetoden, ej allmän vetenskapsmetodik) ---- */}
           <TabsContent value="metod">
@@ -477,7 +463,25 @@ const PlaceNames = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Metod flyttad till fliken "Metoden" ovan (steg 0). */}
+        {/* ===== FLIK: NAMNBASEN (korpusen som verktygen testar mot) =====
+            Egen flik (Daniel): basen av orden, skild från verktygen ovan. `tab` är kontrollerad
+            state, så vi gate:ar sektionerna på den även utanför <Tabs>. Proveniens överst:
+            OSM-härledd bas ≠ Isofs reglerade Ortnamnsregistret. */}
+        {tab === 'namnbas' && (
+        <div className="space-y-6">
+          <div className="viking-card rounded-lg border border-accent/30 p-4 text-sm text-muted-foreground space-y-2">
+            <p className="text-foreground font-medium">{sv ? 'Om namnbasen — var orden kommer ifrån' : 'About the name base — where the words come from'}</p>
+            <p>{sv
+              ? 'Ortnamnen nedan (place_names) är till ~99 % maskinellt insamlade ur OpenStreetMap och normaliserade — en bred, oregisterad bas som är bra för spatial hypotestestning (avstånd, kluster), men inte en filologiskt granskad namnlista.'
+              : 'The place names below (place_names) are ~99% machine-harvested from OpenStreetMap and normalised — a broad, unregulated base, good for spatial hypothesis testing (distance, clustering), but not a philologically vetted name list.'}</p>
+            <p>{sv
+              ? 'Isofs Ortnamnsregistret är däremot en reglerad, granskad auktoritet (äldre belägg, fastställda uppslagsformer). Den har inte exakt samma ord som vår OSM-bas och är inte fullt integrerad här — vi jämför/verifierar mot den, den är inte vår källa.'
+              : 'Isof’s Ortnamnsregistret, by contrast, is a regulated, vetted authority (older attestations, established head-forms). It does not hold exactly the same words as our OSM base, and is not fully integrated here — we compare/verify against it; it is not our source.'}{' '}
+              <a href="https://www.isof.se/namn/ortnamn/vara-ortnamnssamlingar/ortnamnsregistret" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">Isof →</a></p>
+            <p className="text-xs opacity-80">{sv
+              ? 'De äldsta beläggen och belägg-över-tid nedan kommer ur daterings-/beläggskällor (redovisade per post); runleden ur runkorpusen.'
+              : 'The oldest attestations and attestations-over-time below come from dating/attestation sources (cited per entry); the runic elements from the runic corpus.'}</p>
+          </div>
 
         {/* De äldsta daterade bebyggelsenamnen (kondenserad) */}
         {oldestNames.length > 0 && (
@@ -818,6 +822,8 @@ const PlaceNames = () => {
           </div>
         )}
         </Section>
+        </div>
+        )}
       </main>
       <Footer />
     </div>

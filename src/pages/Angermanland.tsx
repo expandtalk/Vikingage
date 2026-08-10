@@ -230,6 +230,17 @@ const Angermanland = () => {
           </Card>
         )}
 
+        {/* Laddnings-platshållare: klusterdatan (karta + sambandsstyrka + resultat) laddas async och
+            sköt tidigare in ovanför de statiska sektionerna → sidan "blev överladdad" vid inladdning
+            (Daniel). Platshållaren reserverar ytan och ger direkt återkoppling så inget hoppar. */}
+        {isLoading && (
+          <Card className="viking-card mb-4">
+            <CardContent className="py-20 text-center">
+              <div className="animate-pulse text-sm text-muted-foreground">Laddar centralplatsklustret…</div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* KARTA — egen karta över klustret med tänd/släck-filter (Daniel: inte skicka till /explore) */}
         {!isLoading && groups.length > 0 && (
           <Card className="viking-card mb-4">

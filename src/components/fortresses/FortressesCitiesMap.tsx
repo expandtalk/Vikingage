@@ -218,6 +218,7 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
           </span>
           ${hillfort.municipality ? `<span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">${hillfort.municipality}</span>` : ''}
         </div>
+        <a href="/fortresses/${hillfort.id}" class="inline-block mt-2 text-sm font-medium text-blue-700 hover:underline">Läs mer →</a>
       </div>
     `;
     
@@ -307,6 +308,9 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
     const marker = L.marker([location.coordinates.lat, location.coordinates.lng], { icon });
     
     // Add popup
+    // Befästningar har en egen fördjupningssida (/fortresses/:id → FortressDetail); städer saknar
+    // detaljsida än, så "Läs mer" visas bara för fortress (Daniel: kunna klicka och få mer info).
+    const detailHref = type === 'fortress' ? `/fortresses/${location.id}` : null;
     const popupContent = `
       <div class="p-3 max-w-sm">
         <h3 class="font-bold text-base text-gray-800">${location.name}</h3>
@@ -316,6 +320,7 @@ export const FortressesCitiesMap: React.FC<FortressesCitiesMapProps> = ({
             ${type === 'fortress' ? 'Befästning' : 'Stad'}: ${location.country}
           </span>
         </div>
+        ${detailHref ? `<a href="${detailHref}" class="inline-block mt-2 text-sm font-medium text-blue-700 hover:underline">Läs mer →</a>` : ''}
       </div>
     `;
     

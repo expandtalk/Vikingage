@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown, Users, Book, Sparkles } from 'lucide-react';
+import { Crown, Users, Book, Sparkles, Landmark, ScrollText } from 'lucide-react';
 import { CenturyKingsFlow } from '../CenturyKingsFlow';
 import { SourceCard } from '../SourceCard';
 import { DynastyCard } from '../DynastyCard';
@@ -22,6 +22,11 @@ interface TabsViewProps {
   selectedGender: string;
   getRulerTypeLabel: () => string;
   onKingSelect: (kingId: string) => void;
+  // Toppnivå-flikar utöver kungar/källor/dynastier: Birka-kungarna (kurerad sektion) och
+  // Kungakrönikor (ingång/översikt + grav-fingerprint). Skickas som slots så TabsView förblir
+  // presentationell (Daniel: ett enda strukturerat fliksystem, inget innehåll borttaget).
+  birkaSlot?: React.ReactNode;
+  overviewSlot?: React.ReactNode;
 }
 
 export const TabsView: React.FC<TabsViewProps> = ({
@@ -36,8 +41,11 @@ export const TabsView: React.FC<TabsViewProps> = ({
   selectedGender,
   getRulerTypeLabel,
   onKingSelect,
+  birkaSlot,
+  overviewSlot,
 }) => {
   const { language } = useLanguage();
+  const en = language === 'en';
   const selectedKingObj = selectedKing
     ? [...(regularKings ?? []), ...(legendaryKings ?? [])].find((k) => k.id === selectedKing)
     : undefined;
@@ -61,21 +69,43 @@ export const TabsView: React.FC<TabsViewProps> = ({
   };
 
   return (
-    <Tabs defaultValue="kings" className="space-y-4">
-      <TabsList className="grid w-full grid-cols-4 bg-slate-800/60">
-        <TabsTrigger value="kings">
-          {getRulerTypeLabel()}
+    <Tabs defaultValue={birkaSlot ? 'birka' : 'kings'} className="space-y-4">
+      <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto bg-slate-800/60">
+        {birkaSlot && (
+          <TabsTrigger value="birka" className="flex-col sm:flex-row gap-1 py-2 text-xs sm:text-sm">
+            <Landmark className="h-4 w-4" /> {en ? 'Birka kings' : 'Birka-kungarna'}
+          </TabsTrigger>
+        )}
+        {overviewSlot && (
+          <TabsTrigger value="overview" className="flex-col sm:flex-row gap-1 py-2 text-xs sm:text-sm">
+            <ScrollText className="h-4 w-4" /> {en ? 'Chronicles' : 'Kungakrönikor'}
+          </TabsTrigger>
+        )}
+        <TabsTrigger value="kings" className="flex-col sm:flex-row gap-1 py-2 text-xs sm:text-sm">
+          <Crown className="h-4 w-4" /> {getRulerTypeLabel()}
         </TabsTrigger>
-        <TabsTrigger value="saga-kings">
-          {language === 'en' ? `Saga Kings (${legendaryKings?.length || 0})` : `Sagokungar (${legendaryKings?.length || 0})`}
+        <TabsTrigger value="saga-kings" className="flex-col sm:flex-row gap-1 py-2 text-xs sm:text-sm">
+          <Sparkles className="h-4 w-4" /> {en ? `Saga kings (${legendaryKings?.length || 0})` : `Sagokungar (${legendaryKings?.length || 0})`}
         </TabsTrigger>
-        <TabsTrigger value="sources">
-          {language === 'en' ? `Sources (${sources?.length || 0})` : `Källor (${sources?.length || 0})`}
+        <TabsTrigger value="dynasties" className="flex-col sm:flex-row gap-1 py-2 text-xs sm:text-sm">
+          <Users className="h-4 w-4" /> {en ? `Dynasties (${dynasties?.length || 0})` : `Dynastier (${dynasties?.length || 0})`}
         </TabsTrigger>
-        <TabsTrigger value="dynasties">
-          {language === 'en' ? `Dynasties (${dynasties?.length || 0})` : `Dynastier (${dynasties?.length || 0})`}
+        <TabsTrigger value="sources" className="flex-col sm:flex-row gap-1 py-2 text-xs sm:text-sm">
+          <Book className="h-4 w-4" /> {en ? `Sources (${sources?.length || 0})` : `Källor (${sources?.length || 0})`}
         </TabsTrigger>
       </TabsList>
+
+      {birkaSlot && (
+        <TabsContent value="birka" className="space-y-4">
+          {birkaSlot}
+        </TabsContent>
+      )}
+
+      {overviewSlot && (
+        <TabsContent value="overview" className="space-y-4">
+          {overviewSlot}
+        </TabsContent>
+      )}
 
       <TabsContent value="kings" className="space-y-4">
         {regularKings && regularKings.length > 0 ? (

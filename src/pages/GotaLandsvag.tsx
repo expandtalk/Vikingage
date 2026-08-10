@@ -275,6 +275,38 @@ const GotaLandsvag = () => {
           </CardContent>
         </Card>
 
+        {/* Hållpunkterna direkt under kartan (Daniel: "hållpunkterna borde ligga efter kartan") —
+            listan är sidans nyckelinnehåll och hör ihop med kartan, inte längst ned. */}
+        <Card className="viking-card mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-gold"><Footprints className="h-5 w-5" /> Hållpunkter längs vägen</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3 text-sm text-muted-foreground">
+              {nodes.filter((n) => !['endpoint', 'milestone', 'execution', 'trace', 'probable'].includes(n.kind)).map((n) => {
+                const e = enrich[n.name];
+                return (
+                  <li key={n.name} className="flex gap-3">
+                    {e?.thumb ? (
+                      <img src={e.thumb} alt={n.name} loading="lazy" title={e.attribution || undefined}
+                        className="w-16 h-16 object-cover rounded border border-border shrink-0 bg-slate-800" />
+                    ) : (
+                      <span className="w-16 h-16 rounded border border-dashed border-border shrink-0" aria-hidden />
+                    )}
+                    <div className="min-w-0">
+                      <span className="text-foreground font-medium">{n.name}</span>
+                      {e?.built ? <span className="text-xs text-gold"> · byggd fr. {e.built}{e.dating ? ` (${e.dating})` : ''}</span> : null}
+                      {e?.link ? <> · <Link to={e.link} className="text-xs text-sky-400 hover:underline">Läs mer →</Link></> : null}
+                      <div className="text-xs mt-0.5">{n.note}</div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="text-[11px] text-muted-foreground/70 mt-2">Hållpunkterna läses live ur databasen (road_waypoints). Thumbnails ur ecclesiastical_sites (kyrkor) resp. inscription_media (runstenar). Bilder från Wikimedia Commons / RAÄ (CC) — full attribution på respektive objektsida.</p>
+          </CardContent>
+        </Card>
+
         <Card className="viking-card mb-4 border-gold/30">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2 text-gold"><ScrollText className="h-5 w-5" /> En väg från 1000-talet</CardTitle>
@@ -419,36 +451,6 @@ const GotaLandsvag = () => {
               1100–1200-talet. Göta landsväg som <em>landväg</em> hör därför i grunden till medeltiden — den tar över när
               vattenvägen (Birkas era) sluts. Reglaget på kartan visar strandlinjen vid dåtida havsnivå.
             </p>
-          </CardContent>
-        </Card>
-
-        <Card className="viking-card mb-4">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2 text-gold"><Footprints className="h-5 w-5" /> Hållpunkter längs vägen</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              {nodes.filter((n) => !['endpoint', 'milestone', 'execution', 'trace', 'probable'].includes(n.kind)).map((n) => {
-                const e = enrich[n.name];
-                return (
-                  <li key={n.name} className="flex gap-3">
-                    {e?.thumb ? (
-                      <img src={e.thumb} alt={n.name} loading="lazy" title={e.attribution || undefined}
-                        className="w-16 h-16 object-cover rounded border border-border shrink-0 bg-slate-800" />
-                    ) : (
-                      <span className="w-16 h-16 rounded border border-dashed border-border shrink-0" aria-hidden />
-                    )}
-                    <div className="min-w-0">
-                      <span className="text-foreground font-medium">{n.name}</span>
-                      {e?.built ? <span className="text-xs text-gold"> · byggd fr. {e.built}{e.dating ? ` (${e.dating})` : ''}</span> : null}
-                      {e?.link ? <> · <Link to={e.link} className="text-xs text-sky-400 hover:underline">Läs mer →</Link></> : null}
-                      <div className="text-xs mt-0.5">{n.note}</div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            <p className="text-[11px] text-muted-foreground/70 mt-2">Hållpunkterna läses live ur databasen (road_waypoints). Thumbnails ur ecclesiastical_sites (kyrkor) resp. inscription_media (runstenar). Bilder från Wikimedia Commons / RAÄ (CC) — full attribution på respektive objektsida.</p>
           </CardContent>
         </Card>
 

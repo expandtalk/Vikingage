@@ -322,6 +322,9 @@ export const PROFILE_SEEDS: ExploreProfile[] = [
     layers: on(
       // Marinarkeologi: maritima lager (useMapMaritimeLayers) + skeppsvrak (useMapShipwrecks)
       "maritime", "maritime_nodes", "ship_losses", "shipwrecks", "fairways_modern", "fairways_historical", "hanseatic_cities",
+      // RAÄ marinarkeologi (vrak, vraktradition, pålspärrar) — parent styr barnen (useMapHeritageSites).
+      // Alla marina lager tända som default i marin-vyn (Daniel).
+      "heritage_marine",
       // Befintliga relevanta lager
       "valdemar_route", "water_routes", "river_routes", "paleo_shoreline", "viking_cities", "beacon_sites",
     ),

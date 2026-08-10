@@ -141,9 +141,15 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
           : (f.fairway_kind === 'hanseatic'
             ? { color: '#eab308', weight: 3, dashArray: '8 5' }
             : { color: '#a855f7', weight: 3, dashArray: '4 4' });
-        L.geoJSON(geom, { pane: 'fairways', style: () => style as any })
-          .bindPopup(`<strong>${esc(f.name || f.fairway_kind)}</strong><br/><em>${esc(f.period)}</em>${f.note ? `<br/><span style="color:#666;font-size:11px">${esc(f.note)}</span>` : ''}`)
-          .addTo(g);
+        // Den moderna farledskorridoren är en STOR fylld yta i pane 'fairways' (z650 > markerPane).
+        // Med interactive:true åt den upp klick på punktmarkörerna under (t.ex. maritima noden
+        // Grimskär) → "grått lager som inte går att klicka på" (Daniel). Korridoren görs därför
+        // icke-interaktiv (ren bakgrundsyta); linjelederna (Valdemar/Hansa) förblir klickbara.
+        const layer = L.geoJSON(geom, { pane: 'fairways', interactive: !modern, style: () => style as any });
+        if (!modern) {
+          layer.bindPopup(`<strong>${esc(f.name || f.fairway_kind)}</strong><br/><em>${esc(f.period)}</em>${f.note ? `<br/><span style="color:#666;font-size:11px">${esc(f.note)}</span>` : ''}`);
+        }
+        layer.addTo(g);
       }
       if (safelyAddLayer(g)) {
         fairwaysRef.current = g;

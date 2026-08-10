@@ -46,18 +46,11 @@ const Inscriptions = () => {
             </p>
           </div>
         </div>
-        {/* Nivå 1: namngivna stenar som ingång (landskaps-grupperade) */}
-        <NamedStonesSection />
-
-        {/* Tema: runstenar med poesi & diktmått (hjältedikt/dróttkvätt/eddisk vers) */}
-        <RunestonePoetrySection />
-
-        {/* Datering-kategorisering (Gräslunds stilkronologi) */}
-        <DatingCategoriesSection />
-
-        {/* Nivå 2: fasetterad runstensbläddrare — hela geopositionerade korpusen (~7 400) på en
-            nationell klustrad karta + vänsterpanel att sortera på landskap (signum-serie),
-            ornamentstil (Gräslund) och objektkategori. Klick → /inscription/:signum. */}
+        {/* Den strukturerade "uppställningen" FÖRST: fasetterad runstensbläddrare (sök på signum,
+            filter på landskap/ornamentstil/objektkategori + klustrad karta). Den är sidans ingång
+            och får INTE trängas undan av det sent laddande bild-galleriet "Namngivna stenar" nedan
+            (Daniel: strukturen försvann efter ~1 s och bilderna ersatte den). Ligger den överst kan
+            inget som laddar in senare knuffa ned den. Klick → /inscription/:signum. */}
         <div className="mb-3">
           <h2 className="text-2xl font-bold text-white">
             {language === 'sv' ? 'Runstensbläddrare' : 'Runestone browser'}
@@ -69,6 +62,15 @@ const Inscriptions = () => {
           </p>
         </div>
         <RunestoneBrowser />
+
+        {/* Namngivna stenar som ingång (landskaps-grupperade) — bild-galleri UNDER bläddraren. */}
+        <NamedStonesSection />
+
+        {/* Tema: runstenar med poesi & diktmått (hjältedikt/dróttkvätt/eddisk vers) */}
+        <RunestonePoetrySection />
+
+        {/* Datering-kategorisering (Gräslunds stilkronologi) */}
+        <DatingCategoriesSection />
 
         {/* Nivå 3: den generella utforskaren (alla lager, tidskontroll) */}
         <h2 className="text-2xl font-bold text-white mb-4 mt-10">

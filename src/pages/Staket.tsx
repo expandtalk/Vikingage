@@ -40,7 +40,7 @@ const SITES: Site[] = [
   { name: 'Stockholm / Gamla stan', lat: 59.325, lng: 18.064, kind: 'city',
     note: 'Anlagt ~1250. Vid Olavs tid ett brett, förgrenat sundsystem — inte ett enda smalt sund.' },
   { name: 'Telge hus (Ragnhildsborg)', lat: 59.2181, lng: 17.6100, kind: 'fort',
-    note: 'Borg i Linasundet, Södertälje — låset för den södra sjövägen (Himmerfjärden) in i Mälaren.' },
+    note: 'Medeltida stenborg på Slottsholmen (tidigare Ragnhildsholmen) i Linasundet, norra Södertälje — låset för den södra sjövägen (Himmerfjärden) in i Mälaren. Uppförd tidigt 1300-tal (marinarkeologi/C14, sent 1200-/tidigt 1300-tal); säte för Telgehus län 1318–1527 (Öknebo, Hölebo, del av Svartlösa härad). Brändes 1445, återuppfördes 1448 (Karlsborg), förföll under 1500-talet. Namnet Ragnhildsborg (efter Södertäljes skyddshelgon Ragnhild av Tälje) är känt först på 1700-talet — ej medeltida, och ej samma sak som Ragnhildsborgs gård. Källor: RAÄ Östertälje 220:1; Stockholms läns museum.' },
   // Mälaröarna — land som stack upp som öar när Mälaren var en havsvik. Koordinater ur Isof
   // ortnamnsregistret / Fornsök (verifierade). Ingen gissning.
   { name: 'Adelsö (Hovgården)', lat: 59.3654, lng: 17.5205, kind: 'island',
