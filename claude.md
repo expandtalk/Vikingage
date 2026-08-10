@@ -358,6 +358,28 @@ Se `.env.example` för mall.
    - Gamla nycklar blir invalid
    - Uppdatera alla miljöer med ny nyckel
 
+## Agentminne, befordran & drift-skydd (VIKTIGT för AI-agentflottan)
+
+Agenterna (`.claude/agents/*.md`) är **tillståndslösa** och har **inget eget beständigt minne**. De
+läser DB/filer/källor, **utreder och föreslår** — de skriver **ALDRIG** till DB eller kanon på egen hand
+(människa-i-loopen). Persistens sker bara i de kanoniska lagren: **DB**, **repo**, och **projektminnet**
+(`MEMORY.md` / `memory/*.md`).
+
+**Befordringspipeline — staging → granskning → minne:**
+1. Agentfynd landar som **FÖRSLAG** med källa + konfidens + märkning *belagt/hypotes/obelagt*
+   (claim-ledger / `place_suggestions` / `search_gaps` / föreslagen `agent_findings`). Aldrig direkt i kanon.
+2. Befordran **efter risk**: maskinellt verifierbart (koordinat via Wikidata P625, DB-count, RAÄ-URI)
+   kan auto-befordras MED proveniens; tolkning/etymologi/motiv kräver människa eller verifierar-agent.
+3. Befordrat och återanvändbart (metod/fakta) → lägg en **`MEMORY.md`-pekare** så det bor i projektminnet,
+   inte bara i en flyktig körning. **Orkestratorn ansvarar för fångsten varje gång en agent levererar.**
+
+**Drift-vakter:** skriv aldrig över kanon utan granskning + logg; proveniens/konfidens obligatoriskt;
+periodisk **rekonciliering** (verifierar-agent läser om kanon mot källa, flaggar avvikelse). Jfr
+`db push = drift` och att `rebuild_search_document` nollställer sök-signaler.
+
+**Agentdefinitionerna** versionshanteras i ett **separat privat git-repo i `.claude/agents/`** (kommersiell
+IP, medvetet utanför huvudrepot) — ändra metod/regel *medvetet* och committa där, aldrig autonomt.
+
 ## Framtida Utveckling
 
 - Fortsatt integration av genetisk data
