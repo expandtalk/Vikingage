@@ -37,6 +37,7 @@ import { useMapShipwrecks } from './map/useMapShipwrecks';
 import { useMapAncestrySites } from './map/useMapAncestrySites';
 import { useMapSolidi } from './map/useMapSolidi';
 import { useMapCustomPoints } from './map/useMapCustomPoints';
+import { useMapMarkedPlaces } from './map/useMapMarkedPlaces';
 import { useRuneDensityLayer } from './map/useRuneDensityLayer';
 import { useMapEstates } from './useMapEstates';
 import { useMapCentralPlaces } from './map/useMapCentralPlaces';
@@ -297,6 +298,10 @@ export const useMapInitialization = ({
 
   // Mina punkter (localStorage) — användarens egna ortnamn, alltid synliga.
   useMapCustomPoints({ map: map.current, isMapReady: isMapReadyRef });
+
+  // Markerade platser (localStorage, "mark my place") — röda nålar, alltid synliga.
+  // Popup: geoposition + kopiera, "Väg hit" (bilrutt) och "Ta bort".
+  useMapMarkedPlaces({ map: map.current, isMapReady: isMapReadyRef });
 
   // Runstenstäthet per härad (GIS-analyslager) — centroid-cirklar, gate: legendknappen.
   useRuneDensityLayer({

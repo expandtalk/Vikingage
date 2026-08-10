@@ -268,3 +268,17 @@
   border-bottom: 9px solid #fff;
   transform-origin: 50% 60%;
 }
+
+/* Markerad plats ("mark my place", röd nål) — klassisk droppformad kartnål vars SPETS pekar exakt
+   på koordinaten (ikonen har iconSize [0,0]/iconAnchor [0,0]; nålen är absolutpositionerad och
+   roterad -45° kring sitt eget centrum, offsatt så spetsen hamnar i (0,0)). Röd (#dc2626) för att
+   vara omöjlig att förväxla med den gröna "här"-markören (.here-marker) och den amber
+   "led mig hit"-målmarkören (.field-nav-target, #f59e0b). */
+.marked-place-marker .marked-place-pin {
+  position: absolute; left: 50%; top: 50%;
+  width: 20px; height: 20px; margin: -24px 0 0 -10px;
+  background: #dc2626; border: 2px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+}
