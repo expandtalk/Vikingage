@@ -509,6 +509,11 @@ const SandbyBorg = () => {
               (2023–2030) — pågående syntes.
             </li>
             <li>
+              <span className="text-foreground">Gunnarsson, F., Victor, H. &amp; Alfsdotter, C. (2016).</span>{' '}
+              <em>Sandby borg VII. Undersökningar 2015.</em> Sandby borgs skrifter 7. Kalmar läns museum.
+              ISBN 978-91-982366-7-5. — totalundersökningen av Hus 40 (fyndredovisning, human- och animalosteologi).
+            </li>
+            <li>
               Kalmar läns museums delrapporter <em>Sandby borg I–XI</em> (2011–) med fyndredovisning —{' '}
               <a href="https://www.diva-portal.org/smash/resultList.jsf?query=Sandby+borg" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline inline-flex items-center gap-1">
                 sök &quot;Sandby borg&quot; i DiVA <ExternalLink className="h-3 w-3" />
