@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
+// Säker gissning på panelstorlek innan elementet hunnit mätas (första render, innan rootRef
+// satts) — bara använd som klipp-fallback, inte som faktisk layout.
+const FALLBACK_WIDTH = 384; // motsvarar Tailwind w-96 (Near me-panelens desktopbredd)
+const FALLBACK_HEIGHT = 300;
+
 /**
  * Gör ett flytande overlay-element flyttbart med muspekaren.
  *
@@ -48,6 +53,7 @@ export function useDraggable(persistKey?: string) {
   useEffect(() => {
     if (!dragging) return;
     const move = (e: MouseEvent) => {
+      if (typeof window === 'undefined') return;
       const el = rootRef.current;
       const w = el?.offsetWidth ?? 0;
       const h = el?.offsetHeight ?? 0;
@@ -64,8 +70,23 @@ export function useDraggable(persistKey?: string) {
     };
   }, [dragging]);
 
-  const style: React.CSSProperties = pos
-    ? { position: 'fixed', left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' }
+  // Klipp EN SPARAD position mot aktuell viewport på VARJE render — inte bara under aktivt
+  // drag (rad ~54–55 ovan). En position sparad på en bred skärm (t.ex. en gammal desktop-session)
+  // kan annars hamna mitt i bilden på en smalare/annorlunda viewport (bilplatta, liggande mobil)
+  // tills nästa gång användaren drar panelen. Elementets riktiga mått används när kända; annars
+  // en säker fallback (aldrig 0, som skulle tillåta klipp ända ut i kanten och dölja panelen).
+  const clampedPos = (() => {
+    if (!pos || typeof window === 'undefined') return pos;
+    const el = rootRef.current;
+    const w = el?.offsetWidth || FALLBACK_WIDTH;
+    const h = el?.offsetHeight || FALLBACK_HEIGHT;
+    const maxX = Math.max(0, window.innerWidth - w);
+    const maxY = Math.max(0, window.innerHeight - h);
+    return { x: Math.min(Math.max(0, pos.x), maxX), y: Math.min(Math.max(0, pos.y), maxY) };
+  })();
+
+  const style: React.CSSProperties = clampedPos
+    ? { position: 'fixed', left: clampedPos.x, top: clampedPos.y, right: 'auto', bottom: 'auto' }
     : {};
 
   return {

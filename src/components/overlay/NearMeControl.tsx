@@ -350,11 +350,15 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   return (
     <div
       ref={rootRef}
-      className="absolute inset-x-0 bottom-0 sm:inset-x-auto sm:right-4 sm:bottom-4 sm:w-96 z-[1055] bg-slate-900/90 backdrop-blur-md border-t sm:border border-slate-600 sm:rounded-lg rounded-t-2xl shadow-2xl flex flex-col"
-      style={{ maxHeight: '62vh', paddingBottom: 'env(safe-area-inset-bottom)', ...(isMobile ? {} : dragStyle) }}
+      // Billäge (mode==='car'): tvinga alltid den fasta mobil-kanten (botten, full bredd) —
+      // ALDRIG sm:-brytpunktens flytande högerhörn eller en sparad drag-position. En bilplatta/
+      // liggande mobil kan lätt vara ≥768px bred (då useIsMobile ger false) och skulle annars
+      // ärva en gammal skrivbordsposition mitt i bilden (bug 2, carmode-investigation.md).
+      className={`absolute inset-x-0 bottom-0 z-[1055] bg-slate-900/90 backdrop-blur-md border-t border-slate-600 rounded-t-2xl shadow-2xl flex flex-col${mode === 'car' ? '' : ' sm:inset-x-auto sm:right-4 sm:bottom-4 sm:w-96 sm:border sm:rounded-lg'}`}
+      style={{ maxHeight: '62vh', paddingBottom: 'env(safe-area-inset-bottom)', ...(isMobile || mode === 'car' ? {} : dragStyle) }}
     >
       <div className="sm:hidden mx-auto mt-2 h-1 w-10 rounded-full bg-slate-600" aria-hidden="true" />
-      <div {...(!isMobile ? dragHandleProps : {})} className="flex items-center justify-between px-4 py-2.5 sm:cursor-grab sm:active:cursor-grabbing">
+      <div {...(!isMobile && mode !== 'car' ? dragHandleProps : {})} className={`flex items-center justify-between px-4 py-2.5${mode === 'car' ? '' : ' sm:cursor-grab sm:active:cursor-grabbing'}`}>
         <span className="text-white text-sm font-semibold flex items-center gap-2">
           <Navigation className="h-4 w-4 text-sky-400" />Near me
           {minimized && pos && !error && <span className="text-slate-400 font-normal text-xs">· {isFetching ? '…' : `${rows.length} objekt`}</span>}
