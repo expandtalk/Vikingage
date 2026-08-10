@@ -20,8 +20,8 @@ describe('buildCharterBrowseArgs', () => {
   });
   it('clamps page and page_size', () => {
     expect(buildCharterBrowseArgs({ page: 0 }).page).toBe(1);
-    expect(buildCharterBrowseArgs({ page_size: 9999 }).page_size).toBe(100);
-    expect(buildCharterBrowseArgs({ page_size: 0 }).page_size).toBe(30);
+    expect(buildCharterBrowseArgs({ pageSize: 9999 }).page_size).toBe(100);
+    expect(buildCharterBrowseArgs({ pageSize: 0 }).page_size).toBe(30);
   });
   it('passes century and has_fulltext through', () => {
     expect(buildCharterBrowseArgs({ century: 1300, hasFulltext: true }))

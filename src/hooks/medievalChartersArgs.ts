@@ -8,7 +8,7 @@ export interface CharterBrowseParams {
   century?: number | null;
   hasFulltext?: boolean | null;
   page?: number;
-  page_size?: number;
+  pageSize?: number;
 }
 
 export interface CharterBrowseArgs {
@@ -25,7 +25,7 @@ const SORTS: CharterSort[] = ['sdhk', 'year', 'place'];
 
 export function buildCharterBrowseArgs(p: CharterBrowseParams): CharterBrowseArgs {
   const q = (p.q ?? '').trim();
-  const size = p.page_size ?? 30;
+  const size = p.pageSize ?? 30;
   return {
     q: q === '' ? null : q,
     sort: SORTS.includes(p.sort as CharterSort) ? (p.sort as CharterSort) : 'sdhk',
