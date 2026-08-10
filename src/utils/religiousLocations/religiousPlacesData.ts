@@ -860,12 +860,12 @@ export const RELIGIOUS_PLACES: ReligiousPlace[] = [
     coordinates: { lat: 59.4197, lng: 16.4747 },
     deity: 'thor',
     type: 'cult_site',
-    evidence: ['place_name', 'archaeological'],
-    description: '"Tors häll" - kultplats vid Eskilstunaån, viktig handelsplats',
+    evidence: ['place_name'],
+    description: 'Tor + harg (fvn. hǫrgr, hednisk kultplats/stenaltare) — teofort kultplatsnamn. Äldsta belägg Thorsharchum 1252; formen "Torshälla" är en sen ombildning, folketymologin "Tors häll" saknar stöd i äldre belägg. Parallell: Torslunda (Tor + helig lund).',
     historicalPeriods: ['viking_age'],
     establishedPeriod: 'viking_age',
     region: 'Södermanland',
-    sources: ['Ortnamn', 'Handelsstadsarkeologi']
+    sources: ['SOL 2003 (Torshälla; harg)', 'Vikstrand, Gudarnas platser 2001 s.207-25']
   },
 
   // ✅ FREJ-KULTPLATSER (nya tillägg)
