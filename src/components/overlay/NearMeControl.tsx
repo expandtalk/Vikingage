@@ -159,7 +159,8 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // sessionStorage-persistens, och en tyst clearRoadtrip() här skulle wipe:a den direkt igen.
   // Enda sättet att rensa en aktiv rutt är nu den explicita "Avsluta resa"-knappen (endTrip).
   // Billäge: map-first-läget slås på när man kör (bil-läge + öppet). Strippar chrome + zoomar in
-  // + startar Följ färd (live-position + riktningskägla; GPS-kurs räcker i bil, ingen kompassgest).
+  // + startar Kompass till punkt-fältnavet (live-position + riktningskägla; GPS-kurs räcker i
+  // bil, ingen kompassgest).
   // AVSTÄNGNING är MEDVETET inte bara "on"-villkorets negation: att stänga (minimera/X) panelen
   // (open→false) ska INTE döda en aktiv körsession — t.ex. en startad via NavigatorHud:s egna,
   // fristående "Följ färd"-knapp (den är oberoende av den här panelens öppen/stängd-tillstånd).

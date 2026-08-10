@@ -27,7 +27,7 @@ export const FieldNavControl: React.FC = () => {
   const { active, pos, following, error, target } = useFieldNav();
   if (!isMobile) return null; // fältläget är ett mobilläge
   // I billäget körs följningen av Near me ("Kör") och kartan visar riktningskäglan; den egna
-  // Följ färd-kontrollen döljs så vi inte får två paneler över kartan (Near me = enda ytan).
+  // Kompass till punkt-kontrollen döljs så vi inte får två paneler över kartan (Near me = enda ytan).
   if (driving) return null;
 
   if (!active) {

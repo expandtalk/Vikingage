@@ -14,6 +14,11 @@ const THRESHOLDS = [50, 200, 500]; // meter
 export function useSpokenDirections(route: RouteResult | null, pos: LatLng | null) {
   const [muted, setMuted] = useState(false);
   const spoken = useRef<Set<string>>(new Set());
+  // Nollställ dedupe-set:et vid NY rutt — annars tystnar en omkörd/samma destination andra
+  // gången (identiska manöver-koordinater → identiska nycklar redan i setet, hooken lever
+  // kvar hela appsessionen). `route`-referensen är rutt-identiteten här: en ny rutt (ny
+  // sökning/beräkning) ger ett nytt RouteResult-objekt.
+  useEffect(() => { spoken.current.clear(); }, [route]);
   // Mute ska tysta en redan pågående fras direkt, inte bara förhindra nya — egen effekt som
   // bara reagerar på muted-flankar (annars skulle varje positionsuppdatering under mute avbryta
   // tal i onödan).
