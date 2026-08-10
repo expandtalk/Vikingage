@@ -1,6 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { buildCharterBrowseArgs, type CharterBrowseParams } from './medievalChartersArgs';
+import { buildFacetBrowseArgs, type FacetFilter, type FacetCount } from './medievalCharterFacetArgs';
+
+export type { FacetFilter, FacetCount };
 
 export interface CharterRow {
   sdhk_id: number; year: number | null; date_raw: string | null; date_display: string | null;
@@ -18,15 +21,37 @@ export interface CharterDetail {
 
 const rpc = (fn: string, args: Record<string, unknown>) => (supabase as any).rpc(fn, args);
 
-export function useCharterBrowse(params: CharterBrowseParams) {
+export function useCharterBrowse(
+  params: CharterBrowseParams & { facets?: Record<string, string[]>; yearFrom?: number | null; yearTo?: number | null }
+) {
   const args = buildCharterBrowseArgs(params);
+  const facetArgs = buildFacetBrowseArgs({
+    facets: params.facets ?? {},
+    yearFrom: params.yearFrom,
+    yearTo: params.yearTo,
+  });
+  const fullArgs = { ...args, ...facetArgs };
   return useQuery({
-    queryKey: ['charter-browse', args],
+    queryKey: ['charter-browse', fullArgs],
     staleTime: 1000 * 60 * 5,
     queryFn: async (): Promise<CharterRow[]> => {
-      const { data, error } = await rpc('medieval_charters_browse', args);
+      const { data, error } = await rpc('medieval_charters_browse', fullArgs);
       if (error) throw error;
       return (data ?? []) as CharterRow[];
+    },
+  });
+}
+
+export function useCharterFacetCounts(filter: FacetFilter & { q?: string | null }) {
+  const facetArgs = buildFacetBrowseArgs(filter);
+  const args = { p_q: filter.q ?? null, ...facetArgs };
+  return useQuery({
+    queryKey: ['charter-facet-counts', args],
+    staleTime: 1000 * 60 * 5,
+    queryFn: async (): Promise<FacetCount[]> => {
+      const { data, error } = await rpc('charter_facet_counts', args);
+      if (error) throw error;
+      return (data ?? []) as FacetCount[];
     },
   });
 }

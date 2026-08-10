@@ -15100,6 +15100,19 @@ export type Database = {
         }[]
       }
       bytea_to_text: { Args: { data: string }; Returns: string }
+      charter_facet_counts: {
+        Args: {
+          p_facets?: Json
+          p_q?: string
+          p_year_from?: number
+          p_year_to?: number
+        }
+        Returns: {
+          facett: string
+          n: number
+          varde: string
+        }[]
+      }
       church_consolidation_by_region: {
         Args: never
         Returns: {
@@ -15921,6 +15934,9 @@ export type Database = {
           century?: number
           dir?: string
           has_fulltext?: boolean
+          p_facets?: Json
+          p_year_from?: number
+          p_year_to?: number
           page?: number
           page_size?: number
           q?: string
@@ -16217,6 +16233,13 @@ export type Database = {
           shape?: string
         }
         Returns: unknown
+      }
+      rebuild_charter_tags: {
+        Args: never
+        Returns: {
+          facett: string
+          n: number
+        }[]
       }
       rebuild_search_document: {
         Args: { p_id?: string; p_type?: string }
