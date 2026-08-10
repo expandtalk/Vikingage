@@ -35,9 +35,14 @@ const SandbyBorgMap: React.FC = () => {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { preferCanvas: true, center: [LAT, LNG], zoom: 13, scrollWheelZoom: false });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
-    L.circleMarker([LAT, LNG], { radius: 9, color: '#7c2d12', weight: 3, fillColor: '#d4a63c', fillOpacity: 0.9 })
+    const map = L.map(containerRef.current, { preferCanvas: true, center: [LAT, LNG], zoom: 16, scrollWheelZoom: false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
+    // Schematiskt omfång av ringvallen (~104×70 m). Cirkeln är UNGEFÄRLIG — de ~53 husen
+    // (radiellt + centralkvarter) kan inte placeras exakt utan georadar-data (Viberg et al. 2014).
+    L.circle([LAT, LNG], { radius: 52, color: '#7c2d12', weight: 2, dashArray: '5 5', fill: false })
+      .bindPopup('Ringvallens ungefärliga omfång (schematiskt, ~104×70 m). Exakta huslägen ritas ej ut — kräver georadar-data.')
+      .addTo(map);
+    L.circleMarker([LAT, LNG], { radius: 7, color: '#7c2d12', weight: 3, fillColor: '#d4a63c', fillOpacity: 0.9 })
       .bindPopup('<b>Sandby borg</b><br/><span style="font-size:11px">Ringborg, folkvandringstid. RAÄ Sandby 45:1.</span>')
       .addTo(map)
       .openPopup();
@@ -49,8 +54,13 @@ const SandbyBorgMap: React.FC = () => {
     <div>
       <div ref={containerRef} className="w-full h-[420px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 420 }} />
       <p className="text-xs text-muted-foreground mt-2 opacity-75">
-        Ölands sydöstra kust, mot Östersjön. Koordinat verifierad i databasen (RAÄ Sandby 45:1) —
-        ej ur minnet. <Link to={`/explore?center=${LAT},${LNG}&zoom=15`} className="text-gold hover:underline">Öppna i utforskaren →</Link>
+        Ölands sydöstra kust, mot Östersjön. Den streckade cirkeln är ringvallens <strong>ungefärliga omfång</strong>{' '}
+        (schematiskt); borgens ~53 hus (radiellt längs muren + centralkvarter) går <strong>inte</strong> att rita ut
+        exakt utan georadar-data (Viberg et al. 2014). Portar: huvudport i NV, sjöport mot öster.{' '}
+        <strong>Vattenlinjen:</strong> Ölands landhöjning sedan folkvandringstid är liten, så kustlinjen låg nära
+        dagens — borgen låg <em>vid vattnet</em> (rapporten: &quot;alldeles ovanför stranden&quot;). Exakt dåtida strandlinje
+        kräver strandförskjutningsmodell. Koordinat verifierad i DB (RAÄ Sandby 45:1).{' '}
+        <Link to={`/explore?center=${LAT},${LNG}&zoom=16`} className="text-gold hover:underline">Öppna i utforskaren →</Link>
       </p>
     </div>
   );
@@ -86,9 +96,15 @@ const TRAUMA_COLOR: Record<string, string> = {
   oklar: 'text-slate-400',
   'ingen påvisad': 'text-slate-500',
 };
-const indivOrder = (r: ForensicRow): number => {
-  const m = /Individ\s+(\d+)/.exec(r.individual_label ?? '');
-  return m ? Number(m[1]) : 999; // F-nummer o.dyl. sist
+// Sortera efter livsstadium (yngst→äldst) — lyfter demografin: få i stridbar ålder.
+const ageRank = (r: ForensicRow): number => {
+  const a = (r.age ?? '').toLowerCase();
+  if (a.includes('spädbarn') || a.includes('mån')) return 0;
+  if (a.includes('barn') || a.includes('2–5')) return 1;
+  if (a.includes('12') || a.includes('13') || a.includes('tonår')) return 2;
+  if (a.includes('17') || a.includes('ung')) return 3;
+  if (a.includes('äldre') || a.includes('35')) return 5;
+  return 4; // vuxen, ospecificerad
 };
 
 // Per-individ forensik ur DB (forensic_individuals), Sandby borg / Hus 40.
@@ -107,7 +123,7 @@ const ForensicIndividualsTable: React.FC = () => {
 
   if (rows === null) return <p className="text-xs text-muted-foreground">Laddar individdata…</p>;
   if (!rows.length) return null;
-  const sorted = [...rows].sort((a, b) => indivOrder(a) - indivOrder(b));
+  const sorted = [...rows].sort((a, b) => ageRank(a) - ageRank(b));
 
   return (
     <div className="overflow-x-auto">
@@ -300,12 +316,14 @@ const SandbyBorg = () => {
           </p>
           <p>
             <strong className="text-foreground">Romartidskopplingen som motiv?</strong> Borgen bär tydliga{' '}
-            <strong>senromerska trådar</strong>: guldsolidi (Leo I m.fl.), <strong>romerskt glas</strong>, och två
-            unga män med romerska mynt — tolkade som hemvända <strong>legosoldater</strong> ur romersk tjänst (~476,
-            Västroms fall). Att kontrollera sådana exotiska kontakter var en <strong>maktbas</strong> → en rimlig del
-            av <em>varför</em> borgen blev måltavla. Och skändningen — <strong>djurtänder i de dödas munnar</strong> —
-            tolkas som en hånfull förvrängning av den <strong>romerska seden att lägga ett mynt i den dödes mun</strong>.
-            Allt detta är <em>tolkning</em>; själva motivet förblir obelagt.
+            <strong>senromerska trådar</strong>: <strong>guldsolidi</strong> — en <strong>Valentinianus III</strong>{' '}
+            (Ravenna, ~425–455) och en <strong>Leo I</strong> (präglad februari 457; från Åby-lokalen intill) —{' '}
+            <strong>romerskt glas</strong>, och romerska mynt tolkade som <strong>sold till hemvända legosoldater</strong>{' '}
+            ur romersk tjänst (~476, Västroms fall). Enligt Alfsdotter påträffades tidigt <em>två unga män med mynt</em>{' '}
+            (den säkert åldersbedömde är Ind 1, ~17–19 år; parets exakta koppling är obelagd). Att kontrollera sådana
+            exotiska kontakter var en <strong>maktbas</strong> → en rimlig del av <em>varför</em> borgen blev måltavla.
+            Skändningen — <strong>djurtänder i de dödas munnar</strong> — tolkas som en hånfull förvrängning av den{' '}
+            <strong>romerska seden att lägga ett mynt i den dödes mun</strong>. Allt detta är <em>tolkning</em>; själva motivet förblir obelagt.
           </p>
           <p className="text-[11px] text-muted-foreground/70">
             Källor: Viberg et al. 2014 (georadar — radial- + centralkvarter, portar); Wikipedia / Current World
@@ -682,8 +700,15 @@ const SandbyBorg = () => {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Det enda helt undersökta huset, individ för individ (Sandby borg VII 2016). Traumaklassen är en forensisk
-            differentialbedömning — inte en dom om ett specifikt vapen; kolumnen <em>Tolkning</em> är uttryckligen tolkning, inte fakta.
+            Individ för individ (Sandby borg VII 2016), <strong>sorterad yngst→äldst</strong>. Traumaklassen är en
+            forensisk differentialbedömning — inte en dom om ett specifikt vapen; kolumnen <em>Tolkning</em> är
+            uttryckligen tolkning, inte fakta.
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            <strong className="text-foreground">Åldersprofilen talar.</strong> De döda spänner från <strong>spädbarn
+            (1,5–3 mån) till äldre vuxna</strong> — bara en handfull i <em>stridbar ålder</em>. Det var en <strong>hel
+            bosättning med familjer</strong>, inte en garnison krigare; inga försvarsskador och hugg bakifrån/ovanifrån
+            pekar mot <strong>avrättning av värnlösa</strong> (tolkning). Högst i status: <strong>hövdingen(?) i hallen</strong> (Hus 52).
           </p>
           <ForensicIndividualsTable />
           <p className="text-[11px] text-muted-foreground/70">
@@ -720,7 +745,8 @@ const SandbyBorg = () => {
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
           <p>
-            Att får-/gettänder lades i munnen på vissa döda (postmortem) tolkas som en <strong>rituell förnedring/avhumanisering</strong> —
+            Att får-/gettänder lades i munnen på <strong>minst två av de döda</strong> (en med <strong>fyra gettänder</strong>;
+            åtminstone en var en äldre man), postmortem, tolkas som en <strong>rituell förnedring/avhumanisering</strong> —
             att behandla de dräpta <em>som boskap</em>. Det är en <strong>tolkning</strong>; den djupare innebörden är obelagd. Vad det{' '}
             <strong>inte</strong> är: en koppling till &quot;geten som djävulen&quot;.
           </p>
