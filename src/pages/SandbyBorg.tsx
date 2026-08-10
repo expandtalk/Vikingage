@@ -248,8 +248,15 @@ const SandbyBorg = () => {
             <strong> 10 % av innerytan</strong> (läget efter 2017). Över <strong>90 % ligger orört</strong>.
             Allt nedan bygger på det lilla, men exceptionellt välbevarade, urvalet.
           </p>
+          <p>
+            <strong className="text-foreground">Hur många döda?</strong> Totalt har <strong>~26 individer</strong>{' '}
+            påträffats (samtliga säsonger). Grävrapporten <em>Sandby borg VII</em> (2011–2015) redovisar minst{' '}
+            <strong>14–15 döda i fyra hus</strong>, varav <strong>9 i det helt undersökta Hus 40</strong>. Siffrorna
+            är inte motstridiga — de speglar olika stora urval som växer för varje säsong.
+          </p>
           <p className="text-xs opacity-75">
-            Källor: St. Fleur / NYT 2018; Current World Archaeology; Viberg et al. 2014 (georadar).
+            Källor: St. Fleur / NYT 2018; Current World Archaeology; Viberg et al. 2014 (georadar);
+            Gunnarsson, Victor &amp; Alfsdotter 2016 (Sandby borg VII).
           </p>
         </CardContent>
       </Card>
@@ -585,6 +592,26 @@ const SandbyBorg = () => {
           <p className="text-[11px] text-muted-foreground/70">
             Källa: Gunnarsson, Victor &amp; Alfsdotter 2016 (Sandby borg VII, Kalmar läns museum). Strukturerat i{' '}
             <code>forensic_individuals</code> — spädbarnet (Ind 25) är starkaste belägget för att kvinnor fanns i borgen.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Peltahänget med runlika tecken → runologisk krok */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><span className="text-lg leading-none">ᚱ</span> Runlika tecken på peltahänget</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            Bland fynden i Hus 40 finns ett <strong>peltaformat hänge i silver</strong> (F7151, 2015) med ristade{' '}
+            <strong>runliknande tecken</strong>. Runologen <strong>Magnus Källström</strong> bedömer dem som ett{' '}
+            <strong>medvetet runförsök — men inget läsbart ord</strong>. Det är alltså ingen inskrift att översätta,
+            utan (tolkning) någon som imiterade runraden.
+          </p>
+          <p className="text-xs opacity-80">
+            Källkritik: &quot;runförsök&quot; är Källströms bedömning; att tecknen skulle bära en betydelse är obelagt.
+            Peltahängen är kända från bl.a. Uppåkra och Sösdala. Läs mer om{' '}
+            <Link to="/sv/runor" className="text-gold hover:underline">runorna och futharken</Link>.
           </p>
         </CardContent>
       </Card>
