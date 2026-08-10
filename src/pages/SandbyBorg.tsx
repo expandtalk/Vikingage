@@ -328,9 +328,18 @@ const SandbyBorg = () => {
             Det gör Sandby borg intressant i jämförelsen mellan Ölands fornborgar: samma ö, samma tid, men olika
             anläggningslogik — höjd och sikt hos vissa, mur och kustkontroll hos andra.
           </p>
+          <p>
+            <strong className="text-foreground">Anläggningen:</strong> oval, inneryta ~5000 m², med en kraftig kallmurad{' '}
+            <strong>skalmur</strong> av kalksten (~8 m bred vid landporten, ~4 m mitt på sidorna, bevarad 1–3,5 m). Två
+            portar — en <strong>landport</strong> och en <strong>sjöport</strong> mot Östersjön (möjligen en tredje mitt
+            på norra sidan). I nordväst ett <strong>yttre försvarsverk</strong> av satta stenar (≥150 m långt) och en
+            sötvattenkälla strax utanför. Innanför murarna låg uppskattningsvis <strong>~54 radiellt ställda hus</strong>{' '}
+            kring ett centralkvarter — jämförbart med Eketorp-II (53 hus).
+          </p>
           <p className="text-xs opacity-75">
             Terrängvärdena är härledda ur höjdmodell (elevation/relativ höjd) och SGU:s jordartsdata, samplade mot
-            borgens verifierade koordinat — inte uppskattade.
+            borgens verifierade koordinat — inte uppskattade. Strukturmåtten: Gunnarsson, Victor &amp; Alfsdotter 2016
+            (Sandby borg VII).
           </p>
         </CardContent>
       </Card>
@@ -370,6 +379,36 @@ const SandbyBorg = () => {
               genomgående.
             </li>
           </ul>
+        </CardContent>
+      </Card>
+
+      {/* Undersökningen bakom — crowdfunding, kadaverhund, forensikern */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Microscope className="h-5 w-5" /> Undersökningen bakom fynden</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+          <p>
+            <strong className="text-foreground">Folkfinansierad grävning.</strong> 2015 års säsong — totalundersökningen
+            av Hus 40 — bekostades genom en <strong>crowdfunding-kampanj på Kickstarter</strong> (dec 2014): 387 givare
+            världen över samlade in <strong>465 619 kr</strong>. Enligt Kalmar läns museum den första crowdfundade
+            arkeologiska undersökningen i Skandinavien (oberoende källor är försiktigare — &quot;en av de första&quot; / första i Sverige).
+          </p>
+          <p>
+            <strong className="text-foreground">Kadaverhund i fält.</strong> Den certifierade arkeologihunden{' '}
+            <strong>Fabel</strong> (tränad av Sophie Vallulv) användes för att lokalisera dolda människoben före
+            grävning — en metod under utveckling; markeringarna mättes in och jämfördes mot de faktiska fynden.
+          </p>
+          <p>
+            <strong className="text-foreground">Forensisk arkeolog.</strong> Osteologin leds av <strong>Clara Alfsdotter</strong>,
+            forensisk arkeolog som till vardags arbetar inom rättsväsendet — en expertroll som kan kallas in vid
+            brottsmisstanke för att läsa hur skelett och mark påverkats. Samma verktyg som på en modern brottsplats,
+            applicerade på ett ~1 500-årigt fall.
+          </p>
+          <p className="text-xs opacity-75">
+            Källor: Gunnarsson, Victor &amp; Alfsdotter 2016 (Sandby borg VII); Kickstarter &quot;Unveiling the Sandby borg massacre&quot;;
+            intervju med Clara Alfsdotter (Per Grankvist, 2024).
+          </p>
         </CardContent>
       </Card>
 
