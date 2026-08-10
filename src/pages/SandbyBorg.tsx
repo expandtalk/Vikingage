@@ -161,6 +161,65 @@ const ForensicIndividualsTable: React.FC = () => {
   );
 };
 
+// Point → {lat,lng}. Postgres point via supabase-js kommer oftast som "(lng,lat)"-sträng.
+const parsePoint = (c: unknown): { lat: number; lng: number } | null => {
+  if (c == null) return null;
+  if (typeof c === 'string') {
+    const p = c.replace(/[()\s]/g, '').split(',');
+    const lng = parseFloat(p[0]); const lat = parseFloat(p[1]);
+    return isFinite(lat) && isFinite(lng) ? { lat, lng } : null;
+  }
+  if (Array.isArray(c)) return { lng: Number(c[0]), lat: Number(c[1]) };
+  if (typeof c === 'object') {
+    const o = c as Record<string, number>;
+    if ('x' in o && 'y' in o) return { lng: o.x, lat: o.y };
+  }
+  return null;
+};
+// Ölands fornborgar ur swedish_hillforts (landscape='Öland'), Sandby markerad. Inga belagda vägar mellan dem i DB.
+const OlandFortsMap: React.FC = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const [forts, setForts] = React.useState<{ name: string; lat: number; lng: number }[] | null>(null);
+
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data } = await sb.from('swedish_hillforts').select('name,coordinates').eq('landscape', 'Öland');
+      if (!alive || !data) return;
+      const rows = (data as { name: string; coordinates: unknown }[])
+        .map((r) => { const c = parsePoint(r.coordinates); return c ? { name: r.name, lat: c.lat, lng: c.lng } : null; })
+        .filter((r): r is { name: string; lat: number; lng: number } => !!r);
+      setForts(rows);
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!ref.current || mapRef.current || !forts) return;
+    const map = L.map(ref.current, { preferCanvas: true, center: [56.65, 16.62], zoom: 8, scrollWheelZoom: false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
+    forts.forEach((f) => {
+      const sandby = /sandby/i.test(f.name);
+      L.circleMarker([f.lat, f.lng], {
+        radius: sandby ? 9 : 5,
+        color: sandby ? '#7c2d12' : '#a16207',
+        weight: sandby ? 3 : 1.5,
+        fillColor: sandby ? '#d4a63c' : '#eab308',
+        fillOpacity: 0.9,
+      }).bindPopup(`<b>${f.name}</b>${sandby ? '<br/><span style="font-size:11px">Massakern ~500 e.Kr.</span>' : ''}`).addTo(map);
+    });
+    return () => { map.remove(); mapRef.current = null; };
+  }, [forts]);
+
+  return (
+    <div>
+      <div ref={ref} className="w-full h-[460px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 460 }} />
+      {forts && <p className="text-[11px] text-muted-foreground/70 mt-1">{forts.length} fornborgar på Öland i databasen · Sandby markerad</p>}
+    </div>
+  );
+};
+
 const SandbyBorg = () => {
   // Hash-scroll: facett-chips i sökmotorn länkar hit med #massakern / #skatter.
   const location = useLocation();
@@ -605,6 +664,27 @@ const SandbyBorg = () => {
             färdvägar) — inte säkert 400-tal. Anfallsvägen är därför en <strong>topografisk hypotes</strong>, inte
             belagd. Att gärningsmannen var lokal/regional (inte en fjärran sjöflotta) följer av signaturen + att segel
             saknas i Norden före ~700.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Sandby i sitt landskap — Ölands fornborgar */}
+      <Card className="viking-card mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2 text-gold"><Landmark className="h-5 w-5" /> Sandby borg i sitt landskap — Ölands fornborgar</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Sandby var en av <strong>~15–20 fornborgar på Öland</strong>. Kartan visar de borgar vi har i databasen
+            (Sandby markerad) — den sätter massakern i ett grannskap: vem fanns inom räckhåll?
+          </p>
+          <OlandFortsMap />
+          <p className="text-xs text-muted-foreground/70">
+            <strong>Källkritik:</strong> vi har <em>inga belagda vägar mellan borgarna</em> i databasen — RAÄ:s
+            färdvägar är glest inventerade och mest odaterade, så <strong>frånvaro av en kartlagd väg bevisar inte
+            avsaknad av kommunikation</strong>. Öländska centralplatser är ännu inte inlagda. Troliga rutter mellan
+            borgarna kan modelleras (least-cost) av vår nya <em>kommunikationsarkeolog</em>-agent — som en tydligt
+            märkt modell, inte belagda vägar.
           </p>
         </CardContent>
       </Card>
