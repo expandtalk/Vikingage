@@ -72,6 +72,16 @@ function valueLabel(facett: string, varde: string, sv: boolean): string {
   return varde.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
 }
 
+// Låg-konfidens-facetter (måste spegla charter_tag_rules.konfidens='låg'): grova,
+// avsiktligt över-inkluderande regler. Märks "grov" i UI så forskaren inte tar dem
+// som säkra — INGEN GISSNING gäller även gruppering.
+const LOW_CONFIDENCE = new Set<string>([
+  'aktor.harad_ting',
+  'aktor.privat_fralse',
+  'geo.utland',
+  'konroll.kvinna_omnamnd',
+]);
+
 export interface CharterFacetPanelProps {
   value: FacetFilter;
   onChange: (next: FacetFilter) => void;
@@ -188,6 +198,7 @@ export const CharterFacetPanel: React.FC<CharterFacetPanelProps> = ({ value, onC
                 {rows.map((r) => {
                   const id = `facet-${group.key}-${r.varde}`;
                   const checked = selected.includes(r.varde);
+                  const low = LOW_CONFIDENCE.has(`${group.key}.${r.varde}`);
                   return (
                     <div key={r.varde} className="flex items-center gap-2">
                       <Checkbox
@@ -195,8 +206,16 @@ export const CharterFacetPanel: React.FC<CharterFacetPanelProps> = ({ value, onC
                         checked={checked}
                         onCheckedChange={() => toggleValue(group.key, r.varde)}
                       />
-                      <label htmlFor={id} className="flex-1 cursor-pointer text-sm text-slate-300">
+                      <label htmlFor={id} className={`flex-1 cursor-pointer text-sm ${low ? 'text-slate-500' : 'text-slate-300'}`}>
                         {valueLabel(group.key, r.varde, sv)}
+                        {low && (
+                          <span
+                            className="ml-1.5 rounded border border-amber-700/60 px-1 py-0.5 text-[9px] uppercase tracking-wide text-amber-500/80"
+                            title={sv ? 'Grov regel — låg konfidens, avsiktligt över-inkluderande' : 'Coarse rule — low confidence, deliberately over-inclusive'}
+                          >
+                            {sv ? 'grov' : 'coarse'}
+                          </span>
+                        )}
                       </label>
                       <span className="text-xs tabular-nums text-slate-500">{r.n.toLocaleString(sv ? 'sv-SE' : 'en')}</span>
                     </div>
@@ -207,6 +226,17 @@ export const CharterFacetPanel: React.FC<CharterFacetPanelProps> = ({ value, onC
           </Collapsible>
         );
       })}
+
+      <p className="flex items-start gap-1.5 text-[11px] leading-snug text-slate-500">
+        <span className="mt-0.5 rounded border border-amber-700/60 px-1 py-0.5 text-[9px] uppercase tracking-wide text-amber-500/80">
+          {sv ? 'grov' : 'coarse'}
+        </span>
+        <span>
+          {sv
+            ? 'Grova regler är avsiktligt över-inkluderande (låg konfidens). Grupperingen bygger på regesten, inte hela brevet.'
+            : 'Coarse rules are deliberately over-inclusive (low confidence). Grouping is based on the abstract, not the full charter.'}
+        </span>
+      </p>
 
       <p className="sr-only" aria-live="polite">
         {isFetching ? label.loading : ''}
