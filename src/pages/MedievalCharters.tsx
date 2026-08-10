@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { PageMeta } from '@/components/PageMeta';
@@ -25,9 +25,10 @@ const MedievalCharters: React.FC = () => {
 
   const sort = (params.get('sort') as CharterSort) ?? 'sdhk';
   const dir = (params.get('dir') as CharterDir) ?? 'asc';
-  const century = params.get('century') ? Number(params.get('century')) : null;
+  const centuryRaw = params.get('century');
+  const century = centuryRaw && Number.isFinite(Number(centuryRaw)) ? Number(centuryRaw) : null;
   const hasFulltext = params.get('ft') === '1' ? true : null;
-  const page = Math.max(1, Number(params.get('page') ?? 1));
+  const page = Math.max(1, Number.isFinite(Number(params.get('page'))) ? Number(params.get('page')) : 1);
 
   const patch = (next: Record<string, string | null>) => {
     const p = new URLSearchParams(params);
@@ -35,7 +36,12 @@ const MedievalCharters: React.FC = () => {
     if (!('page' in next)) p.set('page', '1');   // any filter change resets to page 1
     setParams(p, { replace: true });
   };
-  useEffect(() => { patch({ q: q || null }); /* eslint-disable-next-line */ }, [q]);
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return; } // don't clobber page on load
+    patch({ q: q || null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
 
   const { data: rows = [], isLoading } = useCharterBrowse({
     q, sort, dir, century, hasFulltext, page, pageSize: PAGE_SIZE,
@@ -102,14 +108,17 @@ const MedievalCharters: React.FC = () => {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.sdhk_id}
+                    tabIndex={0}
+                    role="link"
                     className="cursor-pointer border-t border-slate-800 hover:bg-slate-800/50"
-                    onClick={() => navigate(`${base}/${r.sdhk_id}`)}>
+                    onClick={() => navigate(`${base}/${r.sdhk_id}`)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`${base}/${r.sdhk_id}`); } }}>
                   <td className="whitespace-nowrap px-3 py-2 text-[hsl(var(--gold))]">{r.sdhk_id}</td>
                   <td className="whitespace-nowrap px-3 py-2">{r.year ?? '—'}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-slate-400">{r.date_raw ?? '—'}</td>
                   <td className="px-3 py-2">{r.place_raw || '—'}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-slate-400">{r.lang_raw || '—'}</td>
-                  <td className="px-3 py-2"><span className="line-clamp-2 text-slate-300">{r.regest}</span></td>
+                  <td className="px-3 py-2"><span className="line-clamp-2 text-slate-300">{r.regest ?? '—'}</span></td>
                   <td className="px-3 py-2">{r.has_fulltext ? '✓' : <span className="text-slate-600">–</span>}</td>
                 </tr>
               ))}
