@@ -155,8 +155,9 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
       setRoadtripError(e instanceof Error ? e.message : 'Något gick fel vid ruttberäkningen.');
     }
   };
-  // Städa bort rutten när Near me stängs/avmonteras (annars ligger den kvar på kartan).
-  useEffect(() => () => clearRoadtrip(), []);
+  // OBS: rutten rensas MEDVETET inte längre vid stängning/avmontering — Task 2 gav rutten
+  // sessionStorage-persistens, och en tyst clearRoadtrip() här skulle wipe:a den direkt igen.
+  // Enda sättet att rensa en aktiv rutt är nu den explicita "Avsluta resa"-knappen (endTrip).
   // Billäge: map-first-läget slås på när man kör (bil-läge + öppet). Strippar chrome + zoomar in
   // + startar Följ färd (live-position + riktningskägla; GPS-kurs räcker i bil, ingen kompassgest).
   useEffect(() => {
@@ -220,6 +221,9 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // Efter att en rutt beräknats (mål angivet) → fäll ihop panelen så kartan tar hela skärmen.
   const prevRtStatusRef = useRef(rtStatus);
   useEffect(() => { if (rtStatus === 'done' && prevRtStatusRef.current !== 'done') { setCarView('drive'); setMinimized(true); } prevRtStatusRef.current = rtStatus; }, [rtStatus]);
+  // Enda vägen att rensa en AKTIV rutt (X stänger numera bara panelen). Går ur körvyn också
+  // (annars kvarstår map-first-chrome:et utan mål) — motsvarar vad gamla X-knappen gjorde.
+  const endTrip = () => { clearRoadtrip(); setDestQuery(''); setCarView('overview'); };
 
   // Fallback utan GPS (nekad plats/desktop): skriv in en plats (geokoda) eller släpp en nål på
   // kartan → sätter referenspunkten så nearby/korridor/roadtrip funkar ändå (Daniel).
@@ -356,10 +360,20 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
           {minimized && pos && !error && <span className="text-slate-400 font-normal text-xs">· {isFetching ? '…' : `${rows.length} objekt`}</span>}
         </span>
         <div className="flex items-center">
+          {/* Aktiv rutt: enda sättet att rensa den. Ligger i headern (inte MINIMIZE_BODY) så den
+              går att nå även när panelen fällts ihop i körläge. */}
+          {route && (
+            <button type="button" onClick={endTrip} title="Avsluta resa" aria-label="Avsluta resa"
+              className="mr-1 px-2.5 rounded border border-rose-500/50 text-rose-200 hover:bg-rose-500/15 text-[11px] font-medium whitespace-nowrap"
+              style={{ minHeight: 36 }}>
+              Avsluta resa
+            </button>
+          )}
           <button onClick={() => setMinimized((m) => !m)} aria-label={minimized ? 'Expandera' : 'Minimera'} title={minimized ? 'Expandera' : 'Minimera'} className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
             {minimized ? <ChevronUp className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
           </button>
-          <button onClick={() => { sessionDismissed = true; clearRoadtrip(); closeNearMe(); }} aria-label="Stäng" className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
+          {/* Stänger BARA panelen — rensar aldrig en aktiv rutt (den lever kvar på kartan). */}
+          <button onClick={() => { sessionDismissed = true; closeNearMe(); }} aria-label="Stäng" className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -441,7 +455,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                 {route && dest && rtStatus === 'done' && (
                   <div className="mt-1 flex items-center justify-between gap-2 text-[11px]">
                     <span className="text-sky-200 truncate">🏁 {dest.label} · {route.distanceKm.toFixed(0)} km · ~{Math.round(route.durationMin)} min</span>
-                    <button type="button" onClick={() => { clearRoadtrip(); setDestQuery(''); }} className="shrink-0 text-slate-400 hover:text-white underline">Rensa</button>
+                    <button type="button" onClick={endTrip} className="shrink-0 text-slate-400 hover:text-white underline">Avsluta resa</button>
                   </div>
                 )}
                 {homePosRef.current && hoppedAway && (
