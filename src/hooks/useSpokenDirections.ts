@@ -12,7 +12,8 @@ const THRESHOLDS = [50, 200, 500]; // meter
 // Läser upp nästa manöver vid fasta avståndströsklar, en gång per (manöver, tröskel).
 // Web Speech API (sv-SE), OS-röst. Mute stänger av. Ingen ny backend.
 export function useSpokenDirections(route: RouteResult | null, pos: LatLng | null) {
-  const [muted, setMuted] = useState(false);
+  // Ljud AV som default (Waze-mönster; Daniel). Röstvägledning slås på aktivt av användaren.
+  const [muted, setMuted] = useState(true);
   const spoken = useRef<Set<string>>(new Set());
   // Nollställ dedupe-set:et vid NY rutt — annars tystnar en omkörd/samma destination andra
   // gången (identiska manöver-koordinater → identiska nycklar redan i setet, hooken lever

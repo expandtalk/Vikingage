@@ -9,6 +9,7 @@ import { useNearbyRanked } from '@/hooks/useNearbyRanked';
 import { useNearbyExperiences } from '@/hooks/useNearbyExperiences';
 import {
   useRoadtrip, setRoadtripSearching, setRoadtripResult, setRoadtripCorridor, setRoadtripError, clearRoadtrip,
+  getRecentDestinations, pushRecentDestination, type RecentDest,
 } from '@/hooks/useRoadtrip';
 import { useNearbyAlongRoute } from '@/hooks/useNearbyAlongRoute';
 import { geocode, route as computeRoute } from '@/services/routing';
@@ -23,6 +24,7 @@ import { useDraggable } from '@/hooks/useDraggable';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { startFieldNav, stopFieldNav, useFieldNav } from '@/hooks/useFieldNav';
 import { bucketCorridor, gateBySpeed } from '@/utils/navCorridor';
+import { haversineKm } from '@/utils/geoDistance';
 
 // Svenska etiketter + färg per feature_type ur nearby_features (fallback = råtypen).
 const TYPE_LABEL: Record<string, { sv: string; color: string }> = {
@@ -151,10 +153,41 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
       const r = await computeRoute(pos, g);
       if (!r) { setRoadtripError('Kunde inte beräkna en bilrutt dit.'); return; }
       setRoadtripResult({ lat: g.lat, lng: g.lng, label: g.label }, r);
+      pushRecentDestination({ label: g.label, lat: g.lat, lng: g.lng });
     } catch (e) {
       setRoadtripError(e instanceof Error ? e.message : 'Något gick fel vid ruttberäkningen.');
     }
   };
+  // Klick på ett "nyligen"-mål → rutt direkt (lagrad koordinat, ingen ny geokodning).
+  const goRecent = async (d: RecentDest) => {
+    if (!pos) return;
+    setDestQuery(d.label);
+    setRoadtripSearching();
+    try {
+      const r = await computeRoute(pos, d);
+      if (!r) { setRoadtripError('Kunde inte beräkna vägen dit.'); return; }
+      setRoadtripResult(d, r);
+      pushRecentDestination(d);
+    } catch (e) { setRoadtripError(e instanceof Error ? e.message : 'Fel vid ruttberäkningen.'); }
+  };
+  const recentDests = getRecentDestinations();
+
+  // Auto-avsluta resan efter >30 min stillastående (Daniel). Följer fältnavets live-position; nollställs
+  // vid varje rörelse >30 m. GPS-watchen sänder regelbundet även stilla, så effekten körs på pos-uppdatering.
+  const lastMoveRef = useRef<{ lat: number; lng: number; t: number } | null>(null);
+  useEffect(() => {
+    if (!route) { lastMoveRef.current = null; return; }
+    const p = fieldPos; if (!p) return;
+    const now = Date.now();
+    const last = lastMoveRef.current;
+    if (!last || haversineKm({ lat: last.lat, lng: last.lng }, { lat: p.lat, lng: p.lng }) > 0.03) {
+      lastMoveRef.current = { lat: p.lat, lng: p.lng, t: now };
+      return;
+    }
+    if (now - last.t > 30 * 60 * 1000) {
+      clearRoadtrip(); setDestQuery(''); setCarView('overview'); lastMoveRef.current = null;
+    }
+  }, [fieldPos, route]);
   // OBS: rutten rensas MEDVETET inte längre vid stängning/avmontering — Task 2 gav rutten
   // sessionStorage-persistens, och en tyst clearRoadtrip() här skulle wipe:a den direkt igen.
   // Enda sättet att rensa en aktiv rutt är nu den explicita "Avsluta resa"-knappen (endTrip).
@@ -467,11 +500,27 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                     {rtStatus === 'searching' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Kör dit'}
                   </button>
                 </div>
+                {/* Nyligen (Waze): återkommande mål ett klick bort. Lokalt, cookie-fritt. */}
+                {!route && recentDests.length > 0 && (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                    <span className="text-[10px] text-slate-400">Nyligen:</span>
+                    {recentDests.slice(0, 6).map((d) => (
+                      <button key={d.label} type="button" onClick={() => goRecent(d)} disabled={rtStatus === 'searching'}
+                        className="px-2 py-0.5 rounded-full border border-slate-600 text-slate-200 text-[11px] hover:bg-slate-700/50 disabled:opacity-50 max-w-[140px] truncate" style={{ minHeight: 28 }}>
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {rtError && <p className="mt-1 text-[11px] text-rose-300">{rtError}</p>}
                 {route && dest && rtStatus === 'done' && (
-                  <div className="mt-1 flex items-center justify-between gap-2 text-[11px]">
-                    <span className="text-sky-200 truncate">🏁 {dest.label} · {route.distanceKm.toFixed(0)} km · ~{Math.round(route.durationMin)} min</span>
-                    <button type="button" onClick={endTrip} className="shrink-0 text-slate-400 hover:text-white underline">Avsluta resa</button>
+                  <div className="mt-1.5 flex items-center justify-between gap-2">
+                    <span className="text-sky-100 truncate text-xs">🏁 {dest.label}</span>
+                    <span className="shrink-0 flex items-baseline gap-1">
+                      <span className="text-lg font-bold text-sky-300 tabular-nums">{Math.round(route.durationMin)}</span>
+                      <span className="text-[11px] text-slate-400">min · {route.distanceKm.toFixed(0)} km</span>
+                    </span>
+                    <button type="button" onClick={endTrip} className="shrink-0 text-[11px] text-slate-400 hover:text-white underline">Avsluta</button>
                   </div>
                 )}
                 {homePosRef.current && hoppedAway && (

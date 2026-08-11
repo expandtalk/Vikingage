@@ -73,3 +73,21 @@ export const clearRoadtrip = () => {
 };
 
 export const useRoadtrip = () => useSyncExternalStore(subscribe, () => state);
+
+// Senaste mål (Waze-mönster: "nyligen"). Lokalt på enheten (localStorage) — ingen cookie, ingen
+// server. Max 20, dubbletter (samma etikett) flyttas överst. Daniels kalibrerings-idé: återkommande
+// resor (handla/lämna barn/hund) blir ett klick.
+const RECENT_KEY = 'vikingage_recent_dest_v1';
+export interface RecentDest { label: string; lat: number; lng: number }
+export const getRecentDestinations = (): RecentDest[] => {
+  if (typeof window === 'undefined') return [];
+  try { const a = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); return Array.isArray(a) ? a : []; }
+  catch { return []; }
+};
+export const pushRecentDestination = (d: RecentDest) => {
+  if (typeof window === 'undefined' || !d?.label) return;
+  try {
+    const rest = getRecentDestinations().filter((x) => x.label.toLowerCase() !== d.label.toLowerCase());
+    localStorage.setItem(RECENT_KEY, JSON.stringify([{ label: d.label, lat: d.lat, lng: d.lng }, ...rest].slice(0, 20)));
+  } catch { /* kvot — icke-kritiskt */ }
+};
