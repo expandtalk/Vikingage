@@ -245,6 +245,11 @@ const TunaNames = () => {
                 ? 'Vår spatiala analys av 60 distinkta -tuna-lokaler bekräftar fördelningen. Vattennärhets-talen är en undre gräns — just de inre fjärdarna och åarna saknas i strandlinje-modellen, så orterna ligger i verkligheten närmare vatten än siffrorna visar.'
                 : 'Our spatial analysis of 60 distinct -tuna sites confirms the distribution. The water-proximity figures are a floor — the inner fjords and rivers are missing from the shoreline model, so the places lie closer to water than the numbers show.'}
             </p>
+            <p>
+              {sv
+                ? <>Ett <strong className="text-foreground">null-modell-test</strong> bekräftar mönstret statistiskt: -tuna ligger signifikant närmare större vatten (sjö eller kust) än jämförbara <em>-torp</em>-orter i samma region — median ~8 km mot ~15 km, och nära dubbelt så stor andel inom 5 km (32 % mot 17 %; Mann–Whitney, p&nbsp;&lt;&nbsp;10⁻⁶, n&nbsp;=&nbsp;78/1306). Eftersom testet bara räknar de största sjöarna och kusten — och järnålderns vatten var mer utbrett — <strong className="text-foreground">underskattar</strong> det sannolikt -tunas verkliga vattennärhet. <Status kind="belagt" sv={sv} /> Att närheten beror på kungsgård/uppbörd/kommunikation är tolkning. <Status kind="hypotes" sv={sv} /></>
+                : <>A <strong className="text-foreground">null-model test</strong> confirms the pattern statistically: -tuna lie significantly closer to larger water (lake or coast) than comparable <em>-torp</em> places in the same region — median ~8 km vs ~15 km, and nearly twice the share within 5 km (32% vs 17%; Mann–Whitney, p&nbsp;&lt;&nbsp;10⁻⁶, n&nbsp;=&nbsp;78/1306). Because the test counts only the largest lakes and the coast — and Iron Age water was more extensive — it likely <strong className="text-foreground">underestimates</strong> the true water-proximity of -tuna. <Status kind="belagt" sv={sv} /> That the proximity is due to royal manor/tax/communication is interpretation. <Status kind="hypotes" sv={sv} /></>}
+            </p>
             <div className="rounded-lg border border-slate-700/50 bg-slate-800/30 p-3">
               <p className="text-foreground font-medium mb-1">{sv ? 'Kan man datera en Tuna via strandförskjutningen?' : 'Can a Tuna be dated by shoreline displacement?'}</p>
               <p>
