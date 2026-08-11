@@ -210,6 +210,16 @@ const PlaceNames = () => {
           </p>
         </div>
 
+        {/* Fördjupningssidor (kurerade temasidor per namntyp) */}
+        <div className="mb-4">
+          <a href={sv ? '/sv/ortnamn/tuna' : '/place-names/tuna'}
+            className="inline-flex flex-wrap items-center gap-2 rounded-lg border border-gold/40 bg-gold/5 px-4 py-2.5 text-sm hover:bg-gold/10">
+            <Tag className="h-4 w-4 text-gold shrink-0" />
+            <span className="text-foreground font-medium">{sv ? 'Fördjupning: Tuna-namnen' : 'Deep dive: the Tuna place-names'}</span>
+            <span className="text-muted-foreground">{sv ? '— centralorter, kult eller inte, och läget vid det inre vattnet →' : '— central places, cult or not, and the inner-water location →'}</span>
+          </a>
+        </div>
+
         {/* ===== ARBETSGÅNG (rekommenderad ordning) ===== */}
         <div className="mb-4 rounded-lg border border-slate-700/50 bg-slate-800/30 p-3">
           <p className="text-xs font-medium text-muted-foreground mb-2">
