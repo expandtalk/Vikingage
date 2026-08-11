@@ -197,17 +197,17 @@ export const useLegendManager = (
     const preset = getModePreset(travelMode);
     setEnabledLegendItems((prevState) => {
       if (preset) return { ...prevState, ...preset };   // sparad egen vy vinner (alla lägen)
-      if (travelMode === 'foot' || travelMode === 'bike') {
-        if (isMobile) return { ...prevState, ...MOBILE_DEFAULT_LAYERS };  // kurerad lugn vy på telefon
-        const next = { ...prevState };                                    // desktop: allt på
-        const setAll = (items: typeof legendItems) => items.forEach((item) => {
-          next[item.id] = true;
-          if (item.children) setAll(item.children as typeof legendItems);
-        });
-        setAll(legendItems);
-        return next;
-      }
-      return prevState;                 // Kör utan preset: oförändrat
+      // Daniel: vid färdläges-byte (Gå/Cykla/Kör) ska ALLA lager vara på som default — särskilt
+      // bad/grottor — och överstyrbart när man är inloggad (den sparade `preset` ovan vinner).
+      // Svamp är ingen legend-post (LandscapeNode, ingen data) → påverkas ej. Seed-once via ref-vakten,
+      // så en inloggad användares egna avstängningar sparas och tvingas aldrig på per render.
+      const next = { ...prevState };
+      const setAll = (items: typeof legendItems) => items.forEach((item) => {
+        next[item.id] = true;
+        if (item.children) setAll(item.children as typeof legendItems);
+      });
+      setAll(legendItems);
+      return next;
     });
   }, [travelMode, legendItems, isMobile]);
 
