@@ -38,6 +38,7 @@ const ThemePage = lazy(() => import("./pages/ThemePage"));
 const InscriptionPage = lazy(() => import("./pages/InscriptionPage"));
 const Statistics = lazy(() => import("./pages/Statistics"));
 const PlaceNames = lazy(() => import("./pages/PlaceNames"));
+const TunaNames = lazy(() => import("./pages/TunaNames"));
 const Ontology = lazy(() => import("./pages/Ontology"));
 const AiAgents = lazy(() => import("./pages/AiAgents"));
 const KalmarMedeltid = lazy(() => import("./pages/KalmarMedeltid"));
@@ -156,6 +157,8 @@ const App = () => (
                   {/* Other routes */}
                   <Route path="/place-names" element={<PlaceNames />} />
                   <Route path="/sv/ortnamn" element={<PlaceNames />} />
+                  <Route path="/sv/ortnamn/tuna" element={<TunaNames />} />
+                  <Route path="/place-names/tuna" element={<TunaNames />} />
                   <Route path="/ontology" element={<Ontology />} />
                   <Route path="/ontologi" element={<Ontology />} />
                   <Route path="/ai-agents" element={<AiAgents />} />
