@@ -23,7 +23,7 @@ const sb = supabase as unknown as { from: (t: string) => any };
 
 const CAT_LABEL: Record<string, string> = {
   hjalm: 'Hjälmar', osteologi: 'Osteologi', helgon: 'Helgon', stenalder: 'Stenålder',
-  vapen: 'Vapen', kyrkokonst: 'Kyrkokonst',
+  vapen: 'Vapen', kyrkokonst: 'Kyrkokonst', foremal: 'Föremål',
 };
 
 const Models3D: React.FC = () => {
