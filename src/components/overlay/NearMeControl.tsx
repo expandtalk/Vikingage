@@ -524,35 +524,34 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
         </div>
       )}
 
-      {/* Upplevelser & sidor nära dig (content_pages via pages_near): gå Göta landsvägen,
-          besök Sandby borg, se Kalmar. Region = du är i den; rutt/plats = inom räckhåll. */}
-      {pos && !error && nearbyPages.length > 0 && (
-        <div className="px-4 pb-2 border-t border-slate-700/60 pt-2">
-          <div className="text-[11px] font-semibold text-gold mb-1.5">✨ Upplevelser & sidor nära dig</div>
-          <ul className="space-y-1">
-            {nearbyPages.slice(0, 5).map((p) => {
-              const km = p.dist_m / 1000;
-              const dist = p.kind === 'region' ? 'här' : p.dist_m < 1000 ? `${p.dist_m} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`;
-              const icon = p.kind === 'route' ? '🥾' : p.kind === 'site' ? '📍' : p.kind === 'region' ? '🗺️' : '📖';
-              return (
-                <li key={p.slug}>
-                  <a href={p.url} className="flex items-start gap-2 rounded px-2 py-1.5 border border-slate-700/50 hover:bg-slate-800/60">
-                    <span className="shrink-0 text-base leading-none mt-0.5">{icon}</span>
-                    <span className="min-w-0">
-                      <span className="text-sm text-white font-medium">{p.title_sv}</span>
-                      <span className="text-[11px] text-sky-300"> · {p.verb_sv} · {dist}{p.geom_approx ? ' (ungefär)' : ''}</span>
-                      {p.teaser_sv && <span className="block text-[11px] text-slate-400 leading-snug">{p.teaser_sv}</span>}
-                    </span>
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-
       {pos && !error && (
-        <div className="flex-1 overflow-y-auto px-2 pb-3">
+        <div className="flex-1 overflow-y-auto px-2 pb-3 scroll-fade">
+          {/* Upplevelser & sidor nära dig — nu FÖRST i den ENADE nära-dig-listan (Daniel: slå ihop
+              de två listorna → en). Kurerade sidor/rutter finns inte i "mest sevärt", så de behålls. */}
+          {nearbyPages.length > 0 && (
+            <div className="mb-3">
+              <div className="flex items-center gap-1 px-1 mb-1 text-[10px] uppercase tracking-wide text-gold">✨ Upplevelser & sidor</div>
+              <ul className="space-y-1">
+                {nearbyPages.slice(0, 5).map((p) => {
+                  const km = p.dist_m / 1000;
+                  const dist = p.kind === 'region' ? 'här' : p.dist_m < 1000 ? `${p.dist_m} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`;
+                  const icon = p.kind === 'route' ? '🥾' : p.kind === 'site' ? '📍' : p.kind === 'region' ? '🗺️' : '📖';
+                  return (
+                    <li key={p.slug}>
+                      <a href={p.url} className="flex items-start gap-2 rounded px-2 py-1.5 border border-slate-700/50 hover:bg-slate-800/60">
+                        <span className="shrink-0 text-base leading-none mt-0.5">{icon}</span>
+                        <span className="min-w-0">
+                          <span className="text-sm text-white font-medium">{p.title_sv}</span>
+                          <span className="text-[11px] text-sky-300"> · {p.verb_sv} · {dist}{p.geom_approx ? ' (ungefär)' : ''}</span>
+                          {p.teaser_sv && <span className="block text-[11px] text-slate-400 leading-snug">{p.teaser_sv}</span>}
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
           {/* Sevärt LÄNGS VÄGEN — korridorsökning, visas när en bilrutt är aktiv. Zonat (närzon
               ≤100 m / synfält) + hastighetsgrindat (fort → bara hög signifikans, se navCorridor.ts). */}
           {mode === 'car' && route && corridorCount > 0 && (

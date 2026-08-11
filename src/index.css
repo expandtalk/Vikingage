@@ -283,6 +283,20 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, .5);
 }
 
+/* Scroll-affordans (Daniel: "bra om man kan se att det går att scrolla"). Ren CSS scroll-shadow —
+   subtil skugga i topp/botten som FÖRSVINNER när man nått kanten → tydligt att mer finns. Bg-tonen
+   matchar panelen (slate-900). Ingen JS/scroll-detektion → robust. */
+.scroll-fade {
+  background:
+    linear-gradient(hsl(222 47% 11%) 30%, hsla(222,47%,11%,0)) center top,
+    linear-gradient(hsla(222,47%,11%,0), hsl(222 47% 11%) 70%) center bottom,
+    radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.45), rgba(0,0,0,0)) center top,
+    radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.45), rgba(0,0,0,0)) center bottom;
+  background-repeat: no-repeat;
+  background-size: 100% 22px, 100% 22px, 100% 7px, 100% 7px;
+  background-attachment: local, local, scroll, scroll;
+}
+
 /* Mobil: den flytande dåtida-strandlinje-kontrollen (vågikon, topp-vänster, z1105) låg OVANPÅ
    Leaflets +/- zoom → "+ syntes inte" (Daniel, belagt i browser 2026-08-11). Skjut ner
    zoomkontrollen så den hamnar under vågkontrollen (~44px hög + marginal). */
