@@ -394,8 +394,10 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
       </div>
 
       {!minimized && (
-      <>
-      {/* MINIMIZE_BODY_START */}
+      /* HELA kroppen scrollar (Daniels fälttest: "Kör dit-knappen utanför skärmfältet"). Tidigare
+         scrollade bara träfflistan medan kontrollblocket klipptes av maxHeight:62vh. min-h-0 låter
+         flex-barnet krympa och scrolla inom panelens maxhöjd. */
+      <div className="flex-1 min-h-0 overflow-y-auto scroll-fade">
 
       <div className="px-4 pb-2">
         {locating ? (
@@ -525,7 +527,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
       )}
 
       {pos && !error && (
-        <div className="flex-1 overflow-y-auto px-2 pb-3 scroll-fade">
+        <div className="px-2 pb-3">
           {/* Upplevelser & sidor nära dig — nu FÖRST i den ENADE nära-dig-listan (Daniel: slå ihop
               de två listorna → en). Kurerade sidor/rutter finns inte i "mest sevärt", så de behålls. */}
           {nearbyPages.length > 0 && (
@@ -727,8 +729,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
           )}
         </div>
       )}
-      {/* MINIMIZE_BODY_END */}
-      </>
+      </div>
       )}
     </div>
   );

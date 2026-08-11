@@ -6,7 +6,10 @@ import { useSyncExternalStore } from 'react';
 // man kör. `courseUp` = kartan roterar så färdriktningen pekar uppåt (navigator-läge); kan
 // stängas av (norr-upp) för den som blir desorienterad. Extern store, samma mönster som useNearMe.
 let driving = false;
-let courseUp = true; // default på i billäge; togglas i NearMeControl
+// DEFAULT NORR-UPP (Daniels fälttest): course-up-rotationen roterade runt centrum medan fältnavet
+// lade positionen i nedre tredjedelen → position svängde bort ur synfältet ("såg inte mig själv,
+// kartan felvänd"). Norr-upp default tills rotation+följning är samstämt löst. Togglas i NearMeControl.
+let courseUp = false;
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
