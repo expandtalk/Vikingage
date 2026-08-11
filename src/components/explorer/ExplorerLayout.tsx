@@ -326,7 +326,7 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
             type="button"
             onClick={() => setProfileOpen(true)}
             aria-label={focusSv ? 'Min sida' : 'My page'}
-            className="fixed right-2 top-16 z-[1100] flex h-11 w-11 items-center justify-center rounded-full border-2 border-amber-500/70 bg-slate-900/70 text-amber-200 shadow-lg backdrop-blur hover:bg-slate-800"
+            className="fixed right-3 top-[4.75rem] z-[1100] flex h-11 w-11 items-center justify-center rounded-full border-2 border-amber-500/70 bg-slate-900/70 text-amber-200 shadow-lg backdrop-blur hover:bg-slate-800"
           >
             <span className="font-norse text-xl leading-none">ᚠ</span>
           </button>

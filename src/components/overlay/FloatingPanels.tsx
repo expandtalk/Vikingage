@@ -122,7 +122,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
       {!isMobile && <ClusterLegendControl onLegendToggle={onLegendToggle} enabledLayers={enabledLayers} />}
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
       {onToggleLegend && !showLegend && (
-        <div className={isMobile ? 'fixed top-16 right-14 z-[1100]' : 'absolute top-4 left-4 z-50 flex flex-col gap-2'}>
+        <div className={isMobile ? 'fixed top-[4.75rem] right-[4.75rem] z-[1100]' : 'absolute top-4 left-4 z-50 flex flex-col gap-2'}>
           <Button
             onClick={onToggleLegend}
             aria-label={sv ? 'Anpassa karta' : 'Customize map'}
