@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { useNearMe, setNearMePos } from '@/hooks/useNearMe';
 import { useDrivingMode } from '@/hooks/useDrivingMode';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import { useTravelMode } from '@/hooks/useTravelMode';
 
 // Ritar "Near me"-lagret på kartan: min position (blå prick + noggrannhetsring),
 // sökradie-cirkel och träffmarkörer. Läser store; ritar inget förrän position finns.
@@ -37,6 +39,13 @@ const detailButton = (featureType?: string | null, featureId?: string | null): s
 export const useMapNearMe = ({ map, isMapReady }: Props) => {
   const { open, pos, radiusKm, results } = useNearMe();
   const driving = useDrivingMode();
+  // "Här"-markören (useMapFieldNav, grön/vit pil) är den enda position-markören så fort den är
+  // aktiv (mobil ELLER billäge). Då MÅSTE near-me hoppa över sin egen "Du är här"-prick +
+  // noggrannhetsring — annars TVÅ positionsmarkörer (Daniel: "dubbelpilen", belagd på mobil
+  // gå/cykla där driving=false men isMobile=true). Sökradien får däremot vara kvar.
+  const isMobile = useIsMobile();
+  const mode = useTravelMode();
+  const showHereMarker = isMobile || mode === 'car';
   const layerRef = useRef<L.LayerGroup | null>(null);
 
   // Flyg-till + öppna popup (VAR + VAD) för listobjekt (används av NearMeControl).
@@ -118,14 +127,17 @@ export const useMapNearMe = ({ map, isMapReady }: Props) => {
     // I billäget ritar Följ färd-käglan min live-position; hoppa över den stora 40 km-radien,
     // noggrannhetsringen och den statiska pricken (annars två positionsmarkörer + fult radie-lock).
     if (!driving) {
-      // Sökradie (visar området listan täcker)
+      // Sökradie (visar området listan täcker) — kvar även på mobil.
       L.circle([pos.lat, pos.lng], { radius: radiusKm * 1000, color: '#38bdf8', weight: 1, fillColor: '#38bdf8', fillOpacity: 0.06 }).addTo(layer);
-      // GPS-noggrannhetsring
-      if (pos.accuracy) L.circle([pos.lat, pos.lng], { radius: pos.accuracy, color: '#2563eb', weight: 1, fillColor: '#2563eb', fillOpacity: 0.12, dashArray: '4 3' }).addTo(layer);
-      // Min position
-      L.circleMarker([pos.lat, pos.lng], { radius: 7, color: '#ffffff', weight: 2, fillColor: '#2563eb', fillOpacity: 1 })
-        .bindTooltip('Du är här', { direction: 'top' }).addTo(layer);
+      // Min position (blå prick + noggrannhetsring) — BARA när "här"-markören inte är aktiv
+      // (dvs på desktop). På mobil/i billäge äger här-markören positionen → undvik dubbelpilen.
+      if (!showHereMarker) {
+        if (pos.accuracy) L.circle([pos.lat, pos.lng], { radius: pos.accuracy, color: '#2563eb', weight: 1, fillColor: '#2563eb', fillOpacity: 0.12, dashArray: '4 3' }).addTo(layer);
+        L.circleMarker([pos.lat, pos.lng], { radius: 7, color: '#ffffff', weight: 2, fillColor: '#2563eb', fillOpacity: 1 })
+          .bindTooltip('Du är här', { direction: 'top' }).addTo(layer);
+      }
     }
+
     // Träffmarkörer
     (results ?? []).forEach((f) => {
       L.circleMarker([f.lat, f.lng], { radius: 5, color: '#0c4a6e', weight: 1, fillColor: '#22d3ee', fillOpacity: 0.9 })
