@@ -89,12 +89,24 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
 
     if (!active) return; // Följning/zoom/"led mig hit" hör bara till det opt-in aktiva fältläget (HUD)
 
+    // Följ-läge (mobil/billäge): lägg MIN position i nedre tredjedelen så det mesta av skärmen är
+    // "framåt" (nav-app-mönster, Daniel). Förskjut kartcentrum uppåt ~25 % av höjden. Norr-upp;
+    // ingen kartrotation (heading-up = Fas 2). Desktop = centrera som förr.
+    const followCenter = (z: number): L.LatLng => {
+      const ll = L.latLng(pos.lat, pos.lng);
+      if (!showHereMarker) return ll;
+      try {
+        const p = map.project(ll, z);
+        return map.unproject(p.subtract([0, map.getSize().y * 0.25]), z);
+      } catch { return ll; }
+    };
     // Första fixen: zooma in till körnivå. Därefter bara panorera (behåll användarens zoom).
     if (!flownRef.current) {
       flownRef.current = true;
-      try { map.flyTo([pos.lat, pos.lng], Math.max(map.getZoom(), 16), { duration: 0.6 }); } catch { /* noop */ }
+      const z = Math.max(map.getZoom(), 16);
+      try { map.flyTo(followCenter(z), z, { duration: 0.6 }); } catch { /* noop */ }
     } else if (following) {
-      try { map.panTo([pos.lat, pos.lng], { animate: true, duration: 0.4 }); } catch { /* noop */ }
+      try { map.panTo(followCenter(map.getZoom()), { animate: true, duration: 0.4 }); } catch { /* noop */ }
     }
 
     // "Led mig hit"-mål: amber markör + streckad ledlinje från min position till målet.
