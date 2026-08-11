@@ -226,6 +226,39 @@ const TunaNames = () => {
           </a>
         </Section>
 
+        {/* 2b. Tuna & landskapet */}
+        <Section id="landskap" icon={<MapPin className="h-5 w-5 text-gold" />}
+          title={sv ? 'Tuna & landskapet — vid det inre vattnet' : 'Tuna & the landscape — by the inner water'}>
+          <div className="space-y-3 text-sm text-muted-foreground max-w-3xl">
+            <p>
+              {sv
+                ? <>-tuna-orterna är inte utspridda över hela landet. De klumpar sig i de bördiga centralbygderna kring Mälaren och på Östergötlands slätt (Uppland, Södermanland, Västmanland, Östergötland rymmer flertalet; enstaka utposter i Medelpad) och <strong className="text-foreground">lyser med sin frånvaro</strong> i skogsbygderna — Norrlands inland, Bergslagen, det småländska höglandet, västkusten. <Status kind="belagt" sv={sv} /></>
+                : <>The -tuna places are not spread across the whole country. They cluster in the fertile central districts around Lake Mälaren and on the Östergötland plain (Uppland, Södermanland, Västmanland, Östergötland hold most; a few outposts in Medelpad) and are <strong className="text-foreground">conspicuously absent</strong> from the forest lands — interior Norrland, Bergslagen, the Småland highland, the west coast. <Status kind="belagt" sv={sv} /></>}
+            </p>
+            <p>
+              {sv
+                ? <>Gemensamt är närheten till vatten — men inte det öppna havet. -tuna ligger sällan på den yttre skärgårdsranden och sällan i skogens utmark, utan vid det <strong className="text-foreground">inre farvattnet</strong>: vikar, fjärdar och åmynningar i en tid då Mälaren ännu var en havsvik och landet stod flera meter lägre. Lägen man nådde med båt men som ändå låg tryggt inne i den odlade bygden — en vattenledd centralbygd.</>
+                : <>What they share is proximity to water — but not the open sea. -tuna rarely sits on the outer skerry edge or in the forest margin, but by the <strong className="text-foreground">inner waterways</strong>: bays, fjords and river mouths at a time when Mälaren was still a sea-bay and the land stood several metres lower. Sites reachable by boat yet safely within the farmed district — a water-connected central place.</>}
+            </p>
+            <p className="text-[11px] opacity-80">
+              {sv
+                ? 'Vår spatiala analys av 60 distinkta -tuna-lokaler bekräftar fördelningen. Vattennärhets-talen är en undre gräns — just de inre fjärdarna och åarna saknas i strandlinje-modellen, så orterna ligger i verkligheten närmare vatten än siffrorna visar.'
+                : 'Our spatial analysis of 60 distinct -tuna sites confirms the distribution. The water-proximity figures are a floor — the inner fjords and rivers are missing from the shoreline model, so the places lie closer to water than the numbers show.'}
+            </p>
+            <div className="rounded-lg border border-slate-700/50 bg-slate-800/30 p-3">
+              <p className="text-foreground font-medium mb-1">{sv ? 'Kan man datera en Tuna via strandförskjutningen?' : 'Can a Tuna be dated by shoreline displacement?'}</p>
+              <p>
+                {sv
+                  ? <>Bara till en <strong className="text-foreground">bortre gräns</strong>. En orts nivå över dåtida hav säger "kan inte ha varit strandläge före år X" — inte ortens verkliga ålder, och allra minst namnets (namn kan vara överförda). Sigtuna är läroexemplet: det äldre <em>Fornsigtuna</em> var järnålderns strandläge, medan staden Sigtuna anlades först på 980-talet, när landhöjningen format om vikarna. <Status kind="hypotes" sv={sv} /></>
+                  : <>Only to a <strong className="text-foreground">terminus post quem</strong>. A site’s level above the former sea says "cannot have been a shore site before year X" — not the place’s real age, and least of all the name’s (names can be transferred). Sigtuna is the textbook case: the older <em>Fornsigtuna</em> was the Iron Age shore site, while the town of Sigtuna was founded only in the 980s, once land uplift had reshaped the bays. <Status kind="hypotes" sv={sv} /></>}
+              </p>
+            </div>
+            <Src>{sv
+              ? 'Källa: spatial analys (place_names + paleo_shorelines, SGU CC0 / Copernicus DEM GLO-30), 2026-08-11; Sigtuna/Fornsigtuna-kronologin vilar på arkeologi/skriftkällor. Exakta strandnivåer kräver en lokal landhöjningskurva.'
+              : 'Source: spatial analysis (place_names + paleo_shorelines, SGU CC0 / Copernicus DEM GLO-30), 2026-08-11; the Sigtuna/Fornsigtuna chronology rests on archaeology/written sources. Exact shore levels require a local uplift curve.'}</Src>
+          </div>
+        </Section>
+
         {/* 3. Betydelsen — makt eller inte */}
         <Section id="makt" icon={<Crown className="h-5 w-5 text-gold" />}
           title={sv ? '3. Betydelsen — makt eller inte?' : '3. The meaning — power or not?'}>
