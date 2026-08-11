@@ -167,6 +167,11 @@ const TunaNames = () => {
                 ? <><strong className="text-foreground">Tun ≠ Tuna.</strong> Det singulara <em>tun</em> ger vanliga bebyggelsenamn (Tun sn och Tunhem i Västergötland, Tanum i Bohuslän). Den plurala <em>tuna</em>-typen med centralortsfunktion är koncentrerad till Mälardalen. Skillnaden är morfologisk (numerus) och geografisk — inte bara "dialektal".</>
                 : <><strong className="text-foreground">Tun ≠ Tuna.</strong> The singular <em>tun</em> yields ordinary settlement names (Tun parish and Tunhem in Västergötland, Tanum in Bohuslän). The plural <em>tuna</em> type with central-place function is concentrated in the Mälaren region. The difference is morphological (number) and geographic — not merely "dialectal".</>}
             </p>
+            <p>
+              {sv
+                ? <>Att orden är släkt speglar <strong className="text-foreground">gemensamt arv</strong>, inte en kringresande elit: de germanska språken grenade ut sig från urgermanskan och ärvde ordet (jfr <em>fader / Vater / father</em>, lat. <em>pater</em>). Urformen <em>*tūnaz</em> rekonstrueras till ~500 f.Kr.–vår tideräknings början; en omtvistad hypotes ser den som ett tidigt keltiskt lån av <em>*dūnon</em> ’befäst plats, borg’. <Status kind="omtvistat" sv={sv} /></>
+                : <>The shared word reflects <strong className="text-foreground">common inheritance</strong>, not a travelling elite: the Germanic languages branched from Proto-Germanic and inherited it (cf. <em>fader / Vater / father</em>, Lat. <em>pater</em>). The proto-form <em>*tūnaz</em> is reconstructed to c. 500 BCE–the turn of the era; a contested hypothesis derives it from an early Celtic loan of <em>*dūnon</em> ’fortified place, hillfort’. <Status kind="omtvistat" sv={sv} /></>}
+            </p>
             <Src>{sv ? 'Källa: Svenskt ortnamnslexikon (SOL) 2003, elementartikeln tuna, s. 328–329.' : 'Source: Swedish place-name lexicon (SOL) 2003, element article tuna, pp. 328–329.'}</Src>
           </div>
         </Section>
