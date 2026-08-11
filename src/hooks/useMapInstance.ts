@@ -39,14 +39,10 @@ export const useMapInstance = ({ isVikingMode }: UseMapInstanceProps) => {
       // ✅ Tilläggsåtgärder för att förhindra race conditions
       fadeAnimation: false, // Undvik CSS transitions som kan orsaka DOM-problem
       zoomAnimation: true,
-      markerZoomAnimation: false, // Förhindra marker animations under zoom
-      // leaflet-rotate: aktivera rotationsförmåga (setBearing). Ingen UI-kontroll och ingen
-      // touch-gest — bäringen sätts programmatiskt av heading-up i billäge (useMapFieldNav).
-      // Vid bäring 0 (default, allt utom aktivt bil-följe) renderas kartan som vanligt.
-      rotate: true,
-      rotateControl: false,
-      touchRotate: false,
-    } as L.MapOptions);
+      markerZoomAnimation: false // Förhindra marker animations under zoom
+      // OBS: rotate/leaflet-rotate borttaget — bröt canvas-markörers klick-träffdetektering
+      // (se main.tsx). Heading-up avstängt; återinförs med hit-detection-fix när rotation ska på.
+    });
 
     map.current = mapInstance;
 

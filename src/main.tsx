@@ -15,9 +15,9 @@ import './index.css'
 // i entryn INNAN någon lazy-chunk laddar pluginet.
 (window as unknown as { L: typeof L }).L = L;
 
-// leaflet-rotate: patchar L.Map med setBearing()/getBearing() för "heading-up" (kartan roteras
-// så färdriktningen pekar upp i billäge → botar sjösjukan vid färd söderut). Måste laddas EFTER
-// global L. Vid bäring 0 (allt utom aktivt bil-följe) beter sig kartan som vanlig Leaflet.
-import 'leaflet-rotate';
+// OBS: leaflet-rotate BORTTAGET. Det patchade canvas-renderarens mus→kartkoordinat-matematik och
+// bröt klick-/popup-träffdetektering på canvas-markörer (preferCanvas) även vid bäring 0 — Daniels
+// "klick på kartmarkörer gjorde inget". Heading-up är ändå avstängt, så importen fyllde ingen funktion.
+// Återinförs FÖRST tillsammans med en fix för canvas-hit-detection när rotation ska på igen.
 
 createRoot(document.getElementById("root")!).render(<App />);
