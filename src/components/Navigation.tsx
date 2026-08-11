@@ -31,6 +31,8 @@ import {
   Microscope,
   Anchor,
   Mail,
+  Boxes,
+  MapPin,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -179,6 +181,20 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Ortnamnsleden vi söker (sakrala, makt, natur) — reproducerbar metod, källor och osäkerheter.',
     descEn: 'The place-name elements we search (sacral, power, nature) — reproducible method, sources, caveats.',
     icon: Tag, category: 'places',
+  },
+  {
+    pathEn: '/3d', pathSv: '/sv/3d',
+    labelSv: '3D-modeller', labelEn: '3D models',
+    descSv: 'Föremål ur forntiden i 3D — hjälmar, ben och konst (SHM/SweDigArch, CC-BY). Snurra och zooma.',
+    descEn: 'Objects from the past in 3D — helmets, bones and art (SHM/SweDigArch, CC-BY). Rotate and zoom.',
+    icon: Boxes, category: 'places',
+  },
+  {
+    pathEn: '/en/place', pathSv: '/sv/plats',
+    labelSv: 'Platser', labelEn: 'Places',
+    descSv: 'Källgranskade platssidor — offermossar, båtgravfält, kastaler och slagfält.',
+    descEn: 'Source-critical place pages — sacrificial bogs, boat-grave fields, kastals and battlefields.',
+    icon: MapPin, category: 'places',
   },
   {
     pathEn: '/ontology', pathSv: '/ontologi',
