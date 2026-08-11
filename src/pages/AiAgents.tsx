@@ -208,10 +208,12 @@ const AiAgents = () => (
         <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
           Ett lag av disciplin-specialister som vi <strong>kör på begäran</strong> när ett uppdrag rör deras
           område. Samma regler som allt annat: källkritik, konfidens och <strong>människa-i-loopen</strong> —
-          varje agent utreder och föreslår, en människa granskar och beslutar. Agenterna är
-          <strong> tillståndslösa</strong> och har <strong>inget eget minne</strong>: det de kommer fram till
-          befordras (efter granskning) till plattformens beständiga lager — databasen och projektminnet — så
-          att kunskapen bor i kanon, inte i en flyktig körning.
+          varje agent utreder och föreslår, en människa granskar och beslutar. Varje agent-körning är i sig
+          <strong> tillståndslös</strong>, men fynden landar i ett <strong>beständigt minneslager</strong>: en
+          claim-liggare i databasen där varje påstående bär källa och konfidens, granskas (människa eller
+          verifierar-agenten) och befordras till kanon. En <strong>drift-vakt kör automatiskt varje dag</strong>
+          och stämmer av kanon mot källorna. Kunskapen bor alltså i ett självunderhållande, dagligen granskat
+          minne — inte i den enskilda körningen.
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {PLANNED_AGENTS.map((a) => (
