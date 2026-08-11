@@ -22,7 +22,8 @@ export interface Model3D {
 const sb = supabase as unknown as { from: (t: string) => any };
 
 const CAT_LABEL: Record<string, string> = {
-  hjalm: 'Hjälmar', osteologi: 'Osteologi', helgon: 'Helgon & kyrkokonst', stenalder: 'Stenålder',
+  hjalm: 'Hjälmar', osteologi: 'Osteologi', helgon: 'Helgon', stenalder: 'Stenålder',
+  vapen: 'Vapen', kyrkokonst: 'Kyrkokonst',
 };
 
 const Models3D: React.FC = () => {

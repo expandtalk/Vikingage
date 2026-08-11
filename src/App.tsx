@@ -171,6 +171,7 @@ const App = () => (
                   <Route path="/en/vendel-helmets" element={<Vendelhjalmar />} />
                   <Route path="/sv/3d" element={<Models3D />} />
                   <Route path="/en/3d" element={<Models3D />} />
+                  <Route path="/3d" element={<Models3D />} />
                   <Route path="/ontology" element={<Ontology />} />
                   <Route path="/ontologi" element={<Ontology />} />
                   <Route path="/ai-agents" element={<AiAgents />} />
