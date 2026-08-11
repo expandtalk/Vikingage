@@ -42,6 +42,7 @@ const TunaNames = lazy(() => import("./pages/TunaNames"));
 const PlacePage = lazy(() => import("./pages/PlacePage"));
 const PlaceIndex = lazy(() => import("./pages/PlaceIndex"));
 const Vendelhjalmar = lazy(() => import("./pages/Vendelhjalmar"));
+const Models3D = lazy(() => import("./pages/Models3D"));
 const Ontology = lazy(() => import("./pages/Ontology"));
 const AiAgents = lazy(() => import("./pages/AiAgents"));
 const KalmarMedeltid = lazy(() => import("./pages/KalmarMedeltid"));
@@ -168,6 +169,8 @@ const App = () => (
                   <Route path="/en/place/:slug" element={<PlacePage />} />
                   <Route path="/sv/vendelhjalmar" element={<Vendelhjalmar />} />
                   <Route path="/en/vendel-helmets" element={<Vendelhjalmar />} />
+                  <Route path="/sv/3d" element={<Models3D />} />
+                  <Route path="/en/3d" element={<Models3D />} />
                   <Route path="/ontology" element={<Ontology />} />
                   <Route path="/ontologi" element={<Ontology />} />
                   <Route path="/ai-agents" element={<AiAgents />} />

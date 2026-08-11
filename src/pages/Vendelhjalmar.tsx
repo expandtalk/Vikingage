@@ -12,15 +12,15 @@ import { useLanguage } from '@/contexts/LanguageContext';
 // SweDigArch), cookie-fritt självhostade (GLB på FTP /models/). Korslänkad till platssidorna.
 
 const HELMETS = [
-  { slug: 'vendel-i',  name: 'Vendelhjälm I',  zen: 'https://doi.org/10.5281/zenodo.19732145',
+  { slug: 'vendel-i',  file: '/3d/the_vendel_i_helmet.glb',  name: 'Vendelhjälm I',  zen: 'https://doi.org/10.5281/zenodo.19732145',
     sketch: 'https://sketchfab.com/3d-models/the-vendel-i-helmet-5a810a3e22034e2e89f3fcfe519e0557',
     descSv: 'Prakthjälm av järn med ögonbågsbeslag ("glasögonhjälm"). Utställd i Guldrummet, Historiska museet.',
     descEn: 'Iron parade helmet with eyebrow fittings ("spectacle helmet"). Displayed in the Gold Room, Historiska museet.' },
-  { slug: 'vendel-xii', name: 'Vendelhjälm XII', zen: 'https://doi.org/10.5281/zenodo.19730836',
+  { slug: 'vendel-xii', file: '/3d/the_vendel_xii_helmet.glb', name: 'Vendelhjälm XII', zen: 'https://doi.org/10.5281/zenodo.19730836',
     sketch: 'https://sketchfab.com/historiska',
     descSv: 'Prakthjälm av järn med öppning för ögonen, dekorerad med ett stiliserat ormhuvud.',
     descEn: 'Iron parade helmet with eye openings, decorated with a stylised serpent head.' },
-  { slug: 'vendel-xiv', name: 'Vendelhjälm XIV', zen: 'https://doi.org/10.5281/zenodo.19731493',
+  { slug: 'vendel-xiv', file: '/3d/the_vendel_xiv_helmet.glb', name: 'Vendelhjälm XIV', zen: 'https://doi.org/10.5281/zenodo.19731493',
     sketch: 'https://sketchfab.com/3d-models/the-vendel-xiv-helmet-be9b5be8d76642e6b54fcf2983c6275f',
     descSv: 'Prakthjälm av järn med näs- och halsskydd. Utställd i Forntider, Historiska museet.',
     descEn: 'Iron parade helmet with nasal and neck guard. Displayed in Forntider, Historiska museet.' },
@@ -67,7 +67,7 @@ const Vendelhjalmar: React.FC = () => {
             <Card key={h.slug} className="viking-card">
               <CardContent className="p-3">
                 <HelmetViewer
-                  src={`/models/${h.slug}.glb`}
+                  src={h.file}
                   alt={h.name}
                   heightClass="h-[300px]"
                   attribution={

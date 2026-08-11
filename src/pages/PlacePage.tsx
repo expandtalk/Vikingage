@@ -8,6 +8,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { PlaceMap } from '../components/map/PlaceMap';
+import { HelmetViewer } from '../components/HelmetViewer';
 import { Badge } from '@/components/ui/badge';
 import { MapPin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -57,6 +58,17 @@ const PlacePage: React.FC = () => {
     enabled: !!slug,
     staleTime: 5 * 60 * 1000,
     queryFn: () => fetchPlace(slug),
+  });
+
+  // 3D-modeller kopplade till platsen (models_3d.place_slug) — t.ex. Valsgärde → vendelhjälmarna.
+  const { data: models3d = [] } = useQuery({
+    queryKey: ['place-models3d', slug], enabled: !!slug, staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await sb.from('models_3d')
+        .select('slug, file_path, name_sv, attribution, sketchfab_url')
+        .eq('place_slug', slug).order('sort', { ascending: true });
+      return (data ?? []) as any[];
+    },
   });
 
   // Rita platsens egen guldmarkör ovanpå PlaceMap:ens omgivningslager.
@@ -111,6 +123,21 @@ const PlacePage: React.FC = () => {
                 </p>
               </div>
             </div>
+
+            {models3d.length > 0 && (
+              <section className="mt-8">
+                <h2 className="text-xl font-semibold text-foreground mb-3">{sv ? 'Föremål från platsen i 3D' : 'Objects from the place in 3D'}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {models3d.map((m) => (
+                    <div key={m.slug}>
+                      <HelmetViewer src={m.file_path} alt={m.name_sv} heightClass="h-[280px]"
+                        attribution={<>{m.attribution}{m.sketchfab_url && <> · <a href={m.sketchfab_url} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">Sketchfab</a></>}</>} />
+                      <p className="text-sm text-foreground font-medium mt-1">{m.name_sv}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </>
         )}
       </main>
