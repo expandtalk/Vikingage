@@ -5,7 +5,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, ShieldCheck, Search, ScrollText, Landmark, Map, Bug, Database, Users, Cpu, Ship, Bone, Dna, Gavel, BookOpen, Compass, Clock, Languages, Accessibility, Stamp } from 'lucide-react';
+import { Bot, ShieldCheck, Search, ScrollText, Landmark, Map, Bug, Database, Users, Cpu, Ship, Bone, Dna, Gavel, BookOpen, Compass, Clock, Languages, Accessibility, Stamp, Bike, Route } from 'lucide-react';
 
 // /ai-agenter (+ /ai-agents) — transparenssida under Vetenskap: vilka typer av AI-agenter
 // plattformen använder och HUR. Ärlig beskrivning — produkt-AI (live) skiljs från de
@@ -86,6 +86,9 @@ const PLANNED_AGENTS: { icon: React.ComponentType<{ className?: string }>; title
   { icon: Compass, title: 'Kulturgeograf', focus: 'Landskap, ortnamn och centralplatser; mönster prövas mot slumpbakgrund.' },
   { icon: Languages, title: 'Filolog & ortnamnsforskare (språkvetare)', focus: 'Språkhistoria, etymologi och namnled per landskap; latin, tyska, nordiska, finska, baltiska, samiska. Skiljer äldsta belägg från namnets ålder — slår upp och citerar, gissar aldrig.' },
   { icon: Accessibility, title: 'UX- & tillgänglighetsdesigner (WCAG)', focus: 'Tillgänglig och tydlig design (WCAG 2.2 AA) + maskinläsbar markup — samma medel tjänar både människor och AI-sök. Kartsymboler, kontrast, tangentbord och skärmläsare. Mäter tillgänglighet, gissar inte.' },
+  { icon: Route, title: 'Kommunikationsarkeolog (vägar)', focus: 'Fornvägar, hålvägar, broar, vadställen, knutpunkter och nätverk — least-cost-path-modellering av troliga rutter (RAÄ färdväg).' },
+  { icon: Bike, title: 'Gravel-cyklist (fältväg)', focus: 'Fornvägar sett från sadeln — framkomlighet, least-cost-rutter, samt väg- och gatunamns betydelse. Kombinerar väg-arkeologi, geologi, biologi och kulturgeografi.' },
+  { icon: ShieldCheck, title: 'Verifierare (drift-vakt)', focus: 'Prövar claims mot källa, befordrar staging → kanon och rekoncilierar kanon mot källorna. Maskinellt verifierbart (koordinat, DB-count) kan auto-befordras; tolkning kräver människa.' },
 ];
 
 const AiAgents = () => (
@@ -196,18 +199,19 @@ const AiAgents = () => (
         </div>
       </section>
 
-      {/* Under förberedelse */}
+      {/* Specialistagenter — körs på begäran */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
-          <Clock className="h-6 w-6 text-gold" />
-          Under förberedelse
+          <Users className="h-6 w-6 text-gold" />
+          Specialistagenter — körs på begäran
         </h2>
         <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-          Vi bygger nu ett lag av mer specialiserade agenter, en per disciplin. De är <strong>ännu inte i
-          drift</strong> — under hösten 2026 kör vi <strong>enklare testfall</strong> för att pröva dem mot
-          känt material innan de får bidra till plattformen. Samma regler gäller från start: källkritik,
-          konfidens, och <strong>mänskliga beslutspunkter</strong> — varje agent utreder och föreslår, en
-          människa granskar och beslutar.
+          Ett lag av disciplin-specialister som vi <strong>kör på begäran</strong> när ett uppdrag rör deras
+          område. Samma regler som allt annat: källkritik, konfidens och <strong>människa-i-loopen</strong> —
+          varje agent utreder och föreslår, en människa granskar och beslutar. Agenterna är
+          <strong> tillståndslösa</strong> och har <strong>inget eget minne</strong>: det de kommer fram till
+          befordras (efter granskning) till plattformens beständiga lager — databasen och projektminnet — så
+          att kunskapen bor i kanon, inte i en flyktig körning.
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {PLANNED_AGENTS.map((a) => (
