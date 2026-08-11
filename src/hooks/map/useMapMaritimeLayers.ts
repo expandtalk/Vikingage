@@ -137,7 +137,11 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
         if (!modern && !onHist) continue;
         let geom; try { geom = JSON.parse(f.geojson); } catch { continue; }
         const style = modern
-          ? { color: '#0ea5e9', weight: 1, fillColor: '#0ea5e9', fillOpacity: 0.15 }
+          // Den moderna korridoren var en STOR fylld sky-blå yta (fillOpacity 0.15) över hela
+          // Östersjön → läste som en "grå/blå blobb" som skymde kartan (Daniel, belagd i browser
+          // 2026-08-11). Nu en diskret streckad farledslinje med försumbar fyllning — informationen
+          // finns kvar men blockar inte vyn. (Lagret är fortfarande legend-toggle:at via fairways_modern.)
+          ? { color: '#0ea5e9', weight: 1.5, dashArray: '2 6', fillColor: '#0ea5e9', fillOpacity: 0.04 }
           : (f.fairway_kind === 'hanseatic'
             ? { color: '#eab308', weight: 3, dashArray: '8 5' }
             : { color: '#a855f7', weight: 3, dashArray: '4 4' });

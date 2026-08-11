@@ -99,10 +99,14 @@ export function useShorelineOverlay(
       if (cancelled || !mapRef.current || features.length === 0) { setStatus('no-data'); return; }
 
       try {
+        // Tydlig dåtida KUSTLINJE: en faint blå fyllning (opacity 0.28) över baskartans redan blå hav
+        // blev osynlig (bugg 2026-08-11, belagd i browser — Littorina "syntes inte" på Öland). Nu ritas
+        // en kraftig kontrasterande amber kustkontur + mycket lätt fyllning, så strandförskjutningen
+        // framträder mot både land (grönt) och nutida hav (blått). Sjöar streckade för att skiljas.
         const gj = L.geoJSON({ type: 'FeatureCollection', features } as GeoJSON.FeatureCollection, {
           style: (f) => f?.properties?.kind === 'lake'
-            ? { color: '#0ea5e9', weight: 0, fillColor: '#0ea5e9', fillOpacity: 0.18 }
-            : { color: '#38bdf8', weight: 1, fillColor: '#38bdf8', fillOpacity: 0.28 },
+            ? { color: '#f59e0b', weight: 1.5, dashArray: '5,4', fillColor: '#38bdf8', fillOpacity: 0.10 }
+            : { color: '#f59e0b', weight: 2.5, fillColor: '#38bdf8', fillOpacity: 0.12 },
           interactive: false,
         });
         gj.addTo(mapRef.current);
