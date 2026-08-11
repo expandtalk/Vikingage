@@ -25,6 +25,12 @@ const positionIcon = (headingDeg: number | null) => {
   });
 };
 
+// KILL-SWITCH: heading-up (kartrotation) är AVSTÄNGD tills grundföljningen är fixad. Daniels fälttest
+// visade att kartan roterades men positionen inte uppdaterades → man såg inte sig själv (desorienterande
+// under körning). Norr-upp är default igen. Slå på (true) först när follow/positionsuppdatering är
+// verifierad live. Koden nedan behålls medvetet — det är bara denna flagga som gate:ar rotationen.
+const HEADING_UP_ENABLED = false;
+
 // Leaflet saknar rotation i typerna; leaflet-rotate lägger till setBearing/getBearing + rotate-option.
 type RotatableMap = L.Map & {
   options: L.MapOptions & { rotate?: boolean };
@@ -103,7 +109,7 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
     // vi har en kurs (pos.headingDeg). Botar sjösjukan vid färd söderut (norr-upp → allt rör sig mot
     // en). Gå/cykla och desktop = norr-upp som förr. Kräver leaflet-rotate (rotate:true på kartan).
     const rot = map as RotatableMap;
-    const canRotate = !!rot.options.rotate && typeof rot.setBearing === 'function';
+    const canRotate = HEADING_UP_ENABLED && !!rot.options.rotate && typeof rot.setBearing === 'function';
     const headingUp = canRotate && mode === 'car' && active && following && pos.headingDeg != null;
 
     // GPS-noggrannhetsring (hederlighet: visa hur säker positionen är) — så fort vi har en fix.
