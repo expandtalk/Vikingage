@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { useFieldNav, setFieldNavFollowing } from '@/hooks/useFieldNav';
-import { coneRotationDeg } from '@/utils/fieldNav';
+import { coneRotationDeg, normalizeDeg } from '@/utils/fieldNav';
 import { haversineKm } from '@/utils/geoDistance';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useTravelMode } from '@/hooks/useTravelMode';
@@ -25,10 +25,19 @@ const positionIcon = (headingDeg: number | null) => {
   });
 };
 
+// Leaflet saknar rotation i typerna; leaflet-rotate lägger till setBearing/getBearing + rotate-option.
+type RotatableMap = L.Map & {
+  options: L.MapOptions & { rotate?: boolean };
+  setBearing?: (deg: number) => void;
+  getBearing?: () => number;
+};
+
 // "Här"-ikon: grön skiva + vit riktningspil. Alltid-på-markör (mobil/billäge) — oberoende av om
-// fältläget (HUD) är aktivt. headingDeg == null → pilen står still och pekar upp (norr).
-const hereIcon = (headingDeg: number | null) => {
-  const rot = headingDeg == null ? 0 : coneRotationDeg(headingDeg);
+// fältläget (HUD) är aktivt. I heading-up (billäge) roteras HELA kartan så färdriktningen pekar upp
+// → då pekar pilen rakt upp (rot=0, = framåt). I norr-upp roterar pilen i stället med kursen.
+// headingDeg == null → pilen står still och pekar upp (norr).
+const hereIcon = (headingDeg: number | null, headingUp: boolean) => {
+  const rot = headingUp ? 0 : (headingDeg == null ? 0 : coneRotationDeg(headingDeg));
   return L.divIcon({
     className: 'here-marker',
     iconSize: [36, 36],
@@ -51,6 +60,7 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
   const mode = useTravelMode();
   const layerRef = useRef<L.LayerGroup | null>(null);
   const flownRef = useRef(false); // första fixen per session → zooma in en gång
+  const bearingRef = useRef<number | null>(null); // senast satta kart-bäring (grader), null = orörd
 
   // Användaren drar kartan själv → sluta följ (kontrollen visar då "Centrera").
   useEffect(() => {
@@ -62,6 +72,19 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
 
   // Nollställ "har zoomat in"-flaggan när läget stängs av, så nästa start zoomar in igen.
   useEffect(() => { if (!active) flownRef.current = false; }, [active]);
+
+  // Norr-upp-vakt: så fort vi INTE är i aktivt bil-följe (mode-byte, fältläge av, eller följning av
+  // via drag) → snap tillbaka till bäring 0, även om ingen ny GPS-fix kommer. Så kartan aldrig
+  // lämnas roterad i vanligt läge/på andra vyer.
+  useEffect(() => {
+    if (!map) return;
+    const rot = map as RotatableMap;
+    if (!rot.options.rotate || typeof rot.setBearing !== 'function') return;
+    const inCarFollow = mode === 'car' && active && following;
+    if (!inCarFollow && bearingRef.current) {
+      try { rot.setBearing(0); bearingRef.current = 0; } catch { /* noop */ }
+    }
+  }, [map, mode, active, following]);
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;
@@ -76,37 +99,68 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
     // samtidigt — det ska bara finnas EN positionsmarkör.
     const showHereMarker = isMobile || mode === 'car';
 
+    // Heading-up: rotera kartan så färdriktningen pekar UPP. Bara i aktivt billäge + följning + när
+    // vi har en kurs (pos.headingDeg). Botar sjösjukan vid färd söderut (norr-upp → allt rör sig mot
+    // en). Gå/cykla och desktop = norr-upp som förr. Kräver leaflet-rotate (rotate:true på kartan).
+    const rot = map as RotatableMap;
+    const canRotate = !!rot.options.rotate && typeof rot.setBearing === 'function';
+    const headingUp = canRotate && mode === 'car' && active && following && pos.headingDeg != null;
+
     // GPS-noggrannhetsring (hederlighet: visa hur säker positionen är) — så fort vi har en fix.
     if (pos.accuracy != null) {
       L.circle([pos.lat, pos.lng], { radius: pos.accuracy, color: '#2563eb', weight: 1, fillColor: '#2563eb', fillOpacity: 0.12, dashArray: '4 3', interactive: false }).addTo(layer);
     }
     // Position (icke-interaktiv — ska inte fånga klick)
     if (showHereMarker) {
-      L.marker([pos.lat, pos.lng], { icon: hereIcon(pos.headingDeg), interactive: false, keyboard: false }).addTo(layer);
+      L.marker([pos.lat, pos.lng], { icon: hereIcon(pos.headingDeg, headingUp), interactive: false, keyboard: false }).addTo(layer);
     } else if (active) {
       L.marker([pos.lat, pos.lng], { icon: positionIcon(pos.headingDeg), interactive: false, keyboard: false }).addTo(layer);
     }
 
     if (!active) return; // Följning/zoom/"led mig hit" hör bara till det opt-in aktiva fältläget (HUD)
 
+    // Sätt kart-bäringen: heading-up → färdriktningen upp (kartan roteras −kurs så kursen hamnar
+    // överst); annars norr-upp (0). Står man still i billäge (ingen kurs) → behåll senaste bäring,
+    // snap INTE till norr. Deadband ~3° dämpar GPS-jitter så kartan inte skakar.
+    if (canRotate) {
+      let desired: number | null;
+      if (headingUp) {
+        desired = normalizeDeg(-(pos.headingDeg as number));
+      } else if (mode === 'car' && active && following && pos.headingDeg == null && bearingRef.current != null) {
+        desired = null; // står still under färd → lämna bäringen orörd
+      } else {
+        desired = 0; // norr-upp
+      }
+      if (desired != null && desired !== bearingRef.current) {
+        const cur = bearingRef.current ?? 0;
+        const delta = Math.abs(((desired - cur + 540) % 360) - 180);
+        if (!headingUp || bearingRef.current == null || delta >= 3) {
+          try { rot.setBearing!(desired); bearingRef.current = desired; } catch { /* noop */ }
+        }
+      }
+    }
+
     // Följ-läge (mobil/billäge): lägg MIN position i nedre tredjedelen så det mesta av skärmen är
-    // "framåt" (nav-app-mönster, Daniel). Förskjut kartcentrum uppåt ~25 % av höjden. Norr-upp;
-    // ingen kartrotation (heading-up = Fas 2). Desktop = centrera som förr.
-    const followCenter = (z: number): L.LatLng => {
+    // "framåt" (nav-app-mönster, Daniel). Räknas i SKÄRMRYMD via container-punkter → korrekt även
+    // när kartan är roterad (heading-up). Desktop = centrera som förr.
+    const followCenter = (): L.LatLng => {
       const ll = L.latLng(pos.lat, pos.lng);
       if (!showHereMarker) return ll;
       try {
-        const p = map.project(ll, z);
-        return map.unproject(p.subtract([0, map.getSize().y * 0.25]), z);
+        const size = map.getSize();
+        const targetCp = L.point(size.x / 2, size.y * 0.75); // dit min position ska på skärmen
+        const centerCp = L.point(size.x / 2, size.y / 2);
+        const meCp = map.latLngToContainerPoint(ll);
+        return map.containerPointToLatLng(centerCp.add(meCp.subtract(targetCp)));
       } catch { return ll; }
     };
     // Första fixen: zooma in till körnivå. Därefter bara panorera (behåll användarens zoom).
     if (!flownRef.current) {
       flownRef.current = true;
       const z = Math.max(map.getZoom(), 16);
-      try { map.flyTo(followCenter(z), z, { duration: 0.6 }); } catch { /* noop */ }
+      try { map.flyTo(followCenter(), z, { duration: 0.6 }); } catch { /* noop */ }
     } else if (following) {
-      try { map.panTo(followCenter(map.getZoom()), { animate: true, duration: 0.4 }); } catch { /* noop */ }
+      try { map.panTo(followCenter(), { animate: true, duration: 0.4 }); } catch { /* noop */ }
     }
 
     // "Led mig hit"-mål: amber markör + streckad ledlinje från min position till målet.

@@ -15,4 +15,9 @@ import './index.css'
 // i entryn INNAN någon lazy-chunk laddar pluginet.
 (window as unknown as { L: typeof L }).L = L;
 
+// leaflet-rotate: patchar L.Map med setBearing()/getBearing() för "heading-up" (kartan roteras
+// så färdriktningen pekar upp i billäge → botar sjösjukan vid färd söderut). Måste laddas EFTER
+// global L. Vid bäring 0 (allt utom aktivt bil-följe) beter sig kartan som vanlig Leaflet.
+import 'leaflet-rotate';
+
 createRoot(document.getElementById("root")!).render(<App />);
