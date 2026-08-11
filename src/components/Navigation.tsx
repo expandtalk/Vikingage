@@ -55,7 +55,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { routes } from '@/config/routes';
 
-type Category = 'inscriptions' | 'places' | 'themes' | 'history' | 'science';
+// Megamenyns kolumner. En kategori = en kolumn med egen rubrik.
+type Category = 'inscriptions' | 'places' | 'regions' | 'history' | 'science';
 
 interface NavLink {
   pathEn: string;
@@ -70,13 +71,13 @@ interface NavLink {
   authOnly?: boolean;
 }
 
-const CATEGORY_ORDER: Category[] = ['inscriptions', 'places', 'themes', 'history', 'science'];
+const CATEGORY_ORDER: Category[] = ['inscriptions', 'places', 'regions', 'history', 'science'];
 const CATEGORY_LABELS: Record<Category, { sv: string; en: string }> = {
-  inscriptions: { sv: 'Runinskrifter', en: 'Inscriptions' },
+  inscriptions: { sv: 'Inskrifter & runor', en: 'Inscriptions & runes' },
   places: { sv: 'Platser & kartor', en: 'Places & maps' },
-  themes: { sv: 'Teman & orter', en: 'Themes & places' },
-  history: { sv: 'Historia', en: 'History' },
-  science: { sv: 'Vetenskap', en: 'Science' },
+  regions: { sv: 'Regioner & teman', en: 'Regions & themes' },
+  history: { sv: 'Historia & samhälle', en: 'History & society' },
+  science: { sv: 'Vetenskap & metod', en: 'Science & method' },
 };
 
 // Icon per route component (routes.ts has no icon field).
@@ -128,7 +129,7 @@ const FOCUS_ROUTES: Record<string, string> = {
 // Explore-länken behövs även som direktlänk i inloggat läge.
 const explore: NavLink = {
   pathEn: '/explore', pathSv: '/explore',
-  labelSv: 'Utforska', labelEn: 'Explore',
+  labelSv: 'Utforska kartan', labelEn: 'Explore the map',
   descSv: 'Interaktiv karta med alla lager — runinskrifter, platser och intresseprofiler.',
   descEn: 'Interactive map with every layer — inscriptions, places and interest profiles.',
   icon: Map, category: 'places',
@@ -150,6 +151,13 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Runstensväljaren — hela runstenskorpusen på en karta, filtrera på landskap (signum-serie), ornamentstil och typ.',
     descEn: 'The runestone browser — the whole corpus on a map, filter by province (signum series), ornament style and type.',
     icon: Map, category: 'inscriptions',
+  },
+  {
+    pathEn: '/en/danish-runestones', pathSv: '/sv/danska-runstenar',
+    labelSv: 'Danska runstenar', labelEn: 'Danish runestones',
+    descSv: 'Danmarks runeindskrifter — Jelling, Tryggevælde, Hedeby + signum-systemen.',
+    descEn: 'Danmarks runeindskrifter — Jelling, Tryggevælde, Hedeby + the signum systems.',
+    icon: Landmark, category: 'inscriptions',
   },
   {
     pathEn: '/explore?focus=marine', pathSv: '/explore?focus=marine',
@@ -180,6 +188,13 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Tag, category: 'places',
   },
   {
+    pathEn: '/en/genealogy', pathSv: '/sv/slaktforskning',
+    labelSv: 'Släktforskning', labelEn: 'Genealogy',
+    descSv: 'Släpp din GEDCOM — se anfäderna i sitt landskap och djuptid, med gångavstånds-räckvidd. Klientsidigt och privat, ingen inloggning.',
+    descEn: 'Drop your GEDCOM — see ancestors in their landscape and deep time, within walking distance. Client-side and private.',
+    icon: Users, category: 'places',
+  },
+  {
     pathEn: '/ontology', pathSv: '/ontologi',
     labelSv: 'Ontologi', labelEn: 'Ontology',
     descSv: 'Det agent-läsbara kontraktet: entitetstyper, relationer, mätmetoder, dateringsmetoder (kol-14, dendro, numismatik) och vetenskapliga referenser.',
@@ -199,6 +214,20 @@ const EXTRA_LINKS: NavLink[] = [
     descSv: 'Vilka typer av AI-agenter plattformen använder och hur — produkt-AI (runinskrifts-analys, sök) och källkritiska specialistagenter (arkeologi, datakvalitet, GIS, QA). AI beskriver, människan verifierar.',
     descEn: 'Which AI agents the platform uses and how — product AI (runic analysis, search) and source-critical specialist agents (archaeology, data quality, GIS, QA). AI describes, humans verify.',
     icon: Bot, category: 'science',
+  },
+  {
+    pathEn: '/methodology', pathSv: '/sv/vetenskapsmetodik',
+    labelSv: 'Vetenskapsmetodik', labelEn: 'Methodology',
+    descSv: 'Metoden att inte släppa in dålig data — tio principer, attribution och ägande, proveniens och forensik, samt källkritisk FAQ.',
+    descEn: 'The method for keeping bad data out — ten principles, attribution and ownership, provenance and forensics, and a source-critical FAQ.',
+    icon: Microscope, category: 'science',
+  },
+  {
+    pathEn: '/statistics', pathSv: '/sv/statistik',
+    labelSv: 'Statistik', labelEn: 'Statistics',
+    descSv: 'Bläddra materialet — antal per landskap, socken, härad och ristare.',
+    descEn: 'Browse the material — counts per province, parish, hundred and carver.',
+    icon: BarChart3, category: 'science',
   },
   {
     pathEn: '/texts', pathSv: '/texter',
@@ -229,103 +258,75 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Crown, category: 'history',
   },
   {
-    pathEn: '/prices', pathSv: '/prices',
-    labelSv: 'Priskalkylator', labelEn: 'Price calculator',
-    descSv: 'Diocletianus prisedikt (301 e.Kr.) — romerska priser omräknade.',
-    descEn: "Diocletian's Price Edict (301 AD) — Roman prices converted.",
-    icon: Scale, category: 'history',
-  },
-  {
-    pathEn: '/methodology', pathSv: '/sv/vetenskapsmetodik',
-    labelSv: 'Vetenskapsmetodik', labelEn: 'Methodology',
-    descSv: 'Metoden att inte släppa in dålig data — tio principer, attribution och ägande, proveniens och forensik, samt källkritisk FAQ.',
-    descEn: 'The method for keeping bad data out — ten principles, attribution and ownership, provenance and forensics, and a source-critical FAQ.',
-    icon: Microscope, category: 'science',
-  },
-  {
-    pathEn: '/statistics', pathSv: '/sv/statistik',
-    labelSv: 'Statistik', labelEn: 'Statistics',
-    descSv: 'Bläddra materialet — antal per landskap, socken, härad och ristare.',
-    descEn: 'Browse the material — counts per province, parish, hundred and carver.',
-    icon: BarChart3, category: 'science',
-  },
-  {
-    pathEn: '/en/genealogy', pathSv: '/sv/slaktforskning',
-    labelSv: 'Släktforskning', labelEn: 'Genealogy',
-    descSv: 'Släpp din GEDCOM — se anfäderna i sitt landskap och djuptid, med gångavstånds-räckvidd. Klientsidigt och privat, ingen inloggning.',
-    descEn: 'Drop your GEDCOM — see ancestors in their landscape and deep time, within walking distance. Client-side and private.',
-    icon: Users, category: 'places',
-  },
-  {
     pathEn: '/en/execution-sites', pathSv: '/sv/avrattningsplatser',
     labelSv: 'Avrättningsplatser', labelEn: 'Execution sites',
     descSv: 'Alla galg- och avrättningsplatser i Sverige + daterade avrättningar, med tidsreglage och källkritisk evidensklass.',
     descEn: 'All gallows and execution sites in Sweden plus dated executions, with a time slider and evidence grading.',
     icon: Landmark, category: 'history',
   },
-  // Teman & orter — de tvåspråkiga forsknings-/regionsidorna + helgon-hubben.
+  {
+    pathEn: '/prices', pathSv: '/prices',
+    labelSv: 'Priskalkylator', labelEn: 'Price calculator',
+    descSv: 'Diocletianus prisedikt (301 e.Kr.) — romerska priser omräknade.',
+    descEn: "Diocletian's Price Edict (301 AD) — Roman prices converted.",
+    icon: Scale, category: 'history',
+  },
+  // Regioner & teman — de tvåspråkiga forsknings-/regionsidorna + helgon-hubben.
   {
     pathEn: '/kalmar', pathSv: '/sv/kalmar',
     labelSv: 'Kalmar', labelEn: 'Kalmar',
     descSv: 'Kalmar och Kalmarsund — centralorter, slott och sund över tid.',
     descEn: 'Kalmar and the Kalmar Strait — central places, castle and sound over time.',
-    icon: Castle, category: 'themes',
+    icon: Castle, category: 'regions',
   },
   {
     pathEn: '/oland', pathSv: '/sv/oland',
     labelSv: 'Öland', labelEn: 'Öland',
     descSv: 'Ölands vikingatida vägnät, centralplatser och kyrkor.',
     descEn: "Öland's Viking-age road network, central places and churches.",
-    icon: Landmark, category: 'themes',
+    icon: Landmark, category: 'regions',
   },
   {
     pathEn: '/angermanland', pathSv: '/sv/angermanland',
     labelSv: 'Ångermanland', labelEn: 'Ångermanland',
     descSv: 'Centralorter och kolonisation i Ångermanland.',
     descEn: 'Central places and colonisation in Ångermanland.',
-    icon: Compass, category: 'themes',
+    icon: Compass, category: 'regions',
   },
   {
     pathEn: '/staket', pathSv: '/sv/staket',
     labelSv: 'Stäket & Mälaren', labelEn: 'Stäket & Lake Mälaren',
     descSv: 'Mälaren som havsvik — var seglade Olav 1007? DEM-strandlinje.',
     descEn: 'Lake Mälaren as a sea bay — where did Olav sail in 1007?',
-    icon: Waves, category: 'themes',
-  },
-  {
-    pathEn: '/en/saint-olav', pathSv: '/sv/sankt-olof',
-    labelSv: 'Sankt Olof', labelEn: 'Saint Olav',
-    descSv: 'Helgonet Olav: kyrkoruin, seglingen, kult och Nidaros.',
-    descEn: 'Saint Olav: church ruin, the voyage, cult and Nidaros.',
-    icon: Church, category: 'themes',
-  },
-  {
-    pathEn: '/en/saints', pathSv: '/sv/helgon',
-    labelSv: 'Helgon', labelEn: 'Saints',
-    descSv: 'Nordens helgon — Olof, Erik, Birgitta m.fl., med källkritik.',
-    descEn: 'The saints of the North — Olav, Erik, Birgitta and more.',
-    icon: Cross, category: 'themes',
+    icon: Waves, category: 'regions',
   },
   {
     pathEn: '/en/gota-landsvag', pathSv: '/sv/gota-landsvag',
     labelSv: 'Göta landsväg', labelEn: 'Göta landsväg',
     descSv: 'Medeltida landsvägen Stockholm–Södertälje över Södertörn, med Svartlötens tingsplats.',
     descEn: 'The medieval highroad Stockholm–Södertälje across Södertörn, with the Svartlöten assembly site.',
-    icon: Compass, category: 'themes',
+    icon: Compass, category: 'regions',
   },
   {
     pathEn: '/en/sandby-borg', pathSv: '/sv/sandby-borg',
     labelSv: 'Sandby borg', labelEn: 'Sandby borg',
     descSv: 'Ringborgen på Öland där en massaker ca 480 lämnade de döda obegravda.',
     descEn: 'The Öland ring fort where a massacre around 480 left the dead unburied.',
-    icon: Castle, category: 'themes',
+    icon: Castle, category: 'regions',
   },
   {
-    pathEn: '/en/danish-runestones', pathSv: '/sv/danska-runstenar',
-    labelSv: 'Danska runstenar', labelEn: 'Danish runestones',
-    descSv: 'Danmarks runeindskrifter — Jelling, Tryggevælde, Hedeby + signum-systemen.',
-    descEn: 'Danmarks runeindskrifter — Jelling, Tryggevælde, Hedeby + the signum systems.',
-    icon: Landmark, category: 'themes',
+    pathEn: '/en/saint-olav', pathSv: '/sv/sankt-olof',
+    labelSv: 'Sankt Olof', labelEn: 'Saint Olav',
+    descSv: 'Helgonet Olav: kyrkoruin, seglingen, kult och Nidaros.',
+    descEn: 'Saint Olav: church ruin, the voyage, cult and Nidaros.',
+    icon: Church, category: 'regions',
+  },
+  {
+    pathEn: '/en/saints', pathSv: '/sv/helgon',
+    labelSv: 'Helgon', labelEn: 'Saints',
+    descSv: 'Nordens helgon — Olof, Erik, Birgitta m.fl., med källkritik.',
+    descEn: 'The saints of the North — Olav, Erik, Birgitta and more.',
+    icon: Cross, category: 'regions',
   },
 ];
 
@@ -384,6 +385,11 @@ const useResolveLink = () => {
   return { isActive, pathOf, labelOf, descOf };
 };
 
+// Delad fokus-ring: synligt tangentbordsfokus i guld mot den mörka panelen (WCAG 2.4.7).
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ' +
+  'focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900';
+
 /** One link inside a megamenu panel: icon + label + short description. */
 const MegaCard: React.FC<{ link: NavLink }> = ({ link }) => {
   const { isActive, pathOf, labelOf, descOf } = useResolveLink();
@@ -394,14 +400,20 @@ const MegaCard: React.FC<{ link: NavLink }> = ({ link }) => {
       <NavigationMenuLink asChild>
         <Link
           to={pathOf(link)}
-          className={`flex gap-3 rounded-md p-2.5 transition-colors ${
-            active ? 'bg-slate-800' : 'hover:bg-slate-800/60'
+          aria-current={active ? 'page' : undefined}
+          className={`group/card flex gap-3 rounded-md p-2.5 transition-colors ${FOCUS_RING} ${
+            active ? 'bg-slate-800' : 'hover:bg-slate-800/70'
           }`}
         >
-          <Icon className="h-5 w-5 mt-0.5 shrink-0 text-orange-400" />
+          <Icon
+            className={`h-5 w-5 mt-0.5 shrink-0 transition-colors ${
+              active ? 'text-gold' : 'text-gold/80 group-hover/card:text-gold'
+            }`}
+            aria-hidden="true"
+          />
           <div className="min-w-0">
             <div className="text-sm font-medium text-white">{labelOf(link)}</div>
-            <p className="text-xs text-slate-400 line-clamp-2">{descOf(link)}</p>
+            <p className="text-xs leading-snug text-slate-400 line-clamp-2">{descOf(link)}</p>
           </div>
         </Link>
       </NavigationMenuLink>
@@ -409,7 +421,10 @@ const MegaCard: React.FC<{ link: NavLink }> = ({ link }) => {
   );
 };
 
-/** Desktop navigation. Publik megameny utloggad; enklare arbetsmeny inloggad. */
+/**
+ * Desktop navigation. En bred "Utforska"-megameny grupperad i kategori-kolumner
+ * med rubriker; Spel och Podcast som direktlänkar. Inget publikt nav i inloggat läge.
+ */
 export const Navigation: React.FC = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
@@ -419,9 +434,9 @@ export const Navigation: React.FC = () => {
   const byCategory = (cat: Category) => links.filter((l) => l.category === cat);
 
   const triggerClass =
-    'bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ' +
-    'focus:bg-slate-800/50 focus:text-white data-[state=open]:bg-slate-800/50 ' +
-    'data-[state=open]:text-white';
+    'bg-transparent text-slate-200 hover:bg-slate-800/60 hover:text-white ' +
+    'focus:bg-slate-800/60 focus:text-white data-[state=open]:bg-slate-800/60 ' +
+    `data-[state=open]:text-white ${FOCUS_RING}`;
 
   const directLink = (link: NavLink) => {
     const Icon = link.icon;
@@ -430,11 +445,12 @@ export const Navigation: React.FC = () => {
         <NavigationMenuLink asChild>
           <Link
             to={pathOf(link)}
-            className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-300 hover:bg-slate-800/50 hover:text-white ${
+            aria-current={isActive(link) ? 'page' : undefined}
+            className={`${navigationMenuTriggerStyle()} bg-transparent text-slate-200 hover:bg-slate-800/60 hover:text-white ${FOCUS_RING} ${
               isActive(link) ? 'bg-slate-800 text-white' : ''
             }`}
           >
-            <Icon className="h-4 w-4 mr-1.5" />
+            <Icon className="h-4 w-4 mr-1.5 text-gold" aria-hidden="true" />
             {labelOf(link)}
           </Link>
         </NavigationMenuLink>
@@ -448,27 +464,42 @@ export const Navigation: React.FC = () => {
     return null;
   }
 
-  // Utloggat läge: full publik megameny.
+  const megaLabel = language === 'sv' ? 'Utforska' : 'Explore';
+
+  // Utloggat läge: full publik megameny — en trigger, fem kategori-kolumner.
   return (
     <NavigationMenu className="hidden md:flex">
       <NavigationMenuList>
-        {CATEGORY_ORDER.map((cat) => {
-          const catLinks = byCategory(cat);
-          if (catLinks.length === 0) return null;
-          const label = language === 'sv' ? CATEGORY_LABELS[cat].sv : CATEGORY_LABELS[cat].en;
-          return (
-            <NavigationMenuItem key={cat}>
-              <NavigationMenuTrigger className={triggerClass}>{label}</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[520px] grid-cols-2 gap-1 bg-slate-900 p-3">
-                  {catLinks.map((link) => (
-                    <MegaCard key={link.pathEn} link={link} />
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-          );
-        })}
+        <NavigationMenuItem>
+          <NavigationMenuTrigger className={triggerClass}>{megaLabel}</NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <div className="w-[min(1080px,92vw)] bg-slate-900 p-4">
+              <ul className="grid list-none grid-cols-2 gap-x-4 gap-y-6 lg:grid-cols-3 xl:grid-cols-5">
+                {CATEGORY_ORDER.map((cat) => {
+                  const catLinks = byCategory(cat);
+                  if (catLinks.length === 0) return null;
+                  const label =
+                    language === 'sv' ? CATEGORY_LABELS[cat].sv : CATEGORY_LABELS[cat].en;
+                  return (
+                    <li key={cat} className="min-w-0">
+                      <div
+                        className="mb-1.5 border-b border-slate-700/70 px-2 pb-1.5 text-xs font-semibold uppercase tracking-wider text-gold"
+                        aria-hidden="true"
+                      >
+                        {label}
+                      </div>
+                      <ul className="list-none space-y-0.5" aria-label={label}>
+                        {catLinks.map((link) => (
+                          <MegaCard key={link.pathEn + link.labelEn} link={link} />
+                        ))}
+                      </ul>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
 
         {directLink(game)}
         {directLink(podcast)}
@@ -481,26 +512,34 @@ export const Navigation: React.FC = () => {
 export const MobileNav: React.FC = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
-  const { isActive, pathOf, labelOf } = useResolveLink();
+  const { isActive, pathOf, labelOf, descOf } = useResolveLink();
   const [open, setOpen] = useState(false);
 
   const links = useNavLinks().filter((l) => !l.authOnly || user);
   const standalone = links.filter((l) => !l.category && !l.authOnly);
   const profileLink = links.find((l) => l.authOnly);
 
-  const linkRow = (link: NavLink) => {
+  const linkRow = (link: NavLink, withDesc = false) => {
     const Icon = link.icon;
     const active = isActive(link);
     return (
-      <SheetClose asChild key={link.pathEn}>
+      <SheetClose asChild key={link.pathEn + link.labelEn}>
         <Link
           to={pathOf(link)}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-            active ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+          aria-current={active ? 'page' : undefined}
+          className={`flex items-start gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${FOCUS_RING} ${
+            active ? 'bg-slate-800 text-white' : 'text-slate-200 hover:bg-slate-800/60 hover:text-white'
           }`}
         >
-          <Icon className="h-4 w-4" />
-          {labelOf(link)}
+          <Icon className="mt-0.5 h-4 w-4 shrink-0 text-gold" aria-hidden="true" />
+          <span className="min-w-0">
+            <span className="block">{labelOf(link)}</span>
+            {withDesc && (
+              <span className="mt-0.5 block text-xs font-normal text-slate-400 line-clamp-1">
+                {descOf(link)}
+              </span>
+            )}
+          </span>
         </Link>
       </SheetClose>
     );
@@ -513,33 +552,38 @@ export const MobileNav: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            className="border-slate-600 text-slate-300 hover:bg-slate-800"
+            className={`border-slate-600 text-slate-200 hover:bg-slate-800 ${FOCUS_RING}`}
             aria-label={language === 'sv' ? 'Öppna meny' : 'Open menu'}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5" aria-hidden="true" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="bg-slate-900 border-slate-700 w-72 overflow-y-auto">
+        <SheetContent side="left" className="w-80 overflow-y-auto border-slate-700 bg-slate-900">
           <SheetHeader>
-            <SheetTitle className="text-white text-left">
+            <SheetTitle className="text-left text-white">
               {language === 'sv' ? 'Meny' : 'Menu'}
             </SheetTitle>
             <SheetDescription className="sr-only">
               {language === 'sv' ? 'Sidnavigering' : 'Site navigation'}
             </SheetDescription>
           </SheetHeader>
-          <nav className="mt-6 flex flex-col space-y-1">
-            {standalone.map(linkRow)}
+          <nav
+            className="mt-6 flex flex-col space-y-1"
+            aria-label={language === 'sv' ? 'Huvudnavigering' : 'Main navigation'}
+          >
+            {standalone.map((l) => linkRow(l))}
             {CATEGORY_ORDER.map((cat) => {
               const catLinks = links.filter((l) => l.category === cat);
               if (catLinks.length === 0) return null;
+              const label =
+                language === 'sv' ? CATEGORY_LABELS[cat].sv : CATEGORY_LABELS[cat].en;
               return (
-                <div key={cat} className="pt-3">
-                  <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    {language === 'sv' ? CATEGORY_LABELS[cat].sv : CATEGORY_LABELS[cat].en}
+                <section key={cat} className="pt-3" aria-label={label}>
+                  <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-gold">
+                    {label}
                   </p>
-                  {catLinks.map(linkRow)}
-                </div>
+                  {catLinks.map((l) => linkRow(l))}
+                </section>
               );
             })}
             {profileLink && <div className="pt-3">{linkRow(profileLink)}</div>}
