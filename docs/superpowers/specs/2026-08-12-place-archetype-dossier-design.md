@@ -269,3 +269,10 @@ Formellt: registrera kommuner/regioner som egna entiteter (kommun-/regionkoder) 
 
 ### Yt-/storleks- + terräng-verktyg
 Cirkel/polygon-urval → **km² + antal objekt inuti** (räckvidds-sonden, [[reach-probe-universal]]) + "hur ytan ser ut" = flygfoto/DEM-baskarta ([[map-raster-assets]]). Svarar "hur stort är Öland".
+
+### Eniro som UX-referens (Daniel 2026-08-12)
+- **Disambiguering med kommun:** "Vickleby, **Mörbylånga**" när flera orter delar namn (jfr [[entity-senses-disambiguation]]). Visa kommun/län som skiljetecken.
+- **Kategoriserad högerkolumn** (Eniro: Företag/Personer/Platser N): vår motsvarighet = kategori-räknare (runstenar/kyrkor/sevärda/äventyr/…) — vi har redan lager-räknarna i legenden.
+- **Platsens kontur som streckad linje** på kartan (Eniro ritar tomt-/ortgräns). För oss: socken-/ort-polygon streckad när geometri finns (idag saknar parishes geometri — ingest-lucka).
+- **Kart-verktygsrad nederst** (Eniro): ① rita/mät (punkt, linje, polygon, rektangel, importera, hämta, rensa, hjälp) → vår räckvidds-sond + linjal; ② vägbeskrivning med **förifylld destination** + "skriv din från-adress" + "Åk nu / planera resa" → vår hitta-dit-nav; ③ inställningar + fler kartor (flygfoto direkt på sidan) → vår basemap-växlare.
+- **Flygfoto direkt inbäddat** som basemap-alternativ (CC-licens el. Lantmäteri-villkor kollas).
