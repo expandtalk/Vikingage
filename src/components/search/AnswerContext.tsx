@@ -189,7 +189,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     },
   });
   // Äventyr & motion (Daniel): badplatser m.m. nära platsen via nearby_experiences. Egen legend-toggle.
-  // v1 = mest badplatser (enda ifyllda kategorin idag); utbyggbart när leder/grottor/kulturvandring ingestas.
+  // v1 = badplatser + fiskeställen (experiences) + grottor (heritage); utbyggbart när leder/kulturvandring ingestas.
   const { data: adventures } = useQuery({
     queryKey: ['adventures-near', data?.center?.lat, data?.center?.lng],
     enabled: !!(data?.center && data.center.lat != null && data.center.lng != null),
@@ -199,13 +199,14 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       // ~143 st, raa_type Grotta/naturgrotta/grotta med tradition). Grottorna bor i heritage → egen
       // bbox-fråga (~±0,3° ≈ 25 km). Utbyggbart med leder/kulturvandring när de ingestas.
       const [expRes, grottRes] = await Promise.all([
-        (supabase as any).rpc('nearby_experiences', { p_lat: lat, p_lng: lng, p_radius_km: 25, p_limit: 60 }),
+        // p_ignore_season: platsforskning visar allt året runt (fiske/bad) med säsong i popupen, döljer inte vår/höst-öring i augusti.
+        (supabase as any).rpc('nearby_experiences', { p_lat: lat, p_lng: lng, p_radius_km: 25, p_limit: 80, p_ignore_season: true }),
         (supabase as any).from('heritage_sites').select('id, name, raa_type, lat, lng')
           .gte('lat', lat - 0.28).lte('lat', lat + 0.28).gte('lng', lng - 0.45).lte('lng', lng + 0.45)
           .ilike('raa_type', '%grott%').not('lat', 'is', null).limit(60),
       ]);
-      const bad = ((expRes.data ?? []) as any[]).map((a) => ({ feature_type: a.feature_type ?? 'badplats', label: a.label as string, lat: a.lat as number, lng: a.lng as number, parish: (a.parish ?? null) as string | null }));
-      const grott = ((grottRes.data ?? []) as any[]).map((g) => ({ feature_type: 'grotta', label: g.name as string, lat: Number(g.lat), lng: Number(g.lng), parish: null as string | null }));
+      const bad = ((expRes.data ?? []) as any[]).map((a) => ({ feature_type: (a.feature_type ?? 'badplats') as string, label: a.label as string, lat: a.lat as number, lng: a.lng as number, parish: (a.parish ?? null) as string | null, subtype: (a.subtype ?? null) as string | null, season: (a.season ?? null) as string | null }));
+      const grott = ((grottRes.data ?? []) as any[]).map((g) => ({ feature_type: 'grotta', label: g.name as string, lat: Number(g.lat), lng: Number(g.lng), parish: null as string | null, subtype: null as string | null, season: null as string | null }));
       return [...bad, ...grott];
     },
   });
@@ -319,12 +320,15 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           .bindPopup(`<b>${c.name ?? ''}</b>${c.kind ? `<br/><span style="font-size:11px;color:#64748b">${c.kind}</span>` : ''}${c.note ? `<br/><span style="font-size:11px;color:#64748b">${c.note}</span>` : ''}`)
           .addTo(crossingLayerRef.current!);
       });
-      // Äventyr & motion: badplatser m.m. nära platsen (grön). Egen legend-toggle.
+      // Äventyr & motion: badplatser/grottor (grön) + fiskeställen (blå). Egen legend-toggle.
       (adventures || []).forEach((a) => {
         if (a.lat == null || a.lng == null) return;
         pts.push([a.lat, a.lng]);
-        L.circleMarker([a.lat, a.lng], { radius: 5, color: '#15803d', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.9 })
-          .bindPopup(`<b>${a.label ?? ''}</b>${a.feature_type ? `<br/><span style="font-size:11px;color:#64748b">${a.feature_type}${a.parish ? ' · ' + a.parish : ''}</span>` : ''}`)
+        const isFiske = a.feature_type === 'fiske';
+        const metaBits = isFiske ? [a.subtype, a.season] : [a.feature_type, a.parish];
+        const meta = metaBits.filter(Boolean).join(' · ');
+        L.circleMarker([a.lat, a.lng], { radius: 5, color: isFiske ? '#1d4ed8' : '#15803d', weight: 1.5, fillColor: isFiske ? '#3b82f6' : '#22c55e', fillOpacity: 0.9 })
+          .bindPopup(`<b>${a.label ?? ''}</b>${meta ? `<br/><span style="font-size:11px;color:#64748b">${meta}</span>` : ''}`)
           .addTo(advLayerRef.current!);
       });
       // Befästningsgeometri: riktiga linjer/polygoner (stadsmur, bastioner, RAÄ-lämningar).
