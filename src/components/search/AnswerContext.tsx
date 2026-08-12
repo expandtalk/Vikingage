@@ -162,6 +162,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const eventLayerRef = useRef<L.LayerGroup | null>(null);  // historiska händelser
   const fortLayerRef = useRef<L.LayerGroup | null>(null);   // befästningar (linjer/polygoner)
   const crossingLayerRef = useRef<L.LayerGroup | null>(null); // överfarter/båtdrag/grund/skyddsöar (sjösidan)
+  const advLayerRef = useRef<L.LayerGroup | null>(null);   // äventyr & motion (badplatser m.m.)
   const fitKeyRef = useRef<string>('');                     // fitBounds bara vid nytt center, ej vid tids-scrub
   const roRef = useRef<ResizeObserver | null>(null);
   // Bild-lightbox: håll användaren KVAR i plattformen (öppna inte källbilden i ny flik). Daniel.
@@ -174,6 +175,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const [showEvents, setShowEvents] = useState(true);
   const [showForts, setShowForts] = useState(true);
   const [showCrossings, setShowCrossings] = useState(true);
+  const [showAdv, setShowAdv] = useState(true);
   // Befästningsgeometri (linjer/polygoner) nära svarets center — riktig fort_element- + RAÄ-lämningsgeometri.
   // Källkritik: varje feature bär evidence_class → tolkat/hypotetiskt ritas streckat, bevarat heldraget.
   const { data: forts } = useQuery({
@@ -184,6 +186,18 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         p_lat: data!.center!.lat, p_lng: data!.center!.lng, p_radius_m: 3000,
       });
       return (rows ?? []) as Array<{ kind: string; name: string | null; subtype: string | null; evidence_class: string | null; year_from: number | null; year_to: number | null; geojson: string }>;
+    },
+  });
+  // Äventyr & motion (Daniel): badplatser m.m. nära platsen via nearby_experiences. Egen legend-toggle.
+  // v1 = mest badplatser (enda ifyllda kategorin idag); utbyggbart när leder/grottor/kulturvandring ingestas.
+  const { data: adventures } = useQuery({
+    queryKey: ['adventures-near', data?.center?.lat, data?.center?.lng],
+    enabled: !!(data?.center && data.center.lat != null && data.center.lng != null),
+    queryFn: async () => {
+      const { data: rows } = await (supabase as any).rpc('nearby_experiences', {
+        p_lat: data!.center!.lat, p_lng: data!.center!.lng, p_radius_km: 25, p_limit: 60,
+      });
+      return (rows ?? []) as Array<{ feature_type: string; label: string; lat: number; lng: number; parish: string | null }>;
     },
   });
   // Tidsreglage (Lotsen, spår 2): scrubba "visa fram till år N" → landskapet växer fram över tid.
@@ -240,9 +254,10 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       if (!eventLayerRef.current) eventLayerRef.current = L.layerGroup();
       if (!fortLayerRef.current) fortLayerRef.current = L.layerGroup();
       if (!crossingLayerRef.current) crossingLayerRef.current = L.layerGroup();
+      if (!advLayerRef.current) advLayerRef.current = L.layerGroup();
       layerRef.current.clearLayers(); siteLayerRef.current.clearLayers();
       churchLayerRef.current.clearLayers(); wreckLayerRef.current.clearLayers(); eventLayerRef.current.clearLayers();
-      fortLayerRef.current.clearLayers(); crossingLayerRef.current.clearLayers();
+      fortLayerRef.current.clearLayers(); crossingLayerRef.current.clearLayers(); advLayerRef.current.clearLayers();
       const pts: [number, number][] = [];
       (data.inscriptions || []).forEach((r) => {
         if (r.lat == null || r.lng == null) return;
@@ -295,6 +310,14 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           .bindPopup(`<b>${c.name ?? ''}</b>${c.kind ? `<br/><span style="font-size:11px;color:#64748b">${c.kind}</span>` : ''}${c.note ? `<br/><span style="font-size:11px;color:#64748b">${c.note}</span>` : ''}`)
           .addTo(crossingLayerRef.current!);
       });
+      // Äventyr & motion: badplatser m.m. nära platsen (grön). Egen legend-toggle.
+      (adventures || []).forEach((a) => {
+        if (a.lat == null || a.lng == null) return;
+        pts.push([a.lat, a.lng]);
+        L.circleMarker([a.lat, a.lng], { radius: 5, color: '#15803d', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.9 })
+          .bindPopup(`<b>${a.label ?? ''}</b>${a.feature_type ? `<br/><span style="font-size:11px;color:#64748b">${a.feature_type}${a.parish ? ' · ' + a.parish : ''}</span>` : ''}`)
+          .addTo(advLayerRef.current!);
+      });
       // Befästningsgeometri: riktiga linjer/polygoner (stadsmur, bastioner, RAÄ-lämningar).
       // Bevarat ovan mark → heldraget; interpolerat/hypotetiskt/RAÄ-lämning utan bedömning → streckat.
       const FORT = '#c2410c';
@@ -332,6 +355,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       if (showEvents) eventLayerRef.current.addTo(m); else m.removeLayer(eventLayerRef.current);
       if (showForts) fortLayerRef.current.addTo(m); else m.removeLayer(fortLayerRef.current);
       if (showCrossings) crossingLayerRef.current.addTo(m); else m.removeLayer(crossingLayerRef.current);
+      if (showAdv) advLayerRef.current.addTo(m); else m.removeLayer(advLayerRef.current);
       // fitBounds bara vid NYTT center (ny fråga) — inte vid tids-scrub (annars zoomar kartan om hela tiden).
       const fitKey = `${data.center.lat},${data.center.lng}`;
       if (fitKeyRef.current !== fitKey) {
@@ -342,14 +366,14 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       // Flera omritningar över några frames tills layouten satt sig (belt-and-suspenders utöver RO).
       [0, 80, 250, 600].forEach((d) => setTimeout(() => { try { m.invalidateSize(); } catch { /* noop */ } }, d));
     } catch { /* karta-init misslyckades → panelen visar ändå listor/bilder */ }
-  }, [data, forts, showRunes, showSites, showChurches, showWrecks, showEvents, showForts, showCrossings, ymax]);
+  }, [data, forts, adventures, showRunes, showSites, showChurches, showWrecks, showEvents, showForts, showCrossings, showAdv, ymax]);
 
   useEffect(() => () => {
     try { roRef.current?.disconnect(); } catch { /* noop */ }
     try { mapRef.current?.remove(); } catch { /* noop */ }
     roRef.current = null; mapRef.current = null; layerRef.current = null; siteLayerRef.current = null;
     churchLayerRef.current = null; wreckLayerRef.current = null; eventLayerRef.current = null;
-    fortLayerRef.current = null; crossingLayerRef.current = null;
+    fortLayerRef.current = null; crossingLayerRef.current = null; advLayerRef.current = null;
   }, []);
 
   // Kurerad "relaterat/se även" (t.ex. Göteborg → Nya Lödöse/Kungahälla/Älvsborgs lösen) — FAKTA i vår
@@ -526,6 +550,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 <button onClick={() => setShowCrossings((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showCrossings ? '#2dd4bf' : 'transparent', border: '1.5px solid #2dd4bf' }} />
                   <span className={showCrossings ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Sjösidan · överfart/grund' : 'Sea side · crossings/shoals'} · {(data as any).crossings.length}</span>
+                </button>
+              )}
+              {(adventures?.length ?? 0) > 0 && (
+                <button onClick={() => setShowAdv((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showAdv ? '#22c55e' : 'transparent', border: '1.5px solid #22c55e' }} />
+                  <span className={showAdv ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Äventyr & motion' : 'Adventure & outdoors'} · {adventures!.length}</span>
                 </button>
               )}
             </div>
