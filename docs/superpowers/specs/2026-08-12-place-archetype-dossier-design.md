@@ -135,22 +135,35 @@ Legend-togglar följer legend-invarianten (default-på men aldrig påtvingad per
 
 ## Pilot-scope
 
-Spika mönstret på *olika* arketyper så motorn bevisas för mer än datarika, entydiga platser.
-OBS: **Ismantorp och Sandby borg är BÅDA `försvar`** (fornborg) — inte skilda arketyper. En
-försvarsplats räcker som pilot; den andra blir sekundärt exempel som samma motor täcker.
+**PRINCIP (Daniels skärpning 2026-08-12): arketypen monterar BAS-lagren; platsens händelser/öde är
+ett EGET överlägg** (`historical_events` + forensik + berättelse-nod). Samma arketyp → aldrig samma
+sida, för historien differentierar. Två `försvar`-borgar kan ha motsatta öden (en utplånad, en
+överlevde) och blir därför helt olika sidor med samma motor.
 
 1. **Färjestaden** (`overfart_logistik`) — huvudpilot; alla fyra nya lager + berättelse-nod.
 2. **Vickleby** (bygd/`kultplats`-karaktär: Karlevistenen, kyrka, alvar/skeppssättning, kvarnar,
-   hålvägar) — tillagd 2026-08-12 efter rapporterad bugg: sök på Vickleby centrerade rätt men visade
-   Kalmars sevärda platser (Vickleby-sidans lämningar har prominence=0 → filtrerades bort; enda
-   prominenta inom 25 km = Kalmar ~7,6 km över sundet). Ranknings-fix (avstånds-dämpad prominence)
-   applicerad men **plåstrar bara** — den verkliga fixen är databerikning + lokalt ankrade
-   funktions-lager, dvs. exakt dossiern. Vickleby stresstestar (a) lokal ankring för en anspråkslös
-   plats, (b) aktivitets-/"På platsen"-lagret, (c) **tvetydig arketyp → människa bekräftar**.
-3. **Ismantorp** (`försvar`, omtvistad funktion: försvar vs kult) — stresstestar arketyp-som-claim,
-   konkurrerande tolkningar och tvetydig → kö-vägen. Sandby borg = samma arketyp, sekundärt exempel
-   med forensiskt/massaker-överlägg.
-4. **En centralort** (Kalmar/Hossmo) — testar bana/faser + estates/kyrk-lager (om vi vill ha en fjärde).
+   hålvägar) — tillagd 2026-08-12 efter bugg: sök centrerade rätt men visade Kalmars sevärda platser
+   (Vickleby-sidans lämningar har prominence=0 → bortfiltrerade; enda prominenta inom 25 km = Kalmar
+   ~7,6 km över sundet). Ranknings-fix applicerad men **plåstrar** — riktiga fixen = Närhets-motorn
+   (nedan) + databerikning. Testar (a) lokal ankring för anspråkslös plats, (b) "På platsen"-lagret,
+   (c) tvetydig arketyp → människa bekräftar.
+3. **Ismantorp + Sandby borg** (PAR, båda `försvar`) — bevisar principen ovan: **samma arketyp, olika
+   öde → olika sidor.** Ismantorp = överlevde, omtvistad funktion (försvar vs kult) → berättelse-nod
+   "omtvistad". Sandby = massakern ~440-tal (invånarna dräpta, skatter gömda, aldrig återbebodd) →
+   forensiskt/händelse-överlägg. Stresstestar arketyp-som-claim + händelse-differentiering.
+4. **Kalmar/Hossmo** (`centralort`) — testar bana/faser (Hossmo husaby + Kalmars stadsbildning) +
+   estates/kyrk-lager. Kalmar bär flera arketyper i tid (överfart → handelsnod → centralort).
+
+## Närhets-motorn (förutsättning för "rätt från grunden")
+
+Nuvarande `prominence>0 + fast 25 km + distansdämpning` plåstrar. Rätt, skalbar design:
+- **k-närmaste** kvalificerade objekt i st.f. fast radie (skalar när DB växer).
+- **Härledd betydelse** (ej manuell prominence): RAÄ-typ (kyrka/borg/runsten väger tyngre), wikidata-
+  sitelinks/popularitet, har-sida/bild/namn → små orters kyrka/borg kvalar in utan handsatt prominence.
+- **Tiered närhet:** "i bygden" (~3–5 km) före "i trakten".
+- **Landmassa-medveten:** vattenavstånd väger tyngre (Kalmar blöder inte in i Vickleby över sundet).
+- **Närliggande ORTER med automatik:** samma k-närmaste på ort-lagret → "I närheten: Karlevi · Resmo…".
+Byggs EN gång, delas av entity_answer_context, Explore och dossiern.
 
 ## Hederlighet & källkritik
 
