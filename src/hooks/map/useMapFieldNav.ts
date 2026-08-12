@@ -160,10 +160,13 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
         return map.containerPointToLatLng(centerCp.add(meCp.subtract(targetCp)));
       } catch { return ll; }
     };
-    // Första fixen: zooma in till körnivå. Därefter bara panorera (behåll användarens zoom).
+    // Första fixen: zooma in läges-medvetet (Daniel: gångläge MYCKET mer inzoomat så man ser vad man
+    // står på när man klickar). Gå = kvartersnivå (18), cykel mellan (17), bil = översikt (16).
+    // Därefter bara panorera (behåll användarens egen zoom).
     if (!flownRef.current) {
       flownRef.current = true;
-      const z = Math.max(map.getZoom(), 16);
+      const minZoom = mode === 'walk' ? 18 : mode === 'bike' ? 17 : 16;
+      const z = Math.max(map.getZoom(), minZoom);
       try { map.flyTo(followCenter(), z, { duration: 0.6 }); } catch { /* noop */ }
     } else if (following) {
       try { map.panTo(followCenter(), { animate: true, duration: 0.4 }); } catch { /* noop */ }
