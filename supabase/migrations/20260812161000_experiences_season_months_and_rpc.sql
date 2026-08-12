@@ -31,7 +31,7 @@ CREATE OR REPLACE FUNCTION public.nearby_experiences(
   p_lat double precision, p_lng double precision, p_radius_km double precision,
   p_limit integer DEFAULT 200, p_ignore_season boolean DEFAULT false)
 RETURNS TABLE(feature_type text, feature_id text, label text, lat double precision, lng double precision,
-  distance_km double precision, parish text, source_uri text, subtype text, season text)
+  distance_km double precision, parish text, source_uri text, subtype text, season text, bath_kind text)
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public'
 AS $function$
   with cur as (select extract(month from now())::int as m)
@@ -39,7 +39,7 @@ AS $function$
     (6371*acos(least(1,greatest(-1,
        cos(radians(p_lat))*cos(radians(e.lat))*cos(radians(e.lng)-radians(p_lng))
        + sin(radians(p_lat))*sin(radians(e.lat)))))) as distance_km,
-    e.municipality, e.source_uri, e.subtype, (e.facts->>'season')
+    e.municipality, e.source_uri, e.subtype, (e.facts->>'season'), e.bath_kind
   from experiences e, cur
   where e.lat is not null and e.lng is not null
     and (

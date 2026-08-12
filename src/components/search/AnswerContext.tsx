@@ -176,6 +176,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const [showForts, setShowForts] = useState(true);
   const [showCrossings, setShowCrossings] = useState(true);
   const [showAdv, setShowAdv] = useState(true);
+  const [hiddenAdvKinds, setHiddenAdvKinds] = useState<Set<string>>(new Set()); // tom = alla badtyper/fiske synliga
   // Befästningsgeometri (linjer/polygoner) nära svarets center — riktig fort_element- + RAÄ-lämningsgeometri.
   // Källkritik: varje feature bär evidence_class → tolkat/hypotetiskt ritas streckat, bevarat heldraget.
   const { data: forts } = useQuery({
@@ -205,11 +206,25 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           .gte('lat', lat - 0.28).lte('lat', lat + 0.28).gte('lng', lng - 0.45).lte('lng', lng + 0.45)
           .ilike('raa_type', '%grott%').not('lat', 'is', null).limit(60),
       ]);
-      const bad = ((expRes.data ?? []) as any[]).map((a) => ({ feature_type: (a.feature_type ?? 'badplats') as string, label: a.label as string, lat: a.lat as number, lng: a.lng as number, parish: (a.parish ?? null) as string | null, subtype: (a.subtype ?? null) as string | null, season: (a.season ?? null) as string | null }));
-      const grott = ((grottRes.data ?? []) as any[]).map((g) => ({ feature_type: 'grotta', label: g.name as string, lat: Number(g.lat), lng: Number(g.lng), parish: null as string | null, subtype: null as string | null, season: null as string | null }));
+      const bad = ((expRes.data ?? []) as any[]).map((a) => ({ feature_type: (a.feature_type ?? 'badplats') as string, label: a.label as string, lat: a.lat as number, lng: a.lng as number, parish: (a.parish ?? null) as string | null, subtype: (a.subtype ?? null) as string | null, season: (a.season ?? null) as string | null, bath_kind: (a.bath_kind ?? null) as string | null }));
+      const grott = ((grottRes.data ?? []) as any[]).map((g) => ({ feature_type: 'grotta', label: g.name as string, lat: Number(g.lat), lng: Number(g.lng), parish: null as string | null, subtype: null as string | null, season: null as string | null, bath_kind: null as string | null }));
       return [...bad, ...grott];
     },
   });
+  // Äventyrs-underkategorier: färg + etikett per badtyp/fiske/grotta. Driver markörfärg + filter-chips.
+  const ADV_KIND_STYLE: Record<string, { fill: string; border: string; sv: string; en: string }> = {
+    fiske:      { fill: '#3b82f6', border: '#1d4ed8', sv: 'Fiske', en: 'Fishing' },
+    utomhusbad: { fill: '#22c55e', border: '#15803d', sv: 'Utomhusbad', en: 'Outdoor bathing' },
+    hundbad:    { fill: '#f97316', border: '#c2410c', sv: 'Hundbad', en: 'Dog beach' },
+    nakenbad:   { fill: '#ec4899', border: '#be185d', sv: 'Nakenbad', en: 'Nudist beach' },
+    barnbad:    { fill: '#eab308', border: '#a16207', sv: 'Barnbad', en: 'Kids beach' },
+    klippbad:   { fill: '#64748b', border: '#334155', sv: 'Klippbad', en: 'Cliff bathing' },
+    grotta:     { fill: '#a16207', border: '#713f12', sv: 'Grotta', en: 'Cave' },
+    badplats:   { fill: '#22c55e', border: '#15803d', sv: 'Badplats', en: 'Bathing' },
+  };
+  const advKindOf = (a: { feature_type: string; bath_kind?: string | null }): string =>
+    a.feature_type === 'fiske' ? 'fiske' : a.feature_type === 'grotta' ? 'grotta' : (a.bath_kind || 'badplats');
+
   // Tidsreglage (Lotsen, spår 2): scrubba "visa fram till år N" → landskapet växer fram över tid.
   const [yearMax, setYearMax] = useState<number | null>(null);
   // "Dela" (Community/Bidra): mobil → native share-ark (navigator.share); desktop/utan stöd →
@@ -320,14 +335,17 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           .bindPopup(`<b>${c.name ?? ''}</b>${c.kind ? `<br/><span style="font-size:11px;color:#64748b">${c.kind}</span>` : ''}${c.note ? `<br/><span style="font-size:11px;color:#64748b">${c.note}</span>` : ''}`)
           .addTo(crossingLayerRef.current!);
       });
-      // Äventyr & motion: badplatser/grottor (grön) + fiskeställen (blå). Egen legend-toggle.
+      // Äventyr & motion: färg per underkategori (badtyp/fiske/grotta); filtrerbart via chips.
       (adventures || []).forEach((a) => {
         if (a.lat == null || a.lng == null) return;
+        const kind = advKindOf(a);
+        if (hiddenAdvKinds.has(kind)) return;
         pts.push([a.lat, a.lng]);
+        const st = ADV_KIND_STYLE[kind] || ADV_KIND_STYLE.badplats;
         const isFiske = a.feature_type === 'fiske';
-        const metaBits = isFiske ? [a.subtype, a.season] : [a.feature_type, a.parish];
+        const metaBits = isFiske ? [a.subtype, a.season] : [sv ? st.sv : st.en, a.parish];
         const meta = metaBits.filter(Boolean).join(' · ');
-        L.circleMarker([a.lat, a.lng], { radius: 5, color: isFiske ? '#1d4ed8' : '#15803d', weight: 1.5, fillColor: isFiske ? '#3b82f6' : '#22c55e', fillOpacity: 0.9 })
+        L.circleMarker([a.lat, a.lng], { radius: 5, color: st.border, weight: 1.5, fillColor: st.fill, fillOpacity: 0.9 })
           .bindPopup(`<b>${a.label ?? ''}</b>${meta ? `<br/><span style="font-size:11px;color:#64748b">${meta}</span>` : ''}`)
           .addTo(advLayerRef.current!);
       });
@@ -379,7 +397,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       // Flera omritningar över några frames tills layouten satt sig (belt-and-suspenders utöver RO).
       [0, 80, 250, 600].forEach((d) => setTimeout(() => { try { m.invalidateSize(); } catch { /* noop */ } }, d));
     } catch { /* karta-init misslyckades → panelen visar ändå listor/bilder */ }
-  }, [data, forts, adventures, showRunes, showSites, showChurches, showWrecks, showEvents, showForts, showCrossings, showAdv, ymax]);
+  }, [data, forts, adventures, showRunes, showSites, showChurches, showWrecks, showEvents, showForts, showCrossings, showAdv, hiddenAdvKinds, ymax]);
 
   useEffect(() => () => {
     try { roRef.current?.disconnect(); } catch { /* noop */ }
@@ -571,6 +589,27 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                   <span className={showAdv ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Äventyr & motion' : 'Adventure & outdoors'} · {adventures!.length}</span>
                 </button>
               )}
+              {/* Underkategori-filter: badtyp/fiske/grotta. Klick döljer/visar den typen på kartan. */}
+              {showAdv && (adventures?.length ?? 0) > 0 && (() => {
+                const present = Array.from(new Set((adventures || []).map(advKindOf)));
+                if (present.length <= 1) return null;
+                return (
+                  <div className="ml-4 mt-0.5 flex flex-col gap-0.5 border-l border-slate-700 pl-2">
+                    {present.map((k) => {
+                      const st = ADV_KIND_STYLE[k] || ADV_KIND_STYLE.badplats;
+                      const on = !hiddenAdvKinds.has(k);
+                      const n = (adventures || []).filter((a) => advKindOf(a) === k).length;
+                      return (
+                        <button key={k} onClick={() => setHiddenAdvKinds((prev) => { const s = new Set(prev); if (s.has(k)) s.delete(k); else s.add(k); return s; })}
+                          className="flex items-center gap-2 py-0.5 text-left text-[11px]">
+                          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: on ? st.fill : 'transparent', border: `1.5px solid ${st.border}` }} />
+                          <span className={on ? 'text-slate-200' : 'text-slate-500'}>{sv ? st.sv : st.en} · {n}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
