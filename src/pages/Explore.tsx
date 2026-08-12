@@ -18,6 +18,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Brain, LogIn } from "lucide-react";
 import { useDrivingMode } from "@/hooks/useDrivingMode";
+import { useRoadtrip } from '@/hooks/useRoadtrip';
 import { NavigatorHud } from '@/components/navigator/NavigatorHud';
 
 const Explore = () => {
@@ -33,6 +34,9 @@ const Explore = () => {
   const redirectChurches = focus === 'churches';
   // Billäge (Near me "Kör"): strippa forsknings-chrome, maximera kartan.
   const driving = useDrivingMode();
+  // Dölj footern under HELA navigeringen (rutt aktiv), inte bara billäge/mobil — annars kan den
+  // växa in över HUD:ens nedre rad (ETA/km) om isMobile mis-detekteras (Daniels fältprov).
+  const { route } = useRoadtrip();
 
   if (redirectChurches) return <Navigate to="/sv/kyrkor" replace />;
 
@@ -134,8 +138,8 @@ const Explore = () => {
         )}
       </main>
 
-      {/* Footern döljs på mobil (Daniel) — frigör vertikal yta åt kartan. Full footer på desktop. */}
-      {!driving && !isMobile && <Footer />}
+      {/* Footern döljs på mobil + under aktiv navigering (rutt/billäge). Full footer på desktop utan rutt. */}
+      {!driving && !route && !isMobile && <Footer />}
     </div>
   );
 };

@@ -91,8 +91,9 @@ export const NavigatorHud: React.FC = () => {
           onClick={() => setMuted(!muted)}
           title={muted ? 'Slå på talad vägledning' : 'Stäng av talad vägledning'}
           aria-label={muted ? 'Slå på talad vägledning' : 'Stäng av talad vägledning'}
-          className="shrink-0 flex items-center justify-center text-slate-200 hover:text-white"
-          style={{ minWidth: 40, minHeight: 40 }}
+          // Synlig pill (ram + bakgrund) i st.f. naken ikon — Daniel hittade inte ljudknappen.
+          className={`shrink-0 flex items-center justify-center rounded-full border ${muted ? 'border-slate-600 bg-slate-800/80 text-slate-300' : 'border-emerald-500/60 bg-emerald-600/20 text-emerald-200'} hover:text-white`}
+          style={{ minWidth: 44, minHeight: 44 }}
         >
           {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
         </button>
