@@ -220,7 +220,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     if (!hasCenter || !data?.center || !mapEl.current) return;
     try {
       if (!mapRef.current) {
-        mapRef.current = L.map(mapEl.current, { zoomControl: false, attributionControl: false, scrollWheelZoom: false, dragging: true });
+        // Zoom aktiverat (Daniel: "vill kunna zooma in och ut"): knappar + hjul + dubbelklick.
+        mapRef.current = L.map(mapEl.current, { zoomControl: true, attributionControl: false, scrollWheelZoom: true, dragging: true });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapRef.current);
         // Kartan initieras i en overlay-kolumn som ofta har 0 bredd tills panelen animerat in /
         // grid:en satt sig → Leaflet målar grått tills dess. Måla om vid varje storleksändring
