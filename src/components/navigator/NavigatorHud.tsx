@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigation2, Volume2, VolumeX, X } from 'lucide-react';
-import { hudModel } from '@/utils/navHud';
+import { hudModelLive } from '@/utils/routeProgress';
 import { useRoadtrip, clearRoadtrip } from '@/hooks/useRoadtrip';
 import { useFieldNav, startFieldNav, stopFieldNav } from '@/hooks/useFieldNav';
 import { useDrivingMode, setDrivingMode } from '@/hooks/useDrivingMode';
@@ -37,8 +37,6 @@ export const NavigatorHud: React.FC = () => {
   const driving = useDrivingMode();
   const { route } = useRoadtrip();
   const { pos, active } = useFieldNav();
-  const startRef = React.useRef<{ route: unknown; ms: number }>({ route: null, ms: 0 });
-  if (startRef.current.route !== route) startRef.current = { route, ms: new Date().getTime() };
   // useMemo keyad på de faktiska lat/lng-talen — annars fick useSpokenDirections en ny
   // objektreferens varje render (pos-objektet från useFieldNav byts ut vid varje GPS-tick) och
   // dess effekt trodde "pos" alltid hade ändrats.
@@ -71,8 +69,10 @@ export const NavigatorHud: React.FC = () => {
     );
   }
 
-  const nowMs = startRef.current.ms;
-  const m = hudModel(route, posLL, nowMs);
+  // Färsk tid: hudModelLive räknar arrival = nu + kvarvarande sträcka (position-baserat, sjunker med
+  // färden → ankomsttiden står stilla, ingen klock-creep). Manöver + väg + km avancerar via routeProgress.
+  const nowMs = new Date().getTime();
+  const m = hudModelLive(route, posLL, nowMs);
   const endTrip = () => { clearRoadtrip(); setDrivingMode(false); stopFieldNav(); };
 
   return (
