@@ -485,6 +485,24 @@ Gångläge (walk mode):
 - [ ] Exponera bath_kind + kategori i äventyrslagret (färg/toggle per typ) — nearby_experiences returnerar
       ej bath_kind ännu; byt till direkt experiences-fråga el. utöka RPC:n.
 
+## Sök/karta-buggar kvar efter 2026-08-13-passet
+
+- [ ] **Kalmarsund-blödning i Churches-LAGRET** (och notable även andra riktningen): väst-Öland-orter
+      (Vickleby, center ~56.6/16.44) ligger bara ~7 km tvärs vattnet från Kalmar → radie kan INTE
+      separera (löste kyrko-dominansen i notable sites, men Churches-lagret drar ännu Kalmars kyrkor).
+      Kräver **landmassa-medveten** filtrering: prefer/begränsa till samma landskap (Öland vs Småland)
+      via province/landscape-fält, ELLER "korsar linjen sundet?" mot en kustlinje-geometri. Ej radie.
+- [ ] **Felplacerad händelse**: "Kalmars judiska begravningsplats tas i bruk" (1873) har koord
+      56.6578/16.3527, location_status='documented', note "Skansgatan 3". Daniel: ritas på klostret.
+      Verifiera Skansgatan 3:s riktiga koord innan ändring (ändra ej documented utan källa).
+- [ ] **Felplacerat fiske**: Gårdby/Norra Kvinneby (experiences, 56.6/16.65) ligger inne på Öland,
+      ska vara vid östkusten. Approx-koord — Daniel justerar el. verifiera mot Norra Kvinneby-koord.
+- [ ] **Namnlösa "Gravfält"-etiketter** i notable sites: RAÄ-namnet är bara typen. Lägg
+      distinktion (socken/avstånd) i sites-RPC:n så de går att skilja åt.
+- [ ] **Stockholm tom karta**: reproducerade EJ på desktop (810×430, 12 tiles). Kolla mobil-viewport.
+- [x] **"Sm ATA... (Sm ATA...)" ×2** i InscriptionModal — fixat (visa namn(signum) bara när namn≠signum).
+- [x] **Notable sites domineras av kyrkor / Vasakyrkan notable** — fixat (#3/#4, migration 20260813120000).
+
 ## /texter städat + primärkälle-önskelista 2026-08-12
 
 - [x] **catalog_role på historical_sources** (migration `20260812123000`): work/scholarship/provenance.

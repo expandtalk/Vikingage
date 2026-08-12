@@ -144,7 +144,9 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
       <DialogContent className="max-w-3xl bg-slate-900 border-slate-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-2xl text-white">
-            {name ? `${name} (${signum})` : signum}
+            {/* Visa "namn (signum)" bara när namnet FAKTISKT skiljer sig — annars blev det
+                "Sm ATA... (Sm ATA...)" när DB-namnet = signum (Daniel: samma namn 2 ggr). */}
+            {name && name.trim() && name.trim() !== signum ? `${name} (${signum})` : signum}
           </DialogTitle>
           <DialogDescription className="text-slate-400">
             {location}, {province}, {country}
@@ -152,7 +154,7 @@ export const InscriptionModal: React.FC<InscriptionModalProps> = ({ inscription,
         </DialogHeader>
         <ScrollArea className="max-h-[70vh] pr-4">
           <dl className="space-y-1">
-            <DetailItem label={L.name} value={name} />
+            <DetailItem label={L.name} value={name && name.trim() !== signum ? name : null} />
             <DetailItem label={L.nameEn} value={name_en} />
             <DetailItem label={L.signum} value={signum} />
             <DetailItem label={L.breakdown} value={signumBreakdown} />
