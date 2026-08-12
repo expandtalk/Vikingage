@@ -37,6 +37,8 @@ interface TextRow {
   original_norse: string | null;
   translation_sv: string | null;
   translation_en: string | null;
+  section_label: string | null;
+  translation_kind: string | null;
 }
 
 const sb = supabase as unknown as { from: (t: string) => any };
@@ -75,7 +77,7 @@ const SourceDetail = () => {
     enabled: !!sourceId,
     queryFn: async () => {
       const { data, error } = await sb.from('source_texts')
-        .select('id, stanza_no, original_norse, translation_sv, translation_en')
+        .select('id, stanza_no, original_norse, translation_sv, translation_en, section_label, translation_kind')
         .eq('source_id', sourceId)
         .order('stanza_no', { ascending: true, nullsFirst: false });
       if (error) throw error;
@@ -168,11 +170,20 @@ const SourceDetail = () => {
 
             {texts && texts.length > 0 ? (
               <section>
-                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2">
                   <ScrollText className="h-5 w-5 text-gold" />
                   {sv ? 'Källtexten' : 'The source text'}
+                  {texts.find((t) => t.section_label)?.section_label && (
+                    <span className="text-sm font-medium text-amber-300/90">· {texts.find((t) => t.section_label)!.section_label}</span>
+                  )}
                   <span className="text-sm font-normal text-muted-foreground">· {texts.length} {sv ? 'strofer/stycken' : 'stanzas/passages'}</span>
                 </h2>
+                {/* AI-översättning måste synas för LÄSAREN, inte bara i DB (Daniel: "tydligt vilket AI"). */}
+                {texts.find((t) => t.translation_kind)?.translation_kind && (
+                  <p className="mb-4 text-xs italic text-muted-foreground">
+                    {sv ? 'Översättning: ' : 'Translation: '}{texts.find((t) => t.translation_kind)!.translation_kind}. {sv ? 'Grundtexten är källans egen (public domain) — verifiera översättningen mot den.' : 'The original is the source text (public domain) — verify the translation against it.'}
+                  </p>
+                )}
                 <div className="space-y-4">
                   {texts.map((t) => (
                     <article
