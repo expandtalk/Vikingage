@@ -84,6 +84,25 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   parish:         { labelSv: 'Socknar', labelEn: 'Parishes', icon: MapPin, route: (h) => `/explore?focus=parishes&region=${enc(h.label)}` },
   place:          { labelSv: 'Ortnamn', labelEn: 'Place names', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   christian_site: { labelSv: 'Heliga platser', labelEn: 'Holy sites', icon: Church, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  // Kultplats: har platssidan en slug (i signum) → gå dit; annars textsök på kartan.
+  cult_site:      { labelSv: 'Kultplatser', labelEn: 'Cult sites', icon: Sparkles, route: (h) => h.signum ? `/sv/plats/${enc(h.signum)}` : `/explore?searchQuery=${enc(h.label)}` },
+  ecclesiastical_site: { labelSv: 'Kyrkor', labelEn: 'Churches', icon: Church, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  saint:          { labelSv: 'Helgon', labelEn: 'Saints', icon: Church, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  event:          { labelSv: 'Händelser', labelEn: 'Events', icon: ScrollText, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  castle:         { labelSv: 'Borgar', labelEn: 'Castles', icon: Castle, route: () => '/sv/medeltidsborgar' },
+  estate:         { labelSv: 'Gods & säten', labelEn: 'Estates', icon: Castle, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  town:           { labelSv: 'Medeltida städer', labelEn: 'Medieval towns', icon: Castle, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  church_artwork: { labelSv: 'Kyrkokonst', labelEn: 'Church art', icon: Church, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  genetic_individual: { labelSv: 'aDNA-individer', labelEn: 'aDNA individuals', icon: Users, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  crossing_point: { labelSv: 'Överfarter', labelEn: 'Crossings', icon: Ship, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  thing_site:     { labelSv: 'Tingsplatser', labelEn: 'Assembly sites', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  fairway:        { labelSv: 'Farleder', labelEn: 'Fairways', icon: Ship, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  maritime_node:  { labelSv: 'Hamnar & noder', labelEn: 'Harbours', icon: Ship, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  trade_route:    { labelSv: 'Handelsvägar', labelEn: 'Trade routes', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  content_page:   { labelSv: 'Sidor', labelEn: 'Pages', icon: BookOpen, route: (h) => h.signum ?? '/explore' },
+  experience:     { labelSv: 'Upplevelser', labelEn: 'Experiences', icon: Compass, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  investigation:  { labelSv: 'Undersökningar', labelEn: 'Investigations', icon: ScrollText, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  archaeological_site: { labelSv: 'Arkeologiska platser', labelEn: 'Archaeological sites', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   fortress:       { labelSv: 'Försvar', labelEn: 'Fortresses', icon: Castle, route: () => '/fortresses' },
   hillfort:       { labelSv: 'Fornborgar', labelEn: 'Hillforts', icon: Castle, route: (h) => `/fortresses/${h.entity_id}` },
   folk_group:     { labelSv: 'Folkgrupper', labelEn: 'Peoples', icon: Users2, route: () => '/explore?focus=folkGroups' },
@@ -327,8 +346,9 @@ const KnowledgePanel: React.FC<{ hit: Hit; thumb?: string; onGo: (route: string)
               }
               onGo('/forskare');
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600 px-3 py-1.5 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100"
+            className="inline-flex items-center gap-1.5 self-center text-xs text-slate-400 underline decoration-slate-600 underline-offset-2 hover:text-amber-100"
           >
+            {/* Forskare & källor = textlänk, inte knapp (Daniel: viktig för trovärdighet, efterfrågas av få → ska inte konkurrera). */}
             <Users className="h-3.5 w-3.5" /> {hit.entity_type === 'inscription'
               ? (sv ? 'Forskare kopplade till stenen' : "This stone's researchers")
               : (sv ? 'Forskare & källor' : 'Researchers & sources')}

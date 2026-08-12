@@ -63,7 +63,7 @@ const CatSection: React.FC<{ cat: LandscapeCategory; sv: boolean; onGo: (r: stri
                 <span className="font-mono text-[10px] text-amber-300/80">{it.signum}</span>
               )}
               <span className="max-w-[220px] truncate">{it.label}</span>
-              {['churches', 'events', 'wrecks'].includes(cat.key) && it.sub && <span className="text-[10px] text-slate-500">{it.sub}</span>}
+              {it.sub != null && String(it.sub) !== '' && <span className="text-[10px] text-slate-500">{it.sub}</span>}
             </button>
           ))}
         </div>
@@ -88,9 +88,11 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
   const mappable = cats.filter((c) => c.items.some((it) => it.lat != null && it.lng != null));
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [svampOn, setSvampOn] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(false); // mobil: legenden kollapsad bakom en knapp
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layersRef = useRef<Record<string, L.LayerGroup>>({});
+  const onGoRef = useRef(onGo); onGoRef.current = onGo; // stabil referens för popup-delegering
 
   useEffect(() => {
     if (!mapEl.current || mapRef.current) return;
@@ -99,6 +101,11 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
     if (b) map.fitBounds([[b[1], b[0]], [b[3], b[2]]], { padding: [16, 16] });
     else if (overview.center) map.setView([overview.center.lat, overview.center.lng], 9);
+    // Popup öppnas vid TAP (viktigt på mobil) — "Läs mer"-länken i popupen navigerar (via ref).
+    map.on('popupopen', (e: L.PopupEvent) => {
+      const a = e.popup.getElement()?.querySelector<HTMLAnchorElement>('a.ln-more');
+      if (a) a.addEventListener('click', (ev) => { ev.preventDefault(); const r = a.getAttribute('data-route'); if (r) onGoRef.current(r); }, { once: true });
+    });
     mapRef.current = map;
     const ro = new ResizeObserver(() => { try { map.invalidateSize(); } catch { /* noop */ } });
     ro.observe(mapEl.current);
@@ -113,11 +120,17 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
       if (!layersRef.current[cat.key]) {
         const lg = L.layerGroup();
         const color = CAT_COLOR[cat.key] ?? '#f59e0b';
+        const catLabel = sv ? cat.label_sv : cat.label_en;
+        const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
         for (const it of cat.items) {
           if (it.lat == null || it.lng == null) continue;
+          const route = itemRoute(cat.link_kind, it);
+          const title = `${it.signum ? `<span style="font-family:monospace;color:#fcd34d">${esc(it.signum)}</span> ` : ''}${esc(it.label)}`;
+          const sub = it.sub != null && String(it.sub) !== '' ? `<div style="font-size:11px;color:#94a3b8">${esc(String(it.sub))}</div>` : '';
+          const note = it.note ? `<div style="font-size:11px;color:#94a3b8">${esc(it.note)}</div>` : '';
+          // Klick = ÖPPNA POPUP (fungerar med tap på mobil). "Läs mer" navigerar via delegering (popupopen).
           L.circleMarker([it.lat, it.lng], { radius: 5, color: '#0f172a', weight: 1, fillColor: color, fillOpacity: 0.9 })
-            .bindPopup(`<b>${it.signum ? it.signum + ' ' : ''}${it.label}</b>`)
-            .on('click', () => onGo(itemRoute(cat.link_kind, it)))
+            .bindPopup(`<div style="min-width:130px"><b>${title}</b><div style="font-size:10px;color:#f59e0b;margin-top:1px">${esc(catLabel)}</div>${sub}${note}<a href="${esc(route)}" class="ln-more" data-route="${esc(route)}" style="display:inline-block;margin-top:6px;color:#fcd34d;font-size:12px">${sv ? 'Läs mer →' : 'Read more →'}</a></div>`)
             .addTo(lg);
         }
         layersRef.current[cat.key] = lg;
@@ -152,7 +165,16 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
       {mappable.length > 0 && (
         <div className="relative mt-3 w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800" style={{ height: '48vh', minHeight: 320 }}>
           <div ref={mapEl} className="absolute inset-0" />
-          <div className="absolute right-3 top-3 z-[500] max-h-[calc(100%-1.5rem)] w-[190px] overflow-y-auto rounded-lg border border-slate-600 bg-slate-900/90 p-2.5 backdrop-blur-sm">
+          {/* Mobil: legenden är kollapsad bakom en knapp så den inte täcker kartan; alltid öppen från sm. */}
+          <button
+            type="button"
+            onClick={() => setLegendOpen((v) => !v)}
+            className="sm:hidden absolute right-3 top-3 z-[600] rounded-lg border border-slate-600 bg-slate-900/90 px-2.5 py-1.5 text-xs font-medium text-slate-100 backdrop-blur-sm"
+            aria-expanded={legendOpen}
+          >
+            {legendOpen ? (sv ? 'Dölj lager ✕' : 'Hide layers ✕') : (sv ? 'Lager ☰' : 'Layers ☰')}
+          </button>
+          <div className={`${legendOpen ? 'block' : 'hidden'} sm:block absolute right-3 top-14 sm:top-3 z-[500] max-h-[calc(100%-4rem)] sm:max-h-[calc(100%-1.5rem)] w-[190px] max-w-[70vw] overflow-y-auto rounded-lg border border-slate-600 bg-slate-900/90 p-2.5 backdrop-blur-sm`}>
             {GROUP_ORDER.map((g) => {
               const inGroup = mappable.filter((c) => (c.group ?? 'core') === g);
               if (!inGroup.length) return null;
