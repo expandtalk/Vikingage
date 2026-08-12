@@ -161,6 +161,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const wreckLayerRef = useRef<L.LayerGroup | null>(null);  // skeppsvrak
   const eventLayerRef = useRef<L.LayerGroup | null>(null);  // historiska händelser
   const fortLayerRef = useRef<L.LayerGroup | null>(null);   // befästningar (linjer/polygoner)
+  const crossingLayerRef = useRef<L.LayerGroup | null>(null); // överfarter/båtdrag/grund/skyddsöar (sjösidan)
   const fitKeyRef = useRef<string>('');                     // fitBounds bara vid nytt center, ej vid tids-scrub
   const roRef = useRef<ResizeObserver | null>(null);
   // Bild-lightbox: håll användaren KVAR i plattformen (öppna inte källbilden i ny flik). Daniel.
@@ -172,6 +173,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const [showWrecks, setShowWrecks] = useState(true);
   const [showEvents, setShowEvents] = useState(true);
   const [showForts, setShowForts] = useState(true);
+  const [showCrossings, setShowCrossings] = useState(true);
   // Befästningsgeometri (linjer/polygoner) nära svarets center — riktig fort_element- + RAÄ-lämningsgeometri.
   // Källkritik: varje feature bär evidence_class → tolkat/hypotetiskt ritas streckat, bevarat heldraget.
   const { data: forts } = useQuery({
@@ -237,9 +239,10 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       if (!wreckLayerRef.current) wreckLayerRef.current = L.layerGroup();
       if (!eventLayerRef.current) eventLayerRef.current = L.layerGroup();
       if (!fortLayerRef.current) fortLayerRef.current = L.layerGroup();
+      if (!crossingLayerRef.current) crossingLayerRef.current = L.layerGroup();
       layerRef.current.clearLayers(); siteLayerRef.current.clearLayers();
       churchLayerRef.current.clearLayers(); wreckLayerRef.current.clearLayers(); eventLayerRef.current.clearLayers();
-      fortLayerRef.current.clearLayers();
+      fortLayerRef.current.clearLayers(); crossingLayerRef.current.clearLayers();
       const pts: [number, number][] = [];
       (data.inscriptions || []).forEach((r) => {
         if (r.lat == null || r.lng == null) return;
@@ -283,6 +286,15 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           .bindPopup(`<b>${ev.name ?? ''}</b>${yr ? `<br/><span style="font-size:11px;color:#64748b">${yr}</span>` : ''}`)
           .addTo(eventLayerRef.current!);
       });
+      // Sjösidan: överfarter, båtdrag, grund och skyddsöar (crossing_points) nära platsen — det
+      // maritima "från sjösidan"-lagret (Daniel). Teal, egen legend-toggle.
+      ((data as any).crossings || []).forEach((c: any) => {
+        if (c.lat == null || c.lng == null) return;
+        pts.push([c.lat, c.lng]);
+        L.circleMarker([c.lat, c.lng], { radius: 5, color: '#0f766e', weight: 1.5, fillColor: '#2dd4bf', fillOpacity: 0.9 })
+          .bindPopup(`<b>${c.name ?? ''}</b>${c.kind ? `<br/><span style="font-size:11px;color:#64748b">${c.kind}</span>` : ''}${c.note ? `<br/><span style="font-size:11px;color:#64748b">${c.note}</span>` : ''}`)
+          .addTo(crossingLayerRef.current!);
+      });
       // Befästningsgeometri: riktiga linjer/polygoner (stadsmur, bastioner, RAÄ-lämningar).
       // Bevarat ovan mark → heldraget; interpolerat/hypotetiskt/RAÄ-lämning utan bedömning → streckat.
       const FORT = '#c2410c';
@@ -319,6 +331,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       if (showWrecks) wreckLayerRef.current.addTo(m); else m.removeLayer(wreckLayerRef.current);
       if (showEvents) eventLayerRef.current.addTo(m); else m.removeLayer(eventLayerRef.current);
       if (showForts) fortLayerRef.current.addTo(m); else m.removeLayer(fortLayerRef.current);
+      if (showCrossings) crossingLayerRef.current.addTo(m); else m.removeLayer(crossingLayerRef.current);
       // fitBounds bara vid NYTT center (ny fråga) — inte vid tids-scrub (annars zoomar kartan om hela tiden).
       const fitKey = `${data.center.lat},${data.center.lng}`;
       if (fitKeyRef.current !== fitKey) {
@@ -329,14 +342,14 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       // Flera omritningar över några frames tills layouten satt sig (belt-and-suspenders utöver RO).
       [0, 80, 250, 600].forEach((d) => setTimeout(() => { try { m.invalidateSize(); } catch { /* noop */ } }, d));
     } catch { /* karta-init misslyckades → panelen visar ändå listor/bilder */ }
-  }, [data, forts, showRunes, showSites, showChurches, showWrecks, showEvents, showForts, ymax]);
+  }, [data, forts, showRunes, showSites, showChurches, showWrecks, showEvents, showForts, showCrossings, ymax]);
 
   useEffect(() => () => {
     try { roRef.current?.disconnect(); } catch { /* noop */ }
     try { mapRef.current?.remove(); } catch { /* noop */ }
     roRef.current = null; mapRef.current = null; layerRef.current = null; siteLayerRef.current = null;
     churchLayerRef.current = null; wreckLayerRef.current = null; eventLayerRef.current = null;
-    fortLayerRef.current = null;
+    fortLayerRef.current = null; crossingLayerRef.current = null;
   }, []);
 
   // Kurerad "relaterat/se även" (t.ex. Göteborg → Nya Lödöse/Kungahälla/Älvsborgs lösen) — FAKTA i vår
@@ -507,6 +520,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 <button onClick={() => setShowForts((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
                   <span className="h-0.5 w-3 shrink-0 rounded" style={{ background: showForts ? '#c2410c' : 'transparent', border: '1.5px solid #c2410c' }} />
                   <span className={showForts ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Befästningar' : 'Fortifications'} · {forts!.length}</span>
+                </button>
+              )}
+              {(data as any).crossings?.length > 0 && (
+                <button onClick={() => setShowCrossings((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showCrossings ? '#2dd4bf' : 'transparent', border: '1.5px solid #2dd4bf' }} />
+                  <span className={showCrossings ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Sjösidan · överfart/grund' : 'Sea side · crossings/shoals'} · {(data as any).crossings.length}</span>
                 </button>
               )}
             </div>
