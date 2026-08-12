@@ -19,20 +19,17 @@ const parsePoint = (c: unknown): [number, number] | null => {
   return m ? [parseFloat(m[2]), parseFloat(m[1])] : null; // [lat, lng] från point(lng,lat)
 };
 
-// Utpekade fyndpunkter som alltid visas i Eriksgata-vyn (Daniel).
-const FEATURED: { ll: [number, number]; name: string }[] = [
-  { ll: [59.79774, 17.78080], name: 'Mora stenar (kungavalsplats)' },
-  { ll: [58.2956, 14.7756], name: 'Rökstenen (Ög 136)' },
-];
+interface Landmark { ll: [number, number]; name: string; type: string; description: string | null; significance: string | null; }
 
 interface NearbyFeatures {
   runestones: { signum: string; lat: number; lng: number }[];
   churches: { name: string; type: string; lat: number; lng: number }[];
+  halvagar: { name: string; lat: number; lng: number }[];
 }
 
 export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAddLayer }: Props) => {
   const layersRef = useRef<L.Layer[]>([]);
-  const dataRef = useRef<{ pts: [number, number][]; wps: { ll: [number, number]; name: string; type: string }[]; nearby: NearbyFeatures } | null>(null);
+  const dataRef = useRef<{ pts: [number, number][]; wps: { ll: [number, number]; name: string; type: string }[]; landmarks: Landmark[]; nearby: NearbyFeatures } | null>(null);
 
   useEffect(() => {
     if (!map || !isMapReady.current) return;
@@ -50,7 +47,7 @@ export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAdd
     const draw = (data: NonNullable<typeof dataRef.current>) => {
       if (cancelled || !map || data.pts.length < 2) return;
       const line = L.polyline(data.pts, { color: '#d97706', weight: 3, opacity: 0.9, dashArray: '10, 6' })
-        .bindPopup('<strong>Eriksgatan</strong><br/>Kungavalets riksrunda genom landskapen');
+        .bindPopup('<strong>Eriksgatan</strong><br/>Kungavalets riksrunda genom landskapen.<br/><span style="font-size:11px;color:#78350f">Lagfäst i <em>Upplandslagens konungabalk</em> II (»Vm ærix gatu«, ~1296): den nyvalde kungen rider medsols och tas till kung i varje land; vid landsgränserna växlas gisslan och lejd (<em>grið</em>). <a href="/sources/353a5821-40fd-42f6-9067-702cfb1fd478" style="color:#b45309">Läs lagtexten (fornsvenska + översättning) →</a><br/>Rutten följer Codex A (Schlyter 1834); Ängsöhs. saknar Svintuna.</span>');
       if (safelyAddLayer(line)) layersRef.current.push(line);
       // Zooma in på ledens utbredning så man ser detaljerna (Daniel).
       try { map.fitBounds(line.getBounds(), { padding: [40, 40], maxZoom: 10 }); } catch { /* noop */ }
@@ -59,7 +56,7 @@ export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAdd
         const marker = L.circleMarker(w.ll, {
           radius: isBorder ? 6 : 5, color: '#7c2d12', weight: 2,
           fillColor: isBorder ? '#f59e0b' : '#d97706', fillOpacity: 0.95,
-        }).bindPopup(`<strong>${w.name}</strong><br/><span style="font-size:11px;color:#78350f">${isBorder ? 'Landskapsgräns på Eriksgatan' : 'Anhalt/etapp på Eriksgatan'}</span>`);
+        }).bindPopup(`<strong>${w.name}</strong><br/><span style="font-size:11px;color:#78350f">${isBorder ? 'Landskapsgräns på Eriksgatan — här mötte nästa lands män kungen och gisslan/lejd växlades (Upplandslagen, Codex A)' : 'Anhalt/etapp på Eriksgatan'}</span>`);
         if (safelyAddLayer(marker)) layersRef.current.push(marker);
       });
 
@@ -77,11 +74,19 @@ export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAdd
         }).bindPopup(`<strong>${c.name}</strong><br/>${c.type} nära Eriksgatan`);
         if (safelyAddLayer(m)) layersRef.current.push(m);
       });
-      // Utpekade fyndpunkter (Mora stenar, Rökstenen) — guldmarkör med etikett.
-      FEATURED.forEach((f) => {
+      // Gamla hålvägar/färdvägar inom 1 km av leden (heritage RAÄ, is_halvag) — bruna prickar (Daniel).
+      data.nearby.halvagar.forEach((h) => {
+        const m = L.circleMarker([h.lat, h.lng], {
+          radius: 3, color: '#78350f', weight: 1, fillColor: '#a16207', fillOpacity: 0.8,
+        }).bindPopup(`<strong>${h.name}</strong><br/>Hålväg/färdväg nära Eriksgatan (RAÄ)`);
+        if (safelyAddLayer(m)) layersRef.current.push(m);
+      });
+      // Utpekade platser ur road_landmarks (Mora stenar, Rökstenen, Östanbro/Östens bro,
+      // Ramundeboda kloster …) — guldmarkör med källbelagd beskrivning + betydelse.
+      data.landmarks.forEach((f) => {
         const m = L.circleMarker(f.ll, {
           radius: 7, color: '#78350f', weight: 2, fillColor: '#fbbf24', fillOpacity: 1,
-        }).bindPopup(`<strong>${f.name}</strong>`);
+        }).bindPopup(`<strong>${f.name}</strong>${f.description ? `<br/><span style="font-size:11px;color:#78350f">${f.description}</span>` : ''}${f.significance ? `<br/><span style="font-size:10px;color:#b45309">${f.significance}</span>` : ''}`);
         if (safelyAddLayer(m)) layersRef.current.push(m);
       });
     };
@@ -95,15 +100,20 @@ export const useMapEriksgata = ({ map, enabledLegendItems, isMapReady, safelyAdd
         .eq('road_id', road.id).order('waypoint_order', { ascending: true });
       const parsed = (wps ?? []).map((w: any) => ({ ll: parsePoint(w.coordinates), name: w.name as string, type: w.waypoint_type as string }))
         .filter((w: any) => w.ll) as { ll: [number, number]; name: string; type: string }[];
+      // Utpekade platser längs leden (road_landmarks) — datadrivet, med källbelagd text.
+      const { data: lms } = await sb.from('road_landmarks')
+        .select('name, coordinates, landmark_type, description, historical_significance').eq('road_id', road.id);
+      const landmarks = (lms ?? []).map((l: any) => ({ ll: parsePoint(l.coordinates), name: l.name as string, type: l.landmark_type as string, description: (l.description ?? null) as string | null, significance: (l.historical_significance ?? null) as string | null }))
+        .filter((l: any) => l.ll) as Landmark[];
       // Leden (linjen + waypoints) ska ritas ÄVEN om närliggande-lagret fallerar.
       // Wrappa RPC:n så ett fel inte dödar hela draw() (bakgrund: en dubblerad
       // overload gjorde anropet tvetydigt och tog bort linjen).
-      let nearby: NearbyFeatures = { runestones: [], churches: [] };
+      let nearby: NearbyFeatures = { runestones: [], churches: [], halvagar: [] };
       try {
         const { data: near } = await sb.rpc('eriksgata_nearby', { radius_m: 1000 });
-        if (near) nearby = { runestones: near.runestones ?? [], churches: near.churches ?? [] };
+        if (near) nearby = { runestones: near.runestones ?? [], churches: near.churches ?? [], halvagar: near.halvagar ?? [] };
       } catch { /* leden ritas ändå — närliggande lager är extra */ }
-      dataRef.current = { pts: parsed.map((w) => w.ll), wps: parsed, nearby };
+      dataRef.current = { pts: parsed.map((w) => w.ll), wps: parsed, landmarks, nearby };
       draw(dataRef.current);
     })();
 
