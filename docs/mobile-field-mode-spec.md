@@ -360,5 +360,10 @@ Bygg motorn enhetstestad FÖRE UI. Detta gör körläget faktiskt navigerbart.
 - [x] Footer döljs under aktiv rutt (commit 2026-08-12).
 - [x] Ljudknapp = synlig pill (commit 2026-08-12).
 - [ ] Gångläge-zoom: verifiera att `useMapFieldNav` z≥16-fixen fyrar i walk mode (enhets-debug).
-- [ ] P0 turn-by-turn-motorn (§13.2).
+- [~] **P0 turn-by-turn-motorn (§13.2) — KÄRNAN KLAR 2026-08-12.** `src/utils/routeProgress.ts`
+      (projektion + avancerande manöver + nedräkning + off-route), enhetstestad (9 tester);
+      `hudModelLive` wire:ad i NavigatorHud (live ETA/km/manöver/väg). **KVAR (kräver fältprov):**
+      (1) kart-recentrering på snäppt position (useMapFieldNav följer redan GPS — verifiera i fält),
+      (2) off-route → räkna om rutten (routeProgress.offRoute finns, trigga routing på nytt),
+      (3) talad vägledning ska följa progress (useSpokenDirections), (4) Daniels fält-återtest.
 - [ ] 3D-vy-init (DriveView3D). Parkering vid mål (närmaste P ur OSM/Overpass).
