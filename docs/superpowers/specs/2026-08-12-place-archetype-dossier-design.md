@@ -258,5 +258,14 @@ Universella kluster (bygg dossier-rubriker som Q→källbelagt svar, bra för SE
 - Region-koder: **Lidingö 0186**; **Öland = Borgholm 0885 + Mörbylånga 0840**. SCB-MCP löser koder via fuzzy-sök.
 - Rekommendation: (b) för tunga siffror/historik, (a)/MCP för ad-hoc + kurering. Kreditera SCB.
 
+### "Läget i kommunen/regionen" via Kolada
+Egen dossier-**sektion** (för orter som är kommuner/regioner): nyckeltal + status. **Kolada** (SKR/RKA,
+5000+ nyckeltal / 264 verksamhetsområden / 290 kommuner + 21 regioner) — samma MCP-vs-API-gräns som SCB:
+**Kolada-MCP** (vi har den, Agentflow) = kurering/utveckling; **live = Koladas öppna API** → cache/ingest.
+Deras **AI-genererade kommunrapporter** (Läget i kommunen) får REFERERAS men märkas tydligt som
+"AI-genererad av SKR/RKA — kan innehålla fel, verifiera" (deras egen brasklapp) — aldrig som vår fakta.
+Högerkolumnen = **aktiviteter man gör**; separat sektion = **läget i kommun/region** (Kolada) + befolkning (SCB).
+Formellt: registrera kommuner/regioner som egna entiteter (kommun-/regionkoder) så SCB/Kolada kan nyckla.
+
 ### Yt-/storleks- + terräng-verktyg
 Cirkel/polygon-urval → **km² + antal objekt inuti** (räckvidds-sonden, [[reach-probe-universal]]) + "hur ytan ser ut" = flygfoto/DEM-baskarta ([[map-raster-assets]]). Svarar "hur stort är Öland".
