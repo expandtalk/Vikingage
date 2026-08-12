@@ -194,10 +194,19 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     queryKey: ['adventures-near', data?.center?.lat, data?.center?.lng],
     enabled: !!(data?.center && data.center.lat != null && data.center.lng != null),
     queryFn: async () => {
-      const { data: rows } = await (supabase as any).rpc('nearby_experiences', {
-        p_lat: data!.center!.lat, p_lng: data!.center!.lng, p_radius_km: 25, p_limit: 60,
-      });
-      return (rows ?? []) as Array<{ feature_type: string; label: string; lat: number; lng: number; parish: string | null }>;
+      const lat = data!.center!.lat, lng = data!.center!.lng;
+      // Union av det vi HAR som "äventyr & motion": badplatser (experiences) + grottor (heritage_sites,
+      // ~143 st, raa_type Grotta/naturgrotta/grotta med tradition). Grottorna bor i heritage → egen
+      // bbox-fråga (~±0,3° ≈ 25 km). Utbyggbart med leder/kulturvandring när de ingestas.
+      const [expRes, grottRes] = await Promise.all([
+        (supabase as any).rpc('nearby_experiences', { p_lat: lat, p_lng: lng, p_radius_km: 25, p_limit: 60 }),
+        (supabase as any).from('heritage_sites').select('id, name, raa_type, lat, lng')
+          .gte('lat', lat - 0.28).lte('lat', lat + 0.28).gte('lng', lng - 0.45).lte('lng', lng + 0.45)
+          .ilike('raa_type', '%grott%').not('lat', 'is', null).limit(60),
+      ]);
+      const bad = ((expRes.data ?? []) as any[]).map((a) => ({ feature_type: a.feature_type ?? 'badplats', label: a.label as string, lat: a.lat as number, lng: a.lng as number, parish: (a.parish ?? null) as string | null }));
+      const grott = ((grottRes.data ?? []) as any[]).map((g) => ({ feature_type: 'grotta', label: g.name as string, lat: Number(g.lat), lng: Number(g.lng), parish: null as string | null }));
+      return [...bad, ...grott];
     },
   });
   // Tidsreglage (Lotsen, spår 2): scrubba "visa fram till år N" → landskapet växer fram över tid.
