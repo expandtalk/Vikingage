@@ -185,16 +185,23 @@ const SourceDetail = () => {
                           {sv ? 'Strof' : 'Stanza'} {t.stanza_no}
                         </div>
                       )}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {t.original_norse && (
-                          <p className="text-sm text-slate-200 font-serif italic whitespace-pre-line">{t.original_norse}</p>
-                        )}
-                        {(sv ? t.translation_sv : (t.translation_en || t.translation_sv)) && (
-                          <p className="text-sm text-muted-foreground whitespace-pre-line">
-                            {sv ? t.translation_sv : (t.translation_en || t.translation_sv)}
-                          </p>
-                        )}
-                      </div>
+                      {(() => {
+                        const trans = sv ? t.translation_sv : (t.translation_en || t.translation_sv);
+                        const both = !!t.original_norse && !!trans;
+                        // Tvåspaltigt (original | översättning) BARA när båda finns. Annars trycks en
+                        // översättning-bara text (Beowulf m.fl.) in i halva bredden med en tom halva
+                        // bredvid — istället full bredd med läsbart mått (max-w-prose).
+                        return (
+                          <div className={both ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : ''}>
+                            {t.original_norse && (
+                              <p className="text-sm text-slate-200 font-serif italic whitespace-pre-line max-w-prose">{t.original_norse}</p>
+                            )}
+                            {trans && (
+                              <p className="text-sm text-muted-foreground whitespace-pre-line max-w-prose">{trans}</p>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </article>
                   ))}
                 </div>
