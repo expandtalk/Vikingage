@@ -40,10 +40,12 @@ interface PlaceMapProps {
   heightClass?: string;                 // t.ex. "h-[520px]"
   extraDefs?: LegendLayerDef[];         // kurerad sida lägger till egna legend-poster
   onMapReady?: (map: L.Map, enabled: Record<string, boolean>) => void;
+  legendPlacement?: 'overlay' | 'inline'; // 'inline' = legend under kartan (smal aside, täcker ej kartan)
 }
 
 export const PlaceMap: React.FC<PlaceMapProps> = ({
   center, zoom = 11, radiusM = 25000, heightClass = 'h-[520px]', extraDefs = [], onMapReady,
+  legendPlacement = 'overlay',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -122,9 +124,9 @@ export const PlaceMap: React.FC<PlaceMapProps> = ({
   }, [features, enabled]);
 
   return (
-    <div className="relative">
+    <div className={legendPlacement === 'inline' ? '' : 'relative'}>
       <div ref={containerRef} className={`w-full ${heightClass} rounded-lg overflow-hidden border border-border`} style={{ minHeight: 360 }} />
-      <MapLegend defs={defs} enabled={enabled} onToggle={toggle} mapRef={mapRef} title="Lager (kronologiskt)" />
+      <MapLegend defs={defs} enabled={enabled} onToggle={toggle} mapRef={mapRef} title="Lager (kronologiskt)" placement={legendPlacement} />
     </div>
   );
 };

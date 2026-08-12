@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin, BookOpen, GraduationCap, ArrowRight, Library, X, ExternalLink, Image as ImageIcon, Users, Clock } from 'lucide-react';
+import { MapPin, BookOpen, GraduationCap, ArrowRight, Library, X, ExternalLink, Image as ImageIcon, Users, Clock, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAnswerContext } from '@/hooks/useAnswerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FindBookLink } from './FindBookLink';
@@ -177,6 +177,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const [showCrossings, setShowCrossings] = useState(true);
   const [showAdv, setShowAdv] = useState(true);
   const [hiddenAdvKinds, setHiddenAdvKinds] = useState<Set<string>>(new Set()); // tom = alla badtyper/fiske synliga
+  const [advExpanded, setAdvExpanded] = useState(false); // underkategorierna hopfällda som default (Daniel)
   // Befästningsgeometri (linjer/polygoner) nära svarets center — riktig fort_element- + RAÄ-lämningsgeometri.
   // Källkritik: varje feature bär evidence_class → tolkat/hypotetiskt ritas streckat, bevarat heldraget.
   const { data: forts } = useQuery({
@@ -584,13 +585,19 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 </button>
               )}
               {(adventures?.length ?? 0) > 0 && (
-                <button onClick={() => setShowAdv((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showAdv ? '#22c55e' : 'transparent', border: '1.5px solid #22c55e' }} />
-                  <span className={showAdv ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Äventyr & motion' : 'Adventure & outdoors'} · {adventures!.length}</span>
-                </button>
+                <div className="flex w-full items-center gap-1 py-0.5 text-xs">
+                  <button onClick={() => setShowAdv((v) => !v)} className="flex flex-1 items-center gap-2 text-left">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showAdv ? '#22c55e' : 'transparent', border: '1.5px solid #22c55e' }} />
+                    <span className={showAdv ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Äventyr & motion' : 'Adventure & outdoors'} · {adventures!.length}</span>
+                  </button>
+                  {/* Chevron: underkategorierna är hopfällda som default; öppna för att se/filtrera typer. */}
+                  <button onClick={() => setAdvExpanded((v) => !v)} className="shrink-0 text-slate-400 hover:text-slate-100" aria-label={sv ? 'Visa badtyper' : 'Show categories'} aria-expanded={advExpanded}>
+                    {advExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
               )}
-              {/* Underkategori-filter: badtyp/fiske/grotta. Klick döljer/visar den typen på kartan. */}
-              {showAdv && (adventures?.length ?? 0) > 0 && (() => {
+              {/* Underkategori-filter: badtyp/fiske/grotta — hopfällt tills chevron öppnar. Klick döljer/visar typen. */}
+              {showAdv && advExpanded && (adventures?.length ?? 0) > 0 && (() => {
                 const present = Array.from(new Set((adventures || []).map(advKindOf)));
                 if (present.length <= 1) return null;
                 return (

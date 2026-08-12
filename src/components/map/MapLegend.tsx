@@ -14,9 +14,12 @@ interface Props {
   title?: string;
   className?: string;
   mapRef?: React.MutableRefObject<L.Map | null>;
+  // 'overlay' (default) = absolut uppe till höger PÅ kartan (stora kartor). 'inline' = statisk panel
+  // UNDER kartan (smala kartor/dossier-aside där overlay täcker halva kartan — Daniel).
+  placement?: 'overlay' | 'inline';
 }
 
-export const MapLegend: React.FC<Props> = ({ defs, enabled, onToggle, title = 'Lager', className = '', mapRef }) => {
+export const MapLegend: React.FC<Props> = ({ defs, enabled, onToggle, title = 'Lager', className = '', mapRef, placement = 'overlay' }) => {
   const [open, setOpen] = useState(true);
   const [fs, setFs] = useState(false);
   const layers = defs.filter((d) => d.group !== 'basemap');
@@ -71,8 +74,11 @@ export const MapLegend: React.FC<Props> = ({ defs, enabled, onToggle, title = 'L
     </button>
   );
 
+  const wrap = placement === 'inline'
+    ? 'mt-2 w-full rounded-lg border border-slate-700 bg-slate-900/95'
+    : 'absolute right-2 top-2 z-[1000] w-48 rounded-lg border border-slate-700 bg-slate-900/95 shadow-xl backdrop-blur';
   return (
-    <div className={`absolute right-2 top-2 z-[1000] w-48 rounded-lg border border-slate-700 bg-slate-900/95 shadow-xl backdrop-blur ${className}`}>
+    <div className={`${wrap} ${className}`}>
       <div className="flex items-center justify-between px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
         <button onClick={() => setOpen((o) => !o)} className="flex flex-1 items-center gap-1.5">
           <Layers className="h-3.5 w-3.5" /> {title}

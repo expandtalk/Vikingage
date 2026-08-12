@@ -721,7 +721,11 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
             {g.rows.map((row) => {
               const sub = humanSub(row.title, row.subtitle);
               const snip = stripTags(row.snippet);
-              const showSnip = snip && !snippetRedundant(snip, row.title, sub);
+              // Snippet som är en HANDLINGSUPPMANING ("visa alla N inskrifter i X på kartan") är ingen
+              // beskrivning — den dupliceras redan av radens klick + primärknapp. Dölj (den lästes som
+              // en kapad, trasig mening när den line-clampades — Daniel).
+              const isCtaSnip = /(?:visa alla|show all).*(?:på kartan|on the map)/i.test(snip || '');
+              const showSnip = snip && !isCtaSnip && !snippetRedundant(snip, row.title, sub);
               return (
               <button
                 key={row.key}
