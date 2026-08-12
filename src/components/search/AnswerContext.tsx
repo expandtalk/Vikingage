@@ -9,6 +9,7 @@ import { FindBookLink } from './FindBookLink';
 import { TopicMedia } from '@/components/media/TopicMedia';
 import { SearchFallback } from './SearchFallback';
 import { LandscapeNode, type LandscapeOverview } from './LandscapeNode';
+import { CharterAnswerSection } from './CharterAnswerSection';
 
 // RAÄ-bildtexter är långa ("Resmo kyrka. Runsignum Öl 4 — Anmärkning: …") — visa bara den
 // läsbara ledtexten (före första ". " eller " — "), kapad, så man ser VAD bilden är.
@@ -59,9 +60,14 @@ const TieredGallery: React.FC<{
   sv: boolean;
   onOpen: (img: GalleryImage) => void;
 }> = ({ images, missing, sv, onOpen }) => {
-  const imgs = dedupImages(images);
+  // Rangordna "snyggast först": foto > image > teckning/etsning (ärlig signal ur RPC:ns typ, ingen
+  // påhittad kvalitetspoäng). Hero = bästa fotot; teckningar/arkivplanscher hamnar sist.
+  const q = (t?: string | null) => { const x = (t || '').toLowerCase(); return x === 'foto' || x === 'photo' ? 0 : (x === 'teckning' || x === 'etsning' ? 2 : 1); };
+  const imgs = dedupImages(images).slice().sort((a, b) => q(a.type) - q(b.type));
   // Liggande foton (naturalWidth > höjd) får bredare kort så de inte klipps till en stående strimla.
   const [wide, setWide] = useState<Record<string, boolean>>({});
+  // Stenar UTAN bild döljs per default (Daniel) → nås via en flik. Visa dem aldrig i tomrummet.
+  const [showMissing, setShowMissing] = useState(false);
   if (!imgs.length && !missing.length) return null;
   const hero = imgs[0];
   const rest = imgs.slice(1);
@@ -71,9 +77,14 @@ const TieredGallery: React.FC<{
         <span className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
           <ImageIcon className="h-3.5 w-3.5" /> {sv ? 'Bilder' : 'Images'}
         </span>
-        <span className="text-[11px] text-slate-500">
-          {imgs.length}{missing.length ? ` · ${missing.length} ${sv ? 'utan bild' : 'without image'}` : ''}
-        </span>
+        {imgs.length > 0 && <span className="text-[11px] text-slate-500">{imgs.length}</span>}
+        {/* Flik: stenar utan bild (dolda per default) → visa/dölj på begäran. */}
+        {missing.length > 0 && (
+          <button type="button" onClick={() => setShowMissing((v) => !v)}
+            className="ml-auto text-[11px] text-amber-300/80 underline decoration-dotted underline-offset-2 hover:text-amber-200">
+            {showMissing ? (sv ? 'dölj utan bild' : 'hide without image') : `${missing.length} ${sv ? 'utan bild' : 'without image'} →`}
+          </button>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
         {hero && (
@@ -115,7 +126,7 @@ const TieredGallery: React.FC<{
             )}
           </button>
         ))}
-        {missing.map((m, i) => (
+        {showMissing && missing.map((m, i) => (
           // TIER 5: ingen bild → typografiskt kort (runsignum), aldrig en tom ruta
           <div key={`m-${i}`}
             className="flex aspect-[2/3] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-600 px-2 text-center">
@@ -632,6 +643,9 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       )}
 
       <div className="px-5 pb-4"><TopicMedia query={query} /></div>
+
+      {/* Medeltidsbrev (SDHK) utfärdade i orten — efter podden. Visas bara för länkade KG-orter. */}
+      <CharterAnswerSection name={query} sv={sv} />
 
       {/* SEKTION 3: tierat bildgalleri — hero + 2:3-kort + pappersmatta + Tier-5 typkort.
           Öppnas i LIGHTBOX (håll kvar användaren i plattformen, Daniel), inte i ny flik. */}
