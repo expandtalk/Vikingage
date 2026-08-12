@@ -135,12 +135,22 @@ Legend-togglar följer legend-invarianten (default-på men aldrig påtvingad per
 
 ## Pilot-scope
 
-Spika mönstret på tre *olika* arketyper så motorn bevisas för mer än datarika, entydiga platser:
+Spika mönstret på *olika* arketyper så motorn bevisas för mer än datarika, entydiga platser.
+OBS: **Ismantorp och Sandby borg är BÅDA `försvar`** (fornborg) — inte skilda arketyper. En
+försvarsplats räcker som pilot; den andra blir sekundärt exempel som samma motor täcker.
 
 1. **Färjestaden** (`overfart_logistik`) — huvudpilot; alla fyra nya lager + berättelse-nod.
-2. **En centralort** (t.ex. Kalmar/Hossmo) — testar bana/faser + estates/kyrk-lager.
-3. **En försvarsplats med omtvistad funktion** (t.ex. en Öland-fornborg) — stresstestar
-   arketyp-som-claim, konkurrerande tolkningar och tvetydig → kö-vägen.
+2. **Vickleby** (bygd/`kultplats`-karaktär: Karlevistenen, kyrka, alvar/skeppssättning, kvarnar,
+   hålvägar) — tillagd 2026-08-12 efter rapporterad bugg: sök på Vickleby centrerade rätt men visade
+   Kalmars sevärda platser (Vickleby-sidans lämningar har prominence=0 → filtrerades bort; enda
+   prominenta inom 25 km = Kalmar ~7,6 km över sundet). Ranknings-fix (avstånds-dämpad prominence)
+   applicerad men **plåstrar bara** — den verkliga fixen är databerikning + lokalt ankrade
+   funktions-lager, dvs. exakt dossiern. Vickleby stresstestar (a) lokal ankring för en anspråkslös
+   plats, (b) aktivitets-/"På platsen"-lagret, (c) **tvetydig arketyp → människa bekräftar**.
+3. **Ismantorp** (`försvar`, omtvistad funktion: försvar vs kult) — stresstestar arketyp-som-claim,
+   konkurrerande tolkningar och tvetydig → kö-vägen. Sandby borg = samma arketyp, sekundärt exempel
+   med forensiskt/massaker-överlägg.
+4. **En centralort** (Kalmar/Hossmo) — testar bana/faser + estates/kyrk-lager (om vi vill ha en fjärde).
 
 ## Hederlighet & källkritik
 
