@@ -457,5 +457,8 @@ Se [[ai-agent-fleet]], [[folk-group-phases-domain]], [[coordinate-gap-status]].
         Hervararsagan, Historia Norvegiæ, Kung Valdemars jordebok.
       - **Eddadikter utan fulltext (PD):** Solsången, Rigstula, Grottesången, Hyndlas/Hlöds/Odens korpsång,
         Svipdags sång, Balders drömmar, Valans spådom den korta, Angantyrs uppvaknande.
-- [ ] **DUBBLETTER i historical_sources att slå ihop:** Vita Ansgarii ×3, Nestorskrönikan ×~5,
-      Gesta Danorum ×3, Adam av Bremen *Gesta Hammaburgensis* ×3.
+- [x] **DUBBLETTER hopslagna 2026-08-12:** Vita Ansgarii→"Ansgars levnad", Gesta Danorum→"Danernas
+      bedrifter", Gesta Hammaburgensis→"Hamburgkyrkans historia", Nestor→"Nestorskrönikan (Berättelsen
+      om gångna år)". Kanonisk = rikast beskrivning/svensk titel; 12 king_source_mentions ompekade
+      (unique king_id+source_id → krockande avdubblade); inga andra FK-referenser (allt utom
+      king_source_mentions var 0).
