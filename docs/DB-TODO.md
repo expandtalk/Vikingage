@@ -487,11 +487,25 @@ Gångläge (walk mode):
 
 ## Sök/karta-buggar kvar efter 2026-08-13-passet
 
-- [ ] **Kalmarsund-blödning i Churches-LAGRET** (och notable även andra riktningen): väst-Öland-orter
-      (Vickleby, center ~56.6/16.44) ligger bara ~7 km tvärs vattnet från Kalmar → radie kan INTE
-      separera (löste kyrko-dominansen i notable sites, men Churches-lagret drar ännu Kalmars kyrkor).
-      Kräver **landmassa-medveten** filtrering: prefer/begränsa till samma landskap (Öland vs Småland)
-      via province/landscape-fält, ELLER "korsar linjen sundet?" mot en kustlinje-geometri. Ej radie.
+- [x] **Kalmarsund-blödning** — LÖST med Öland-bbox (migration 20260813130000): samma-landmassa-villkor
+      i sites+churches. Vickleby drar bara Öland, Kalmar drar ej Öland. + domkyrkor åter notable.
+      OBS: bbox täcker bara ÖLAND. Andra sund/öar (Gotland, Tjörn…) behöver egna polygoner om samma
+      problem dyker upp → generalisera ev. till en `landmass(lat,lng)`-tabell/funktion senare.
+
+## Eriksgatan-sidan + Bollaert-grupperingar 2026-08-13
+
+- [ ] **Eriksgatan-sida** (/explore?focus=eriksgatan): lägg viktiga platser som kartpunkter — Mora stenar
+      (finns i location_hypotheses), Östanbro/Östens bro (VERIFIERAD koord 59.6194/16.867, Västmannalagen),
+      Svintuna (finns /sv/plats/svintuna), Hålaveden/Holaved (KRÄVER koord-verifiering), Ramundeboda kloster
+      (VERIFIERAD 58.9708/14.5431, antonitkloster, Laxå 8), Uppbåga bro (KRÄVER koord). + gamla hålvägarna
+      på Eriksgata-kartan (halvag/färdväg-lagret RAÄ). Copyright: text från Wikipedia (CC BY-SA) + länsstyrelsen
+      = FAKTA fritt, ej verbatim; kreditera. Några borde bli egna /plats-sidor (Östanbro, Ramundeboda, Hålaveden).
+- [ ] **Inskrifts-formel/utformnings-grupperingar SAKNAS strukturerat** (audit 2026-08-13): runic_inscriptions
+      har INGA kolumner för böneformel/ristarformel/nekrolog/poetiska element/kors/stil/flerstensmonument/
+      trollformel. Bollaert 2016 (Uppsala, "Runstenar längs vägen") visar värdet: kristlighet (kors+böneformel),
+      skriftlighet (nekrolog, dubbelläsning, skiljetecken), status (flerstensmonument, längd, ristarsignatur),
+      poetik (Hübler-grupper A/B/C). Förslag: `inscription_features`-tabell (belagt/hypotes per element) +
+      koppla till väg (viking_roads). KREDITERA Johan Bollaert. Attundalandsvägen saknas som väg i viking_roads.
 - [ ] **Felplacerad händelse**: "Kalmars judiska begravningsplats tas i bruk" (1873) har koord
       56.6578/16.3527, location_status='documented', note "Skansgatan 3". Daniel: ritas på klostret.
       Verifiera Skansgatan 3:s riktiga koord innan ändring (ändra ej documented utan källa).
