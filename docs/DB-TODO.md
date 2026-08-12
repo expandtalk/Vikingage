@@ -439,6 +439,35 @@ Se [[ai-agent-fleet]], [[folk-group-phases-domain]], [[coordinate-gap-status]].
       men kräver ändå hex6-grid (h3-js) + Open-Meteo-ingest + frontend. → habitat-lite = eget mini-projekt
       (Overpass skog → h3-js res-9 → hex9/hex_habitat + väder-ingest + kartlager). EJ blind-byggt. pg_cron kvar.
 
+## Kö efter Vickleby/Revsudden-spåret 2026-08-12 (Daniels prioordning ej satt)
+
+- [ ] **(a) Hålväg-ingest Steg 4 — Kalmar-fastlandet.** FMIS-ingesten körde aldrig nationella
+      lämningsgeometrier (WFS mot RAÄ Kulturmiljöregistret). Revsudden/Drag-hålvägarna finns i RAÄ
+      (Daniels Lantmäteri-bilder: docs/kalmar/revsudden-kalmar.jpg, skäggenäs.jpg) men ej hos oss.
+      Kör linjegeometri-hämtning för Kalmar-fastlandet → lamning_geometry. Jfr [[halvag-fardvag-ingest]].
+- [ ] **(b) place_names som center-källa i entity_answer_context.** Revsudden/Drag (osm_village/udde)
+      får tomt center → ingen karta. RPC centrerar bara via content_page/runsten-socken/heritage-namn.
+      Lägg place_names-fallback (+ Närhets-motorn). Löser "sök på ort utan runstenar ger inget".
+- [ ] **(c) Nästa Västgötalags-balk.** Rättlösabalken LIVE ([[vastgotalagen-pilot]]); filologen tar
+      nästa balk (Kyrkobalken?) samma mönster: grundtext PD + AI-översättning märkt + kollationerad.
+
+## Mobilt kör-/gångläge — FÄLTPROV-BUGGAR 2026-08-12 (Daniel körde bil 50 min)
+
+Körläge (DriveView/DriveView3D):
+- [ ] **KRITISK: GPS-position uppdateras INTE under färd.** Kvar på startgatan (Stockholmsvägen 33)
+      hela 50 min; sväng-anvisningar (vä/hö) uppdaterades ej (aldrig "ut på E4:an"/"av mot Lidingö").
+      → watchPosition/turn-by-turn-avancering trasig. Rotorsak i kod.
+- [ ] **Footern växer sig större och större** i botten (layout-bugg, ackumuleras).
+- [ ] **3D-vyn fungerade inte.**
+- [ ] **Saknar ETA:** ingen tid/mil kvar till målet visades.
+- [ ] **Ljudknappen syns inte** (bör synas för röst-anvisningar).
+- [ ] **Ingen parkering** vid framkomst till målet.
+- [ ] BRA: blå destinationslinje + pil på linjen syntes.
+
+Gångläge (walk mode):
+- [ ] **Zoom fel från start:** liten prick, svårt lokalisera sig. Ska vara **inzoomat från början**
+      (se sin position), sen kunna zooma ut. Jfr [[heading-up-car-mode]], [[maplibre-drive-view-fas2]].
+
 ## /texter städat + primärkälle-önskelista 2026-08-12
 
 - [x] **catalog_role på historical_sources** (migration `20260812123000`): work/scholarship/provenance.
