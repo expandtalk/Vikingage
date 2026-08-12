@@ -186,3 +186,51 @@ Byggs EN gång, delas av entity_answer_context, Explore och dossiern.
 2. Ska pilotens tre platser alla bli `/sv/plats/:slug`-sidor, eller får centralorten/försvaret
    bara berikad svarspanel i v1?
 3. Prosa v1: mallad-ur-data (default) — bekräfta att det räcker för piloten.
+
+---
+
+## Universell plats-dossier på `/sv/plats/:slug` (konsolidering 2026-08-12)
+
+Beslut (Daniel): **dossierns enda hem = `/sv/plats/:slug`** (riktig, delbar, SEO-sida). Sök-svaret
+(AnswerContext) blir **smakprovet** som länkar in ("Öppna platssidan"). Idag har `/sv/plats` bara
+**5 kuraterade slugs** + handförfattad prosa → måste växa till **universell, genererad dossier för
+VILKEN ort som helst**.
+
+### Tre piloter = EN motor (kombinerade lärdomar)
+- **Färjestaden** (`overfart_logistik`): arketyp-specifika lager (överfart/hålväg/hamn) + berättelse-
+  nod (Snäckstaviken-hypotes).
+- **Vickleby** (bygd/kult): lokal ankring (Närhets-motorn) + tvetydig arketyp + "surfa det vi har".
+- **Lidingö** (tunn/allmän): **innehålls-ryggraden** + äventyrskolumn + tunn-data-ärlighet.
+
+### Innehålls-ryggrad (dossierns default-narrativ, per Daniel/Lidingö)
+Kronologisk platsbiografi med **ärliga slots** (data ELLER markerad lucka — aldrig påhitt):
+bofast befolkning (härled ur äldsta daterbara spår) → gamla spår (`heritage_sites`) → släkt-ägande
+(`estates`/`estate_holdings`) → ortnamnets ursprung (`place_names`+Isof/SOL) → bildarkiv (RAÄ/Commons)
+→ kyrka (`ecclesiastical_sites`). Högerkolumn = **Äventyr & motion** (`experiences`/`nearby_experiences`:
+bad, spår/leder, grottor, kulturvandringar).
+
+### Universell slug-resolvning
+`/sv/plats/:slug` löser upp **vilken plats som helst** via `place_names` (ej bara de 5 kuraterade).
+Genererad dossier + kurerad prosa som **opt-in-lager** ovanpå. Kräver kanonisk slug per plats
+(`place_slug` på place_names el. härledd).
+
+### Karta & UX-krav (Daniels kommentarer 2026-08-12)
+1. **Legend till HÖGER om kartan, i jämnnivå** (sido-kolumn, ej overlay) — delad `<MapLegend>`.
+2. **Befintliga typ-ikoner** (GlobalSearch-META) på markör + legend → självförklarande.
+3. **Embeddbar karta**: `<iframe>`-widget + "via vikingage.se"-attributionslänk (spridning + backlinks).
+4. **Plugin-baserade lager** = arketyp-profilen: varje lager (hålvägar, **första/tidiga vägarna**, bad,
+   vrak, farled…) en pluggbar modul som platsens profil slår på.
+5. **Markör-läsbarhet:** dedup + ikon + läsbar etikett + klustring (bugg: "Öl 45" ×2 på Skedemosse).
+6. **Linjal över kartan** + **cirkel/polygon-urval med antal-inuti** (räckvidds-sonden, [[reach-probe-universal]]).
+7. **"Hitta dit"** (turn-by-turn-nav:en, [[mobile-plan-location]]).
+8. **Basemap-växlare:** CC-flygfoto + **våra historiska kartor på FTP** (Generalstabskartan `.tif`,
+   Häradsekonomiska, ekonomiska kartan `.TAB`, `map/historicmaps`, delvis redan tilade i
+   `map/tiles/ekonomiskartan`). Kräver georef + tiling-pipeline ([[map-raster-assets]]).
+
+### Sekvens
+1. **Närhets-motorn + äventyrslager + ikon/legend-höger + markör-dedup** — störst effekt, surfa det
+   vi HAR (Lidingö: 2 runstenar → 109 spår + 12 upplevelser + bilder + kyrka).
+2. **Universell slug-resolvning** → Färjestaden/Vickleby/Lidingö får riktiga `/sv/plats`-sidor;
+   AnswerContext → smakprov som länkar in.
+3. **Ryggradens slots + ingest** (Isof-ortnamn fyller en axel för ALLA orter; estates; bilder) +
+   basemap-tiling + embed-widget + plugin-lager-config. Över tid, datadrivet.
