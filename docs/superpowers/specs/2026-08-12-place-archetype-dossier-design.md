@@ -234,3 +234,29 @@ Genererad dossier + kurerad prosa som **opt-in-lager** ovanpå. Kräver kanonisk
    AnswerContext → smakprov som länkar in.
 3. **Ryggradens slots + ingest** (Isof-ortnamn fyller en axel för ALLA orter; estates; bilder) +
    basemap-tiling + embed-widget + plugin-lager-config. Över tid, datadrivet.
+
+### Sökintention (Lidingö- + Öland-keywords, Ahrefs 2026-08-12) → svarande dossier
+
+Keyword-datat visar **samma fråge-kluster för varje ort** → bekräftar den universella mallen. Två hinkar:
+- **Kommunal service** (schoolsoft, bygglov, hemtjänst…) = kommunens sajt, **INTE vår match**.
+- **Plats/kultur/natur/människor/aktiviteter** = **vår nisch**, tunt besvarad idag.
+
+Universella kluster (bygg dossier-rubriker som Q→källbelagt svar, bra för SEO + GEO/AI-sök):
+| Kluster (exempel-keywords) | Dossier-axel |
+|---|---|
+| "vad kan man göra / vad ska man se / vad får man inte missa / när det regnar" | **Äventyr & motion** |
+| "hur stort/långt/brett", "hur många km²", "hur långt runt/mellan öland-gotland" | **Yt-/storleks-mått** (nytt) |
+| "hur många bor / bofasta / invånare / sommar vs året runt" | **Befolkning (SCB)** |
+| "hur tar man sig till / hur åker man till" | **Hitta dit** (nav) |
+| "vad är X känt för", "hur många kyrkor", "skördefesten/evenemang" | känt-för + kyrk-räknare + evenemang |
+| "raoul wallenberg (8,8K!), monica zetterlund, kändisar" | **Kända personer/boende** (nytt) |
+| "vem äger/byggde foresta, villa söderås" | släkt-/ägande-axeln |
+
+### Befolkning via SCB — MCP vs API (arkitektur, VIKTIG)
+- **SCB-MCP** (isakskogstad, klonad+byggd i `./SCB-MCP`, gitignorerad) = **för kurering/utveckling + Agentflow**. Lokal stdio-server → **kan ej anropas av publik sajt.**
+- **Live-sajten:** SCB **PxWebAPI 2.0** (öppen data, **SV + EN**) → antingen (a) edge-funktion (on-demand + cache) eller (b) **`region_population`-tabell** ingestad + månadsuppdaterad. **75 års historik → "befolkning genom tiden"-axeln** (bofast-historik, sommar vs året runt).
+- Region-koder: **Lidingö 0186**; **Öland = Borgholm 0885 + Mörbylånga 0840**. SCB-MCP löser koder via fuzzy-sök.
+- Rekommendation: (b) för tunga siffror/historik, (a)/MCP för ad-hoc + kurering. Kreditera SCB.
+
+### Yt-/storleks- + terräng-verktyg
+Cirkel/polygon-urval → **km² + antal objekt inuti** (räckvidds-sonden, [[reach-probe-universal]]) + "hur ytan ser ut" = flygfoto/DEM-baskarta ([[map-raster-assets]]). Svarar "hur stort är Öland".

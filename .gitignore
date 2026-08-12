@@ -61,3 +61,6 @@ kartsymboler/
 
 # AI-agentdefinitioner = kommersiell IP (säljbara), ej i repot
 .claude/agents/
+
+# Klonad SCB MCP-server (dev-/kurerings-verktyg, ej projektkod)
+/SCB-MCP/
