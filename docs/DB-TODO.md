@@ -468,6 +468,23 @@ Gångläge (walk mode):
 - [ ] **Zoom fel från start:** liten prick, svårt lokalisera sig. Ska vara **inzoomat från början**
       (se sin position), sen kunna zooma ut. Jfr [[heading-up-car-mode]], [[maplibre-drive-view-fas2]].
 
+## Äventyr & motion — kategorier + ingest 2026-08-12
+
+- [x] **Äventyrslager i söksvaret** (AnswerContext): badplatser (nearby_experiences) + grottor
+      (heritage_sites, 143). Grön legend-toggle "Äventyr & motion". Live i DB; frontend deploy-gated.
+- [x] **bath_kind-klassificering** (experiences): naturbad 2631 / hundbad 18 / barnbad 12 / klippbad 3
+      / nakenbad 2 — härledd ur namn, granskningsbar. Daniel förbättrar manuellt. Inomhus/simhall = 0 (gap).
+- [ ] **Nya äventyr-kategorier att INGESTA (källkritiskt — fakta fritt, listor ©):**
+      - **Fiskeställen** m. säsong: Daniels egen geokodade GeoJSON/CSV (WGS84+SWEREF99TM, coord_source
+        Google/Approx) i Downloads → experiences category='fiske', season som datumintervall.
+      - **Golfbanor:** primärkälla = **GIT** (Golfförbundet) / öppet register, EJ Golfguiden/allabanor-listorna rakt av.
+      - **Simhallar/inomhusbad:** kommunernas anläggningar (simma.nu är crowdsourcad referens, ej ren källa).
+      - **Vattenland/äventyrsbad, nakenbad, hundbad:** komplettera bath_kind/experiences ur primärkällor
+        (Tripadvisor/Aftonbladet/Momondo = redaktionella ©, bara som referens — ingesta fakta+koord, ej text).
+      - Alla: geokoda (WGS84 + SWEREF99TM), säsong där relevant, coord_source + rights.
+- [ ] Exponera bath_kind + kategori i äventyrslagret (färg/toggle per typ) — nearby_experiences returnerar
+      ej bath_kind ännu; byt till direkt experiences-fråga el. utöka RPC:n.
+
 ## /texter städat + primärkälle-önskelista 2026-08-12
 
 - [x] **catalog_role på historical_sources** (migration `20260812123000`): work/scholarship/provenance.
