@@ -226,6 +226,21 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const advKindOf = (a: { feature_type: string; bath_kind?: string | null }): string =>
     a.feature_type === 'fiske' ? 'fiske' : a.feature_type === 'grotta' ? 'grotta' : (a.bath_kind || 'badplats');
 
+  // RAÄ Fornsök-länk per sevärd plats: generiska RAÄ-namn ("Hällristning") saknar särskiljning i vår
+  // data → länka till lämningen i kulturarvsdata/Fornsök så man ser VAD det är (Daniel).
+  const siteIds = ((data?.sites ?? []) as Array<{ id?: string }>).map((s) => s.id).filter(Boolean) as string[];
+  const { data: siteRaa } = useQuery({
+    queryKey: ['site-raa', siteIds.join(',')],
+    enabled: siteIds.length > 0,
+    queryFn: async () => {
+      const { data: rows } = await (supabase as any).from('external_ids')
+        .select('entity_id, uri').eq('entity_table', 'heritage_sites').eq('scheme', 'raa_lamning').in('entity_id', siteIds);
+      const map: Record<string, string> = {};
+      ((rows ?? []) as Array<{ entity_id: string; uri: string }>).forEach((r) => { if (!map[r.entity_id]) map[r.entity_id] = r.uri; });
+      return map;
+    },
+  });
+
   // Tidsreglage (Lotsen, spår 2): scrubba "visa fram till år N" → landskapet växer fram över tid.
   const [yearMax, setYearMax] = useState<number | null>(null);
   // "Dela" (Community/Bidra): mobil → native share-ark (navigator.share); desktop/utan stöd →
@@ -674,13 +689,17 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 <MapPin className="h-3.5 w-3.5" /> {sv ? 'Sevärda platser' : 'Notable sites'}
               </h3>
               <div className="flex flex-wrap gap-1.5">
-                {data.sites.slice(0, 10).map((s) => (
-                  <button key={s.id} onClick={() => onGo(`/explore?searchQuery=${encodeURIComponent(s.name)}`)}
-                    title={s.type ?? undefined}
-                    className="rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100">
-                    {s.name}
-                  </button>
-                ))}
+                {data.sites.slice(0, 10).map((s) => {
+                  const raa = siteRaa?.[(s as { id: string }).id];
+                  const sx = s as { id: string; name: string; type?: string; parish?: string; desc?: string };
+                  const hover = [sx.type, sx.parish, sx.desc].filter(Boolean).join(' · ');
+                  return (
+                    <span key={sx.id} className="inline-flex items-center gap-1 rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-200">
+                      <button onClick={() => onGo(`/explore?searchQuery=${encodeURIComponent(sx.name)}`)} title={hover || undefined} className="hover:text-amber-100">{sx.name}</button>
+                      {raa && <a href={raa} target="_blank" rel="noopener noreferrer" title={sv ? 'Se lämningen i RAÄ Fornsök' : 'View record in RAÄ Fornsök'} className="text-amber-400/70 hover:text-amber-200"><ExternalLink className="h-3 w-3" /></a>}
+                    </span>
+                  );
+                })}
               </div>
             </section>
           )}
