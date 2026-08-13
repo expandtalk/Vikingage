@@ -67,8 +67,8 @@ const KIND: Record<Kind, { color: string; label: string }> = {
   church: { color: '#7b3f00', label: 'Medeltidskyrka' },
   fort: { color: '#8b5cf6', label: 'Borg (kontrollpunkt)' },
   milestone: { color: '#9a7b3c', label: 'Milstolpe (1700-tal)' },
-  execution: { color: '#8a5a5a', label: 'Avrättningsplats (galgbacke)' },
-  trace: { color: '#eab308', label: 'Bevarat namnspår (moderna gatan)' },
+  execution: { color: '#8a5a5a', label: 'Avrättningsplats' },
+  trace: { color: '#eab308', label: 'Bevarat namnspår' },
   probable: { color: '#f97316', label: 'Trolig landväg (S:t Botvids väg)' },
 };
 
@@ -90,7 +90,7 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
   // Återanvändbar legend: väglinje + en togglebar grupp per nodtyp + baskarta.
   const LEGEND: LegendLayerDef[] = [
     { key: 'road', label: 'Ankarlinje mellan hållpunkter (ej belagd sträckning)', color: '#d4a63c', defaultOn: true },
-    { key: 'trace', label: 'Bevarat namnspår – moderna Götalandsvägen (Isof)', color: '#eab308', defaultOn: true },
+    { key: 'trace', label: 'Bevarat namnspår', color: '#eab308', defaultOn: true },
     { key: 'probable', label: 'Trolig landväg – Sankt Botvids väg (Huddinge)', color: '#f97316', defaultOn: true },
     ...GL_KIND_KEYS.map((k) => ({ key: k, label: KIND[k].label, color: KIND[k].color, defaultOn: true })),
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
@@ -121,7 +121,9 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
     // hållpunkter, INTE en belagd sträckning. Belagt/troligt visas av de solida linjerna nedan.
     L.polyline(nodes.filter((n) => !n.offRoute).map((n) => [n.lat, n.lng] as [number, number]), {
       color: '#d4a63c', weight: 2, opacity: 0.5, dashArray: '3 7',
-    }).addTo(roadRef.current);
+    })
+      .bindPopup('<b>Ankarlinje mellan hållpunkter</b><br/><span style="font-size:11px">Schematisk linje som binder ihop hållpunkterna — INTE en belagd vägsträckning. Den belagda/troliga vägen visas av de solida linjerna (bevarat namnspår, trolig landväg).</span>')
+      .addTo(roadRef.current);
 
     // Bevarat namnspår (moderna Götalandsvägen) — SOLID linje. Namnkontinuitet (Isof), ej vägkropp.
     const trace = nodes.filter((n) => n.kind === 'trace').sort((a, b) => a.order - b.order);
@@ -142,10 +144,12 @@ const GotaLandsvagMap: React.FC<{ nodes: Node[] }> = ({ nodes }) => {
 
     nodes.filter((n) => !LINE_KINDS.includes(n.kind)).forEach((n) => {
       const c = (KIND[n.kind] ?? KIND.endpoint).color;
-      // Medaljong: färgen bär nodtypen (matchar legenden), FORMEN (kind→glyf via featureIcon:
-      // rune→rune, church→church, bridge→bro, fort→hus_slott, thing→scales, endpoint→dot) bär typen
-      // också → skiljs på form, ej bara färg (WCAG 1.4.1). Hover-namn (tät rutt, ej permanent).
-      L.marker([n.lat, n.lng], { icon: createPlaceMedallion({ color: c, icon: featureIcon(n.kind), label: n.name, prominent: false, hairline: true }) })
+      // Medaljong: färgen bär nodtypen (matchar legenden), FORMEN (kind→glyf) bär typen också
+      // → skiljs på form, ej bara färg (WCAG 1.4.1). Hover-namn (tät rutt, ej permanent).
+      // Milstolpar (1700-tal) = liten fyrkant (mindre yta, sekundär betydelse); runstenar lite mindre.
+      const isMile = n.kind === 'milestone';
+      const size = isMile ? 16 : n.kind === 'rune' ? 26 : undefined;
+      L.marker([n.lat, n.lng], { icon: createPlaceMedallion({ color: c, icon: featureIcon(n.kind), label: n.name, prominent: false, hairline: true, size, shape: isMile ? 'square' : undefined }) })
         .bindPopup(`<b>${n.name}</b><br/><span style="font-size:11px">${n.note}</span>`)
         .addTo(groupsRef.current[n.kind] ?? roadRef.current);
     });

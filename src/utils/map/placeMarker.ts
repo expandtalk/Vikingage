@@ -200,6 +200,7 @@ export interface MedallionOptions {
   royal?: boolean;        // kungaplats → guldring + glöd + större disk (rang; typen bärs av ikonen)
   hairline?: boolean;     // tunn ljus ytterkant på disken → läsbar även mot mörk baskarta (WCAG SC 1.4.11)
   prominent?: boolean;    // huvudnod → permanent namn; annars visas namnet bara vid hover/fokus (anti-kollision)
+  shape?: 'circle' | 'square'; // 'square' = liten fyrkant (t.ex. milstolpar) → tar mindre yta, default circle
   className?: string;     // extra CSS-klass (för lager-specifik gate om behövs)
 }
 
@@ -223,7 +224,8 @@ export const createPlaceMedallion = (o: MedallionOptions): L.DivIcon => {
     : `0 0 5px 0 ${ring},0 2px 5px rgba(0,0,0,.4)`;
   // Hairline: tunn ljus ytterkant så disken läses även mot mörk baskarta (ringfärgen ensam räcker ej).
   const shadow = o.hairline ? `${shadowBase},0 0 0 1px rgba(255,255,255,.6)` : shadowBase;
-  const disc = `<div style="width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#33414d,#212c35);border:2px solid ${ring};box-shadow:${shadow};">${svg}</div>`;
+  const radius = o.shape === 'square' ? '3px' : '50%';
+  const disc = `<div style="width:${size}px;height:${size}px;border-radius:${radius};display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#33414d,#212c35);border:2px solid ${ring};box-shadow:${shadow};">${svg}</div>`;
   // Bara prominenta/kungaplatser får PERMANENT namn; övriga döljs och visas vid hover/fokus
   // (löser etikett-kollision vid täthet). Zoom-grind: karta som satt .vp-labels-off döljer hover-namn.
   const permanent = o.royal || o.prominent;
