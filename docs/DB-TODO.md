@@ -485,6 +485,17 @@ Gångläge (walk mode):
 - [ ] Exponera bath_kind + kategori i äventyrslagret (färg/toggle per typ) — nearby_experiences returnerar
       ej bath_kind ännu; byt till direkt experiences-fråga el. utöka RPC:n.
 
+## Göteborg / stad-svar 2026-08-13
+
+- [x] Grundningshändelser 1603/1611/1619 (Färjenäs verifierad, Wikipedia).
+- [x] content_page 'goteborg' → svaret ankrar på Gustaf Adolfs torg (var Hisingen) + /sv/plats-listning.
+- [x] RAÄ Fornsök-länk på generiska notable sites (external_ids). Göteborg 9/10.
+- [x] Skansen Kronan + Lejonet i fort_element (verifierade koord).
+- [ ] **Nya + Gamla Älvsborg** — verifiera koord (fanns ej i sök) → fort_element.
+- [ ] **Museer**: bara 15 geokodade i DB → berika (Göteborgs stadsmuseum, Sjöfartsmuseet …) + rita museum-lager i frontend (RPC returnerar det).
+- [ ] **Fler skansar/befästningar** riksomfattande (efter-vikingatida) → fort_element.
+- [ ] Kust-städer: "öar att besöka"-dimension (Vrångö/Hönö/Vinga finns som äventyr/vrak).
+
 ## Färdvägar & leder — backlog 2026-08-13
 
 - [x] Generisk vägrenderare: road_overview(slug) + RoadPage /led/:slug + roads-sektion på /place.
