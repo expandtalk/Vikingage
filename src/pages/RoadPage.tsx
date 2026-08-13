@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,10 +27,16 @@ const ROAD_COLOR: Record<string, string> = {
   vintervag: '#4682b4', farled: '#0ea5e9', bro: '#2f4f4f', vadstalle: '#2f4f4f', knutpunkt: '#8b4513',
 };
 
+// Vägar som har en KANONISK bespoke-sida → generiska /led/-routen redirectar dit (undviker två
+// URL:er för samma väg, jfr kommunikationsarkeolog-granskning). Slug → bespoke-slug (samma här).
+const BESPOKE_ROADS: Record<string, string> = { 'gota-landsvag': 'gota-landsvag' };
+
 const RoadPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { language } = useLanguage();
   const sv = language === 'sv';
+  // Bespoke-redirect avgörs efter att hooks körts (rules-of-hooks) — se render-returen nedan.
+  const bespoke = slug ? BESPOKE_ROADS[slug] : undefined;
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
 
@@ -98,6 +104,7 @@ const RoadPage: React.FC = () => {
   useEffect(() => () => { try { mapRef.current?.remove(); } catch { /* noop */ } mapRef.current = null; }, []);
 
   const title = road?.name ?? (sv ? 'Färdväg' : 'Route');
+  if (bespoke) return <Navigate to={`/${sv ? 'sv' : 'en'}/${bespoke}`} replace />;
   return (
     <div className="min-h-screen viking-bg">
       <PageMeta title={title} titleEn={title} description={road?.description ?? ''} descriptionEn={road?.description ?? ''} />
