@@ -340,6 +340,17 @@ const Vetenskapsmetodik = () => (
             </p>
           </div>
           <div className="viking-card rounded-lg p-3">
+            <p className="text-sm text-gold font-medium mb-1">AI-runolog — identifiering &amp; dokumentation av runor</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              En <strong>AI-runolog</strong> (specialistagent) hjälper till att identifiera och dokumentera
+              runinskrifter: läsa transkription, föreslå datering (Gräslund-stil), formler och ristarhand,
+              samt göra källkritiska bedömningar. Den <em>föreslår</em> — en människa verifierar och beslutar
+              innan något blir bestående. Att läsa slitna eller lavtäckta ristningar ur ett foto kräver
+              dessutom bildförbättring (släpljus/RTI/DStretch) och en mänsklig runolog; en pixel-gissning
+              görs aldrig.
+            </p>
+          </div>
+          <div className="viking-card rounded-lg p-3">
             <p className="text-sm text-gold font-medium mb-1">Människan bär det redaktionella ansvaret</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               AI beskriver — en människa granskar, verifierar och beslutar innan något blir kanon
