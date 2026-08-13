@@ -41,6 +41,7 @@ const PlaceNames = lazy(() => import("./pages/PlaceNames"));
 const TunaNames = lazy(() => import("./pages/TunaNames"));
 const PlacePage = lazy(() => import("./pages/PlacePage"));
 const PlaceIndex = lazy(() => import("./pages/PlaceIndex"));
+const RoadPage = lazy(() => import("./pages/RoadPage"));
 const Vendelhjalmar = lazy(() => import("./pages/Vendelhjalmar"));
 const Models3D = lazy(() => import("./pages/Models3D"));
 const Ontology = lazy(() => import("./pages/Ontology"));
@@ -59,6 +60,8 @@ const SandbyBorg = lazy(() => import("./pages/SandbyBorg"));
 const DanskaRunstenar = lazy(() => import("./pages/DanskaRunstenar"));
 const Kyrkor = lazy(() => import("./pages/Kyrkor"));
 const Medeltidsborgar = lazy(() => import("./pages/Medeltidsborgar"));
+const DriveView = lazy(() => import("./pages/DriveView"));
+const SvampGuide = lazy(() => import("./pages/SvampGuide"));
 const SanktOlof = lazy(() => import("./pages/SanktOlof"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Helgon = lazy(() => import("./pages/Helgon"));
@@ -167,6 +170,8 @@ const App = () => (
                   <Route path="/en/place" element={<PlaceIndex />} />
                   <Route path="/sv/plats/:slug" element={<PlacePage />} />
                   <Route path="/en/place/:slug" element={<PlacePage />} />
+                  <Route path="/sv/led/:slug" element={<RoadPage />} />
+                  <Route path="/en/road/:slug" element={<RoadPage />} />
                   <Route path="/sv/vendelhjalmar" element={<Vendelhjalmar />} />
                   <Route path="/en/vendel-helmets" element={<Vendelhjalmar />} />
                   <Route path="/sv/3d" element={<Models3D />} />
@@ -240,6 +245,10 @@ const App = () => (
                   <Route path="/en/churches" element={<Kyrkor />} />
                   <Route path="/sv/medeltidsborgar" element={<Medeltidsborgar />} />
                   <Route path="/en/medieval-castles" element={<Medeltidsborgar />} />
+                  <Route path="/3D-bil" element={<DriveView />} />
+                  <Route path="/3D-drive" element={<DriveView />} />
+                  <Route path="/sv/svamp" element={<SvampGuide />} />
+                  <Route path="/en/mushrooms" element={<SvampGuide />} />
                   <Route path="/staket" element={<Staket />} />
                   <Route path="/sv/sankt-olof" element={<SanktOlof />} />
                   <Route path="/en/saint-olav" element={<SanktOlof />} />
