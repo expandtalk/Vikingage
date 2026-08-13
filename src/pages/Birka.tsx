@@ -14,6 +14,9 @@ import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
+import { EntityJsonLd } from '@/components/seo/EntityJsonLd';
+import { useSameAs } from '@/hooks/useSameAs';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // /sv/birka — forskningshubb för Birka på Björkö i Mälaren (ca 750–975), Sveriges första stad.
 // Källbelagt: viking_cities (stad, Bj 581), historical_kings (Kung Björn/Ansgar), trade_routes
@@ -22,7 +25,7 @@ import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegend
 
 const BIRKA: [number, number] = [59.3362, 17.5455];
 
-interface City { description: string | null; historical_significance: string | null; period_start: number | null; period_end: number | null; unesco_site: boolean | null; }
+interface City { id: string; description: string | null; historical_significance: string | null; period_start: number | null; period_end: number | null; unesco_site: boolean | null; }
 interface King { name: string; reign_start: number | null; reign_end: number | null; description: string | null; }
 interface Route { name: string; orientation: string | null; description: string | null; source: string | null; link: string | null; }
 
@@ -94,7 +97,7 @@ const Birka = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
 
   useEffect(() => {
-    (supabase.from('viking_cities') as any).select('description, historical_significance, period_start, period_end, unesco_site').ilike('name', 'Birka').maybeSingle()
+    (supabase.from('viking_cities') as any).select('id, description, historical_significance, period_start, period_end, unesco_site').ilike('name', 'Birka').maybeSingle()
       .then(({ data }: { data: City | null }) => setCity(data));
     (supabase.from('historical_kings') as any).select('name, reign_start, reign_end, description').eq('name', 'Kung Björn').maybeSingle()
       .then(({ data }: { data: King | null }) => setKing(data));
@@ -103,8 +106,24 @@ const Birka = () => {
       .then(({ data }: { data: Route[] | null }) => setRoutes(data ?? []));
   }, []);
 
+  const sv = useLanguage().language === 'sv';
+  const sameAs = useSameAs('viking_cities', city?.id); // Wikidata-länk ur external_ids → schema.org sameAs
+
   return (
     <div className="min-h-screen viking-bg">
+      <EntityJsonLd
+        type="LandmarksOrHistoricalBuildings"
+        name="Birka"
+        path={sv ? '/sv/birka' : '/en/birka'}
+        inLanguage={sv ? 'sv' : 'en'}
+        description={sv
+          ? 'Vikingatida handelsstad på Björkö i Mälaren (ca 750–975); UNESCO-världsarv tillsammans med Hovgården.'
+          : 'Viking Age trading town on Björkö in Lake Mälaren (c. 750–975); a UNESCO World Heritage Site together with Hovgården.'}
+        lat={BIRKA[0]}
+        lng={BIRKA[1]}
+        temporalCoverage={city?.period_start != null && city?.period_end != null ? `${city.period_start}/${city.period_end}` : '0750/0975'}
+        sameAs={sameAs}
+      />
       <PageMeta
         title="Birka — Sveriges första stad på Björkö i Mälaren"
         titleEn="Birka — Sweden's first town on Björkö in Lake Mälaren"
