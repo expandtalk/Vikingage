@@ -118,6 +118,10 @@ export const FingerprintDialog: React.FC<Props> = ({ kind, className }) => {
                   {result.caveats.map((c, i) => <li key={i}>{c}</li>)}
                 </ul>
               )}
+              {/* AI-transparens (EU AI Act art. 50.4): märk AI-genererad output + verifieringsväg. */}
+              <p className="text-[11px] text-muted-foreground/70 pt-1.5 mt-1 border-t border-border/50">
+                AI-genererad forensisk analys — preliminärt underlag, verifiera mot källa/runolog innan citat.
+              </p>
             </div>
           )}
         </div>

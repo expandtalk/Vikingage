@@ -87,6 +87,16 @@ const Privacy = () => {
                 namn du angett.
               </p>
 
+              <h2>AI-genererat innehåll</h2>
+              <p>
+                Delar av innehållet skapas med AI som hjälpmedel — datering och analys av runinskrifter,
+                källförda sök-svar och AI-översättningar av public domain-text. Sådant innehåll är{' '}
+                <strong>märkt som AI-genererat</strong> och en människa granskar och ansvarar för det innan
+                det blir bestående. Vi genererar inga syntetiska bilder eller deepfakes — alla foton är
+                riktiga och attribuerade. Full redogörelse (i förhållande till EU:s AI-förordning art. 50)
+                finns på <a href="/vetenskapsmetodik" className="text-gold hover:underline">Vetenskapsmetodik och AI</a>.
+              </p>
+
               <h2>Dina rättigheter</h2>
               <p>
                 Eftersom vi inte samlar personuppgifter om anonyma besökare finns inget besökarregister att
@@ -160,6 +170,16 @@ const Privacy = () => {
                 they go through a moderation queue. Source criticism is the core of the platform: nothing is
                 shown as fact unchecked. What you choose to post publicly (e.g. an approved discussion post)
                 becomes visible together with the name you provided.
+              </p>
+
+              <h2>AI-generated content</h2>
+              <p>
+                Some content is created with AI as an aid — dating and analysis of runic inscriptions,
+                sourced search answers and AI translations of public-domain text. Such content is{' '}
+                <strong>labelled as AI-generated</strong>, and a human reviews and takes responsibility for
+                it before it becomes permanent. We generate no synthetic images or deepfakes — all photos
+                are real and attributed. A full account (relative to EU AI Act art. 50) is on the{' '}
+                <a href="/methodology" className="text-gold hover:underline">Scientific Methodology and AI</a> page.
               </p>
 
               <h2>Your rights</h2>

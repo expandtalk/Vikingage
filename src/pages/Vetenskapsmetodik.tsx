@@ -319,6 +319,54 @@ const Vetenskapsmetodik = () => (
         </div>
       </section>
 
+      {/* AI-transparens (EU AI Act art. 50) */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+          <ShieldCheck className="h-6 w-6 text-gold" />
+          AI-transparens (EU AI Act art. 50)
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+          Vi använder AI som ett hjälpmedel, öppet och märkt. Här är exakt hur, i förhållande till EU:s
+          AI-förordnings transparenskrav (tillämpliga sedan 2 augusti 2026).
+        </p>
+        <div className="space-y-3">
+          <div className="viking-card rounded-lg p-3">
+            <p className="text-sm text-gold font-medium mb-1">Vilket innehåll som är AI-genererat</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Datering och analys av runinskrifter, forensiskt fingerprint, källförda sök-svar, samt
+              AI-översättningar av public domain-grundtext. Allt sådant är <strong>märkt "AI-genererat"</strong>{' '}
+              med en verifieringsväg ("källfört — verifiera via länkarna"). Övrig text på plattformen är
+              källbelagd och människoskriven.
+            </p>
+          </div>
+          <div className="viking-card rounded-lg p-3">
+            <p className="text-sm text-gold font-medium mb-1">Människan bär det redaktionella ansvaret</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              AI beskriver — en människa granskar, verifierar och beslutar innan något blir kanon
+              (människa-i-loopen). Ingen AI-utdata skrivs till databasen på egen hand. Det uppfyller art.
+              50.4 (avslöja AI-genererat innehåll avsett att informera allmänheten) och dess undantag för
+              mänsklig redaktionell granskning.
+            </p>
+          </div>
+          <div className="viking-card rounded-lg p-3">
+            <p className="text-sm text-gold font-medium mb-1">Interaktion &amp; inga deepfakes</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              AI-ytorna är tydligt märkta som AI (art. 50.1); ingen chatbot utger sig för att vara människa.
+              Vi genererar <strong>inga syntetiska bilder eller deepfakes</strong> — alla foton är riktiga
+              (RAÄ/SHM/Wikimedia Commons) och attribuerade.
+            </p>
+          </div>
+          <div className="viking-card rounded-lg p-3">
+            <p className="text-sm text-gold font-medium mb-1">Vår roll: användare, inte modell-leverantör</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Vi <em>använder</em> en generativ modell (via OpenRouter) server-side — vi tillhandahåller ingen
+              egen generativ modell. Den maskinläsbara märkningen av modell-output (art. 50.2, vattenstämpel/
+              C2PA) åligger modell-leverantören. Detta är information, inte juridisk rådgivning.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* DEL 3 — FAQ (svaren verifierade mot databasen) */}
       <section className="mb-10">
         <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
