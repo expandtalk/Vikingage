@@ -356,10 +356,17 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
         if (sorted.length < 2) return;
         const st = LINE_STYLE[sorted[0].feature_type] ?? { color: '#d4a63c', weight: 3 };
         const label = GROUP_LABEL[group] ?? sorted[0].name;
-        L.polyline(sorted.map((f) => [f.lat!, f.lng!] as [number, number]), {
-          color: st.color, weight: st.weight, opacity: 0.9, dashArray: st.dash, lineCap: 'round', lineJoin: 'round',
+        const latlngs = sorted.map((f) => [f.lat!, f.lng!] as [number, number]);
+        // Båtdraget (Dragvik/Stensö) var en tunn dashad linje som "inte syntes" (Daniel). Ge draget en
+        // vit casing + kraftigare linje + PERMANENT etikett så det hittas trots att det är ~1 km kort.
+        const isPortage = sorted[0].feature_type === 'portage';
+        if (isPortage) {
+          L.polyline(latlngs, { color: '#ffffff', weight: (st.weight ?? 3) + 4, opacity: 0.85, lineCap: 'round', lineJoin: 'round' }).addTo(fieldG.current);
+        }
+        L.polyline(latlngs, {
+          color: st.color, weight: isPortage ? (st.weight ?? 3) + 2 : st.weight, opacity: 0.95, dashArray: st.dash, lineCap: 'round', lineJoin: 'round',
         })
-          .bindTooltip(label, { sticky: true, direction: 'top', className: 'ang-clabel' })
+          .bindTooltip(isPortage ? `⛵ ${label}` : label, { sticky: !isPortage, permanent: isPortage, direction: 'top', className: 'ang-clabel' })
           .bindPopup(`<b>${label}</b>`)
           .addTo(fieldG.current);
       });
