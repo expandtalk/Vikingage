@@ -13,7 +13,15 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PlaceLink { slug: string; name: string; kind: string }
 interface RoadLink { slug: string; name: string; road_type: string | null }
+interface RegionLink { title: string; url: string; kind: string }
 const sb = supabase as unknown as { from: (t: string) => any };
+
+// Regioner & städer (content_pages, kurerade kunskapsnoder som Göteborg/Kalmar) — browsbara på /place.
+async function fetchRegions(): Promise<RegionLink[]> {
+  const { data } = await sb.from('content_pages').select('title_sv, url, kind').in('kind', ['region', 'page']);
+  return ((data ?? []) as any[]).map((r) => ({ title: r.title_sv, url: r.url, kind: r.kind }))
+    .filter((r) => r.title && r.url).sort((a, b) => a.title.localeCompare(b.title, 'sv'));
+}
 
 // Färdvägar & leder (viking_roads) — browsbara på samma index som platserna (Daniel).
 async function fetchRoads(): Promise<RoadLink[]> {
@@ -42,6 +50,7 @@ const PlaceIndex: React.FC = () => {
   const sv = language === 'sv';
   const { data: places = [], isLoading } = useQuery({ queryKey: ['place-index'], staleTime: 5 * 60 * 1000, queryFn: fetchPlaces });
   const { data: roads = [] } = useQuery({ queryKey: ['road-index'], staleTime: 5 * 60 * 1000, queryFn: fetchRoads });
+  const { data: regions = [] } = useQuery({ queryKey: ['region-index'], staleTime: 5 * 60 * 1000, queryFn: fetchRegions });
 
   return (
     <div className="min-h-screen viking-bg">
@@ -60,6 +69,24 @@ const PlaceIndex: React.FC = () => {
         <p className="text-muted-foreground max-w-2xl mb-6">
           {sv ? 'Kurerade, källgranskade platssidor i alfabetisk ordning.' : 'Curated, source-critical place pages, alphabetically.'}
         </p>
+        {regions.length > 0 && (
+          <section className="mb-8">
+            <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-foreground">
+              <MapPin className="h-5 w-5 text-gold" />{sv ? 'Regioner & städer' : 'Regions & cities'}
+            </h2>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-w-4xl">
+              {regions.map((r) => (
+                <li key={r.url}>
+                  <a href={r.url}
+                    className="flex items-center gap-2 rounded-lg border border-slate-700/50 px-3 py-2.5 hover:bg-slate-800/60 hover:border-gold/40">
+                    <MapPin className="h-4 w-4 text-gold shrink-0" />
+                    <span className="block text-sm text-foreground font-medium truncate">{r.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {roads.length > 0 && (
           <section className="mb-8">
             <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-foreground">
