@@ -16,7 +16,8 @@ import { Route as RouteIcon } from 'lucide-react';
 
 interface Waypoint { name: string | null; type: string | null; lat: number; lng: number; ord: number }
 interface Landmark { name: string; type: string | null; lat: number; lng: number; description: string | null; significance: string | null }
-interface RoadData { name: string; type: string | null; description: string | null; slug: string; waypoints: Waypoint[]; landmarks: Landmark[] }
+interface Endpoint { lat: number; lng: number }
+interface RoadData { name: string; type: string | null; description: string | null; slug: string; waypoints: Waypoint[]; landmarks: Landmark[]; start?: Endpoint | null; end?: Endpoint | null }
 
 const sb = supabase as unknown as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> };
 
@@ -73,11 +74,26 @@ const RoadPage: React.FC = () => {
         .bindPopup(`<b>${f.name}</b>${f.description ? `<br/><span style="font-size:11px;color:#78350f">${f.description}</span>` : ''}${f.significance ? `<br/><span style="font-size:10px;color:#b45309">${f.significance}</span>` : ''}`).addTo(m);
     });
 
-    if (allPts.length >= 2) m.fitBounds(L.latLngBounds(allPts), { padding: [30, 30], maxZoom: 11 });
-    else if (allPts.length === 1) m.setView(allPts[0], 11);
+    // Stub-väg (ås/isväg/hålväg utan inlagd sträckning): rita INGEN gissad linje, men sätt
+    // ändpunkts-nålar (start/slut ur viking_roads.start/end_coordinates) så kartan CENTRERAR på rätt
+    // region (Daniel: "ser inte ens Gotland"). Ändpunkterna är källbelagda punkter, ej en sträckning.
+    if (allPts.length === 0) {
+      const ends: Array<[Endpoint, string]> = [];
+      if (road.start?.lat != null && road.start?.lng != null) ends.push([road.start, sv ? 'Ände' : 'Endpoint']);
+      if (road.end?.lat != null && road.end?.lng != null) ends.push([road.end, sv ? 'Ände' : 'Endpoint']);
+      ends.forEach(([e, lbl]) => {
+        allPts.push([e.lat, e.lng]);
+        L.circleMarker([e.lat, e.lng], { radius: 7, color: '#78350f', weight: 2, fillColor: color, fillOpacity: 0.9, dashArray: '3,3' })
+          .bindTooltip(lbl, { direction: 'top', offset: [0, -6] })
+          .bindPopup(`<b>${road.name}</b><br/><span style="font-size:11px;color:#78350f">${sv ? 'Ändpunkt — detaljerad sträckning ej inlagd' : 'Endpoint — detailed route not mapped'}</span>`).addTo(m);
+      });
+    }
+
+    if (allPts.length >= 2) m.fitBounds(L.latLngBounds(allPts), { padding: [40, 40], maxZoom: 10 });
+    else if (allPts.length === 1) m.setView(allPts[0], 10);
     else m.setView([59.5, 17.5], 7);
     [0, 120, 400].forEach((d) => setTimeout(() => { try { m.invalidateSize(); } catch { /* noop */ } }, d));
-  }, [road]);
+  }, [road, sv]);
 
   useEffect(() => () => { try { mapRef.current?.remove(); } catch { /* noop */ } mapRef.current = null; }, []);
 
