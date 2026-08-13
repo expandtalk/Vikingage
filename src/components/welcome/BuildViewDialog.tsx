@@ -16,7 +16,7 @@ const CARDS: ViewCard[] = [
   { to: '/explore?focus=rivers', sv: 'Vattenvägar', en: 'Waterways', dsv: 'Floder, handelsvägar och farleder.', den: 'Rivers, trade routes and sea-lanes.' },
   { to: '/explore?focus=eriksgatan', sv: 'Eriksgatan', en: 'Eriksgatan', dsv: 'Kungavalets riksrunda genom landskapen.', den: 'The royal election progress through the provinces.' },
   { to: '/explore?focus=fortresses', sv: 'Fornborgar', en: 'Hillforts', dsv: 'Fornborgar med datering (kol-14, morfologi).', den: 'Hillforts with dating (14C, morphology).' },
-  { to: '/sv/ortnamn', sv: 'Ortnamn & hypoteser', en: 'Place names & hypotheses', dsv: 'Bygg egna avstånds-/räckviddstest (Agnetas 9 km).', den: 'Build your own distance/reach tests.' },
+  { to: '/sv/ortnamn', sv: 'Ortnamn & hypoteser', en: 'Place names & hypotheses', dsv: 'Bygg egna avstånds-/räckviddstest (Agneta Nyholms 9 km).', den: 'Build your own distance/reach tests.' },
   { to: '/sv/historiska-handelser', sv: 'Tidslinje', en: 'Timeline', dsv: 'Händelser, klimat, pest, arter — en tidsaxel.', den: 'Events, climate, plague, species — one timeline.' },
   { to: '/ontologi', sv: 'Ontologi', en: 'Ontology', dsv: 'Kontraktet: entiteter, mätmetoder, dateringar, källor.', den: 'The contract: entities, measures, datings, sources.' },
 ];

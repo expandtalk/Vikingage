@@ -57,7 +57,7 @@ const AngermanlandClusterResults: React.FC<{ sv?: boolean }> = ({ sv = true }) =
     <Card className="viking-card mb-4 border-cyan-700/40">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2" style={{ color: '#22d3ee' }}>
-          <Target className="h-5 w-5" /> {sv ? 'Resultat: kluster kring Agnetas centralplatser (Ångermanland)' : 'Result: clustering around Agneta’s central places (Ångermanland)'}
+          <Target className="h-5 w-5" /> {sv ? 'Resultat: kluster kring Agneta Nyholms centralplatser (Ångermanland)' : 'Result: clustering around Agneta Nyholm’s central places (Ångermanland)'}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm text-muted-foreground">
@@ -108,7 +108,7 @@ const AngermanlandClusterResults: React.FC<{ sv?: boolean }> = ({ sv = true }) =
             : 'Caveat: hypothesis support, not proof. Absolute counts are small; epicentres are Agneta Nyholm’s pre-registered locations (hypothesis).'}
         </p>
         <p className="text-[11px] text-muted-foreground/70">
-          {sv ? 'Epicentra & fältmaterial: Agneta Nyholm (ortnamnskluster, Ångermanland). Metod: onomastic_radial_profile (anrikning mot binomialt bakgrundsband).' : 'Epicentres & field material: Agneta Nyholm.'}
+          {sv ? 'Epicentra & fältmaterial: Agneta Nyholm / Sofiainstitutet (ortnamnskluster, Ångermanland). Metod: onomastic_radial_profile (anrikning mot binomialt bakgrundsband).' : 'Epicentres & field material: Agneta Nyholm / Sofiainstitutet.'}
         </p>
       </CardContent>
     </Card>

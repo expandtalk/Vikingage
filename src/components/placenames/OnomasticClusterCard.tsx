@@ -44,7 +44,7 @@ const CASES: Case[] = [
     note: 'Sockenkyrka. Kyrkor är jämnt utlagda (en per socken) → speglar bygdebrus, ingen namnbildande process. Väntat: svag/ingen anrikning.' },
   // ── Ångermanland (Agneta Nyholms centralplatser som epicentra) ──
   { id: 'a_nora', region: 'Ångermanland', kind: 'positiv', label: 'Nora → kult/makt-led', lat: 62.87227, lng: 18.08104, elements: NORR_CULT, exclude: null,
-    note: 'Agnetas rituella landskap kring Nora kyrka (hov/sal/ross/hammar/tor/fröja). Testar om den KOMBINERADE kult-/maktuppsättningen anriks här mot Ångermanlands bakgrund.' },
+    note: 'Agneta Nyholms rituella landskap kring Nora kyrka (hov/sal/ross/hammar/tor/fröja). Testar om den KOMBINERADE kult-/maktuppsättningen anriks här mot Ångermanlands bakgrund.' },
   { id: 'a_torsaker', region: 'Ångermanland', kind: 'positiv', label: 'Torsåker → kult/makt-led', lat: 63.07926, lng: 17.74385, elements: NORR_CULT, exclude: null,
     note: 'Kyrka på hovplats; Hammar-koncentration vid kungsgård, Sal (Salum, kvinnlig högstatusgrav), Ross, Tor, Fröja-namn.' },
   { id: 'a_harnosand', region: 'Ångermanland', kind: 'positiv', label: 'Härnösand–Säbrå → kult/makt-led', lat: 62.63226, lng: 17.93823, elements: NORR_CULT, exclude: null,
