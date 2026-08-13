@@ -21,7 +21,6 @@ import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegend
 // Hederlighet: inga påhittade rutt-geometrier — lederna redovisas som källförd text.
 
 const BIRKA: [number, number] = [59.3362, 17.5455];
-const BIRKA_BBOX: [number, number, number, number] = [17.30, 59.20, 17.80, 59.48];
 
 interface City { description: string | null; historical_significance: string | null; period_start: number | null; period_end: number | null; unesco_site: boolean | null; }
 interface King { name: string; reign_start: number | null; reign_end: number | null; description: string | null; }
@@ -33,7 +32,11 @@ const BirkaMap: React.FC = () => {
   const tileRef = useRef<L.TileLayer | null>(null);
   const birkaG = useRef<L.LayerGroup>(L.layerGroup());
   const [shoreYear, setShoreYear] = useState<number | null>(900);
-  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', BIRKA_BBOX);
+  // SGU regionala strandförskjutningsmodell (heltäckande) i st.f. DEM-modellen: DEM-datat har en HÅRD
+  // täckningskant vid lng ~17.55 (rakt genom Björkö) som ritades som en artificiell N–S-"gräns" väster om
+  // Birka (Daniel: "ser konstigt ut … som om det bara är en gräns"). SGU-modellen täcker hela Mälaren utan
+  // rak tile-kant. Ingen bbox → hela regionen modelleras jämnt. Jfr [[paleo-shorelines-and-map-stack]].
+  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_nearest');
 
   const LEGEND: LegendLayerDef[] = [
     { key: 'birka', label: 'Birka (Björkö)', color: '#f59e0b', defaultOn: true },
