@@ -25,7 +25,56 @@ function grayCopy(d: Uint8ClampedArray, w: number, h: number): Float32Array {
   return g;
 }
 
+// Jacobi-egenvärdesuppdelning av symmetrisk 3×3 → {values, vectors} (vectors[rad][kol] = komponent).
+function jacobiEigen3(a11: number, a22: number, a33: number, a12: number, a13: number, a23: number) {
+  const A = [[a11, a12, a13], [a12, a22, a23], [a13, a23, a33]];
+  const V = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+  for (let sweep = 0; sweep < 12; sweep++) {
+    for (const [p, q] of [[0, 1], [0, 2], [1, 2]] as const) {
+      if (Math.abs(A[p][q]) < 1e-9) continue;
+      const phi = 0.5 * Math.atan2(2 * A[p][q], A[q][q] - A[p][p]);
+      const c = Math.cos(phi), s = Math.sin(phi);
+      for (let k = 0; k < 3; k++) { const kp = A[k][p], kq = A[k][q]; A[k][p] = c * kp - s * kq; A[k][q] = s * kp + c * kq; }
+      for (let k = 0; k < 3; k++) { const pk = A[p][k], qk = A[q][k]; A[p][k] = c * pk - s * qk; A[q][k] = s * pk + c * qk; }
+      for (let k = 0; k < 3; k++) { const vp = V[k][p], vq = V[k][q]; V[k][p] = c * vp - s * vq; V[k][q] = s * vp + c * vq; }
+    }
+  }
+  return { values: [A[0][0], A[1][1], A[2][2]], vectors: V };
+}
+
+// Äkta dekorrelationssträckning (DStretch, Fas 2): PCA på RGB → sträck varje huvudkomponent till samma
+// varians → rotera tillbaka. Överdriver de svagaste, dekorrelerade färgskillnaderna (lav vs sten vs fåra).
+function dstretchPCA(d: Uint8ClampedArray, _w: number, _h: number) {
+  const n = d.length / 4;
+  let mr = 0, mg = 0, mb = 0;
+  for (let i = 0; i < d.length; i += 4) { mr += d[i]; mg += d[i + 1]; mb += d[i + 2]; }
+  mr /= n; mg /= n; mb /= n;
+  let crr = 0, cgg = 0, cbb = 0, crg = 0, crb = 0, cgb = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    const r = d[i] - mr, g = d[i + 1] - mg, b = d[i + 2] - mb;
+    crr += r * r; cgg += g * g; cbb += b * b; crg += r * g; crb += r * b; cgb += g * b;
+  }
+  crr /= n; cgg /= n; cbb /= n; crg /= n; crb /= n; cgb /= n;
+  const { values, vectors: V } = jacobiEigen3(crr, cgg, cbb, crg, crb, cgb);
+  const target = 55; // mål-std per komponent efter sträckning
+  const g0 = target / Math.sqrt(Math.max(1, values[0])), g1 = target / Math.sqrt(Math.max(1, values[1])), g2 = target / Math.sqrt(Math.max(1, values[2]));
+  for (let i = 0; i < d.length; i += 4) {
+    const r = d[i] - mr, g = d[i + 1] - mg, b = d[i + 2] - mb;
+    const p0 = (V[0][0] * r + V[1][0] * g + V[2][0] * b) * g0;
+    const p1 = (V[0][1] * r + V[1][1] * g + V[2][1] * b) * g1;
+    const p2 = (V[0][2] * r + V[1][2] * g + V[2][2] * b) * g2;
+    d[i] = Math.max(0, Math.min(255, mr + V[0][0] * p0 + V[0][1] * p1 + V[0][2] * p2));
+    d[i + 1] = Math.max(0, Math.min(255, mg + V[1][0] * p0 + V[1][1] * p1 + V[1][2] * p2));
+    d[i + 2] = Math.max(0, Math.min(255, mb + V[2][0] * p0 + V[2][1] * p1 + V[2][2] * p2));
+  }
+}
+
 const PRESETS: Preset[] = [
+  {
+    key: 'dstretch-pca', label: 'DStretch (dekorrelation)',
+    how: 'Äkta dekorrelationssträckning (som ImageJ-pluginet DStretch): PCA på färgerna → sträck → tillbaka. Photoshop har ingen exakt motsvarighet; närmast är kanalmixer + extrem mättnad.',
+    apply: (d, w, h) => dstretchPCA(d, w, h),
+  },
   {
     key: 'gray', label: 'Gråskala + kontrast',
     how: 'Photoshop: Bild → Justeringar → Svartvitt, sedan Nivåer/Kurvor för hårdare kontrast.',
@@ -71,8 +120,8 @@ const PRESETS: Preset[] = [
     },
   },
   {
-    key: 'dstretch', label: 'Färgsträckning (DStretch-lite)',
-    how: 'Photoshop: ungefär "Auto-nivåer per kanal" + Livlighet/Mättnad max. Riktiga DStretch (ImageJ-plugin) gör en dekorrelationssträckning (PCA på RGB → sträck → tillbaka).',
+    key: 'dstretch', label: 'Färgsträckning (snabb)',
+    how: 'Snabb approximation: per-kanal auto-nivåer + mättnad. Photoshop: Auto-nivåer per kanal + Livlighet max. (Se "DStretch (dekorrelation)" för den riktiga PCA-varianten.)',
     apply: (d) => {
       // Per-kanal min/max-sträckning (dekorrelation-approximation) + mättnadsboost → svaga färgskillnader
       // (lav vs sten vs ristning) överdrivs. INTE äkta PCA-DStretch, men samma anda.
