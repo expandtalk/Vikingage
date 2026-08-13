@@ -11,6 +11,15 @@ import { SearchFallback } from './SearchFallback';
 import { LandscapeNode, type LandscapeOverview } from './LandscapeNode';
 import { CharterAnswerSection } from './CharterAnswerSection';
 
+// De 25 svenska landskapen (etablerade, ej gissade) → routas till HELA-landskaps-vyn i stället för
+// den radie-justerbara ort-vyn. Gemener + trim jämförs. Gotland är både landskap OCH kommun → hit.
+const LANDSKAP = new Set([
+  'skåne', 'blekinge', 'halland', 'småland', 'öland', 'gotland', 'västergötland', 'östergötland',
+  'bohuslän', 'dalsland', 'närke', 'södermanland', 'sörmland', 'uppland', 'västmanland', 'värmland',
+  'dalarna', 'dalecarlia', 'gästrikland', 'hälsingland', 'härjedalen', 'medelpad', 'ångermanland',
+  'jämtland', 'västerbotten', 'norrbotten', 'lappland', 'lappmarken',
+]);
+
 // RAÄ-bildtexter är långa ("Resmo kyrka. Runsignum Öl 4 — Anmärkning: …") — visa bara den
 // läsbara ledtexten (före första ". " eller " — "), kapad, så man ser VAD bilden är.
 const shortCaption = (d: string): string => {
@@ -450,7 +459,18 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     queryKey: ['landscape-overview', query],
     enabled: !!query && query.trim().length >= 3,
     queryFn: async () => {
-      // Landskap först (Gotland/Öland …); annars regionhubb (Kalmar) — samma JSON-form → samma vy.
+      // De 25 svenska landskapen → HELA-landskaps-vy (landscape_overview, ingen radie). En ort/kommun
+      // (Stockholm, Kalmar …) → radie-justerbar city_radius_overview (bär 'radius_m' → reglage i noden).
+      // Landskap gatas explicit eftersom några namn (Gotland) är BÅDE landskap och kommun.
+      const q = (query || '').trim().toLowerCase();
+      if (LANDSKAP.has(q)) {
+        const { data: land } = await (supabase as any).rpc('landscape_overview', { p_name: query });
+        if (land) return land as LandscapeOverview;
+      }
+      // Ort/kommun/region → radie-vy (25 km default). Municipality-gatad → null om namnet inte är ort.
+      const { data: city } = await (supabase as any).rpc('city_radius_overview', { p_name: query, p_radius_m: 25000 });
+      if (city) return city as LandscapeOverview;
+      // Fallback: landskap (om namnet inte var i settet men ändå löser), sedan äldre regionhubb.
       const { data: land } = await (supabase as any).rpc('landscape_overview', { p_name: query });
       if (land) return land as LandscapeOverview;
       const { data: area } = await (supabase as any).rpc('area_overview', { p_name: query });

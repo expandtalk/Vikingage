@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import L from 'leaflet';
+import { supabase } from '@/integrations/supabase/client';
 import { Landmark, ChevronRight, ScrollText, MapPin, Sprout } from 'lucide-react';
 
 // Strukturerad LANDSKAPSNOD i söksvaret. Matar ur RPC:n landscape_overview(): kategori-antal +
@@ -78,7 +80,17 @@ const CatSection: React.FC<{ cat: LandscapeCategory; sv: boolean; onGo: (r: stri
   );
 };
 
-export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean; onGo: (r: string) => void }> = ({ overview, sv, onGo }) => {
+export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean; onGo: (r: string) => void }> = ({ overview: overviewProp, sv, onGo }) => {
+  // Radie-vy för STÄDER (city_radius_overview → bär 'radius_m'): reglaget räknar om inom vald radie.
+  const isCity = (overviewProp as unknown as { radius_m?: number }).radius_m != null;
+  const [radiusKm, setRadiusKm] = useState(25);
+  const { data: cityData } = useQuery({
+    queryKey: ['city-radius-ov', overviewProp.name, radiusKm],
+    enabled: isCity,
+    queryFn: async () => (((await (supabase as unknown as { rpc: (f: string, a: Record<string, unknown>) => Promise<{ data: unknown }> })
+      .rpc('city_radius_overview', { p_name: overviewProp.name, p_radius_m: radiusKm * 1000 })).data) ?? null) as LandscapeOverview | null,
+  });
+  const overview = isCity ? (cityData ?? overviewProp) : overviewProp;
   const cats = (overview.categories ?? []).filter((c) => c.count > 0);
   const byKey = (k: string) => cats.find((c) => c.key === k);
   const summaryBits = ['runestones', 'churches', 'hillforts', 'picture_stones']
@@ -93,6 +105,7 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layersRef = useRef<Record<string, L.LayerGroup>>({});
+  const circleRef = useRef<L.Circle | null>(null);
   const onGoRef = useRef(onGo); onGoRef.current = onGo; // stabil referens för popup-delegering
 
   useEffect(() => {
@@ -114,32 +127,43 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
     return () => { ro.disconnect(); map.remove(); mapRef.current = null; layersRef.current = {}; };
   }, [overview.name]);
 
-  // (Om)rita kategori-lager när togglar ändras.
+  // (Om)rita kategori-lager + radie-cirkel. Byggs OM vid data/radie-ändring (städer omfrågas per radie)
+  // ELLER toggling — cache per cat.key räckte inte när radien byter datamängd (Daniel: räknen stämde
+  // i listan men markörerna satt kvar). Därför: rensa allt och bygg om.
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
-    for (const cat of mappable) {
-      if (!layersRef.current[cat.key]) {
-        const lg = L.layerGroup();
-        const color = CAT_COLOR[cat.key] ?? '#f59e0b';
-        const catLabel = sv ? cat.label_sv : cat.label_en;
-        const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
-        for (const it of cat.items) {
-          if (it.lat == null || it.lng == null) continue;
-          const route = itemRoute(cat.link_kind, it);
-          const title = `${it.signum ? `<span style="font-family:monospace;color:#fcd34d">${esc(it.signum)}</span> ` : ''}${esc(it.label)}`;
-          const sub = it.sub != null && String(it.sub) !== '' ? `<div style="font-size:11px;color:#94a3b8">${esc(String(it.sub))}</div>` : '';
-          const note = it.note ? `<div style="font-size:11px;color:#94a3b8">${esc(it.note)}</div>` : '';
-          // Klick = ÖPPNA POPUP (fungerar med tap på mobil). "Läs mer" navigerar via delegering (popupopen).
-          L.circleMarker([it.lat, it.lng], { radius: 5, color: '#0f172a', weight: 1, fillColor: color, fillOpacity: 0.9 })
-            .bindPopup(`<div style="min-width:130px"><b>${title}</b><div style="font-size:10px;color:#f59e0b;margin-top:1px">${esc(catLabel)}</div>${sub}${note}<a href="${esc(route)}" class="ln-more" data-route="${esc(route)}" style="display:inline-block;margin-top:6px;color:#fcd34d;font-size:12px">${sv ? 'Läs mer →' : 'Read more →'}</a></div>`)
-            .addTo(lg);
-        }
-        layersRef.current[cat.key] = lg;
-      }
-      const lg = layersRef.current[cat.key];
-      if (hidden.has(cat.key)) map.removeLayer(lg); else lg.addTo(map);
+    // Rensa gamla lager + cirkel.
+    Object.values(layersRef.current).forEach((lg) => { try { map.removeLayer(lg); } catch { /* noop */ } });
+    layersRef.current = {};
+    if (circleRef.current) { try { map.removeLayer(circleRef.current); } catch { /* noop */ } circleRef.current = null; }
+    // Radie-cirkel för städer → gör OMRÅDET synligt så man förstår att antalen är en radie-aggregation.
+    if (isCity && overview.center) {
+      const c = L.circle([overview.center.lat, overview.center.lng], { radius: radiusKm * 1000, color: '#f59e0b', weight: 1.5, opacity: 0.6, fillColor: '#f59e0b', fillOpacity: 0.05, dashArray: '6 6', interactive: false });
+      c.addTo(map); circleRef.current = c;
+      try { map.fitBounds(c.getBounds(), { padding: [16, 16] }); } catch { /* noop */ }
     }
-  }, [hidden, overview.name]);
+    const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] as string));
+    for (const cat of mappable) {
+      const lg = L.layerGroup();
+      const color = CAT_COLOR[cat.key] ?? '#f59e0b';
+      const catLabel = sv ? cat.label_sv : cat.label_en;
+      for (const it of cat.items) {
+        if (it.lat == null || it.lng == null) continue;
+        const route = itemRoute(cat.link_kind, it);
+        const title = `${it.signum ? `<span style="font-family:monospace;color:#fcd34d">${esc(it.signum)}</span> ` : ''}${esc(it.label)}`;
+        const sub = it.sub != null && String(it.sub) !== '' ? `<div style="font-size:11px;color:#94a3b8">${esc(String(it.sub))}</div>` : '';
+        const note = it.note ? `<div style="font-size:11px;color:#94a3b8">${esc(it.note)}</div>` : '';
+        // Klick = ÖPPNA POPUP (fungerar med tap på mobil). "Läs mer" navigerar via delegering (popupopen).
+        L.circleMarker([it.lat, it.lng], { radius: 5, color: '#0f172a', weight: 1, fillColor: color, fillOpacity: 0.9 })
+          .bindPopup(`<div style="min-width:130px"><b>${title}</b><div style="font-size:10px;color:#f59e0b;margin-top:1px">${esc(catLabel)}</div>${sub}${note}<a href="${esc(route)}" class="ln-more" data-route="${esc(route)}" style="display:inline-block;margin-top:6px;color:#fcd34d;font-size:12px">${sv ? 'Läs mer →' : 'Read more →'}</a></div>`)
+          .addTo(lg);
+      }
+      layersRef.current[cat.key] = lg;
+      if (!hidden.has(cat.key)) lg.addTo(map);
+    }
+    // mappable/sv härleds ur overview → overview som dep räcker (undviker re-run varje render).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hidden, overview, radiusKm, isCity]);
 
   const toggle = (k: string) => setHidden((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
 
@@ -157,10 +181,24 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
   return (
     <div className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4">
       <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-300/70">
-        <Landmark className="h-3 w-3" />{sv ? 'Landskap · kunskapsnod' : 'Province · knowledge node'}
+        <Landmark className="h-3 w-3" />{isCity ? (sv ? 'Ort · kunskapsnod' : 'Place · knowledge node') : (sv ? 'Landskap · kunskapsnod' : 'Province · knowledge node')}
       </div>
       <h2 className="text-2xl font-bold leading-tight text-white">{overview.name}</h2>
       {summaryBits.length > 0 && <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-300">{summaryBits.join(' · ')}</p>}
+
+      {/* Radie-reglage för städer: antalen är en OMRÅDES-aggregation man kan justera (Daniel). */}
+      {isCity && (
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-400">{sv ? 'Antal inom' : 'Counts within'}</span>
+          {[5, 10, 25, 50].map((km) => (
+            <button key={km} onClick={() => setRadiusKm(km)}
+              className={`rounded-full border px-2.5 py-0.5 ${radiusKm === km ? 'border-amber-500/60 bg-amber-500/15 text-amber-100' : 'border-slate-600 text-slate-300 hover:border-amber-500/40'}`}>
+              {km} km
+            </button>
+          ))}
+          <span className="text-slate-500">{sv ? `av ${overview.name} (justerbar radie — inte en fast lista)` : `of ${overview.name} (adjustable radius)`}</span>
+        </div>
+      )}
 
       {/* KARTA med grupperad legend till höger (Daniel: badplatser + äventyr grupperade på högersidan) */}
       {mappable.length > 0 && (
