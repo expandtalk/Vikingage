@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Fingerprint, Loader2, Upload, X } from 'lucide-react';
 import { fingerprintObject, fileToDataUrl, type FingerprintResult } from '@/services/fingerprintService';
+import { ImageEnhancer } from './ImageEnhancer';
 
 interface Props {
   kind: 'runestone' | 'fornborg' | 'grave';
@@ -86,7 +87,9 @@ export const FingerprintDialog: React.FC<Props> = ({ kind, className }) => {
               </button>
             )}
           </div>
-          {image && <img src={image} alt="förhandsvisning" className="max-h-40 rounded-md border object-contain" />}
+          {/* Bildförbättring i webbläsaren (släpljus/DStretch-lite/kantlinjer) → få fram baslinjerna
+              INNAN läsning. Den förbättrade bilden kan skickas vidare till AI-analysen. */}
+          {image && <ImageEnhancer src={image} onUseEnhanced={setImage} />}
 
           <Button onClick={run} disabled={loading || !description.trim()} className="w-full">
             {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Analyserar…</> : 'Kör fingerprint'}
