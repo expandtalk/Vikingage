@@ -199,7 +199,9 @@ const PlacePage: React.FC = () => {
             <p className="text-muted-foreground">{sv ? 'Ingen kurerad plats med den adressen.' : 'No curated place at that address.'} <a href="/explore" className="text-gold hover:underline">Explore →</a></p>
           </div>
         ) : (
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-6xl">
+            {/* Vänsterställt (ej mx-auto) så rubrik/text/karta följer breadcrumbens typografiska
+                vänsterlinje och kartan får mer bredd (Daniel). */}
             {/* HERO */}
             <header className="mb-6">
               <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
