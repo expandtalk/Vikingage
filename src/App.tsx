@@ -46,6 +46,7 @@ const Vendelhjalmar = lazy(() => import("./pages/Vendelhjalmar"));
 const Models3D = lazy(() => import("./pages/Models3D"));
 const Ontology = lazy(() => import("./pages/Ontology"));
 const AiAgents = lazy(() => import("./pages/AiAgents"));
+const Tools = lazy(() => import("./pages/Tools"));
 const KalmarMedeltid = lazy(() => import("./pages/KalmarMedeltid"));
 const KartsymbolerPreview = lazy(() => import("./pages/KartsymbolerPreview"));
 const HistoricalEvents = lazy(() => import("./pages/HistoricalEvents"));
@@ -61,6 +62,7 @@ const DanskaRunstenar = lazy(() => import("./pages/DanskaRunstenar"));
 const Kyrkor = lazy(() => import("./pages/Kyrkor"));
 const Medeltidsborgar = lazy(() => import("./pages/Medeltidsborgar"));
 const DriveView = lazy(() => import("./pages/DriveView"));
+const Grottor = lazy(() => import("./pages/Grottor"));
 const SvampGuide = lazy(() => import("./pages/SvampGuide"));
 const SanktOlof = lazy(() => import("./pages/SanktOlof"));
 const Podcast = lazy(() => import("./pages/Podcast"));
@@ -181,6 +183,10 @@ const App = () => (
                   <Route path="/ontologi" element={<Ontology />} />
                   <Route path="/ai-agents" element={<AiAgents />} />
                   <Route path="/ai-agenter" element={<AiAgents />} />
+                  <Route path="/verktyg" element={<Tools />} />
+                  <Route path="/sv/verktyg" element={<Tools />} />
+                  <Route path="/tools" element={<Tools />} />
+                  <Route path="/en/tools" element={<Tools />} />
                   <Route path="/sv/kalmar/medeltid" element={<KalmarMedeltid />} />
                   <Route path="/sv/kalmar-medeltid" element={<KalmarMedeltid />} />
                   <Route path="/kalmar-medeltid" element={<KalmarMedeltid />} />
@@ -247,6 +253,10 @@ const App = () => (
                   <Route path="/en/medieval-castles" element={<Medeltidsborgar />} />
                   <Route path="/3D-bil" element={<DriveView />} />
                   <Route path="/3D-drive" element={<DriveView />} />
+                  <Route path="/grottor" element={<Grottor />} />
+                  <Route path="/caves" element={<Grottor />} />
+                  <Route path="/grotta" element={<Navigate to="/grottor" replace />} />
+                  <Route path="/cave" element={<Navigate to="/caves" replace />} />
                   <Route path="/sv/svamp" element={<SvampGuide />} />
                   <Route path="/en/mushrooms" element={<SvampGuide />} />
                   <Route path="/staket" element={<Staket />} />
