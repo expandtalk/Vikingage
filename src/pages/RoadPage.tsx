@@ -93,6 +93,15 @@ const RoadPage: React.FC = () => {
         </h1>
         {road?.description && <p className="text-slate-300 mb-4 max-w-3xl leading-relaxed text-sm">{road.description}</p>}
         {!road && <p className="text-muted-foreground">{sv ? 'Laddar…' : 'Loading…'}</p>}
+        {/* Väg finns i DB men saknar geometri (0 waypoints + 0 landmarks) → ärlig tom-status
+            i stället för en blank Sverigekarta (Daniel: badelundaasen "visar ingenting"). */}
+        {road && (road.waypoints?.length ?? 0) === 0 && (road.landmarks?.length ?? 0) === 0 && (
+          <div className="mb-4 rounded-lg border border-amber-700/40 bg-amber-950/20 p-3 text-sm text-amber-200/90">
+            {sv
+              ? 'Sträckningen är ännu inte inlagd för den här vägen — inga verifierade hållpunkter finns i databasen. Kartan visas tom tills källbelagd geometri lagts in (ingen gissad linje ritas).'
+              : 'The route geometry for this road has not been added yet — no verified waypoints exist in the database. The map stays empty until sourced geometry is added (no guessed line is drawn).'}
+          </div>
+        )}
         <div ref={mapEl} className="w-full rounded-xl border border-slate-700 bg-slate-800" style={{ height: '60vh', minHeight: 380 }} />
         {road && (road.landmarks?.length > 0 || road.waypoints?.length > 0) && (
           <div className="mt-6 grid gap-6 sm:grid-cols-2">

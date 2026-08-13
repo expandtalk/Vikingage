@@ -16,7 +16,11 @@ import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl'
 import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { KalmarsundCrossing } from '@/components/kalmar/KalmarsundCrossing';
+import { CharterKgSection } from '@/components/medeltidsbrev/CharterKgSection';
 import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
+
+// Kalmar som KG-nod (entity_registry entity_type='town'). Fas 1 charter-länkning hänger på detta UUID.
+const KALMAR_TOWN_ID = '2fc2c410-08e5-4736-9845-fe0450151928';
 
 // /sv/kalmar — forskningshubb för det tidiga/medeltida Kalmar i Möre. Binder ihop:
 //  - Ortnamnsforskningen kring Hossmo (husaby-nukleusen, SOL 2003, kalmar_place_names)
@@ -298,7 +302,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
           const d = (h.description ?? '').slice(0, 240);
           // Medaljong: färgen bär lagret (kulturarv = rosa, matchar legenden), FORMEN (featureIcon)
           // bär typen (begravningsplats/fästning/torg…) → typerna skiljs på form, ej bara färg (WCAG 1.4.1).
-          L.marker([h.lat!, h.lng!], { icon: createPlaceMedallion({ color: '#f472b6', icon: featureIcon(h.raa_type), label: h.name, prominent: false, hairline: true }) })
+          L.marker([h.lat!, h.lng!], { icon: createPlaceMedallion({ color: '#f472b6', icon: featureIcon(h.raa_type), label: h.name, prominent: false, hairline: true, size: 22 }) })
             .bindPopup(`<b>${h.name}</b> <span style="font-size:10px;color:#888">${h.raa_type}</span>${d ? `<br/><span style="font-size:11px;color:#666">${d}${(h.description ?? '').length > 240 ? '…' : ''}</span>` : ''}`)
             .addTo(heritageG.current);
         });
@@ -640,6 +644,13 @@ const Kalmar = () => {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* MEDELTIDSBREV (SDHK KG-länkning, Fas 1) — utfärdade i Kalmar */}
+        <Card className="viking-card mb-4">
+          <CardContent className="pt-6">
+            <CharterKgSection entityId={KALMAR_TOWN_ID} name="Kalmar" />
           </CardContent>
         </Card>
 
