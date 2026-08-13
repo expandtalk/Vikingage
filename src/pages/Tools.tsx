@@ -8,7 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Wrench, ScanLine, Map, Search, Ruler, Waves, Fingerprint, Image as ImageIcon, Bot, ScrollText,
-  Route, Compass, Network, BookOpen, Coins, Church, Dna, Landmark, ArrowRight, Boxes, Stamp, Users, Radar,
+  Route, Compass, Network, BookOpen, Coins, Church, Dna, Landmark, ArrowRight, Boxes, Stamp, Users, Radar, Briefcase,
 } from 'lucide-react';
 
 // /verktyg (sv) + /tools (en) — samlad katalog över plattformens verktyg, presenterade som likvärdiga
@@ -111,9 +111,12 @@ const GROUPS: Group[] = [
   {
     titleSv: 'AI & agenter', titleEn: 'AI & agents', icon: Bot,
     tools: [
-      { icon: Bot, to: '/ai-agenter', status: 'live', titleSv: 'AI-agentflottan', titleEn: 'The AI agent fleet',
-        descSv: 'Specialistagenter (arkeolog, runolog, filolog, marinarkeolog, kommunikationsarkeolog …) som utreder och föreslår. Människan verifierar och beslutar.',
-        descEn: 'Specialist agents (archaeologist, runologist, philologist, marine archaeologist, communications archaeologist …) that investigate and propose. Humans verify and decide.' },
+      { icon: Bot, to: '/ai-agenter', status: 'live', titleSv: 'Historie- & arkeologiagenter', titleEn: 'History & archaeology agents',
+        descSv: 'Specialistagenter för historia och arkeologi — arkeolog, runolog, filolog, historiker, marinarkeolog, kommunikationsarkeolog, osteolog, arkeogenetiker, diplomatiker, verifierare m.fl. De utreder och föreslår; människan verifierar och beslutar.',
+        descEn: 'Specialist agents for history and archaeology — archaeologist, runologist, philologist, historian, marine archaeologist, communications archaeologist, osteologist, archaeogeneticist, diplomatist, verifier and more. They investigate and propose; humans verify and decide.' },
+      { icon: Briefcase, status: 'beta', titleSv: 'AI-affärsutvecklare', titleEn: 'AI business developer',
+        descSv: 'Affärsutvecklingsagent för plattformen: paketerar forskningsmotorn som embed/API, tar fram utredningar och matchar finansieringsvägar. Internt verktyg — separat från historie-/arkeologiagenterna.',
+        descEn: 'Business-development agent for the platform: packages the research engine as embed/API, drafts assessments and matches funding paths. Internal tool — separate from the history/archaeology agents.' },
       { icon: ScanLine, status: 'kommande', titleSv: 'Historisk röntgen', titleEn: 'Historical X-ray',
         descSv: 'Samkör flera register vid EN punkt och stämmer av dem: topografi, vattendrag, strandlinjeålder (landhöjning), fornlämningar, ortnamn och källor. Byggs för att TESTA mönster, inte bekräfta dem — resultat märkt belagt/hypotes/obelagt.',
         descEn: 'Cross-runs several registers at ONE point and checks them: topography, watercourses, shoreline age (land uplift), ancient remains, place names and sources. Built to TEST patterns, not confirm them — results marked verified/hypothesis/unverified.' },
