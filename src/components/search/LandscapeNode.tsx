@@ -32,7 +32,8 @@ const GROUP_LABEL: Record<string, { sv: string; en: string }> = {
   monuments: { sv: 'Fornlämningar & monument', en: 'Monuments' },
   adventure: { sv: 'Äventyr & natur', en: 'Adventure & nature' },
 };
-const GROUP_ORDER = ['core', 'history', 'monuments', 'adventure'];
+// Äventyr & natur (nutid) ÖVERST — besökaren först (Daniel); forskningskategorierna följer.
+const GROUP_ORDER = ['adventure', 'core', 'history', 'monuments'];
 
 const itemRoute = (kind: string, it: LandscapeItem): string => {
   switch (kind) {
