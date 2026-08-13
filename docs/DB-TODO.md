@@ -485,6 +485,21 @@ Gångläge (walk mode):
 - [ ] Exponera bath_kind + kategori i äventyrslagret (färg/toggle per typ) — nearby_experiences returnerar
       ej bath_kind ännu; byt till direkt experiences-fråga el. utöka RPC:n.
 
+## Färdvägar & leder — backlog 2026-08-13
+
+- [x] Generisk vägrenderare: road_overview(slug) + RoadPage /led/:slug + roads-sektion på /place.
+- [x] Attundalandsvägen (Ambrosiani) — waypoints ur Rundata (ursprungslägen, ej flyttade).
+- [x] Långhundraleden — GROV schematisk korridor (Skepptuna/U357+Broborg+Gamla Uppsala, verifierade).
+- [ ] **Långhundraleden full sträckning** — kräver källa (Lantmäteriets vandringstavla-linje ELLER
+      forskares ledstenslista). Ersätt de 3 grova ankarna. Kör runsten-QA (nära leden + uteslut flyttade).
+- [ ] **Pilgrimsleder** (Sankt Olavsleden, Romboleden, Munkastigen) — kräver waymarkad geometri per led
+      (GPX/källa) innan ingest. Superviktiga (Daniel).
+- [ ] **Eriksgatan Östergötland** som egen väg (Cnattingius) för Bollaert-jämförelsen.
+- [ ] **Kulturell gräns vid Dalälven** (Limes Norrlandicus — norra gränsen för runsten/borg/Svealandskultur)
+      som eget gränslager på kartan.
+- [ ] Uppbåga bro-koord (Eriksgata-landmark) saknas fortfarande.
+- [ ] Rendera vägar även på huvudkartan (explore) generiskt, ej bara Eriksgata-hooken.
+
 ## Sök/karta-buggar kvar efter 2026-08-13-passet
 
 - [x] **Kalmarsund-blödning** — LÖST med Öland-bbox (migration 20260813130000): samma-landmassa-villkor

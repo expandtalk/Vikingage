@@ -23,7 +23,7 @@ const sb = supabase as unknown as { rpc: (fn: string, args: Record<string, unkno
 // Linjefärg per vägtyp.
 const ROAD_COLOR: Record<string, string> = {
   kungavag: '#d97706', landsvag: '#b45309', halvag: '#a0522d', rullstensas: '#cd853f',
-  vintervag: '#4682b4', bro: '#2f4f4f', vadstalle: '#2f4f4f', knutpunkt: '#8b4513',
+  vintervag: '#4682b4', farled: '#0ea5e9', bro: '#2f4f4f', vadstalle: '#2f4f4f', knutpunkt: '#8b4513',
 };
 
 const RoadPage: React.FC = () => {

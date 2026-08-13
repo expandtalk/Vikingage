@@ -22,7 +22,7 @@ async function fetchRoads(): Promise<RoadLink[]> {
 }
 const ROAD_TYPE_SV: Record<string, string> = {
   kungavag: 'Kungaväg', landsvag: 'Landsväg', halvag: 'Hålväg', rullstensas: 'Rullstensås',
-  vintervag: 'Vinter-/isväg', bro: 'Bro', vadstalle: 'Vadställe', knutpunkt: 'Knutpunkt',
+  vintervag: 'Vinter-/isväg', farled: 'Vattenled / farled', bro: 'Bro', vadstalle: 'Vadställe', knutpunkt: 'Knutpunkt',
 };
 
 async function fetchPlaces(): Promise<PlaceLink[]> {
