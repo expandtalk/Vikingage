@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MapLegend } from './MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
+import { resolvePlaceLayers, placeLayerStyleMap, type PlaceLayerConfig } from './placeLayers';
 
 // Återanvändbar rik platskarta för ALLA orter. Driven av EN RPC (place_features_near) som ger
 // kronologiskt kategoriserade punkter runt en center. Delad MapLegend (kronologisk ordning) +
@@ -16,30 +17,6 @@ interface PlaceFeature {
   lat: number; lng: number; sublabel: string | null; source: string;
 }
 
-// Lagerdefinition (ordning = legendens ordning). Nyckeln MÅSTE matcha place_features_near.
-// Äventyr & natur ÖVERST (Daniel: nutidslager först), sedan kronologiskt förhistoria→medeltida.
-const LAYERS: { key: string; label: string; color: string; radius: number; defaultOn: boolean }[] = [
-  // Äventyr & natur (nutid)
-  { key: 'aventyr',     label: '🏖️ Äventyr & natur (bad, fiske)', color: '#06b6d4', radius: 5,   defaultOn: true },
-  { key: 'grotta',      label: '🕳️ Grottor',                     color: '#9ca3af', radius: 3.5, defaultOn: false },
-  // Förhistoria
-  { key: 'megalit',     label: 'Megalitgravar & stensättningar', color: '#a78bfa', radius: 4,   defaultOn: true },
-  { key: 'hallristning',label: 'Hällristningar (bronsålder)',    color: '#fb923c', radius: 3,   defaultOn: true },
-  { key: 'rest_sten',   label: 'Resta stenar',                   color: '#cbd5e1', radius: 3,   defaultOn: false },
-  // Järnålder & vikingatid
-  { key: 'runsten',     label: 'Runstenar',                      color: '#f59e0b', radius: 4.5, defaultOn: true },
-  { key: 'bildsten',    label: 'Bildstenar',                     color: '#eab308', radius: 4.5, defaultOn: true },
-  { key: 'mynt',        label: 'Myntfynd',                       color: '#fbbf24', radius: 3.5, defaultOn: true },
-  { key: 'offer',       label: 'Offer- & kultplatser',           color: '#34d399', radius: 3.5, defaultOn: true },
-  // Kristet & medeltida
-  { key: 'kristen',     label: 'Kristna platser',                color: '#38bdf8', radius: 4.5, defaultOn: true },
-  { key: 'kyrka',       label: 'Kyrkor',                         color: '#0ea5e9', radius: 4.5, defaultOn: true },
-  { key: 'avrattning',  label: '⚖️ Avrättningsplatser',          color: '#ef4444', radius: 4,   defaultOn: true },
-  // "Allt övrigt" (kan vara tätt, t.ex. 400 kring Göteborg) → liten, halvtransparent bakgrundstextur.
-  { key: 'fornlamning', label: 'Fornlämningar (övrigt)',         color: '#64748b', radius: 2,   defaultOn: true },
-];
-const STYLE = Object.fromEntries(LAYERS.map((l) => [l.key, l]));
-
 interface PlaceMapProps {
   center: { lat: number; lng: number };
   zoom?: number;
@@ -48,11 +25,13 @@ interface PlaceMapProps {
   extraDefs?: LegendLayerDef[];         // kurerad sida lägger till egna legend-poster
   onMapReady?: (map: L.Map, enabled: Record<string, boolean>) => void;
   legendPlacement?: 'overlay' | 'inline'; // 'inline' = legend under kartan (smal aside, täcker ej kartan)
+  layers?: PlaceLayerConfig[];          // baslager (default DEFAULT_PLACE_LAYERS) — se ./placeLayers
+  onEnabledChange?: (enabled: Record<string, boolean>) => void; // legend-toggles ändrade
 }
 
 export const PlaceMap: React.FC<PlaceMapProps> = ({
   center, zoom = 11, radiusM = 25000, heightClass = 'h-[520px]', extraDefs = [], onMapReady,
-  legendPlacement = 'overlay',
+  legendPlacement = 'overlay', layers, onEnabledChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -61,12 +40,17 @@ export const PlaceMap: React.FC<PlaceMapProps> = ({
   const roRef = useRef<ResizeObserver | null>(null);
   const readyRef = useRef(false);
 
+  const activeLayers = useMemo(() => resolvePlaceLayers(layers), [layers]);
+  const STYLE = useMemo(() => placeLayerStyleMap(activeLayers), [activeLayers]);
+
   const defs = useMemo<LegendLayerDef[]>(() => [
-    ...LAYERS.map((l) => ({ key: l.key, label: l.label, color: l.color, group: 'layer' as const, defaultOn: l.defaultOn })),
+    ...activeLayers.map((l) => ({ key: l.key, label: l.label, color: l.color, group: 'layer' as const, defaultOn: l.defaultOn })),
     ...extraDefs,
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
-  ], [extraDefs]);
+  ], [activeLayers, extraDefs]);
   const { enabled, toggle } = useMapLegendState(defs);
+
+  useEffect(() => { onEnabledChange?.(enabled); }, [enabled, onEnabledChange]);
 
   const { data: features = [] } = useQuery({
     queryKey: ['place-features-near', center.lat, center.lng, radiusM],
