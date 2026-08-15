@@ -47,6 +47,8 @@ const Models3D = lazy(() => import("./pages/Models3D"));
 const Ontology = lazy(() => import("./pages/Ontology"));
 const AiAgents = lazy(() => import("./pages/AiAgents"));
 const Tools = lazy(() => import("./pages/Tools"));
+const Fingerprint = lazy(() => import("./pages/Fingerprint"));
+const Bildforbattring = lazy(() => import("./pages/Bildforbattring"));
 const KalmarMedeltid = lazy(() => import("./pages/KalmarMedeltid"));
 const KartsymbolerPreview = lazy(() => import("./pages/KartsymbolerPreview"));
 const HistoricalEvents = lazy(() => import("./pages/HistoricalEvents"));
@@ -188,6 +190,12 @@ const App = () => (
                   <Route path="/sv/verktyg" element={<Tools />} />
                   <Route path="/tools" element={<Tools />} />
                   <Route path="/en/tools" element={<Tools />} />
+                  <Route path="/sv/fingerprint" element={<Fingerprint />} />
+                  <Route path="/en/fingerprint" element={<Fingerprint />} />
+                  <Route path="/fingerprint" element={<Fingerprint />} />
+                  <Route path="/sv/bildforbattring" element={<Bildforbattring />} />
+                  <Route path="/en/image-enhancement" element={<Bildforbattring />} />
+                  <Route path="/bildforbattring" element={<Bildforbattring />} />
                   <Route path="/sv/kalmar/medeltid" element={<KalmarMedeltid />} />
                   <Route path="/sv/kalmar-medeltid" element={<KalmarMedeltid />} />
                   <Route path="/kalmar-medeltid" element={<KalmarMedeltid />} />

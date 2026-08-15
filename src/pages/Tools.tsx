@@ -78,10 +78,10 @@ const GROUPS: Group[] = [
   {
     titleSv: 'Forensik & bild', titleEn: 'Forensics & imaging', icon: Fingerprint,
     tools: [
-      { icon: Fingerprint, to: '/sv/runinskrifter', status: 'live', titleSv: 'Fingerprint (runsten/fornborg/grav)', titleEn: 'Fingerprint (runestone/hillfort/grave)',
+      { icon: Fingerprint, to: '/sv/fingerprint', status: 'live', titleSv: 'Fingerprint (runsten/fornborg/grav)', titleEn: 'Fingerprint (runestone/hillfort/grave)',
         descSv: 'Beskriv ett objekt (+ valfri bild) → AI-forensik: datering, typologi, trolig identitet. Grav-läget bär osteologi (kroppslängd, ålder/kön, patologi/trauma, gravutformning). Underlag att pröva, ej facit.',
         descEn: 'Describe an object (+ optional image) → AI forensics: dating, typology, likely identity. Grave mode carries osteology (body length, age/sex, pathology/trauma, grave form). Material to test, not a verdict.' },
-      { icon: ImageIcon, to: '/sv/runinskrifter', status: 'beta', titleSv: 'Bildförbättring (fält & natur)', titleEn: 'Image enhancement (field & nature)',
+      { icon: ImageIcon, to: '/sv/bildforbattring', status: 'live', titleSv: 'Bildförbättring (fält & natur)', titleEn: 'Image enhancement (field & nature)',
         descSv: 'Förbättra bilder tagna i fält/naturen: släpljus, kant-detektering och dekorrelationssträckning (DStretch) i webbläsaren — få fram svaga baslinjer före tolkning.',
         descEn: 'Enhance photos taken in the field/nature: raking light, edge detection and decorrelation stretch (DStretch) in the browser — surface faint lines before reading.' },
     ],
@@ -97,9 +97,6 @@ const GROUPS: Group[] = [
   {
     titleSv: 'Sök & kunskapsgraf', titleEn: 'Search & knowledge graph', icon: Search,
     tools: [
-      { icon: Search, to: '/', status: 'live', titleSv: 'Global sök & Lotsen', titleEn: 'Global search & the Guide',
-        descSv: 'Hybrid sök (lexikalt + semantiskt) mot kunskapsgrafen. Svaret länkar vidare i grafen så du kan följa kedjan.',
-        descEn: 'Hybrid search (lexical + semantic) over the knowledge graph. Answers link onward so you can follow the chain.' },
       { icon: Ruler, to: '/explore', status: 'live', titleSv: 'Räckviddssond & linjal', titleEn: 'Reach probe & ruler',
         descSv: 'Mät avstånd och rita räckvidds-/formzoner (t.ex. en dagsmarsch) kring valfritt objekt; exportera GeoJSON/CSV.',
         descEn: 'Measure distance and draw reach/shape zones (e.g. a day’s march) around any object; export GeoJSON/CSV.' },
