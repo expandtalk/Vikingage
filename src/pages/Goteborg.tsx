@@ -32,6 +32,7 @@ const Goteborg = () => {
       titleEn="Gothenburg"
       center={{ lat: 57.7072, lng: 11.9670 }}
       zoom={12}
+      progressiveAdmin
       keywords="Göteborg, Göta älv, Lödöse, Nya Lödöse, Älvsborg, fornlämningar, hällristningar, runstenar"
       metaDescriptionSv="Fornlämningar, hällristningar, runstenar och kyrkor kring Göteborg och Göta älvs mynning — samt stadens föregångare Lödöse, Nya Lödöse, Gullberg och Älvsborg."
       metaDescriptionEn="Ancient remains, rock art, runestones and churches around Gothenburg and the mouth of the Göta River — plus the city’s predecessors Lödöse, Nya Lödöse, Gullberg and Älvsborg."

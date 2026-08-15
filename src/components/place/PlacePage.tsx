@@ -22,11 +22,12 @@ interface PlacePageProps {
   introSv?: React.ReactNode;
   introEn?: React.ReactNode;
   children?: React.ReactNode;
+  progressiveAdmin?: boolean;           // zoom-progressivt admin-lager (landskap→kommun→socken/stad)
 }
 
 export const PlacePage: React.FC<PlacePageProps> = ({
   titleSv, titleEn, center, zoom = 12, radiusM = 25000,
-  metaDescriptionSv, metaDescriptionEn, keywords, introSv, introEn, children,
+  metaDescriptionSv, metaDescriptionEn, keywords, introSv, introEn, children, progressiveAdmin = false,
 }) => {
   const { language } = useLanguage();
   const sv = language === 'sv';
@@ -39,7 +40,7 @@ export const PlacePage: React.FC<PlacePageProps> = ({
       <main className="container mx-auto px-4 py-6 max-w-5xl">
         <h1 className="text-3xl font-bold text-gold mb-2">{sv ? titleSv : titleEn}</h1>
         {intro && <div className="text-slate-300 mb-4 max-w-3xl leading-relaxed text-sm">{intro}</div>}
-        <PlaceMap center={center} zoom={zoom} radiusM={radiusM} />
+        <PlaceMap center={center} zoom={zoom} radiusM={radiusM} progressiveAdmin={progressiveAdmin} />
         {children && <div className="mt-6">{children}</div>}
       </main>
       <Footer />

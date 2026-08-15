@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import L from 'leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MapLegend } from './MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { resolvePlaceLayers, placeLayerStyleMap, type PlaceLayerConfig } from './placeLayers';
+import { useProgressiveAdmin } from '@/hooks/map/useProgressiveAdmin';
 
 // Återanvändbar rik platskarta för ALLA orter. Driven av EN RPC (place_features_near) som ger
 // kronologiskt kategoriserade punkter runt en center. Delad MapLegend (kronologisk ordning) +
@@ -27,11 +28,12 @@ interface PlaceMapProps {
   legendPlacement?: 'overlay' | 'inline'; // 'inline' = legend under kartan (smal aside, täcker ej kartan)
   layers?: PlaceLayerConfig[];          // baslager (default DEFAULT_PLACE_LAYERS) — se ./placeLayers
   onEnabledChange?: (enabled: Record<string, boolean>) => void; // legend-toggles ändrade
+  progressiveAdmin?: boolean;           // zoom-progressivt admin-lager (landskap→kommun→socken/stad)
 }
 
 export const PlaceMap: React.FC<PlaceMapProps> = ({
   center, zoom = 11, radiusM = 25000, heightClass = 'h-[520px]', extraDefs = [], onMapReady,
-  legendPlacement = 'overlay', layers, onEnabledChange,
+  legendPlacement = 'overlay', layers, onEnabledChange, progressiveAdmin = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -39,6 +41,7 @@ export const PlaceMap: React.FC<PlaceMapProps> = ({
   const groupRef = useRef<L.LayerGroup | null>(null);
   const roRef = useRef<ResizeObserver | null>(null);
   const readyRef = useRef(false);
+  const [mapReady, setMapReady] = useState(false);
 
   const activeLayers = useMemo(() => resolvePlaceLayers(layers), [layers]);
   const STYLE = useMemo(() => placeLayerStyleMap(activeLayers), [activeLayers]);
@@ -51,6 +54,9 @@ export const PlaceMap: React.FC<PlaceMapProps> = ({
   const { enabled, toggle } = useMapLegendState(defs);
 
   useEffect(() => { onEnabledChange?.(enabled); }, [enabled, onEnabledChange]);
+
+  // Zoom-progressivt admin-lager (landskap→kommun→socken/stad). Aktiveras när kartan är redo.
+  useProgressiveAdmin(mapRef, progressiveAdmin && mapReady);
 
   const { data: features = [] } = useQuery({
     queryKey: ['place-features-near', center.lat, center.lng, radiusM],
@@ -76,9 +82,11 @@ export const PlaceMap: React.FC<PlaceMapProps> = ({
     roRef.current.observe(containerRef.current);
     [60, 250, 600, 1200].forEach((d) => setTimeout(() => { try { map.invalidateSize(); } catch { /* noop */ } }, d));
     if (!readyRef.current) { readyRef.current = true; onMapReady?.(map, enabled); }
+    setMapReady(true);
     return () => {
       try { roRef.current?.disconnect(); } catch { /* noop */ }
       map.remove(); mapRef.current = null; groupRef.current = null; tileRef.current = null; readyRef.current = false;
+      setMapReady(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
