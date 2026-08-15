@@ -283,9 +283,9 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Mail, category: 'history',
   },
   {
-    pathEn: '/explore?focus=eriksgatan', pathSv: '/explore?focus=eriksgatan',
-    labelSv: 'Eriksgatan', labelEn: 'Eriksgatan',
-    descSv: 'Kungavalets riksrunda på kartan.', descEn: 'The royal election progress, mapped.',
+    pathEn: '/en/eriksgata', pathSv: '/sv/eriksgatan',
+    labelSv: 'Eriksgatan', labelEn: 'The Eriksgata',
+    descSv: 'Kungavalets riksrunda genom landskapen.', descEn: "The royal election progress through the provinces.",
     icon: Crown, category: 'history',
   },
   {
