@@ -22,6 +22,8 @@ import { WindRose } from '@/components/explorer/WindRose';
 import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
+import { useAdminBoundary } from '@/hooks/useAdminBoundary';
+import { drawAdminBoundary } from '@/utils/map/adminBoundary';
 
 // Öland-modellen — forskningssida. Testar hypotesen om vikingatidens vägnät och
 // centralplatser via runstenar, fornborgar, guldfynd, Frö-namn och kyrkor. Imperativ
@@ -102,6 +104,9 @@ const OlandMap: React.FC<{
   const ostraledRef = useRef<L.LayerGroup>(L.layerGroup());
   const snackRef = useRef<L.LayerGroup>(L.layerGroup());
   const snackDataRef = useRef<any[] | null>(null);
+  const adminRef = useRef<L.LayerGroup>(L.layerGroup());
+  // Öland = Borgholm (0885) + Mörbylånga (0840). Lantmäteri "Kommun, län och rike", © Lantmäteriet.
+  const { data: adminBoundary = [] } = useAdminBoundary('kommun', ['0885', '0840']);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear);
 
@@ -117,6 +122,7 @@ const OlandMap: React.FC<{
     { key: 'kalla', label: 'Källor med tradition', color: '#0891b2', defaultOn: false },
     { key: 'ostraled', label: 'Östra landsvägen (schematisk)', color: '#b91c1c', defaultOn: false },
     { key: 'snack', label: 'Snäck-namn (ledung, hypotes)', color: '#7c3aed', defaultOn: false },
+    { key: 'admin', label: 'Kommungränser (© Lantmäteriet)', color: '#0ea5e9', defaultOn: false },
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
   ];
   const { enabled, toggle } = useMapLegendState(LEGEND);
@@ -134,6 +140,7 @@ const OlandMap: React.FC<{
     crossingRef.current.addTo(map); beaconRef.current.addTo(map);
     fornvagRef.current.addTo(map); kallaRef.current.addTo(map);
     ostraledRef.current.addTo(map); snackRef.current.addTo(map);
+    adminRef.current.addTo(map);
     mapRef.current = map;
     setTimeout(() => { try { map.invalidateSize(); } catch { /* noop */ } }, 120);
     return () => { map.remove(); mapRef.current = null; };
@@ -297,6 +304,15 @@ const OlandMap: React.FC<{
     })();
     return () => { cancelled = true; };
   }, [enabled.snack]);
+
+  // Kommungränser (Lantmäteri, © Lantmäteriet) — Öland = Borgholm + Mörbylånga. Statisk indelning,
+  // hämtas via useAdminBoundary (RPC get_admin_boundary_geojson). Konturlinje, default av.
+  useEffect(() => {
+    const g = adminRef.current; if (!g) return;
+    g.clearLayers();
+    if (!enabled.admin) return;
+    drawAdminBoundary(g, adminBoundary, { color: '#0ea5e9', weight: 2 });
+  }, [enabled.admin, adminBoundary]);
 
   // Punkter — filtrerade per lager i legenden (enabled[kind]).
   useEffect(() => {
