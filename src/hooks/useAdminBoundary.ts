@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 // Admin-gränser (Lantmäteri "Kommun, län och rike", © Lantmäteriet) som GeoJSON via RPC
-// get_admin_boundary_geojson. Återanvändbart över regionsidor:
-//   Öland  = union Borgholm (0885) + Mörbylånga (0840)
-//   Kalmar = 0880, Ångermanland-kommuner osv.
+// get_admin_boundary_geojson. Återanvändbart över regionsidor och nationellt:
+//   codes = ['0885','0840']  → bara dessa (Öland)
+//   codes = null             → ALLA på nivån (t.ex. alla 290 kommuner) — använd simplify då.
 // Indelningen är statisk → hög staleTime. geojson parsas till objekt; centroid för kartcentrering.
 export interface AdminBoundary {
   code: string;
@@ -14,10 +14,10 @@ export interface AdminBoundary {
   clng: number;
 }
 
-export const useAdminBoundary = (level: string, codes: string[], simplify = 0) =>
+export const useAdminBoundary = (level: string, codes: string[] | null, simplify = 0) =>
   useQuery({
-    queryKey: ['admin-boundary', level, [...codes].sort().join(','), simplify],
-    enabled: codes.length > 0,
+    queryKey: ['admin-boundary', level, codes ? [...codes].sort().join(',') : 'ALL', simplify],
+    enabled: codes === null || codes.length > 0,
     staleTime: 1000 * 60 * 60, // gränser ändras sällan
     queryFn: async () => {
       const { data, error } = await (supabase as unknown as { rpc: (fn: string, args?: any) => any })

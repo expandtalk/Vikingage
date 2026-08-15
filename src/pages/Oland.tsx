@@ -105,8 +105,9 @@ const OlandMap: React.FC<{
   const snackRef = useRef<L.LayerGroup>(L.layerGroup());
   const snackDataRef = useRef<any[] | null>(null);
   const adminRef = useRef<L.LayerGroup>(L.layerGroup());
-  // Öland = Borgholm (0885) + Mörbylånga (0840). Lantmäteri "Kommun, län och rike", © Lantmäteriet.
-  const { data: adminBoundary = [] } = useAdminBoundary('kommun', ['0885', '0840']);
+  // Alla Sveriges kommungränser (Lantmäteri "Kommun, län och rike", © Lantmäteriet), förenklade
+  // ~200 m så nationell täckning väger ~1 MB. Öland syns default på, panorera för fastlandet.
+  const { data: adminBoundary = [] } = useAdminBoundary('kommun', null, 0.002);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear);
 
@@ -122,7 +123,7 @@ const OlandMap: React.FC<{
     { key: 'kalla', label: 'Källor med tradition', color: '#0891b2', defaultOn: false },
     { key: 'ostraled', label: 'Östra landsvägen (schematisk)', color: '#b91c1c', defaultOn: false },
     { key: 'snack', label: 'Snäck-namn (ledung, hypotes)', color: '#7c3aed', defaultOn: false },
-    { key: 'admin', label: 'Kommungränser (© Lantmäteriet)', color: '#0ea5e9', defaultOn: false },
+    { key: 'admin', label: 'Kommungränser', color: '#0ea5e9', defaultOn: true },
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
   ];
   const { enabled, toggle } = useMapLegendState(LEGEND);
