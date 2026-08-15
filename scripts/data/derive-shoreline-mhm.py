@@ -28,6 +28,9 @@ def main():
     ap.add_argument('--rsl', type=float, required=True, help='relativ havsnivå (m RH2000) för året')
     ap.add_argument('--simplify', type=float, default=5.0, help='förenkling i meter (SWEREF99 TM)')
     ap.add_argument('--min-area-m2', type=float, default=10000.0, help='minsta havspolygon (m²) att behålla')
+    ap.add_argument('--downsample-m', type=float, default=None,
+                    help='nedsampla mosaiken till denna cellstorlek (m) med medelvärde — krävs för stora AOI '
+                         '(hela Öland i 1 m = ~13 GB i minnet). 10 m räcker gott för strandlinje på kartskala.')
     ap.add_argument('--out', required=True)
     a = ap.parse_args()
 
@@ -35,7 +38,12 @@ def main():
     if not tifs:
         sys.exit(f'inga .tif i {a.tiles}')
     srcs = [rasterio.open(t) for t in tifs]
-    mos, tf = merge(srcs)
+    # Nedsampling (valfritt): res + Resampling.average → utjämnad DEM som ryms i minnet.
+    if a.downsample_m:
+        from rasterio.enums import Resampling
+        mos, tf = merge(srcs, res=(a.downsample_m, a.downsample_m), resampling=Resampling.average)
+    else:
+        mos, tf = merge(srcs)
     dem = mos[0].astype('float32')
     nod = srcs[0].nodata
     src_crs = srcs[0].crs
