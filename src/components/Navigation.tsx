@@ -19,7 +19,6 @@ import {
   Map,
   Compass,
   Scale,
-  Swords,
   BarChart3,
   Library,
   Tag,
@@ -33,6 +32,8 @@ import {
   Mail,
   Boxes,
   MapPin,
+  Mountain,
+  Wrench,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -70,6 +71,12 @@ interface NavLink {
   descEn: string;
   icon: LucideIcon;
   category?: Category;
+  /**
+   * Renders as a prominent top-level direct link (like Game/Podcast/Tools) instead of
+   * inside the Explore megamenu — while KEEPING its `category` for section-cluster membership.
+   * Lets a link be surfaced up top without dropping out of its category's page-level section-nav.
+   */
+  topLevel?: boolean;
   /** Only shown to authenticated users. */
   authOnly?: boolean;
 }
@@ -129,227 +136,217 @@ const FOCUS_ROUTES: Record<string, string> = {
   GeneticEvents: 'geneticEvents',
 };
 
+// KORT nav-beskrivning per route-komponent. routes.ts-descriptionerna är långa och
+// dubbelanvänds som SEO/meta (PageMeta) — dem rör vi INTE. I megamenyns smala kort
+// (line-clamp-2, ~5 kolumner) klipps långa texter; därför en kort override här.
+// Håll ≤ ~48 tecken så inget klipps på den smalaste kolumnbredden.
+const NAV_DESC: Record<string, { sv: string; en: string }> = {
+  Inscriptions: { sv: 'Sök och analysera runinskrifter.', en: 'Search and analyze inscriptions.' },
+  Carvers: { sv: 'Runristare och deras verkstäder.', en: 'Runic carvers and their workshops.' },
+  Artefacts: { sv: 'Föremål kopplade till inskrifter.', en: 'Objects linked to inscriptions.' },
+  Coins: { sv: 'Mynt, brakteater och skatter.', en: 'Coins, bracteates and hoards.' },
+  VikingNames: { sv: 'Vikingatida namn och frekvens.', en: 'Viking-age names and frequency.' },
+  Fortresses: { sv: 'Fornborgar och befästningar.', en: 'Hillforts and fortifications.' },
+  Hundreds: { sv: 'Historiska härader på kartan.', en: 'Historical hundreds, mapped.' },
+  Parishes: { sv: 'Socknar och deras inskrifter.', en: 'Parishes and their inscriptions.' },
+  Rivers: { sv: 'Vattendrag och hydronymer.', en: 'Rivers and hydronyms.' },
+  RoyalChronicles: { sv: 'Kungar, dynastier och krönikor.', en: 'Kings, dynasties and chronicles.' },
+  FolkGroups: { sv: 'Folkstammar och migration.', en: 'Peoples and migration.' },
+  Gods: { sv: 'Gudar och kultplatser.', en: 'Gods and cult sites.' },
+  GeneticEvents: { sv: 'aDNA och genetiska händelser.', en: 'aDNA and genetic events.' },
+};
+
 // Explore-länken behövs även som direktlänk i inloggat läge.
 const explore: NavLink = {
   pathEn: '/explore', pathSv: '/explore',
   labelSv: 'Utforska kartan', labelEn: 'Explore the map',
-  descSv: 'Interaktiv karta med alla lager — runinskrifter, platser och intresseprofiler.',
-  descEn: 'Interactive map with every layer — inscriptions, places and interest profiles.',
+  descSv: 'Interaktiv karta med alla lager.', descEn: 'Interactive map, every layer.',
   icon: Map, category: 'places',
 };
 
 // Links that aren't in routes.ts but belong in the megamenu.
+// descSv/descEn hålls korta (≤ ~48 tecken) så korten inte klipper texten.
 const EXTRA_LINKS: NavLink[] = [
   explore,
   {
     pathEn: '/en/runes', pathSv: '/sv/runor',
     labelSv: 'Runor & futharken', labelEn: 'Runes & the futhark',
-    descSv: 'Vad runor är, yngre och äldre futharken, hur man läser en runsten — och hela runstenskorpusen på kartan.',
-    descEn: 'What runes are, the Younger and Elder Futhark, how to read a runestone — and the whole runestone corpus on the map.',
+    descSv: 'Vad runor är och hur man läser dem.', descEn: 'What runes are and how to read them.',
     icon: Scroll, category: 'inscriptions',
   },
   {
     pathEn: '/inscriptions', pathSv: '/sv/runinskrifter',
     labelSv: 'Runstenar', labelEn: 'Runestones',
-    descSv: 'Runstensväljaren — hela runstenskorpusen på en karta, filtrera på landskap (signum-serie), ornamentstil och typ.',
-    descEn: 'The runestone browser — the whole corpus on a map, filter by province (signum series), ornament style and type.',
+    descSv: 'Hela runstenskorpusen på karta.', descEn: 'The whole runestone corpus, mapped.',
     icon: Map, category: 'inscriptions',
   },
   {
     pathEn: '/en/danish-runestones', pathSv: '/sv/danska-runstenar',
     labelSv: 'Danska runstenar', labelEn: 'Danish runestones',
-    descSv: 'Danmarks runeindskrifter — Jelling, Tryggevælde, Hedeby + signum-systemen.',
-    descEn: 'Danmarks runeindskrifter — Jelling, Tryggevælde, Hedeby + the signum systems.',
+    descSv: 'Danmarks runeindskrifter + signum.', descEn: "Denmark's runic inscriptions + signa.",
     icon: Landmark, category: 'inscriptions',
   },
   {
     pathEn: '/explore?focus=marine', pathSv: '/explore?focus=marine',
     labelSv: 'Marinarkeologi', labelEn: 'Marine archaeology',
-    descSv: 'Vrak, farleder, hamnar och strandförskjutning — sjöns kulturarv på kartan.',
-    descEn: "Wrecks, fairways, harbours and shoreline shift — the sea's heritage on the map.",
+    descSv: 'Vrak, farleder och hamnar.', descEn: 'Wrecks, fairways and harbours.',
     icon: Anchor, category: 'places',
   },
   {
     pathEn: '/excursions', pathSv: '/excursions',
     labelSv: 'Utflykter', labelEn: 'Excursions',
-    descSv: 'Platser att besöka på riktigt — hällristningar, gravhögar och fornborgar.',
-    descEn: 'Places to visit in real life — rock carvings, burial mounds and hillforts.',
+    descSv: 'Platser att besöka på riktigt.', descEn: 'Places to visit for real.',
     icon: Compass, category: 'places',
   },
   {
     pathEn: '/explore?focus=churches', pathSv: '/explore?focus=churches',
     labelSv: 'Kyrkor & stift', labelEn: 'Churches & dioceses',
-    descSv: 'Medeltidskyrkor med byggår, stift över tid och bild — samt ruiner. Zooma in på kartan.',
-    descEn: 'Medieval churches with build year, diocese over time and photo — plus ruins. Zoom in.',
+    descSv: 'Medeltidskyrkor och stift över tid.', descEn: 'Medieval churches and dioceses.',
     icon: Church, category: 'places',
   },
   {
     pathEn: '/place-names', pathSv: '/sv/ortnamn',
     labelSv: 'Ortnamn', labelEn: 'Place names',
-    descSv: 'Ortnamnsleden vi söker (sakrala, makt, natur) — reproducerbar metod, källor och osäkerheter.',
-    descEn: 'The place-name elements we search (sacral, power, nature) — reproducible method, sources, caveats.',
+    descSv: 'Ortnamnsled och metod, med källor.', descEn: 'Place-name elements and method.',
     icon: Tag, category: 'places',
   },
   {
     pathEn: '/3d', pathSv: '/sv/3d',
     labelSv: '3D-modeller', labelEn: '3D models',
-    descSv: 'Föremål ur forntiden i 3D — hjälmar, ben och konst (SHM/SweDigArch, CC-BY). Snurra och zooma.',
-    descEn: 'Objects from the past in 3D — helmets, bones and art (SHM/SweDigArch, CC-BY). Rotate and zoom.',
+    descSv: 'Föremål ur forntiden i 3D.', descEn: 'Ancient objects in 3D.',
     icon: Boxes, category: 'places',
   },
   {
     pathEn: '/en/place', pathSv: '/sv/plats',
     labelSv: 'Platser', labelEn: 'Places',
-    descSv: 'Källgranskade platssidor — offermossar, båtgravfält, kastaler och slagfält.',
-    descEn: 'Source-critical place pages — sacrificial bogs, boat-grave fields, kastals and battlefields.',
+    descSv: 'Källgranskade platssidor.', descEn: 'Source-critical place pages.',
     icon: MapPin, category: 'places',
   },
   {
     pathEn: '/en/genealogy', pathSv: '/sv/slaktforskning',
     labelSv: 'Släktforskning', labelEn: 'Genealogy',
-    descSv: 'Släpp din GEDCOM — se anfäderna i sitt landskap och djuptid, med gångavstånds-räckvidd. Klientsidigt och privat, ingen inloggning.',
-    descEn: 'Drop your GEDCOM — see ancestors in their landscape and deep time, within walking distance. Client-side and private.',
+    descSv: 'Släpp din GEDCOM — anor i landskapet.', descEn: 'Drop your GEDCOM — ancestors mapped.',
     icon: Users, category: 'places',
+  },
+  {
+    pathEn: '/caves', pathSv: '/grottor',
+    labelSv: 'Grottor', labelEn: 'Caves',
+    descSv: 'Alla grottor på kartan — nära dig.', descEn: 'Every cave mapped — near you.',
+    icon: Mountain, category: 'places',
   },
   {
     pathEn: '/ontology', pathSv: '/ontologi',
     labelSv: 'Ontologi', labelEn: 'Ontology',
-    descSv: 'Det agent-läsbara kontraktet: entitetstyper, relationer, mätmetoder, dateringsmetoder (kol-14, dendro, numismatik) och vetenskapliga referenser.',
-    descEn: 'The agent-readable contract: entity types, relations, measures, dating methods (14C, dendro, numismatic) and scientific references.',
+    descSv: 'Det agent-läsbara datakontraktet.', descEn: 'The agent-readable data contract.',
     icon: Share2, category: 'science',
   },
   {
     pathEn: '/researchers', pathSv: '/forskare',
     labelSv: 'Forskare', labelEn: 'Researchers',
-    descSv: 'Forskare och källor bakom materialet — runologer, arkeologer och historiker med deras verk.',
-    descEn: 'The researchers and sources behind the material — runologists, archaeologists and historians with their works.',
+    descSv: 'Forskarna och källorna bakom.', descEn: 'The researchers and sources behind.',
     icon: BookOpen, category: 'science',
-  },
-  {
-    pathEn: '/ai-agents', pathSv: '/ai-agenter',
-    labelSv: 'AI-agenter', labelEn: 'AI agents',
-    descSv: 'Vilka typer av AI-agenter plattformen använder och hur — produkt-AI (runinskrifts-analys, sök) och källkritiska specialistagenter (arkeologi, datakvalitet, GIS, QA). AI beskriver, människan verifierar.',
-    descEn: 'Which AI agents the platform uses and how — product AI (runic analysis, search) and source-critical specialist agents (archaeology, data quality, GIS, QA). AI describes, humans verify.',
-    icon: Bot, category: 'science',
   },
   {
     pathEn: '/methodology', pathSv: '/sv/vetenskapsmetodik',
     labelSv: 'Vetenskapsmetodik', labelEn: 'Methodology',
-    descSv: 'Metoden att inte släppa in dålig data — tio principer, attribution och ägande, proveniens och forensik, samt källkritisk FAQ.',
-    descEn: 'The method for keeping bad data out — ten principles, attribution and ownership, provenance and forensics, and a source-critical FAQ.',
+    descSv: 'Metoden att hålla dålig data ute.', descEn: 'How we keep bad data out.',
     icon: Microscope, category: 'science',
   },
   {
     pathEn: '/statistics', pathSv: '/sv/statistik',
     labelSv: 'Statistik', labelEn: 'Statistics',
-    descSv: 'Bläddra materialet — antal per landskap, socken, härad och ristare.',
-    descEn: 'Browse the material — counts per province, parish, hundred and carver.',
+    descSv: 'Antal per landskap, socken, ristare.', descEn: 'Counts by province, parish, carver.',
     icon: BarChart3, category: 'science',
   },
   {
     pathEn: '/texts', pathSv: '/texter',
     labelSv: 'Texter & källor', labelEn: 'Texts & sources',
-    descSv: 'Läs källorna i fulltext — Poetiska Eddan, lagar, krönikor och sagor, efter typ.',
-    descEn: 'Read the sources in full — the Poetic Edda, laws, chronicles and sagas, by type.',
+    descSv: 'Eddan, lagar och krönikor i fulltext.', descEn: 'Edda, laws and chronicles in full.',
     icon: Library, category: 'history',
   },
   {
     pathEn: '/historical-events', pathSv: '/sv/historiska-handelser',
     labelSv: 'Tidslinje', labelEn: 'Timeline',
-    descSv: 'Händelser, klimatchocker och pestutbrott + introduktioner av arter/innovationer (hund, katt, häst) på samma tidsaxel — med proxy, osäkerhet och källor.',
-    descEn: 'Events, climate shocks and plague plus introductions of species/innovations on one time axis — with proxy, uncertainty and sources.',
+    descSv: 'Händelser och arter på en tidsaxel.', descEn: 'Events and species on one timeline.',
     icon: CalendarClock, category: 'history',
   },
   {
     pathEn: '/economic-history', pathSv: '/sv/ekonomisk-historia',
     labelSv: 'Ekonomisk historia', labelEn: 'Economic history',
-    descSv: 'Det första skattesystemet: ledungen (roþ/Roden), bryteorganisationen och kyrkans tionde — från roddarfolket ~839 till Kalmarunionen.',
-    descEn: 'The first tax system: the levy (roþ/Roden), the steward organisation and the Church tithe — from the rowing people c. 839 to the Kalmar Union.',
+    descSv: 'Ledungen och första skattesystemet.', descEn: 'The levy and first tax system.',
     icon: Coins, category: 'history',
   },
   {
     pathEn: '/en/medieval-charters', pathSv: '/sv/medeltidsbrev',
     labelSv: 'Medeltidsbrev', labelEn: 'Medieval charters',
-    descSv: 'De svenska medeltidsbreven t.o.m. 1540 — 44 264 regester ur SDHK, sökbara med datum, ort och fulltext där den finns.',
-    descEn: 'The Swedish medieval charters up to 1540 — 44,264 abstracts from SDHK, searchable by date, place, with full text where available.',
+    descSv: '44 264 medeltidsbrev ur SDHK.', descEn: '44,264 medieval charters from SDHK.',
     icon: Mail, category: 'history',
   },
   {
     pathEn: '/explore?focus=eriksgatan', pathSv: '/explore?focus=eriksgatan',
     labelSv: 'Eriksgatan', labelEn: 'Eriksgatan',
-    descSv: 'Kungavalets riksrunda genom landskapen — den medeltida Eriksgatan på kartan.',
-    descEn: 'The medieval royal election progress through the provinces, drawn on the map.',
+    descSv: 'Kungavalets riksrunda på kartan.', descEn: 'The royal election progress, mapped.',
     icon: Crown, category: 'history',
   },
   {
     pathEn: '/en/execution-sites', pathSv: '/sv/avrattningsplatser',
     labelSv: 'Avrättningsplatser', labelEn: 'Execution sites',
-    descSv: 'Alla galg- och avrättningsplatser i Sverige + daterade avrättningar, med tidsreglage och källkritisk evidensklass.',
-    descEn: 'All gallows and execution sites in Sweden plus dated executions, with a time slider and evidence grading.',
+    descSv: 'Galg- och avrättningsplatser.', descEn: 'Gallows and execution sites.',
     icon: Landmark, category: 'history',
   },
   {
     pathEn: '/prices', pathSv: '/prices',
     labelSv: 'Priskalkylator', labelEn: 'Price calculator',
-    descSv: 'Diocletianus prisedikt (301 e.Kr.) — romerska priser omräknade.',
-    descEn: "Diocletian's Price Edict (301 AD) — Roman prices converted.",
+    descSv: 'Diocletianus prisedikt (301 e.Kr.).', descEn: "Diocletian's Price Edict (301 AD).",
     icon: Scale, category: 'history',
   },
   // Regioner & teman — de tvåspråkiga forsknings-/regionsidorna + helgon-hubben.
   {
     pathEn: '/kalmar', pathSv: '/sv/kalmar',
     labelSv: 'Kalmar', labelEn: 'Kalmar',
-    descSv: 'Kalmar och Kalmarsund — centralorter, slott och sund över tid.',
-    descEn: 'Kalmar and the Kalmar Strait — central places, castle and sound over time.',
+    descSv: 'Centralorter, slott och sund.', descEn: 'Central places, castle and sound.',
     icon: Castle, category: 'regions',
   },
   {
     pathEn: '/oland', pathSv: '/sv/oland',
     labelSv: 'Öland', labelEn: 'Öland',
-    descSv: 'Ölands vikingatida vägnät, centralplatser och kyrkor.',
-    descEn: "Öland's Viking-age road network, central places and churches.",
+    descSv: 'Vägnät, centralplatser och kyrkor.', descEn: 'Roads, central places, churches.',
     icon: Landmark, category: 'regions',
   },
   {
     pathEn: '/angermanland', pathSv: '/sv/angermanland',
     labelSv: 'Ångermanland', labelEn: 'Ångermanland',
-    descSv: 'Centralorter och kolonisation i Ångermanland.',
-    descEn: 'Central places and colonisation in Ångermanland.',
+    descSv: 'Centralorter och kolonisation.', descEn: 'Central places and colonisation.',
     icon: Compass, category: 'regions',
   },
   {
     pathEn: '/staket', pathSv: '/sv/staket',
     labelSv: 'Stäket & Mälaren', labelEn: 'Stäket & Lake Mälaren',
-    descSv: 'Mälaren som havsvik — var seglade Olav 1007? DEM-strandlinje.',
-    descEn: 'Lake Mälaren as a sea bay — where did Olav sail in 1007?',
+    descSv: 'Mälaren som havsvik — Olav 1007.', descEn: 'Mälaren as a sea bay — Olav 1007.',
     icon: Waves, category: 'regions',
   },
   {
     pathEn: '/en/gota-landsvag', pathSv: '/sv/gota-landsvag',
     labelSv: 'Göta landsväg', labelEn: 'Göta landsväg',
-    descSv: 'Medeltida landsvägen Stockholm–Södertälje över Södertörn, med Svartlötens tingsplats.',
-    descEn: 'The medieval highroad Stockholm–Södertälje across Södertörn, with the Svartlöten assembly site.',
+    descSv: 'Medeltida landsvägen över Södertörn.', descEn: 'Medieval highroad across Södertörn.',
     icon: Compass, category: 'regions',
   },
   {
     pathEn: '/en/sandby-borg', pathSv: '/sv/sandby-borg',
     labelSv: 'Sandby borg', labelEn: 'Sandby borg',
-    descSv: 'Ringborgen på Öland där en massaker ca 480 lämnade de döda obegravda.',
-    descEn: 'The Öland ring fort where a massacre around 480 left the dead unburied.',
+    descSv: 'Ölandsborgen med massakern ~480.', descEn: 'The Öland fort massacre, c. 480.',
     icon: Castle, category: 'regions',
   },
   {
     pathEn: '/en/saint-olav', pathSv: '/sv/sankt-olof',
     labelSv: 'Sankt Olof', labelEn: 'Saint Olav',
-    descSv: 'Helgonet Olav: kyrkoruin, seglingen, kult och Nidaros.',
-    descEn: 'Saint Olav: church ruin, the voyage, cult and Nidaros.',
+    descSv: 'Helgonet Olav: kult och kyrkoruin.', descEn: 'Saint Olav: cult and church ruin.',
     icon: Church, category: 'regions',
   },
   {
     pathEn: '/en/saints', pathSv: '/sv/helgon',
     labelSv: 'Helgon', labelEn: 'Saints',
-    descSv: 'Nordens helgon — Olof, Erik, Birgitta m.fl., med källkritik.',
-    descEn: 'The saints of the North — Olav, Erik, Birgitta and more.',
+    descSv: 'Nordens helgon, med källkritik.', descEn: 'The saints of the North.',
     icon: Cross, category: 'regions',
   },
 ];
@@ -361,19 +358,29 @@ const profile: NavLink = {
   icon: User, authOnly: true,
 };
 
-const game: NavLink = {
-  pathEn: '/kungsnave', pathSv: '/kungsnave',
-  labelSv: 'Spel', labelEn: 'Game',
-  descSv: 'Spela Hnefatafl (Kungsnäve)', descEn: "Play Hnefatafl (the king's game)",
-  icon: Swords,
-};
-
+// Spel (Kungsnäve) bor nu i verktygskatalogen (/verktyg), inte som topplänk.
+// Podcast ligger i Utforska-megamenyn (kategori 'history') i st.f. som topplänk.
 const podcast: NavLink = {
   pathEn: '/podcast', pathSv: '/podcast',
   labelSv: 'Podcast', labelEn: 'Podcast',
-  descSv: 'Ljudberättelser om runstenar, sagor och myter.',
-  descEn: 'Audio stories about runestones, sagas and myths.',
-  icon: Headphones,
+  descSv: 'Ljudberättelser om runor och myter.', descEn: 'Audio stories of runes and myths.',
+  icon: Headphones, category: 'history',
+};
+
+const tools: NavLink = {
+  pathEn: '/tools', pathSv: '/verktyg',
+  labelSv: 'Verktyg', labelEn: 'Tools',
+  descSv: 'Alla plattformens verktyg samlade.', descEn: 'All the platform tools in one place.',
+  icon: Wrench,
+};
+
+// AI lyfts till topplänk (hett begrepp — ska inte begravas i submenyn), men behåller
+// category:'science' så sidornas sektionsnavigering (Science & method) fortfarande får med den.
+const aiAgents: NavLink = {
+  pathEn: '/ai-agents', pathSv: '/ai-agenter',
+  labelSv: 'AI', labelEn: 'AI',
+  descSv: 'Hur plattformen använder AI.', descEn: 'How the platform uses AI.',
+  icon: Bot, category: 'science', topLevel: true,
 };
 
 /** Single source of truth for the app's navigation links, in both languages. */
@@ -381,20 +388,22 @@ const useNavLinks = (): NavLink[] => {
   const routeLinks: NavLink[] = routes.map((route) => {
     const focus = FOCUS_ROUTES[route.component];
     const explorePath = focus ? `/explore?focus=${focus}` : null;
+    // Kort nav-beskrivning om vi har en; annars route.description (SEO-texten).
+    const navDesc = NAV_DESC[route.component];
     return {
       pathEn: explorePath ?? route.pathEn,
       pathSv: explorePath ?? route.pathSv,
       labelSv: route.titleSv,
       labelEn: route.titleEn,
-      descSv: route.descriptionSv,
-      descEn: route.descriptionEn,
+      descSv: navDesc?.sv ?? route.descriptionSv,
+      descEn: navDesc?.en ?? route.descriptionEn,
       icon: ICONS[route.component] ?? BookOpen,
       category: CATEGORY_OF[route.component],
     };
   });
 
   // 'home' borttagen ur navet — loggan (ᚱ) i Header länkar redan till startsidan.
-  return [game, podcast, ...routeLinks, ...EXTRA_LINKS, profile];
+  return [aiAgents, tools, podcast, ...routeLinks, ...EXTRA_LINKS, profile];
 };
 
 const useResolveLink = () => {
@@ -447,7 +456,7 @@ const MegaCard: React.FC<{ link: NavLink }> = ({ link }) => {
 
 /**
  * Desktop navigation. En bred "Utforska"-megameny grupperad i kategori-kolumner
- * med rubriker; Spel och Podcast som direktlänkar. Inget publikt nav i inloggat läge.
+ * med rubriker; AI och Verktyg som direktlänkar. Inget publikt nav i inloggat läge.
  */
 export const Navigation: React.FC = () => {
   const { user } = useAuth();
@@ -455,7 +464,8 @@ export const Navigation: React.FC = () => {
   const { isActive, pathOf, labelOf } = useResolveLink();
 
   const links = useNavLinks().filter((l) => !l.authOnly || user);
-  const byCategory = (cat: Category) => links.filter((l) => l.category === cat);
+  // topLevel-länkar visas som direktlänkar (nedan) och ska INTE dubbleras i megamenyn.
+  const byCategory = (cat: Category) => links.filter((l) => l.category === cat && !l.topLevel);
 
   const triggerClass =
     'bg-transparent text-slate-200 hover:bg-slate-800/60 hover:text-white ' +
@@ -497,7 +507,12 @@ export const Navigation: React.FC = () => {
         <NavigationMenuItem>
           <NavigationMenuTrigger className={triggerClass}>{megaLabel}</NavigationMenuTrigger>
           <NavigationMenuContent>
-            <div className="w-[min(1080px,92vw)] bg-slate-900 p-4">
+            {/* max-h + scroll: på låga skärmar är kolumnerna (t.ex. "Platser & kartor")
+                högre än fönstret; radix-viewporten är fixed top-[65px] + overflow-hidden,
+                så utan höjdtak klipptes de nedersta länkarna (bl.a. Släktforskning) bort
+                helt oåtkomligt. Nu mäter radix den kapade höjden → panelen ryms alltid
+                och innehållet scrollar i stället för att försvinna. */}
+            <div className="max-h-[calc(100vh-96px)] w-[min(1080px,92vw)] overflow-y-auto overscroll-contain bg-slate-900 p-4">
               <ul className="grid list-none grid-cols-2 gap-x-4 gap-y-6 lg:grid-cols-3 xl:grid-cols-5">
                 {CATEGORY_ORDER.map((cat) => {
                   const catLinks = byCategory(cat);
@@ -525,8 +540,8 @@ export const Navigation: React.FC = () => {
           </NavigationMenuContent>
         </NavigationMenuItem>
 
-        {directLink(game)}
-        {directLink(podcast)}
+        {directLink(aiAgents)}
+        {directLink(tools)}
       </NavigationMenuList>
     </NavigationMenu>
   );
@@ -540,7 +555,9 @@ export const MobileNav: React.FC = () => {
   const [open, setOpen] = useState(false);
 
   const links = useNavLinks().filter((l) => !l.authOnly || user);
-  const standalone = links.filter((l) => !l.category && !l.authOnly);
+  // Direktlänkar överst: kategorilösa (Verktyg) + topLevel (AI, som ändå
+  // behåller sin category för sektionsnavigeringen på sidorna).
+  const standalone = links.filter((l) => (!l.category || l.topLevel) && !l.authOnly);
   const profileLink = links.find((l) => l.authOnly);
 
   const linkRow = (link: NavLink, withDesc = false) => {
@@ -597,7 +614,7 @@ export const MobileNav: React.FC = () => {
           >
             {standalone.map((l) => linkRow(l))}
             {CATEGORY_ORDER.map((cat) => {
-              const catLinks = links.filter((l) => l.category === cat);
+              const catLinks = links.filter((l) => l.category === cat && !l.topLevel);
               if (catLinks.length === 0) return null;
               const label =
                 language === 'sv' ? CATEGORY_LABELS[cat].sv : CATEGORY_LABELS[cat].en;

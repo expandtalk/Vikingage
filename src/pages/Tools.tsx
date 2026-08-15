@@ -8,7 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Wrench, ScanLine, Map, Search, Ruler, Waves, Fingerprint, Image as ImageIcon, Bot, ScrollText,
-  Route, Compass, Network, BookOpen, Coins, Church, Dna, Landmark, ArrowRight, Boxes, Stamp, Users, Radar,
+  Route, Compass, Network, BookOpen, Coins, Church, Dna, Landmark, ArrowRight, Boxes, Stamp, Users, Radar, Swords,
 } from 'lucide-react';
 
 // /verktyg (sv) + /tools (en) — samlad katalog över plattformens verktyg, presenterade som likvärdiga
@@ -142,6 +142,14 @@ const GROUPS: Group[] = [
         descEn: 'aDNA sites, ancestry components and skeletal material tied to individual and place.' },
     ],
   },
+  {
+    titleSv: 'Spel & lek', titleEn: 'Games', icon: Swords,
+    tools: [
+      { icon: Swords, to: '/kungsnave', status: 'live', titleSv: 'Kungsnäve (Hnefatafl)', titleEn: 'Kungsnäve (Hnefatafl)',
+        descSv: 'Spela det vikingatida brädspelet Hnefatafl mot datorn — kungen och hans män mot anfallarna.',
+        descEn: 'Play the Viking-age board game Hnefatafl against the computer — the king and his men against the attackers.' },
+    ],
+  },
 ];
 
 const ToolCard: React.FC<{ t: Tool; sv: boolean }> = ({ t, sv }) => {
@@ -183,13 +191,13 @@ const Tools: React.FC = () => {
       />
       <Header />
       <Breadcrumbs />
-      <main className="container mx-auto px-4 py-8 max-w-5xl">
+      <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-3 flex items-center gap-3">
             <Wrench className="h-8 w-8 text-gold" />
             {sv ? 'Verktyg' : 'Tools'}
           </h1>
-          <p className="text-muted-foreground text-lg leading-relaxed">
+          <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl">
             {sv
               ? <>Plattformens verktyg samlade på ett ställe — kartor, ortnamnsforskning, runor, forensik, 3D, sök och AI. Gemensamt för alla är grundregeln <strong>ingen gissning</strong>: verktygen är byggda för att <em>testa</em> hypoteser mot källor och data, inte för att bekräfta dem.</>
               : <>The platform’s tools in one place — maps, place-name research, runes, forensics, 3D, search and AI. Common to all is the rule <strong>no guessing</strong>: the tools are built to <em>test</em> hypotheses against sources and data, not to confirm them.</>}
@@ -202,7 +210,7 @@ const Tools: React.FC = () => {
               <g.icon className="h-5 w-5 text-gold" />
               {sv ? g.titleSv : g.titleEn}
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {g.tools.map((t) => <ToolCard key={t.titleSv} t={t} sv={sv} />)}
             </div>
           </section>
