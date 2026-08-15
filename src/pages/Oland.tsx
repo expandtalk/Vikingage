@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
@@ -19,8 +18,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { WindRose } from '@/components/explorer/WindRose';
-import { MapLegend } from '@/components/map/MapLegend';
-import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
+import { PlaceMap } from '@/components/map/PlaceMap';
+import { type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 import { useAdminBoundary } from '@/hooks/useAdminBoundary';
 import { drawAdminBoundary } from '@/utils/map/adminBoundary';
@@ -80,13 +79,30 @@ const WIND_LEE: [number, number][] = [
   [56.756, 16.527],   // Stora Rör
 ];
 
+// Öland-legend (extraDefs till PlaceMap). OSM-baskartan lägger PlaceMap till själv → utelämnas här.
+const OLAND_DEFS: LegendLayerDef[] = [
+  ...OL_KIND_KEYS.map((k) => ({ key: k, label: KIND_STYLE[k].label, color: KIND_STYLE[k].color, defaultOn: true })),
+  { key: 'connection', label: 'Förbindelser', color: '#f59e0b', defaultOn: true },
+  { key: 'windLee', label: 'Vindskyddad farled (hypotes)', color: '#0ea5e9', defaultOn: false },
+  { key: 'solidi', label: 'Solidi (guldmynt)', color: '#eab308', defaultOn: false },
+  { key: 'territory', label: 'Borgterritorier', color: '#b45309', defaultOn: false },
+  { key: 'crossing', label: 'Kalmarsund: grund & överfart (hypotes)', color: '#22d3ee', defaultOn: false },
+  { key: 'beacon', label: 'Vårdkasar', color: '#f97316', defaultOn: false },
+  { key: 'fornvag', label: 'Fornvägar (färdväg/vägmärke)', color: '#92400e', defaultOn: false },
+  { key: 'kalla', label: 'Källor med tradition', color: '#0891b2', defaultOn: false },
+  { key: 'ostraled', label: 'Östra landsvägen (schematisk)', color: '#b91c1c', defaultOn: false },
+  { key: 'snack', label: 'Snäck-namn (ledung, hypotes)', color: '#7c3aed', defaultOn: false },
+  { key: 'admin', label: 'Kommungränser', color: '#0ea5e9', defaultOn: true },
+];
+
 const OlandMap: React.FC<{
   points: OlandPoint[];
   solidi: { lat: number; lng: number; ruler: string | null; find_place: string | null; parish: string | null }[];
 }> = ({ points, solidi }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Kart-instansen sätts i handleMapReady (PlaceMap äger init). useShorelineOverlay väntar in den.
   const mapRef = useRef<L.Map | null>(null);
-  const tileRef = useRef<L.TileLayer | null>(null);
+  const enabledRef = useRef<Record<string, boolean>>({});
+  // Bespoke-lagergrupper (skapas här, addTo(map) i handleMapReady). Data-cache-refs som förut.
   const layerRef = useRef<L.LayerGroup>(L.layerGroup());
   const connRef = useRef<L.LayerGroup>(L.layerGroup());
   const windRef = useRef<L.LayerGroup>(L.layerGroup());
@@ -111,27 +127,221 @@ const OlandMap: React.FC<{
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear);
 
-  const LEGEND: LegendLayerDef[] = [
-    ...OL_KIND_KEYS.map((k) => ({ key: k, label: KIND_STYLE[k].label, color: KIND_STYLE[k].color, defaultOn: true })),
-    { key: 'connection', label: 'Förbindelser', color: '#f59e0b', defaultOn: true },
-    { key: 'windLee', label: 'Vindskyddad farled (hypotes)', color: '#0ea5e9', defaultOn: false },
-    { key: 'solidi', label: 'Solidi (guldmynt)', color: '#eab308', defaultOn: false },
-    { key: 'territory', label: 'Borgterritorier', color: '#b45309', defaultOn: false },
-    { key: 'crossing', label: 'Kalmarsund: grund & överfart (hypotes)', color: '#22d3ee', defaultOn: false },
-    { key: 'beacon', label: 'Vårdkasar', color: '#f97316', defaultOn: false },
-    { key: 'fornvag', label: 'Fornvägar (färdväg/vägmärke)', color: '#92400e', defaultOn: false },
-    { key: 'kalla', label: 'Källor med tradition', color: '#0891b2', defaultOn: false },
-    { key: 'ostraled', label: 'Östra landsvägen (schematisk)', color: '#b91c1c', defaultOn: false },
-    { key: 'snack', label: 'Snäck-namn (ledung, hypotes)', color: '#7c3aed', defaultOn: false },
-    { key: 'admin', label: 'Kommungränser', color: '#0ea5e9', defaultOn: true },
-    { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap' as const, defaultOn: true },
-  ];
-  const { enabled, toggle } = useMapLegendState(LEGEND);
+  // drawAll: samlar de tidigare per-lager-effekterna. Ritar varje bespoke-lager gated på
+  // enabled[key]. Definieras om varje render (closure över aktuella points/solidi/adminBoundary);
+  // stabil referens exponeras via drawAllRef så PlaceMap-callbacken inte behöver bytas identitet.
+  const drawAllRef = useRef<(enabled: Record<string, boolean>) => void>(() => {});
+  const drawAll = (enabled: Record<string, boolean>) => {
+    enabledRef.current = enabled;
+    const map = mapRef.current;
+    if (!map) return;
 
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { preferCanvas: true, center: [56.7, 16.55], zoom: 9, scrollWheelZoom: true });
-    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
+    // Punkter (useOlandModel) — filtrerade per lager i legenden (enabled[kind]).
+    {
+      const layer = layerRef.current;
+      layer.clearLayers();
+      points.filter((p) => enabled[p.kind]).forEach((p) => {
+        const s = KIND_STYLE[p.kind] ?? { color: '#94a3b8', radius: 3, label: p.kind };
+        const isFort = p.kind === 'hillfort';
+        // Medaljong: färgen bär lagret (matchar legenden), FORMEN (featureIcon: runestone→rune,
+        // church→church, hillfort→fort, fro_name→grain, find→coin, cult→idol) bär typen → skiljs på
+        // form, ej bara färg (WCAG 1.4.1). Fornborgar = huvudnoder → permanent namn; övriga hover.
+        L.marker([p.lat, p.lng], { icon: createPlaceMedallion({
+          color: s.color, icon: featureIcon(p.kind), label: p.name,
+          prominent: isFort, hairline: true, size: isFort ? 34 : (p.kind === 'find' ? 28 : 24),
+        }) })
+          .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${s.label}${p.note ? ` · ${p.note}` : ''}</span>${isFort && p.id ? `<br/><a href="/fortresses/${p.id}" style="font-size:11px;color:#38bdf8;font-weight:600">Dateringar, fynd &amp; källor →</a>` : ''}`)
+          .addTo(layer);
+      });
+    }
+
+    // Förbindelser (default PÅ på Öland).
+    {
+      const g = connRef.current;
+      g.clearLayers();
+      if (enabled.connection) {
+        CONN_LINES.forEach((l) => L.polyline(l.coords, { color: '#f59e0b', weight: 2, dashArray: '6 6', opacity: 0.75 })
+          .bindPopup(`<b>${l.name}</b><br/><span style="font-size:11px">Schematisk förbindelse (ej uppmätt väg)</span>`).addTo(g));
+        CONN_NODES.forEach((n) => L.circleMarker([n.lat, n.lng], { radius: 6, color: '#f59e0b', weight: 2, fillColor: '#ffffff', fillOpacity: 0.9 })
+          .bindPopup(`<b>${n.name}</b><br/><span style="font-size:11px;color:#666">${n.note}</span>`).addTo(g));
+      }
+    }
+
+    // Vindskyddad farled (hypotes) — kopplad till vindrosen.
+    {
+      const g = windRef.current;
+      g.clearLayers();
+      if (enabled.windLee) {
+        L.polyline(WIND_LEE, { color: '#0ea5e9', weight: 3, dashArray: '2 6', opacity: 0.9 })
+          .bindPopup('<b>Vindskyddad farled (hypotes)</b><br/><span style="font-size:11px">Kopplad till vindrosen: förhärskande N/S-vind i Kalmarsund → man höll lä-sidan och stannade i skydd. Schematisk genom verifierade noder (Kalmar–Färjestaden–Stora Rör). Specifika hamnar (Olsan, Snäckstrand, Saxnäs, Skallöarna) ritas när koordinaterna verifierats.</span>')
+          .addTo(g);
+      }
+    }
+
+    // Solidi-lager (547 Öland-guldmynt) — små guldpunkter, oberoende av modell-punkterna.
+    {
+      const layer = solidiRef.current;
+      layer.clearLayers();
+      if (enabled.solidi) {
+        solidi.forEach((s) => {
+          L.circleMarker([s.lat, s.lng], { radius: 2.5, color: '#78350f', weight: 0.5, fillColor: '#eab308', fillOpacity: 0.85 })
+            .bindPopup(`<b>${s.ruler || 'Solidus'}</b><br/><span style="font-size:11px;color:#666">${s.find_place || ''}${s.parish ? ` · ${s.parish} sn` : ''}</span>`)
+            .addTo(layer);
+        });
+      }
+    }
+
+    // Borgterritorier (Voronoi) — hämtas en gång, cacheas i ref.
+    {
+      const layer = terrRef.current;
+      const draw = (rows: any[]) => {
+        layer.clearLayers();
+        if (!enabledRef.current.territory) return;
+        for (const f of rows) {
+          let geom; try { geom = JSON.parse(f.geojson); } catch { continue; }
+          const style = f.dated
+            ? { color: '#b45309', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.08 }
+            : { color: '#64748b', weight: 1, dashArray: '4 4', fillColor: '#94a3b8', fillOpacity: 0.04 };
+          L.geoJSON(geom, { style: () => style as any })
+            .bindPopup(`<b>${f.fort_name}</b><br/><span style="font-size:11px">Teoretiskt borgterritorium (Voronoi, schematiskt)${f.dated ? `<br/>Daterad: ${f.period_start ?? ''}–${f.period_end ?? ''}` : '<br/><em>odaterad — vägs lägre</em>'}</span>`)
+            .addTo(layer);
+        }
+      };
+      if (terrGeoRef.current) { draw(terrGeoRef.current); }
+      else if (enabled.territory) {
+        (async () => {
+          const { data } = await sb.rpc('oland_fort_territories');
+          if (!data) return;
+          terrGeoRef.current = data as any[];
+          draw(data as any[]);
+        })();
+      } else { layer.clearLayers(); }
+    }
+
+    // Kalmarsunds-överfart + långgrund (crossing_points) — hypoteslager, hämtas en gång, cacheas.
+    // Färg per kind: grund/shoal/långgrund cyan, rev/hinder rött, skyddsö grönt, start amber, hamn blå.
+    {
+      const layer = crossingRef.current;
+      const CK: Record<string, string> = { grund: '#22d3ee', shoal: '#22d3ee', shallow_shore: '#22d3ee', rock: '#ef4444', obstruction: '#ef4444', shelter_island: '#16a34a', launch: '#f59e0b', harbor: '#0ea5e9', holme_fort: '#a855f7' };
+      const draw = (rows: any[]) => {
+        layer.clearLayers();
+        if (!enabledRef.current.crossing) return;
+        rows.forEach((p) => L.circleMarker([p.lat, p.lng], { radius: p.kind === 'shallow_shore' ? 4 : 5, color: '#0f172a', weight: 1, fillColor: CK[p.kind] ?? '#94a3b8', fillOpacity: 0.85 })
+          .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${p.kind} · Kalmarsund (hypotes/proxy)</span>`).addTo(layer));
+      };
+      if (crossingDataRef.current) { draw(crossingDataRef.current); }
+      else if (enabled.crossing) {
+        (async () => {
+          const { data } = await sb.from('crossing_points').select('name,kind,lat,lng');
+          if (!data) return; crossingDataRef.current = data; draw(data);
+        })();
+      } else { layer.clearLayers(); }
+    }
+
+    // Vårdkasar (beacon_sites) i Öland/Kalmarsund-området (bbox båda kuster).
+    {
+      const layer = beaconRef.current;
+      const draw = (rows: any[]) => {
+        layer.clearLayers();
+        if (!enabledRef.current.beacon) return;
+        rows.forEach((b) => L.circleMarker([b.lat, b.lng], { radius: 4, color: '#7c2d12', weight: 1, fillColor: '#f97316', fillOpacity: 0.85 })
+          .bindPopup(`<b>${b.name || 'Vårdkase'}</b><br/><span style="font-size:11px;color:#666">Vårdkase${b.parish ? ` · ${b.parish}` : ''}</span>`).addTo(layer));
+      };
+      if (beaconDataRef.current) { draw(beaconDataRef.current); }
+      else if (enabled.beacon) {
+        (async () => {
+          const { data } = await sb.from('beacon_sites').select('name,parish,lat,lng').gte('lat', 56.1).lte('lat', 57.5).gte('lng', 16.0).lte('lng', 17.2);
+          if (!data) return; beaconDataRef.current = data; draw(data);
+        })();
+      } else { layer.clearLayers(); }
+    }
+
+    // Fornvägar (RAÄ färdväg/vägmärke) i Öland-området — punktlämningar (ej linjegeometri; vi har
+    // ingen uppmätt sträckning). 1700-talets väghållningsstenar INGÅR EJ (kronologiskt skilda).
+    {
+      const layer = fornvagRef.current;
+      const draw = (rows: any[]) => {
+        layer.clearLayers();
+        if (!enabledRef.current.fornvag) return;
+        rows.forEach((r) => L.circleMarker([r.lat, r.lng], { radius: 4, color: '#451a03', weight: 1, fillColor: '#92400e', fillOpacity: 0.8 })
+          .bindPopup(`<b>${r.name || 'Fornväg'}</b><br/><span style="font-size:11px;color:#666">${r.raa_type} · RAÄ Fornsök</span>`).addTo(layer));
+      };
+      if (fornvagDataRef.current) { draw(fornvagDataRef.current); }
+      else if (enabled.fornvag) {
+        (async () => {
+          const { data } = await sb.from('heritage_sites').select('name,raa_type,lat,lng')
+            .in('raa_type', ['färdväg', 'vägmärke'])
+            .gte('lat', 56.15).lte('lat', 57.45).gte('lng', 16.3).lte('lng', 17.2);
+          if (!data) return; fornvagDataRef.current = data; draw(data);
+        })();
+      } else { layer.clearLayers(); }
+    }
+
+    // Källor med tradition (RAÄ) — sakral-/kultkontinuitet (t.ex. helgonkällorna Sankt Elofs källa,
+    // Kristkällan). Knyter till sidans kristnande-berättelse.
+    {
+      const layer = kallaRef.current;
+      const draw = (rows: any[]) => {
+        layer.clearLayers();
+        if (!enabledRef.current.kalla) return;
+        rows.forEach((r) => L.circleMarker([r.lat, r.lng], { radius: 4, color: '#164e63', weight: 1, fillColor: '#0891b2', fillOpacity: 0.85 })
+          .bindPopup(`<b>${r.name || 'Källa med tradition'}</b><br/><span style="font-size:11px;color:#666">Källa med tradition · RAÄ Fornsök</span>`).addTo(layer));
+      };
+      if (kallaDataRef.current) { draw(kallaDataRef.current); }
+      else if (enabled.kalla) {
+        (async () => {
+          const { data } = await sb.from('heritage_sites').select('name,raa_type,lat,lng')
+            .eq('raa_type', 'Källa med tradition')
+            .gte('lat', 56.15).lte('lat', 57.45).gte('lng', 16.3).lte('lng', 17.2);
+          if (!data) return; kallaDataRef.current = data; draw(data);
+        })();
+      } else { layer.clearLayers(); }
+    }
+
+    // Östra landsvägen — schematisk korridor genom östra radens verifierade kyrknoder (ankarlinje).
+    {
+      const g = ostraledRef.current;
+      g.clearLayers();
+      if (enabled.ostraled) {
+        L.polyline(OSTRA_LED, { color: '#b91c1c', weight: 3, dashArray: '2 7', opacity: 0.85 })
+          .bindPopup('<b>Östra landsvägen (schematisk)</b><br/><span style="font-size:11px">Ankarlinje genom östra radens <b>belagda</b> kyrknoder (Böda–Högby–Källa–Föra–Gärdslösa–Runsten–N. Möckleby–Sandby–Stenåsa–Gräsgård). Historiska östra landsvägen band samman östsidans byar; <b>exakt sträckning ej uppmätt</b>. Runstens tvåtorniga (danskinspirerade) kyrka ligger på leden.</span>')
+          .addTo(g);
+      }
+    }
+
+    // Snäck-namn (ledungsindikator) — snäcka = ledungsskepp; snäck-namn brukar knytas till ledung/
+    // skeppsvist. ONOMASTISK HYPOTES, ej belagt per lokal. Endast verifierade lägen (place_names/OSM).
+    {
+      const layer = snackRef.current;
+      const draw = (rows: any[]) => {
+        layer.clearLayers();
+        if (!enabledRef.current.snack) return;
+        rows.forEach((r) => L.circleMarker([r.lat, r.lng], { radius: 6, color: '#4c1d95', weight: 2, fillColor: '#7c3aed', fillOpacity: 0.85 })
+          .bindPopup(`<b>${r.name}</b><br/><span style="font-size:11px;color:#666">Snäck-namn · kan spegla <i>snäcka</i> (ledungsskepp) — onomastisk hypotes, ej belagt för denna lokal.</span>`).addTo(layer));
+      };
+      if (snackDataRef.current) { draw(snackDataRef.current); }
+      else if (enabled.snack) {
+        (async () => {
+          const { data } = await sb.from('place_names').select('name,lat,lng')
+            .ilike('name', '%snäck%').gte('lat', 56.4).lte('lat', 57.0).gte('lng', 16.3).lte('lng', 16.7);
+          if (!data) return; snackDataRef.current = data; draw(data);
+        })();
+      } else { layer.clearLayers(); }
+    }
+
+    // Kommungränser (Lantmäteri, © Lantmäteriet) — Öland = Borgholm + Mörbylånga. Statisk indelning,
+    // hämtas via useAdminBoundary (RPC get_admin_boundary_geojson). Konturlinje, default på.
+    {
+      const g = adminRef.current;
+      g.clearLayers();
+      if (enabled.admin) drawAdminBoundary(g, adminBoundary, { color: '#0ea5e9', weight: 2 });
+    }
+  };
+  drawAllRef.current = drawAll;
+
+  // PlaceMap ger kart-instansen EN gång: fäst grupperna, rita Köpingsvik-hubben, kör första drawAll.
+  const handleMapReady = useCallback((map: L.Map, enabled: Record<string, boolean>) => {
+    mapRef.current = map;
     // Köpingsvik-hubben (alltid synlig)
     L.circle([56.885, 16.727], { radius: 4000, color: '#f59e0b', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.08 })
       .bindPopup('<b>Köpingsvik</b><br/><span style="font-size:11px">Öns dominerande vikingatida nod — 89 av 190 runstenar inom 4 km.</span>')
@@ -142,218 +352,21 @@ const OlandMap: React.FC<{
     fornvagRef.current.addTo(map); kallaRef.current.addTo(map);
     ostraledRef.current.addTo(map); snackRef.current.addTo(map);
     adminRef.current.addTo(map);
-    mapRef.current = map;
-    setTimeout(() => { try { map.invalidateSize(); } catch { /* noop */ } }, 120);
-    return () => { map.remove(); mapRef.current = null; };
+    enabledRef.current = enabled;
+    drawAllRef.current(enabled);
   }, []);
 
-  // Baskarta på/av
-  useEffect(() => {
-    const map = mapRef.current, tile = tileRef.current;
-    if (!map || !tile) return;
-    if (enabled.osm) { if (!map.hasLayer(tile)) tile.addTo(map); }
-    else if (map.hasLayer(tile)) map.removeLayer(tile);
-  }, [enabled.osm]);
+  // Legend-toggle → rita om alla bespoke-lager gated på nya enabled.
+  const handleEnabledChange = useCallback((enabled: Record<string, boolean>) => {
+    enabledRef.current = enabled;
+    drawAllRef.current(enabled);
+  }, []);
 
-  // Solidi-lager (547 Öland-guldmynt) — små guldpunkter, oberoende av modell-punkterna.
+  // Sent inkommande data (solidi, adminBoundary) → rita om med senaste enabled när kartan finns.
   useEffect(() => {
-    const layer = solidiRef.current; if (!layer) return;
-    layer.clearLayers();
-    if (!enabled.solidi) return;
-    solidi.forEach((s) => {
-      L.circleMarker([s.lat, s.lng], { radius: 2.5, color: '#78350f', weight: 0.5, fillColor: '#eab308', fillOpacity: 0.85 })
-        .bindPopup(`<b>${s.ruler || 'Solidus'}</b><br/><span style="font-size:11px;color:#666">${s.find_place || ''}${s.parish ? ` · ${s.parish} sn` : ''}</span>`)
-        .addTo(layer);
-    });
-  }, [solidi, enabled.solidi]);
-
-  // Borgterritorier (Voronoi) — hämtas en gång, cacheas i ref.
-  useEffect(() => {
-    const layer = terrRef.current; if (!layer) return;
-    let cancelled = false;
-    const draw = (rows: any[]) => {
-      if (cancelled) return;
-      layer.clearLayers();
-      if (!enabled.territory) return;
-      for (const f of rows) {
-        let geom; try { geom = JSON.parse(f.geojson); } catch { continue; }
-        const style = f.dated
-          ? { color: '#b45309', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.08 }
-          : { color: '#64748b', weight: 1, dashArray: '4 4', fillColor: '#94a3b8', fillOpacity: 0.04 };
-        L.geoJSON(geom, { style: () => style as any })
-          .bindPopup(`<b>${f.fort_name}</b><br/><span style="font-size:11px">Teoretiskt borgterritorium (Voronoi, schematiskt)${f.dated ? `<br/>Daterad: ${f.period_start ?? ''}–${f.period_end ?? ''}` : '<br/><em>odaterad — vägs lägre</em>'}</span>`)
-          .addTo(layer);
-      }
-    };
-    if (terrGeoRef.current) { draw(terrGeoRef.current); return; }
-    if (!enabled.territory) { layer.clearLayers(); return () => { cancelled = true; }; }
-    (async () => {
-      const { data } = await sb.rpc('oland_fort_territories');
-      if (cancelled || !data) return;
-      terrGeoRef.current = data as any[];
-      draw(data as any[]);
-    })();
-    return () => { cancelled = true; };
-  }, [enabled.territory]);
-
-  // Kalmarsunds-överfart + långgrund (crossing_points) — hypoteslager, hämtas en gång, cacheas.
-  // Färg per kind: grund/shoal/långgrund cyan, rev/hinder rött, skyddsö grönt, start amber, hamn blå.
-  useEffect(() => {
-    const layer = crossingRef.current; if (!layer) return;
-    let cancelled = false;
-    const CK: Record<string, string> = { grund: '#22d3ee', shoal: '#22d3ee', shallow_shore: '#22d3ee', rock: '#ef4444', obstruction: '#ef4444', shelter_island: '#16a34a', launch: '#f59e0b', harbor: '#0ea5e9', holme_fort: '#a855f7' };
-    const draw = (rows: any[]) => {
-      if (cancelled) return; layer.clearLayers(); if (!enabled.crossing) return;
-      rows.forEach((p) => L.circleMarker([p.lat, p.lng], { radius: p.kind === 'shallow_shore' ? 4 : 5, color: '#0f172a', weight: 1, fillColor: CK[p.kind] ?? '#94a3b8', fillOpacity: 0.85 })
-        .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${p.kind} · Kalmarsund (hypotes/proxy)</span>`).addTo(layer));
-    };
-    if (crossingDataRef.current) { draw(crossingDataRef.current); return () => { cancelled = true; }; }
-    if (!enabled.crossing) { layer.clearLayers(); return () => { cancelled = true; }; }
-    (async () => {
-      const { data } = await sb.from('crossing_points').select('name,kind,lat,lng');
-      if (cancelled || !data) return; crossingDataRef.current = data; draw(data);
-    })();
-    return () => { cancelled = true; };
-  }, [enabled.crossing]);
-
-  // Vårdkasar (beacon_sites) i Öland/Kalmarsund-området (bbox båda kuster).
-  useEffect(() => {
-    const layer = beaconRef.current; if (!layer) return;
-    let cancelled = false;
-    const draw = (rows: any[]) => {
-      if (cancelled) return; layer.clearLayers(); if (!enabled.beacon) return;
-      rows.forEach((b) => L.circleMarker([b.lat, b.lng], { radius: 4, color: '#7c2d12', weight: 1, fillColor: '#f97316', fillOpacity: 0.85 })
-        .bindPopup(`<b>${b.name || 'Vårdkase'}</b><br/><span style="font-size:11px;color:#666">Vårdkase${b.parish ? ` · ${b.parish}` : ''}</span>`).addTo(layer));
-    };
-    if (beaconDataRef.current) { draw(beaconDataRef.current); return () => { cancelled = true; }; }
-    if (!enabled.beacon) { layer.clearLayers(); return () => { cancelled = true; }; }
-    (async () => {
-      const { data } = await sb.from('beacon_sites').select('name,parish,lat,lng').gte('lat', 56.1).lte('lat', 57.5).gte('lng', 16.0).lte('lng', 17.2);
-      if (cancelled || !data) return; beaconDataRef.current = data; draw(data);
-    })();
-    return () => { cancelled = true; };
-  }, [enabled.beacon]);
-
-  // Fornvägar (RAÄ färdväg/vägmärke) i Öland-området — punktlämningar (ej linjegeometri; vi har
-  // ingen uppmätt sträckning). 1700-talets väghållningsstenar INGÅR EJ (kronologiskt skilda).
-  useEffect(() => {
-    const layer = fornvagRef.current; if (!layer) return;
-    let cancelled = false;
-    const draw = (rows: any[]) => {
-      if (cancelled) return; layer.clearLayers(); if (!enabled.fornvag) return;
-      rows.forEach((r) => L.circleMarker([r.lat, r.lng], { radius: 4, color: '#451a03', weight: 1, fillColor: '#92400e', fillOpacity: 0.8 })
-        .bindPopup(`<b>${r.name || 'Fornväg'}</b><br/><span style="font-size:11px;color:#666">${r.raa_type} · RAÄ Fornsök</span>`).addTo(layer));
-    };
-    if (fornvagDataRef.current) { draw(fornvagDataRef.current); return () => { cancelled = true; }; }
-    if (!enabled.fornvag) { layer.clearLayers(); return () => { cancelled = true; }; }
-    (async () => {
-      const { data } = await sb.from('heritage_sites').select('name,raa_type,lat,lng')
-        .in('raa_type', ['färdväg', 'vägmärke'])
-        .gte('lat', 56.15).lte('lat', 57.45).gte('lng', 16.3).lte('lng', 17.2);
-      if (cancelled || !data) return; fornvagDataRef.current = data; draw(data);
-    })();
-    return () => { cancelled = true; };
-  }, [enabled.fornvag]);
-
-  // Källor med tradition (RAÄ) — sakral-/kultkontinuitet (t.ex. helgonkällorna Sankt Elofs källa,
-  // Kristkällan). Knyter till sidans kristnande-berättelse.
-  useEffect(() => {
-    const layer = kallaRef.current; if (!layer) return;
-    let cancelled = false;
-    const draw = (rows: any[]) => {
-      if (cancelled) return; layer.clearLayers(); if (!enabled.kalla) return;
-      rows.forEach((r) => L.circleMarker([r.lat, r.lng], { radius: 4, color: '#164e63', weight: 1, fillColor: '#0891b2', fillOpacity: 0.85 })
-        .bindPopup(`<b>${r.name || 'Källa med tradition'}</b><br/><span style="font-size:11px;color:#666">Källa med tradition · RAÄ Fornsök</span>`).addTo(layer));
-    };
-    if (kallaDataRef.current) { draw(kallaDataRef.current); return () => { cancelled = true; }; }
-    if (!enabled.kalla) { layer.clearLayers(); return () => { cancelled = true; }; }
-    (async () => {
-      const { data } = await sb.from('heritage_sites').select('name,raa_type,lat,lng')
-        .eq('raa_type', 'Källa med tradition')
-        .gte('lat', 56.15).lte('lat', 57.45).gte('lng', 16.3).lte('lng', 17.2);
-      if (cancelled || !data) return; kallaDataRef.current = data; draw(data);
-    })();
-    return () => { cancelled = true; };
-  }, [enabled.kalla]);
-
-  // Östra landsvägen — schematisk korridor genom östra radens verifierade kyrknoder (ankarlinje).
-  useEffect(() => {
-    const g = ostraledRef.current; if (!g) return;
-    g.clearLayers();
-    if (!enabled.ostraled) return;
-    L.polyline(OSTRA_LED, { color: '#b91c1c', weight: 3, dashArray: '2 7', opacity: 0.85 })
-      .bindPopup('<b>Östra landsvägen (schematisk)</b><br/><span style="font-size:11px">Ankarlinje genom östra radens <b>belagda</b> kyrknoder (Böda–Högby–Källa–Föra–Gärdslösa–Runsten–N. Möckleby–Sandby–Stenåsa–Gräsgård). Historiska östra landsvägen band samman östsidans byar; <b>exakt sträckning ej uppmätt</b>. Runstens tvåtorniga (danskinspirerade) kyrka ligger på leden.</span>')
-      .addTo(g);
-  }, [enabled.ostraled]);
-
-  // Snäck-namn (ledungsindikator) — snäcka = ledungsskepp; snäck-namn brukar knytas till ledung/
-  // skeppsvist. ONOMASTISK HYPOTES, ej belagt per lokal. Endast verifierade lägen (place_names/OSM).
-  useEffect(() => {
-    const layer = snackRef.current; if (!layer) return;
-    let cancelled = false;
-    const draw = (rows: any[]) => {
-      if (cancelled) return; layer.clearLayers(); if (!enabled.snack) return;
-      rows.forEach((r) => L.circleMarker([r.lat, r.lng], { radius: 6, color: '#4c1d95', weight: 2, fillColor: '#7c3aed', fillOpacity: 0.85 })
-        .bindPopup(`<b>${r.name}</b><br/><span style="font-size:11px;color:#666">Snäck-namn · kan spegla <i>snäcka</i> (ledungsskepp) — onomastisk hypotes, ej belagt för denna lokal.</span>`).addTo(layer));
-    };
-    if (snackDataRef.current) { draw(snackDataRef.current); return () => { cancelled = true; }; }
-    if (!enabled.snack) { layer.clearLayers(); return () => { cancelled = true; }; }
-    (async () => {
-      const { data } = await sb.from('place_names').select('name,lat,lng')
-        .ilike('name', '%snäck%').gte('lat', 56.4).lte('lat', 57.0).gte('lng', 16.3).lte('lng', 16.7);
-      if (cancelled || !data) return; snackDataRef.current = data; draw(data);
-    })();
-    return () => { cancelled = true; };
-  }, [enabled.snack]);
-
-  // Kommungränser (Lantmäteri, © Lantmäteriet) — Öland = Borgholm + Mörbylånga. Statisk indelning,
-  // hämtas via useAdminBoundary (RPC get_admin_boundary_geojson). Konturlinje, default av.
-  useEffect(() => {
-    const g = adminRef.current; if (!g) return;
-    g.clearLayers();
-    if (!enabled.admin) return;
-    drawAdminBoundary(g, adminBoundary, { color: '#0ea5e9', weight: 2 });
-  }, [enabled.admin, adminBoundary]);
-
-  // Punkter — filtrerade per lager i legenden (enabled[kind]).
-  useEffect(() => {
-    const layer = layerRef.current;
-    layer.clearLayers();
-    points.filter((p) => enabled[p.kind]).forEach((p) => {
-      const s = KIND_STYLE[p.kind] ?? { color: '#94a3b8', radius: 3, label: p.kind };
-      const isFort = p.kind === 'hillfort';
-      // Medaljong: färgen bär lagret (matchar legenden), FORMEN (featureIcon: runestone→rune,
-      // church→church, hillfort→fort, fro_name→grain, find→coin, cult→idol) bär typen → skiljs på
-      // form, ej bara färg (WCAG 1.4.1). Fornborgar = huvudnoder → permanent namn; övriga hover.
-      L.marker([p.lat, p.lng], { icon: createPlaceMedallion({
-        color: s.color, icon: featureIcon(p.kind), label: p.name,
-        prominent: isFort, hairline: true, size: isFort ? 34 : (p.kind === 'find' ? 28 : 24),
-      }) })
-        .bindPopup(`<b>${p.name}</b><br/><span style="font-size:11px;color:#666">${s.label}${p.note ? ` · ${p.note}` : ''}</span>${isFort && p.id ? `<br/><a href="/fortresses/${p.id}" style="font-size:11px;color:#38bdf8;font-weight:600">Dateringar, fynd &amp; källor →</a>` : ''}`)
-        .addTo(layer);
-    });
-  }, [points, enabled]);
-
-  // Förbindelser (default PÅ på Öland).
-  useEffect(() => {
-    const g = connRef.current;
-    g.clearLayers();
-    if (!enabled.connection) return;
-    CONN_LINES.forEach((l) => L.polyline(l.coords, { color: '#f59e0b', weight: 2, dashArray: '6 6', opacity: 0.75 })
-      .bindPopup(`<b>${l.name}</b><br/><span style="font-size:11px">Schematisk förbindelse (ej uppmätt väg)</span>`).addTo(g));
-    CONN_NODES.forEach((n) => L.circleMarker([n.lat, n.lng], { radius: 6, color: '#f59e0b', weight: 2, fillColor: '#ffffff', fillOpacity: 0.9 })
-      .bindPopup(`<b>${n.name}</b><br/><span style="font-size:11px;color:#666">${n.note}</span>`).addTo(g));
-  }, [enabled.connection]);
-
-  // Vindskyddad farled (hypotes) — kopplad till vindrosen.
-  useEffect(() => {
-    const g = windRef.current;
-    g.clearLayers();
-    if (!enabled.windLee) return;
-    L.polyline(WIND_LEE, { color: '#0ea5e9', weight: 3, dashArray: '2 6', opacity: 0.9 })
-      .bindPopup('<b>Vindskyddad farled (hypotes)</b><br/><span style="font-size:11px">Kopplad till vindrosen: förhärskande N/S-vind i Kalmarsund → man höll lä-sidan och stannade i skydd. Schematisk genom verifierade noder (Kalmar–Färjestaden–Stora Rör). Specifika hamnar (Olsan, Snäckstrand, Saxnäs, Skallöarna) ritas när koordinaterna verifierats.</span>')
-      .addTo(g);
-  }, [enabled.windLee]);
+    if (mapRef.current) drawAllRef.current(enabledRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [points, solidi, adminBoundary]);
 
   return (
     <div>
@@ -369,8 +382,15 @@ const OlandMap: React.FC<{
         <div className="sm:hidden absolute left-2 top-16 z-[1105]">
           <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} />
         </div>
-        <div ref={containerRef} className="w-full h-[520px] rounded-lg overflow-hidden border border-border" style={{ minHeight: 520 }} />
-        <MapLegend defs={LEGEND} enabled={enabled} onToggle={toggle} mapRef={mapRef} />
+        <PlaceMap
+          center={{ lat: 56.7, lng: 16.55 }}
+          zoom={9}
+          layers={[]}
+          extraDefs={OLAND_DEFS}
+          heightClass="h-[520px]"
+          onMapReady={handleMapReady}
+          onEnabledChange={handleEnabledChange}
+        />
         {/* Förhärskande vind i Kalmarsund (SMHI) — sundet kanaliserar N–S; styr seglingsrutterna. */}
         <div className="absolute bottom-3 left-3 z-[1000]">
           <WindRose location="Kalmarsund" />

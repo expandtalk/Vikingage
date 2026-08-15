@@ -62,7 +62,7 @@ export const MapLegend: React.FC<Props> = ({ defs, enabled, onToggle, title = 'L
       key={d.key}
       onClick={() => onToggle(d.key)}
       aria-pressed={!!enabled[d.key]}
-      className={`flex w-full items-center gap-2 rounded px-2 py-1 text-left text-xs transition-colors ${
+      className={`flex w-full items-center gap-2 rounded px-2 py-1 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-300 ${
         enabled[d.key] ? 'text-white' : 'text-slate-400 hover:text-slate-200'
       }`}
     >
