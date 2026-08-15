@@ -15,6 +15,8 @@ import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
 import { MapLegend } from '@/components/map/MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
+import { useAdminBoundary } from '@/hooks/useAdminBoundary';
+import { drawAdminBoundary } from '@/utils/map/adminBoundary';
 import { KalmarsundCrossing } from '@/components/kalmar/KalmarsundCrossing';
 import { CharterKgSection } from '@/components/medeltidsbrev/CharterKgSection';
 import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
@@ -112,11 +114,14 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
   const [fieldReady, setFieldReady] = useState(false);
   const agesG = useRef<L.LayerGroup>(L.layerGroup());
   const [agesReady, setAgesReady] = useState(false);
+  const adminRef = useRef<L.LayerGroup>(L.layerGroup());
   const fittedRef = useRef(false);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   // Kalmar använder den finupplösta DEM-modellen (Copernicus GLO-30 + paleo_rsl),
   // inte SGU:s grova/statiska raster. Bbox regionavgränsar så Mälaren-lagret inte dras hit.
   const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear, 'get_paleo_shorelines_dem', [16.18, 56.55, 16.46, 56.72]);
+  // Alla Sveriges kommungränser (Lantmäteri, © Lantmäteriet), förenklade ~200 m. Se Öland-sidan.
+  const { data: adminBoundary = [] } = useAdminBoundary('kommun', null, 0.002);
 
   // Återanvändbar legend: tematiska lager + baskarta. Cap/seed sköts av useMapLegendState.
   const LEGEND: LegendLayerDef[] = [
@@ -127,6 +132,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     { key: 'kulturarv', label: 'Sevärt & kulturarv', color: '#f472b6', defaultOn: true },
     { key: 'faltdata', label: 'Fältdata (medeltid)', color: '#d4a63c', defaultOn: true },
     { key: 'ages', label: 'AGES-grävningar (gamla stan, CC BY)', color: '#e11d48', defaultOn: false },
+    { key: 'admin', label: 'Kommungränser', color: '#0ea5e9', defaultOn: true },
     { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap', defaultOn: true },
   ];
   const { enabled, toggle } = useMapLegendState(LEGEND);
@@ -136,6 +142,7 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     const map = L.map(containerRef.current, { preferCanvas: true, center: [56.66, 16.34], zoom: 11, scrollWheelZoom: true });
     tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 });
     tileRef.current.addTo(map); // baskartan på direkt (default på) — undvik tomrender innan toggle-effekten
+    adminRef.current.addTo(map);
     mapRef.current = map;
     setTimeout(() => { try { map.invalidateSize(); } catch { /* noop */ } }, 120);
     return () => { map.remove(); mapRef.current = null; };
@@ -148,6 +155,14 @@ const KalmarMap: React.FC<{ places: PlaceName[]; harbor: Harbor | null; coins: C
     if (enabled.osm) { if (!map.hasLayer(tile)) tile.addTo(map); }
     else if (map.hasLayer(tile)) map.removeLayer(tile);
   }, [enabled.osm]);
+
+  // Kommungränser (Lantmäteri, © Lantmäteriet) — konturlager, default på.
+  useEffect(() => {
+    const g = adminRef.current; if (!g) return;
+    g.clearLayers();
+    if (!enabled.admin) return;
+    drawAdminBoundary(g, adminBoundary, { color: '#0ea5e9', weight: 2 });
+  }, [enabled.admin, adminBoundary]);
 
   // Bygg lager-innehållet i EGNA grupper (togglas separat av legenden) + fit en gång.
   useEffect(() => {

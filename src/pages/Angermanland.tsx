@@ -19,6 +19,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { OrtnamnVerification } from '@/components/OrtnamnVerification';
 import AngermanlandClusterResults from '@/components/placenames/AngermanlandClusterResults';
 import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
+import { useAdminBoundary } from '@/hooks/useAdminBoundary';
+import { drawAdminBoundary } from '@/utils/map/adminBoundary';
 
 // Centralortsprojektet Ångermanland — delbar forskningssida. Läser central_places
 // + central_place_names live. Medvetet tydlig med vad som saknas (koordinater/
@@ -61,6 +63,7 @@ const ANG_LEGEND: LegendLayerDef[] = [
   { key: 'central', label: 'Centralort', color: '#f59e0b', defaultOn: true },
   { key: 'power', label: 'Makt', color: '#3b82f6', defaultOn: true },
   { key: 'sacral', label: 'Sakralt', color: '#c084fc', defaultOn: true },
+  { key: 'admin', label: 'Kommungränser', color: '#0ea5e9', defaultOn: true },
   { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap', defaultOn: true },
 ];
 
@@ -69,19 +72,23 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[] }> = ({ groups }) => {
   const mapRef = useRef<L.Map | null>(null);
   const tileRef = useRef<L.TileLayer | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const adminRef = useRef<L.LayerGroup | null>(null);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
   const [relief, setRelief] = useState(false);
   const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear);
   useReliefOverlay(mapRef, relief);
   const { enabled, toggle } = useMapLegendState(ANG_LEGEND);
+  // Alla Sveriges kommungränser (Lantmäteri, © Lantmäteriet), förenklade ~200 m. Se Öland-sidan.
+  const { data: adminBoundary = [] } = useAdminBoundary('kommun', null, 0.002);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [62.95, 17.7], zoom: 9, scrollWheelZoom: true });
     tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
+    adminRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; layerRef.current = null; };
+    return () => { map.remove(); mapRef.current = null; layerRef.current = null; adminRef.current = null; };
   }, []);
 
   // Baskarta på/av
@@ -91,6 +98,14 @@ const AngMap: React.FC<{ groups: CentralPlaceGroup[] }> = ({ groups }) => {
     if (enabled.osm) { if (!map.hasLayer(tile)) tile.addTo(map); }
     else if (map.hasLayer(tile)) map.removeLayer(tile);
   }, [enabled.osm]);
+
+  // Kommungränser (Lantmäteri, © Lantmäteriet) — konturlager, default på.
+  useEffect(() => {
+    const g = adminRef.current; if (!g) return;
+    g.clearLayers();
+    if (!enabled.admin) return;
+    drawAdminBoundary(g, adminBoundary, { color: '#0ea5e9', weight: 2 });
+  }, [enabled.admin, adminBoundary]);
 
   useEffect(() => {
     const layer = layerRef.current;
