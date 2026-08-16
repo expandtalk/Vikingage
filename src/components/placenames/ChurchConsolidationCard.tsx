@@ -20,7 +20,8 @@ export function ChurchConsolidationCard({ sv }: { sv: boolean }) {
   if (!rows.length) return null;
   const maxDens = Math.max(...rows.map((r: any) => r.dens));
   // Dynamisk tidsaxel som spänner över faktiska t25/t50/t75 → inga markörer utanför boxen.
-  // (Många landskaps t50 ligger på 1800-talet: bevarad kyrka = ofta ombyggd kyrka.)
+  // (RPC:n church_consolidation_by_region filtrerar sedan 2026-08-16 percentilerna till medeltida
+  //  byggår ≤1350, så t50 mäter KONSOLIDERINGEN, ej senare ombyggnader; Norrland får ärligt t50=null.)
   const years = rows.flatMap((r: any) => [r.t25, r.t50, r.t75]).filter((y: any): y is number => y != null);
   const minY = years.length ? Math.min(...years) : 1075;
   const maxY = years.length ? Math.max(...years) : 1350;
