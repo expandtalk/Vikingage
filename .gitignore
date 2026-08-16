@@ -68,3 +68,6 @@ kartsymboler/
 
 # Klonad SCB MCP-server (dev-/kurerings-verktyg, ej projektkod)
 /SCB-MCP/
+
+# Härledda MHM-strandlinje-geojsons (stora, utanför git)
+shoreline-mhm*/
