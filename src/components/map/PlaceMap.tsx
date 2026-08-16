@@ -6,6 +6,7 @@ import { MapLegend } from './MapLegend';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { resolvePlaceLayers, placeLayerStyleMap, type PlaceLayerConfig } from './placeLayers';
 import { useProgressiveAdmin } from '@/hooks/map/useProgressiveAdmin';
+import { OSM_BASEMAP, leafletTileOptions } from '@/config/basemaps';
 
 // Återanvändbar rik platskarta för ALLA orter. Driven av EN RPC (place_features_near) som ger
 // kronologiskt kategoriserade punkter runt en center. Delad MapLegend (kronologisk ordning) +
@@ -75,7 +76,9 @@ export const PlaceMap: React.FC<PlaceMapProps> = ({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [center.lat, center.lng], zoom, scrollWheelZoom: true });
-    tileRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
+    // Baskarta ur central config (OSM idag; förberedd för Lantmäteri topo när VITE_LM_TOPO_* finns).
+    const bm = leafletTileOptions(OSM_BASEMAP);
+    tileRef.current = L.tileLayer(bm.url, bm.options).addTo(map);
     groupRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
     roRef.current = new ResizeObserver(() => { try { map.invalidateSize(); } catch { /* noop */ } });
