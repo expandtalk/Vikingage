@@ -237,11 +237,14 @@ const HogaKustenMap: React.FC<{
       events.forEach((ev) => {
         pts.push([ev.lat, ev.lng]);
         const name = ev.name ?? (sv ? 'Händelse' : 'Event');
+        // Länk till publicerad berättelse-sida när händelsen har en (t.ex. häxprocesserna).
+        const story = /häxprocess|witch/i.test(name) ? (sv ? '/sv/haxprocesserna-angermanland' : '/en/witch-trials-angermanland') : null;
         const html =
           '<div style="max-width:260px">' +
           `<b>◆ ${esc(name)}</b>` +
           (ev.year ? `<br/><span style="font-size:11px;color:#9f1239">${ev.year}</span>` : '') +
           (ev.description ? `<div style="font-size:12px;color:#334155;margin-top:5px;line-height:1.35;max-height:180px;overflow-y:auto">${esc(ev.description)}</div>` : '') +
+          (story ? `<a href="${story}" style="font-size:12px;color:#9f1239;font-weight:600;margin-top:6px;display:inline-block">${sv ? 'Läs hela berättelsen →' : 'Read the full story →'}</a>` : '') +
           '</div>';
         L.marker([ev.lat, ev.lng], {
           icon: eventIcon,
@@ -613,6 +616,35 @@ const HogaKusten: React.FC = () => {
                   </ul>
                 </details>
               )}
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* A2) PUBLICERAT — färdiga berättelse-sidor (till skillnad från projektförslagen nedan) */}
+        <section aria-labelledby="publicerat-rubrik">
+          <Card className="viking-card mb-6">
+            <CardHeader className="pb-2">
+              <CardTitle id="publicerat-rubrik" className="text-lg flex flex-wrap items-center gap-2 text-gold">
+                {sv ? 'Publicerade berättelser' : 'Published stories'}
+                <Badge variant="secondary" className="text-[10px] border-emerald-500/60 text-emerald-300 bg-transparent">
+                  {sv ? 'Publicerat' : 'Published'}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                <li>
+                  <Link to={sv ? '/sv/haxprocesserna-angermanland' : '/en/witch-trials-angermanland'}
+                    className="text-gold hover:underline font-medium">
+                    {sv ? 'Häxprocesserna i Ångermanland 1674–1675 →' : 'The Ångermanland witch trials 1674–1675 →'}
+                  </Link>
+                  <span className="block text-xs text-muted-foreground mt-0.5">
+                    {sv
+                      ? 'Det stora oväsendet: trolldomskommissionen, rannsakningarna och massavrättningen på Bålberget vid Torsåker — karta med 11 anhalter, källkritiskt granskad.'
+                      : 'The great commotion: the commission, the trials and the mass execution at Bålberget near Torsåker — an 11-stop map, source-critically reviewed.'}
+                  </span>
+                </li>
+              </ul>
             </CardContent>
           </Card>
         </section>
