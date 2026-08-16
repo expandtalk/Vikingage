@@ -34,6 +34,7 @@ import {
   MapPin,
   Mountain,
   Wrench,
+  Ship,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -257,6 +258,12 @@ const EXTRA_LINKS: NavLink[] = [
     labelSv: 'Statistik', labelEn: 'Statistics',
     descSv: 'Antal per landskap, socken, ristare.', descEn: 'Counts by province, parish, carver.',
     icon: BarChart3, category: 'science',
+  },
+  {
+    pathEn: '/en/viking-age', pathSv: '/sv/vikingatid',
+    labelSv: 'Vikingatid', labelEn: 'The Viking Age',
+    descSv: 'Vad begreppet betyder — källkritiskt.', descEn: 'What the term means — source-critical.',
+    icon: Ship, category: 'history',
   },
   {
     pathEn: '/texts', pathSv: '/texter',
