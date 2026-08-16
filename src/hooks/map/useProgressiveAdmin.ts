@@ -56,12 +56,15 @@ export function useProgressiveAdmin(mapRef: RefObject<L.Map | null>, enabled: bo
       for (const row of (data ?? []) as { name: string; geojson: string | object }[]) {
         let gj: unknown;
         try { gj = typeof row.geojson === 'string' ? JSON.parse(row.geojson) : row.geojson; } catch { continue; }
+        // Gränserna är VISUELL KONTEXT, inte klickbar data: interactive:false så de inte
+        // stjäl klick från de tematiska markörerna (annars fastnar klick på t.ex. Uppsala
+        // kommuns multipolygon → förvirrande upprepade "Uppsala kommun"-popupar). Namnen
+        // finns ändå som etiketter i baskartan (OSM).
         L.geoJSON(gj as any, {
+          interactive: false,
           style: () => ({ color: cfg.color, weight: cfg.weight, fill: false, opacity: 0.8, dashArray: cfg.dash }),
           attribution: cfg.attribution,
-        })
-          .bindPopup(`<b>${row.name}</b><br/><span style="font-size:11px;color:#666">${cfg.level}</span>`)
-          .addTo(group);
+        }).addTo(group);
       }
     };
 
