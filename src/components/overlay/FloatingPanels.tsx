@@ -121,8 +121,11 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
       <FieldNavControl />
       {!isMobile && <ClusterLegendControl onLegendToggle={onLegendToggle} enabledLayers={enabledLayers} />}
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
+      {/* Stängd legend = kompakt återöppnings-knapp. Desktop: dockad top-RIGHT så den "lägger sig
+          minimerad" i linje med linjalen (RulerBar i breadcrumb-raden ovanför kartans övre högra hörn),
+          i st.f. att hoppa till motsatt hörn (Daniel). */}
       {onToggleLegend && !showLegend && (
-        <div className={isMobile ? 'fixed top-[4.75rem] right-[4.75rem] z-[1100]' : 'absolute top-4 left-4 z-50 flex flex-col gap-2'}>
+        <div className={isMobile ? 'fixed top-[4.75rem] right-[4.75rem] z-[1100]' : 'absolute top-4 right-4 z-50 flex flex-col gap-2 items-end'}>
           <Button
             onClick={onToggleLegend}
             aria-label={sv ? 'Anpassa karta' : 'Customize map'}

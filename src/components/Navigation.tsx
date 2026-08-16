@@ -338,12 +338,8 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Castle, category: 'regions',
   },
   {
-    pathEn: '/en/saint-olav', pathSv: '/sv/sankt-olof',
-    labelSv: 'Sankt Olof', labelEn: 'Saint Olav',
-    descSv: 'Helgonet Olav: kult och kyrkoruin.', descEn: 'Saint Olav: cult and church ruin.',
-    icon: Church, category: 'regions',
-  },
-  {
+    // Sankt Olof är EJ egen toppnav-post längre — den bor som undersida under Helgon (/sv/helgon,
+    // /en/saints). Routen /sv/sankt-olof finns kvar; länkas från Helgon-sidan (Daniel).
     pathEn: '/en/saints', pathSv: '/sv/helgon',
     labelSv: 'Helgon', labelEn: 'Saints',
     descSv: 'Nordens helgon, med källkritik.', descEn: 'The saints of the North.',
