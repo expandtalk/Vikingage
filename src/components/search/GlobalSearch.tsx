@@ -540,8 +540,12 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         let hits: Hit[] | null = null;
         try {
           const { data, error } = await supabase.functions.invoke('search-hybrid', { body: { q, limit: 120 } });
-          if (!error && Array.isArray((data as { hits?: Hit[] } | null)?.hits)) {
-            hits = (data as { hits: Hit[] }).hits;
+          // Falla tillbaka till lexikalt search_v1 om edge:n FELAR *eller* ger TOM lista — den
+          // hybrida edge:n (embedding-generering) kan svara {hits:[]}/{error} med HTTP 200, vilket
+          // annars dödade sök helt (t.ex. "fornvännen"/"torekov" gav noll trots träffar i indexet).
+          const arr = (data as { hits?: Hit[] } | null)?.hits;
+          if (!error && Array.isArray(arr) && arr.length > 0) {
+            hits = arr;
           }
         } catch { /* faller igenom till lexikalt */ }
         if (!hits) {

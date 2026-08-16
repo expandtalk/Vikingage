@@ -588,3 +588,7 @@ Gångläge (walk mode):
       om gångna år)". Kanonisk = rikast beskrivning/svensk titel; 12 king_source_mentions ompekade
       (unique king_id+source_id → krockande avdubblade); inga andra FK-referenser (allt utom
       king_source_mentions var 0).
+
+## 2026-08-16 (låg prio)
+- [ ] **/3D-drive svart skärm** — DriveView3D (MapLibre) renderar svart karta live efter deploy (bara "Demo mode"-banner syns), inga JS-fel. Trolig orsak: osparad WIP i DriveView3D.tsx som committades i e6707d2. Headless browse saknar WebGL → kan ej repro visuellt. TODO: rulla tillbaka DriveView3D till förra fungerande el. felsök map-init (container-höjd / on('load')-throw). Låg prio (Daniel: vänta).
+- [ ] **Fornvännen-sök-hubb** — söker man "fornvännen" i svarspanelen (AnswerContext/Lotsen) → "no match" + externt, för det finns ingen enskild Fornvännen-*entitet* (bara 3604 artiklar). search_v1/v2 returnerar artiklarna korrekt. Fix: registrera en Fornvännen-samlingsentitet/hubb (facett per category) som söket landar på. Ger även browsing-UI.

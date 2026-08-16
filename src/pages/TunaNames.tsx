@@ -1,4 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
@@ -17,6 +21,73 @@ import { useLanguage } from '@/contexts/LanguageContext';
 // -kulturgeograf (människa-i-loopen) 2026-08-11. Se docs/scratchpad tuna-verified-synthesis.
 
 const SNAP = '2026-08-11'; // DB-uttagens datum (Rundata/SDHK/place_names)
+
+// Utbredningskarta över alla Tuna-namn (homonym-vaktade element_keys='tuna' ur place_names).
+// KARTLAGER (OSM/LM-baserat), ej auktoritativ räkning — enligt sidans metodruta. Imperativ Leaflet
+// (samma mönster som Grottor/Öland), cookiefri OSM-raster. Poängen: se den skarpa Mälardals-tätheten.
+interface TunaPt { name: string; lat: number; lng: number; province: string | null }
+const TunaMap: React.FC<{ sv: boolean }> = ({ sv }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const { data: pts = [] } = useQuery<TunaPt[]>({
+    queryKey: ['tuna-map-points'],
+    staleTime: 60 * 60 * 1000,
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any)
+        .from('place_names')
+        .select('name,lat,lng,province')
+        .contains('element_keys', ['tuna'])
+        .not('lat', 'is', null)
+        .is('superseded_by', null)
+        .limit(1000);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return ((data ?? []) as any[])
+        .map((r) => ({ name: r.name, lat: Number(r.lat), lng: Number(r.lng), province: r.province }))
+        .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng));
+    },
+  });
+
+  useEffect(() => {
+    if (!ref.current || mapRef.current) return;
+    const map = L.map(ref.current, { preferCanvas: true, center: [59.6, 16.6], zoom: 6, scrollWheelZoom: false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
+    mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; };
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || pts.length === 0) return;
+    const layer = L.layerGroup().addTo(map);
+    const bounds: [number, number][] = [];
+    pts.forEach((p) => {
+      bounds.push([p.lat, p.lng]);
+      L.circleMarker([p.lat, p.lng], { radius: 5, color: '#78350f', weight: 1.5, fillColor: '#f59e0b', fillOpacity: 0.9 })
+        .bindPopup(`<b>${p.name}</b>${p.province ? `<br/><span style="font-size:11px;color:#78350f">${p.province}</span>` : ''}`)
+        .addTo(layer);
+    });
+    if (bounds.length) map.fitBounds(L.latLngBounds(bounds).pad(0.1));
+    return () => { layer.remove(); };
+  }, [pts]);
+
+  return (
+    <div className="mb-6">
+      <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-foreground">
+        <MapPin className="h-4 w-4 text-gold" />
+        {sv ? 'Utbredning' : 'Distribution'}
+        <span className="text-xs font-normal text-muted-foreground">
+          {sv ? `${pts.length} kartlagda Tuna-namn (kartlager, ej räkning)` : `${pts.length} mapped Tuna-names (map layer, not a count)`}
+        </span>
+      </div>
+      <div ref={ref} className="h-[420px] w-full overflow-hidden rounded-lg border border-slate-700" />
+      <p className="mt-1 text-[11px] text-muted-foreground opacity-80">
+        {sv ? 'Homonym-vaktade -tuna-namn ur place_names (OSM/Lantmäteriet). Tätheten i Mälarlandskapen är själva mönstret.'
+            : 'Homonym-guarded -tuna names from place_names (OSM/Lantmäteriet). The Mälaren-province density is the pattern.'}
+      </p>
+    </div>
+  );
+};
 
 const Section: React.FC<{ id?: string; icon?: React.ReactNode; title: string; sub?: string; defaultOpen?: boolean; children: React.ReactNode }>
   = ({ id, icon, title, sub, defaultOpen, children }) => {
@@ -152,6 +223,9 @@ const TunaNames = () => {
               : 'Counts come from the Swedish place-name lexicon (SOL 2003), not from our OSM-based database (fit for a map layer, not for counting). Every claim is tagged attested, contested or unattested. The god-name first elements are contested in several cases — we draw no "map of gods". The material is reviewed by our AI specialists (runologist, philologist, cultural geographer) with a human in the loop.'}
           </p>
         </div>
+
+        {/* Utbredningskarta över alla Tuna-namn */}
+        <TunaMap sv={sv} />
 
         {/* 1. Vad är ett Tuna-namn */}
         <Section id="vad" defaultOpen icon={<Tag className="h-5 w-5 text-gold" />}

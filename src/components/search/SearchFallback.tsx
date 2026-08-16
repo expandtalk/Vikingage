@@ -1,9 +1,30 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useMediaForTopic } from '@/hooks/useMediaForTopic';
 import { TopicMedia } from '@/components/media/TopicMedia';
 import { ExternalLink, Search, PenLine } from 'lucide-react';
+
+// Sista-lagret dead-endade tidigare till "ingen träff/externt" även när det GENERELLA sök-indexet
+// (search_v1) HAR träffar — svarspanelens entitets-resolvers (entity_node/get_search_related) och den
+// trasiga hybrid-edge:n missar t.ex. "fornvännen"/"torekov"/"eskil". Nu körs search_v1 här som sista
+// utväg och träffarna VISAS innan vi föreslår externt.
+interface FbHit { entity_type: string; entity_id: string; label: string; sublabel?: string | null; signum?: string | null }
+const TYPE_LABEL: Record<string, { sv: string; en: string }> = {
+  source: { sv: 'Källa', en: 'Source' }, source_text: { sv: 'Källtext', en: 'Source text' },
+  place_name: { sv: 'Ortnamn', en: 'Place name' }, place: { sv: 'Plats', en: 'Place' },
+  parish: { sv: 'Socken', en: 'Parish' }, inscription: { sv: 'Runinskrift', en: 'Inscription' },
+  hillfort: { sv: 'Fornborg', en: 'Hillfort' }, fortress: { sv: 'Borg', en: 'Fortress' },
+  king: { sv: 'Kung', en: 'King' }, saint: { sv: 'Helgon', en: 'Saint' },
+  viking_name: { sv: 'Namn', en: 'Name' }, excursion: { sv: 'Utflykt', en: 'Excursion' },
+  ecclesiastical_site: { sv: 'Kyrka', en: 'Church' }, heritage_site: { sv: 'Fornlämning', en: 'Heritage' },
+  experience: { sv: 'Upplevelse', en: 'Experience' },
+};
+const routeFor = (h: FbHit) =>
+  h.entity_type === 'source' ? `/sources/${h.entity_id}`
+  : h.entity_type === 'source_text' ? `/sources/text/${h.entity_id}`
+  : `/explore?searchQuery=${encodeURIComponent(h.label)}`;
 
 // Sök-kaskadens sista lager: när ingen kärnentitet (plats/runsten/…) matchar visar vi ändå media
 // (poddar/video) OCH ett ärligt "sök vidare externt"-block + bidra-CTA. Externt = BARA länk ut
@@ -27,6 +48,21 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
   const { data } = useMediaForTopic(query, 30);
   const hadMedia = !!(data && ((data.podcasts?.length ?? 0) + (data.videos?.length ?? 0) > 0));
 
+  // Sista utväg: generella sök-indexet (search_v1). Om det HAR träffar visar vi dem — då är det
+  // ingen "ingen träff" längre.
+  const [hits, setHits] = useState<FbHit[]>([]);
+  useEffect(() => {
+    let cancel = false;
+    const q = query.trim();
+    if (q.length < 2) { setHits([]); return; }
+    (supabase as any).rpc('search_v1', { p_q: q, p_limit: 24 }).then(
+      (r: { data?: FbHit[] }) => { if (!cancel) setHits((r.data ?? []) as FbHit[]); },
+      () => { if (!cancel) setHits([]); },
+    );
+    return () => { cancel = true; };
+  }, [query]);
+  const hasHits = hits.length > 0;
+
   useEffect(() => {
     const t = query.trim().toLowerCase();
     if (t.length < 2 || logged.has(t)) return;
@@ -39,16 +75,42 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
       {/* Lager 2: media (returnerar null om inget finns) */}
       <TopicMedia query={query} />
 
-      {/* Lager 4: utanför vår täckning → sök vidare externt + bidra */}
-      <div className="mt-6 rounded-xl border border-slate-700 bg-slate-800/60 p-4">
+      {/* Lager 3: generella träffar ur search_v1 (visas innan vi föreslår externt) */}
+      {hasHits && (
+        <div className="mt-4 rounded-xl border border-gold/40 bg-slate-900/40 p-4">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gold">
+            <Search className="h-4 w-4" />
+            {en ? `${hits.length} matches in Viking Age` : `${hits.length} träffar i Viking Age`}
+          </div>
+          <ul className="max-h-72 space-y-0.5 overflow-y-auto">
+            {hits.map((h) => (
+              <li key={`${h.entity_type}-${h.entity_id}`}>
+                <Link to={routeFor(h)} className="flex flex-wrap items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800">
+                  <span className="text-slate-100">{h.signum && h.signum !== h.label ? `${h.signum} · ${h.label}` : h.label}</span>
+                  <span className="ml-auto rounded border border-slate-600 px-1.5 py-0.5 text-[10px] text-slate-400">
+                    {(TYPE_LABEL[h.entity_type] ? (en ? TYPE_LABEL[h.entity_type].en : TYPE_LABEL[h.entity_type].sv) : h.entity_type)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Lager 4: sök vidare externt + bidra (dead-end-språket bara när vi verkligen saknar träffar) */}
+      <div className="mt-4 rounded-xl border border-slate-700 bg-slate-800/60 p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-amber-300">
           <Search className="h-4 w-4" />
-          {en ? 'Refine your search' : 'Förfina din sökning'}
+          {en ? (hasHits ? 'Search further afield' : 'Refine your search') : (hasHits ? 'Sök vidare externt' : 'Förfina din sökning')}
         </div>
         <p className="text-xs leading-relaxed text-slate-400">
-          {en
-            ? <>No exact match for <span className="text-slate-200">“{query}”</span>{hadMedia ? ' — but see the podcasts & videos above.' : '.'} Try a different spelling, a place name or a runestone signum, or broaden the terms. You can also search on externally — links open in a new tab, so you stay here.</>
-            : <>Ingen exakt träff för <span className="text-slate-200">”{query}”</span>{hadMedia ? ' — men se poddar & video ovan.' : '.'} Prova en annan stavning, ett ortnamn eller ett runsten-signum, eller bredda sökorden. Du kan också söka vidare externt — länkarna öppnas i ny flik, så du är kvar här.</>}
+          {hasHits
+            ? (en
+                ? <>Not what you meant? You can also search externally — links open in a new tab, so you stay here.</>
+                : <>Inte det du menade? Du kan också söka vidare externt — länkarna öppnas i ny flik, så du är kvar här.</>)
+            : (en
+                ? <>No exact match for <span className="text-slate-200">“{query}”</span>{hadMedia ? ' — but see the podcasts & videos above.' : '.'} Try a different spelling, a place name or a runestone signum, or broaden the terms. You can also search on externally — links open in a new tab, so you stay here.</>
+                : <>Ingen exakt träff för <span className="text-slate-200">”{query}”</span>{hadMedia ? ' — men se poddar & video ovan.' : '.'} Prova en annan stavning, ett ortnamn eller ett runsten-signum, eller bredda sökorden. Du kan också söka vidare externt — länkarna öppnas i ny flik, så du är kvar här.</>)}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {externalLinks(query).map((l) => (
@@ -62,7 +124,8 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
           {en ? 'External sources — not vetted by us.' : 'Externa källor — ej granskade av oss.'}
         </p>
 
-        {/* Bidra: håll dem kvar + fånga innehållsluckan */}
+        {/* Bidra: håll dem kvar + fånga innehållsluckan — bara när vi VERKLIGEN saknar träffar */}
+        {!hasHits && (
         <div className="mt-3 flex items-start gap-2 border-t border-slate-700/70 pt-3">
           <PenLine className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
           <p className="text-xs leading-relaxed text-slate-400">
@@ -71,6 +134,7 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
               : <>Tycker du att detta borde finnas på Viking Age? Vi bygger plattformen med bidrag — din sökning noteras så vi vet vad vi ska skriva om härnäst.</>}
           </p>
         </div>
+        )}
       </div>
     </section>
   );
