@@ -42,7 +42,8 @@ const EriksgatanMap: React.FC<{ road: RoadOverview | null; sv: boolean }> = ({ r
 
   const defs: LegendLayerDef[] = [
     { key: 'e_rutt', label: sv ? 'Rutt (schematisk)' : 'Route (schematic)', color: '#d97706', group: 'layer', defaultOn: true },
-    { key: 'e_anhalter', label: sv ? 'Landskaps-anhalter' : 'Province stops', color: '#fb923c', group: 'layer', defaultOn: true },
+    { key: 'e_stader', label: sv ? 'Städer & kloster' : 'Towns & monasteries', color: '#fb923c', group: 'layer', defaultOn: true },
+    { key: 'e_gisslebyten', label: sv ? 'Gisslebyten (belagd överlämning)' : 'Hostage exchanges (attested handover)', color: '#f59e0b', group: 'layer', defaultOn: true },
     { key: 'e_landmarken', label: sv ? 'Landmärken' : 'Landmarks', color: '#fbbf24', group: 'layer', defaultOn: true },
     { key: 'e_tingsplatser', label: sv ? 'Tingsplatser' : 'Assembly (ting) sites', color: '#22d3ee', group: 'layer', defaultOn: true },
     { key: 'e_runstenar', label: sv ? 'Runstenar (≤1 km)' : 'Runestones (≤1 km)', color: '#ef4444', group: 'layer', defaultOn: false },
@@ -91,10 +92,10 @@ const EriksgatanMap: React.FC<{ road: RoadOverview | null; sv: boolean }> = ({ r
     }
     (road?.waypoints ?? []).forEach((w) => {
       if (w.lat == null || w.lng == null) return;
-      const ting = w.type === 'junction' || w.type === 'bridge';
-      L.circleMarker([w.lat, w.lng], { radius: ting ? 6 : 5, color: '#7c2d12', weight: 2, fillColor: ting ? '#f59e0b' : '#fb923c', fillOpacity: 0.95 })
-        .bindPopup(`<b>${esc(w.name ?? '')}</b>${ting ? `<br/><span style="font-size:11px;color:#78350f">${sv ? 'landskapsgräns / anhalt' : 'province border / stop'}</span>` : ''}`)
-        .addTo(groups.current.e_anhalter);
+      const gisslebyte = w.type === 'junction' || w.type === 'bridge';
+      L.circleMarker([w.lat, w.lng], { radius: gisslebyte ? 6 : 5, color: '#7c2d12', weight: 2, fillColor: gisslebyte ? '#f59e0b' : '#fb923c', fillOpacity: 0.95 })
+        .bindPopup(`<b>${esc(w.name ?? '')}</b>${gisslebyte ? `<br/><span style="font-size:11px;color:#78350f">${sv ? 'Belagd gränsöverlämning (gisslebyte) — här avlöstes landskapens följe och gisslan/lejd växlades.' : 'Attested border handover (hostage exchange) — the escort of one province handed the king to the next.'}</span>` : ''}`)
+        .addTo(groups.current[gisslebyte ? 'e_gisslebyten' : 'e_stader']);
     });
     (road?.landmarks ?? []).forEach((f) => {
       if (f.lat == null || f.lng == null) return;
@@ -219,8 +220,8 @@ const Eriksgatan: React.FC = () => {
 
         <p className="text-xs text-muted-foreground mt-3 mb-6 opacity-90">
           {sv
-            ? 'Legenden är modifierbar — tänd/släck rutt, anhalter, tingsplatser, runstenar och kyrkor. Rutt-linjen är SCHEMATISK: den förbinder de belagda landskaps-anhalterna, men den exakta sträckningen mellan dem är okänd, så raka linjer kan korsa sjöar — det är ingen påstådd färdväg. Landskaps-lagret byts när du zoomar (landskap → kommun → socken/stad).'
-            : 'The legend is adjustable — toggle route, stops, assembly sites, runestones and churches. The route line is SCHEMATIC: it connects the attested province stops, but the exact path between them is unknown, so straight segments may cross lakes — it is not a claimed route. The boundary layer switches as you zoom (province → municipality → parish/town).'}
+            ? 'Legenden är modifierbar — tänd/släck rutt, städer & kloster, gisslebyten, tingsplatser, runstenar och kyrkor. Gisslebytena (Ramundeboda, Oppboga bro, Östens bro) är de belagda gränsöverlämningarna; övriga anhalter är städer och kloster längs vägen. Rutt-linjen är SCHEMATISK: den exakta sträckningen mellan anhalterna är okänd, så raka linjer kan korsa sjöar (eriksgatan gick delvis med båt över Mälaren) — det är ingen påstådd färdväg. Landskaps-lagret byts när du zoomar (landskap → kommun → socken/stad).'
+            : 'The legend is adjustable — toggle route, towns & monasteries, hostage exchanges, assembly sites, runestones and churches. The hostage-exchange points (Ramundeboda, Oppboga bro, Östens bro) are the attested border handovers; the other stops are towns and monasteries along the way. The route line is SCHEMATIC: the exact path between stops is unknown, so straight segments may cross lakes (the Eriksgata partly went by boat across Lake Mälaren) — it is not a claimed route. The boundary layer switches as you zoom (province → municipality → parish/town).'}
         </p>
 
         {/* Etymologi: Eriksgata — belagt vs hypotes */}
@@ -322,7 +323,7 @@ const Eriksgatan: React.FC = () => {
                 <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gold">{sv ? 'Sträckning (etapper)' : 'Route (waypoints)'}</h2>
                 <ol className="space-y-1">
                   {road!.waypoints.map((w, i) => (
-                    <li key={i} className="text-sm text-slate-300">{i + 1}. {w.name}{w.type === 'junction' ? (sv ? ' · landskapsgräns/ting' : ' · border/assembly') : ''}</li>
+                    <li key={i} className="text-sm text-slate-300">{i + 1}. {w.name}{(w.type === 'junction' || w.type === 'bridge') ? (sv ? ' · gisslebyte (överlämning)' : ' · hostage exchange (handover)') : ''}</li>
                   ))}
                 </ol>
               </section>

@@ -35,3 +35,11 @@ from (values
   ('Enköping',                            '(17.0845,59.6410)', 'landmark', 22),
   ('Uppsala (cirkeln sluten)',            '(17.6389,59.8498)', 'junction', 23)
 ) as v(name, coord, typ, ord);
+
+-- Uppsala start/slut är kungavalsplatsen (Mora sten), EJ ett gisslebyte → 'landmark'.
+-- Kvar som 'junction' = exakt de tre belagda gränsöverlämningarna (gisslebyten):
+-- Ramundeboda, Oppboga bro, Östens bro. Legenden skiljer gisslebyten (junction) från städer/kloster.
+update public.road_waypoints
+set waypoint_type = 'landmark'
+where road_id = (select id from public.viking_roads where name = 'Eriksgatan')
+  and name like 'Uppsala%';
