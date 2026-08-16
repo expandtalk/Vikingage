@@ -6,7 +6,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookOpen, ScrollText, Loader2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, ScrollText, Loader2, Download, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -29,6 +29,13 @@ interface SourceRow {
   collection: string | null;
   manuscript: string | null;
   meter: string | null;
+  url: string | null;
+  peer_reviewed: boolean | null;
+  rights: string | null;
+  kind: string | null;
+  repository: string | null;
+  subjects: string[] | null;
+  category: string | null;
 }
 
 interface TextRow {
@@ -159,11 +166,52 @@ const SourceDetail = () => {
                 )}
                 {source.language && <Badge variant="outline" className="text-xs">{source.language}</Badge>}
                 {source.meter && <Badge variant="outline" className="text-xs">{source.meter}</Badge>}
+                {source.peer_reviewed && <Badge variant="secondary" className="text-xs border-emerald-500/50 text-emerald-300 bg-transparent">{sv ? 'Fackgranskad' : 'Peer-reviewed'}</Badge>}
               </div>
-              {source.description && <p className="text-muted-foreground text-base leading-relaxed max-w-3xl whitespace-pre-line">{source.description}</p>}
-              {(source.collection || source.manuscript) && (
-                <p className="text-sm text-muted-foreground/70 mt-2">
-                  {[source.collection, source.manuscript].filter(Boolean).join(' · ')}
+
+              {/* Ladda ner / öppna dokumentet. url bär direktlänk (t.ex. Fornvännen FULLTEXT01.pdf via DiVA). */}
+              {source.url && (() => {
+                const isPdf = /\.pdf($|\?)/i.test(source.url) || /FULLTEXT/i.test(source.url);
+                const isDiva = /diva-portal\.org/i.test(source.url);
+                const label = isPdf
+                  ? (sv ? 'Ladda ner PDF' : 'Download PDF')
+                  : (sv ? 'Öppna källan' : 'Open the source');
+                const host = isDiva ? 'DiVA' : (() => { try { return new URL(source.url!).hostname.replace(/^www\./, ''); } catch { return null; } })();
+                return (
+                  <a href={source.url} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gold/50 bg-gold/15 px-4 py-2 text-sm font-medium text-amber-100 hover:bg-gold/25 mb-3"
+                  >
+                    {isPdf ? <Download className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                    {label}{host ? ` · ${host}` : ''}
+                  </a>
+                );
+              })()}
+
+              {/* Beskrivning — strippa den dubblerade "Ämnen:"-svansen (ämnena visas som badges nedan). */}
+              {source.description && (() => {
+                const main = source.description.split(/\s*(?:Ämnen|Subjects)\s*:/i)[0].trim();
+                return <p className="text-muted-foreground text-base leading-relaxed max-w-3xl whitespace-pre-line">{main}</p>;
+              })()}
+
+              {/* Ämnen som klickbara badges i st.f. inklämda i beskrivningstexten. */}
+              {source.subjects && source.subjects.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {source.subjects.map((s) => (
+                    <Badge key={s} variant="outline" className="text-[11px] text-slate-300">{s}</Badge>
+                  ))}
+                </div>
+              )}
+
+              {(source.collection || source.manuscript || source.repository) && (
+                <p className="text-sm text-muted-foreground/70 mt-3">
+                  {[source.collection, source.manuscript, source.repository].filter(Boolean).join(' · ')}
+                </p>
+              )}
+              {source.rights && (
+                <p className="text-[12px] text-muted-foreground/60 mt-1">
+                  {sv ? 'Rättigheter: ' : 'Rights: '}{source.rights === 'copyrighted'
+                    ? (sv ? 'metadata & fakta fritt; verbatim text upphovsrättsskyddad' : 'metadata & facts free; verbatim text copyrighted')
+                    : source.rights}
                 </p>
               )}
             </div>
