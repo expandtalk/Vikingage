@@ -3,7 +3,6 @@ import React, { useState, Suspense, lazy } from 'react';
 import { Header } from '../components/Header';
 import { HeroSection } from '../components/welcome/HeroSection';
 import { WelcomeNearMe } from '../components/welcome/WelcomeNearMe';
-import { ViewLauncherGrid } from '../components/welcome/ViewLauncherGrid';
 import { CategoryOverview } from '../components/welcome/CategoryOverview';
 import { PageMeta } from '../components/PageMeta';
 import { useQuery } from '@tanstack/react-query';
@@ -84,12 +83,11 @@ const Welcome = () => {
       {/* Korten stannar kvar under sökning — träfflistan lägger sig ovanpå som overlay
           (ingen mörkblå tomhet, footern förblir smal längst ned). */}
       <div>
-        {/* Kvantifierad kategoriöversikt: plattformens bredd med live-räkning per kategori
-            (runinskrifter, ortnamn, marinarkeologi, vattenvägar, texter, kyrkor, fornlämningar,
-            mynt). Egen datahämtning — påverkar inte den delade dbStats/HeroStatsGrid. */}
+        {/* Kvantifierad kategoriöversikt: plattformens bredd som 16 gyllene sifferkort med
+            live-räkning per kategori. Detta är det ENDA kortrutnätet på startsidan — den
+            tidigare sifferlösa ViewLauncherGrid är hopslagen hit så kategorierna inte
+            dubbleras. Egen datahämtning — påverkar inte den delade dbStats/HeroStatsGrid. */}
         <CategoryOverview />
-
-        <ViewLauncherGrid dbStats={displayStats} />
 
         {/* Podcasten näst sist — precis före footern */}
 
