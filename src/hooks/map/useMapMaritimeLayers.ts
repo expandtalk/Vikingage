@@ -151,7 +151,25 @@ export const useMapMaritimeLayers = ({ map, enabledLegendItems, isMapReady, safe
         // icke-interaktiv (ren bakgrundsyta); linjelederna (Valdemar/Hansa) förblir klickbara.
         const layer = L.geoJSON(geom, { pane: 'fairways', interactive: !modern, style: () => style as any });
         if (!modern) {
-          layer.bindPopup(`<strong>${esc(f.name || f.fairway_kind)}</strong><br/><em>${esc(f.period)}</em>${f.note ? `<br/><span style="color:#666;font-size:11px">${esc(f.note)}</span>` : ''}`);
+          // Antal brytpunkter avgör hur grov linjen är. Få punkter = raka segment som kan
+          // korsa land (t.ex. Bergenleden 2 pkt). SCHEMATISK-disclaimer alltid, extra
+          // varning vid grov digitalisering. INGEN GISSNING: exakt farled är ej digitaliserad.
+          let npts = 0;
+          try {
+            const gs = geom.type === 'MultiLineString'
+              ? (geom.coordinates as number[][][]).reduce((s, l) => s + l.length, 0)
+              : (geom.coordinates as number[][]).length;
+            npts = gs;
+          } catch { /* noop */ }
+          const coarse = npts > 0 && npts < 20;
+          const disclaimer =
+            '<div style="font-size:11px;color:#78350f;margin-top:6px;line-height:1.35">' +
+            'Schematisk led mellan belagda hållpunkter — exakt segelbar ränna är inte digitaliserad. ' +
+            'Raka segment kan skära land; historiskt drogs båtarna bara korta sträckor vid <b>drag/ed</b>, ' +
+            'inte långa vägar över land.' +
+            (coarse ? ` <b style="color:#b91c1c">Grov digitalisering (${npts} brytpunkter).</b>` : '') +
+            '</div>';
+          layer.bindPopup(`<strong>${esc(f.name || f.fairway_kind)}</strong><br/><em>${esc(f.period)}</em>${f.note ? `<br/><span style="color:#666;font-size:11px">${esc(f.note)}</span>` : ''}${disclaimer}`);
         }
         layer.addTo(g);
       }
