@@ -27,6 +27,7 @@ import { WordRefineCard } from '@/components/placenames/WordRefineCard';
 import OnomasticClusterCard from '@/components/placenames/OnomasticClusterCard';
 import AngermanlandClusterResults from '@/components/placenames/AngermanlandClusterResults';
 import PlaceNameElementExplorer from '@/components/placenames/PlaceNameElementExplorer';
+import PlaceNameQuickSearch from '@/components/placenames/PlaceNameQuickSearch';
 import { useElementCounts } from '@/hooks/useElementCounts';
 import { setElementTest } from '@/hooks/useElementTest';
 import { setClusterCase } from '@/hooks/useClusterCase';
@@ -209,6 +210,9 @@ const PlaceNames = () => {
               : 'A curated layer of place names where each name is classified by its name elements. The goal is a reproducible, sourced method — not firm claims about what the names mean.'}
           </p>
         </div>
+
+        {/* Sök FÖRST — hela nationella registret (~358k), server-side. Daniel: man vill söka ortnamn först. */}
+        <PlaceNameQuickSearch sv={sv} />
 
         {/* Fördjupningssidor (kurerade temasidor per namntyp) */}
         <div className="mb-4">
