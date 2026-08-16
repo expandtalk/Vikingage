@@ -103,10 +103,15 @@ export function useShorelineOverlay(
         // blev osynlig (bugg 2026-08-11, belagd i browser — Littorina "syntes inte" på Öland). Nu ritas
         // en kraftig kontrasterande amber kustkontur + mycket lätt fyllning, så strandförskjutningen
         // framträder mot både land (grönt) och nutida hav (blått). Sjöar streckade för att skiljas.
+        // Dåtida hav ska LÄSA som vatten (blått), inte som en orange kontur. Tidigare dominerade
+        // amber-konturen (weight 2.5) + för svag blå fyllning (0.12) → stora inlands-översvämmade
+        // ytor (t.ex. /sv/staket, hav över grönt land) såg ut som en orange kladd. Nu: tydlig blå
+        // fyllning som bär "vatten", + tunn amber kustkontur som markerar dåtida strandlinje mot
+        // både land (grönt) och nutida hav (blått). Sjöar streckade för att skiljas från hav.
         const gj = L.geoJSON({ type: 'FeatureCollection', features } as GeoJSON.FeatureCollection, {
           style: (f) => f?.properties?.kind === 'lake'
-            ? { color: '#f59e0b', weight: 1.5, dashArray: '5,4', fillColor: '#38bdf8', fillOpacity: 0.10 }
-            : { color: '#f59e0b', weight: 2.5, fillColor: '#38bdf8', fillOpacity: 0.12 },
+            ? { color: '#f59e0b', weight: 1, dashArray: '5,4', fillColor: '#38bdf8', fillOpacity: 0.30 }
+            : { color: '#f59e0b', weight: 1.2, fillColor: '#38bdf8', fillOpacity: 0.35 },
           interactive: false,
         });
         gj.addTo(mapRef.current);
