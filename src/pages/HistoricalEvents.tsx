@@ -195,8 +195,8 @@ const HistoricalEvents = () => {
           </h1>
           <p className="text-muted-foreground text-lg max-w-3xl">
             {sv
-              ? 'Händelser (slag, kungaval, klimatchocker, pestutbrott) tillsammans med introduktioner av arter och innovationer (hund, katt, häst, segel) — samma tidsaxel, olika bevislinjer. Färgen visar typ/proxy; osäkerhet och källa redovisas per post.'
-              : 'Events (battles, royal elections, climate shocks, plague) alongside introductions of species and innovations — one time axis, different lines of evidence. Colour shows type/proxy; uncertainty and source are shown per entry.'}
+              ? 'Händelser (slag, kungaval, klimatchocker, pestutbrott) tillsammans med introduktioner av arter och innovationer (hund, katt, häst, segel) — samma tidsaxel, olika bevislinjer. Färgen visar typ/proxy, och varje post bär sin källa och en märkning av hur säker den är (belagd, trolig, tradition, hypotes eller omtvistad). Lokaliserade händelser med omtvistat läge ritas ärligt: flera kandidatlägen kan visas sida vid sida.'
+              : 'Events (battles, royal elections, climate shocks, plague) alongside introductions of species and innovations — one time axis, different lines of evidence. Colour shows type/proxy, and every entry carries its source and a mark of how certain it is (attested, probable, tradition, hypothesis or disputed). Located events with a disputed position are drawn honestly: competing candidate locations can appear side by side.'}
           </p>
           <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted-foreground">
             <span><strong className="text-foreground">{events.length}</strong> {sv ? 'händelser' : 'events'}</span>

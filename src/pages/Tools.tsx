@@ -84,6 +84,9 @@ const GROUPS: Group[] = [
       { icon: ImageIcon, to: '/sv/bildforbattring', status: 'live', titleSv: 'Bildförbättring (fält & natur)', titleEn: 'Image enhancement (field & nature)',
         descSv: 'Förbättra bilder tagna i fält/naturen: släpljus, kant-detektering och dekorrelationssträckning (DStretch) i webbläsaren — få fram svaga baslinjer före tolkning.',
         descEn: 'Enhance photos taken in the field/nature: raking light, edge detection and decorrelation stretch (DStretch) in the browser — surface faint lines before reading.' },
+      { icon: ImageIcon, to: '/sv/bildarkiv', status: 'live', titleSv: 'Bildarkiv & bildsök', titleEn: 'Image archive & search',
+        descSv: 'Sök bilder över flera kategorier — runstenar, kyrkokonst, mynt och 3D-modeller. Varje bild med bildtext, licens och källa; originalen hotlänkas, okänd licens utesluts eller märks tydligt.',
+        descEn: 'Search images across categories — runestones, church art, coins and 3D models. Each image with caption, license and source; originals hotlinked, unknown licenses omitted or clearly flagged.' },
     ],
   },
   {

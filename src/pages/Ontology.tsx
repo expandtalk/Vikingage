@@ -79,6 +79,39 @@ const Ontology = () => {
           </CardContent>
         </Card>
 
+        {/* Claim-lager — konkurrerande påståenden */}
+        <Card className="viking-card mb-6">
+          <CardHeader className="pb-2"><CardTitle className="text-foreground text-base">{sv ? 'Claim-lagret — konkurrerande påståenden' : 'The claim layer — competing assertions'}</CardTitle></CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>
+              {sv
+                ? 'Vid sidan av entiteterna finns ett claim-lager där tolkningar hålls plurala. Varje påstående bär källa, förespråkare (fullständigt namn) och konfidens; motstridiga påståenden kan länkas explicit som konflikt. Ingen tolkning auto-befordras.'
+                : 'Alongside the entities sits a claim layer where interpretations are kept plural. Each assertion carries a source, a proponent (full name) and a confidence; conflicting assertions can be linked explicitly. No interpretation is auto-promoted.'}
+            </p>
+            <p><code className="text-gold/90">place_claim</code> — {sv ? 'attribut-nycklade påståenden om platser (datering, funktion …) med verifieringsstatus.' : 'attribute-keyed assertions about places (dating, function …) with verification status.'}</p>
+            <p><code className="text-gold/90">interpretation_claim</code> — {sv ? 'konkurrerande runläsningar per textparti (transkription / etablerad / omstridd / oberoende / förkastad).' : 'competing runic readings per text part (transcription / established / disputed / independent / rejected).'}</p>
+            <p><code className="text-gold/90">place_name_relation</code> — {sv ? 'namn-relationer över tid (föregångsnamn m.m.) som hypoteser med förespråkare och belägg — skilt från dedup av samma namn.' : 'name relations over time (predecessor names etc.) as hypotheses with proponent and evidence — distinct from de-duplicating the same name.'}</p>
+            <p className="text-xs opacity-80">{sv ? 'Ortnamnsled-katalogen (sakrala, makt, natur) med tidsskikt är också utbyggd och driver den onomastiska analysen.' : 'The place-name-element catalogue (sacral, power, nature) with time strata has also been extended and drives the onomastic analysis.'}</p>
+          </CardContent>
+        </Card>
+
+        {/* Vad som INTE är noder i grafen — sök vs KG */}
+        <Card className="viking-card mb-6 border-amber-700/40">
+          <CardHeader className="pb-2"><CardTitle className="text-foreground text-base">{sv ? 'Sökindex ≠ kunskapsgraf' : 'Search index ≠ knowledge graph'}</CardTitle></CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>
+              {sv
+                ? 'Allt som går att söka är inte en nod i grafen. Det nationella ortnamnsregistret (place_names, ~358 000 namn, till största delen OpenStreetMap) ligger i sökindexet så att namn kan hittas — men de är inte entiteter i kunskapsgrafen (entity_registry) och bär inte grafens relationer.'
+                : 'Not everything searchable is a graph node. The national place-name register (place_names, ~358,000 names, mostly OpenStreetMap) lives in the search index so names are findable — but they are not entities in the knowledge graph (entity_registry) and do not carry its relations.'}
+            </p>
+            <p>
+              {sv
+                ? 'Ett ortnamn befordras till en grafnod först när det kurerats och källbelagts (t.ex. via ett claim eller en kurerad platssida). Skillnaden hålls medvetet: sökbarhet är billigt, grafmedlemskap kräver proveniens.'
+                : 'A place name is promoted to a graph node only once it is curated and sourced (e.g. via a claim or a curated place page). The distinction is deliberate: searchability is cheap, graph membership requires provenance.'}
+            </p>
+          </CardContent>
+        </Card>
+
         <div className="relative mb-6 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={sv ? 'Sök i ontologin…' : 'Search the ontology…'} className="pl-9 bg-slate-800/60 border-slate-600 text-white" />

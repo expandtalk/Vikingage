@@ -5,7 +5,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FlaskConical, ShieldCheck, BookOpen, ExternalLink, Info, HelpCircle, Users, History, Fingerprint } from 'lucide-react';
+import { FlaskConical, ShieldCheck, BookOpen, ExternalLink, Info, HelpCircle, Users, History, Fingerprint, Scale, Bot } from 'lucide-react';
 
 // /vetenskapsmetodik — hur plattformen arbetar källkritiskt: (1) metoden att inte
 // släppa in dålig data (garbage in → garbage out), (2) hur väl vi följer Marnie
@@ -21,7 +21,8 @@ const DATA_PRINCIPLES: Principle[] = [
     title: '1. Ingen gissning — belagt eller markerat obelagt',
     body: 'Grundregeln. Vi fyller aldrig luckor med plausibla antaganden som om de vore fakta. '
       + 'Är något overifierat skrivs det ut: "osäkert", "obelagt", "kräver verifiering". Hellre en '
-      + 'ärlig lucka än en snygg gissning.',
+      + 'ärlig lucka än en snygg gissning. Påståenden bär en synlig märkning — belagt, tolkning, '
+      + 'hypotes eller obelagt — så läsaren ser skillnaden direkt i texten.',
   },
   {
     title: '2. Källa före påstående',
@@ -272,6 +273,130 @@ const Vetenskapsmetodik = () => (
             </p>
           </div>
         </div>
+      </section>
+
+      {/* Märkningen + claim-liggaren */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+          <Scale className="h-6 w-6 text-gold" />
+          Belagt, tolkning, hypotes — och konkurrerande läsningar
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+          Ett påstående på plattformen är sällan bara "sant" eller "falskt" — det har en <em>status</em>.
+          Grundvokabulären är fyra steg, som visas som en färgmärkt etikett i texten:
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2 mb-5">
+          {[
+            { c: '#22c55e', t: 'Belagt', d: 'stöds direkt av en verifierad källa.' },
+            { c: '#38bdf8', t: 'Tolkning', d: 'en läsning av evidensen; rimlig men inte bevisad.' },
+            { c: '#f59e0b', t: 'Hypotes', d: 'ett testbart antagande som ännu inte prövats färdigt.' },
+            { c: '#94a3b8', t: 'Obelagt', d: 'saknar stöd — sägs rakt ut, aldrig maskerat som fakta.' },
+          ].map((s) => (
+            <div key={s.t} className="viking-card rounded-lg p-3 flex items-start gap-2.5">
+              <span className="mt-0.5 h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: s.c }} />
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">{s.t}.</strong> {s.d}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+          Vissa fält har en mer finkornig vokabulär — runläsningar märks t.ex. <em>transkription</em> (vad
+          som står), <em>etablerad</em> (fackgranskad huvudläsning), <em>omstridd</em>, <em>oberoende</em>{' '}
+          (icke fackgranskad) och <em>förkastad</em> — men principen är densamma.
+        </p>
+        <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+          Framför allt tvingas inte olika forskare till en enda "sanning". Konkurrerande tolkningar ligger
+          bredvid varandra i en <strong>claim-liggare</strong>, var och en med sin källa, sin förespråkare
+          (med fullständigt namn) och sitt konfidensvärde:
+        </p>
+        <ul className="list-disc pl-5 space-y-1.5 text-xs text-muted-foreground mb-4">
+          <li><code className="text-gold/90">place_claim</code> — attribut-nycklade påståenden om platser
+            (t.ex. datering, funktion), med källa, konfidens och verifieringsstatus.</li>
+          <li><code className="text-gold/90">interpretation_claim</code> — konkurrerande läsningar av
+            runinskrifter, per textparti och attribuerade till respektive forskare.</li>
+          <li><code className="text-gold/90">place_name_relation</code> — namn-relationer över tid
+            (t.ex. föregångsnamn) som hypoteser med förespråkare och belägg, inte som fast sanning.</li>
+        </ul>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Mätlagret (observationen) hålls rent och avdubblat; <em>tolkningarna</em> hålls plurala och
+          tidsstämplade — de skiftar med generationer och forskningsströmningar och konsolideras aldrig till
+          "sanningen". Motstridiga påståenden kan dessutom länkas explicit som konflikt, så att en oenighet
+          syns i stället för att döljas. Ett konkret exempel är de{' '}
+          <Link to="/sv/vikingatid" className="text-gold hover:underline">konkurrerande läsningarna av
+          Rökstenen (Ög 136)</Link>.
+        </p>
+      </section>
+
+      {/* Människa-i-loopen: AI-agentflottan + adversariell verifiering */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+          <Bot className="h-6 w-6 text-gold" />
+          Människa i loopen — och en motståndare mot datan
+        </h2>
+        <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+          Bakom materialet arbetar en flotta av källkritiska <strong>specialistagenter</strong> (arkeologi,
+          runologi, ortnamn/filologi, GIS, datakvalitet, QA). De <em>utreder och föreslår</em> — de skriver
+          aldrig till kanon på egen hand. Varje förslag landar först som ett <em>claim</em> med källa,
+          konfidens och märkning (belagt / tolkning / hypotes / obelagt). En människa granskar och beslutar
+          innan något blir bestående. Ingen AI-utdata går rakt in i databasen.
+        </p>
+        <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+          Maskinellt verifierbara fynd (t.ex. en koordinat via Wikidata P625, en RAÄ-URI, en databasräkning)
+          kan befordras automatiskt <em>med proveniens</em>. Tolkning, etymologi och attribuering kräver
+          alltid en människa eller en verifierar-agent.
+        </p>
+        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+          <strong className="text-foreground">Adversariell verifiering.</strong> Att bygga in en uppgift
+          räcker inte — den ska också gå att rasera. En verifierar-agent fungerar som en drift-vakt: den läser
+          om kanon mot källorna, prövar påståendena och flaggar avvikelser (en källa som ändrats, en koordinat
+          som glidit, en hypotes som aldrig prövades klart). Så fångas tyst förfall i stället för att sätta sig
+          i datan.
+        </p>
+        <Link to="/ai-agenter"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-gold hover:underline">
+          <Bot className="h-4 w-4" /> Så arbetar AI-agenterna →
+        </Link>
+      </section>
+
+      {/* Oberoende, icke fackgranskade läsningar */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+          <BookOpen className="h-6 w-6 text-gold" />
+          Oberoende, icke fackgranskade läsningar
+        </h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Delar av den folkliga debatten driver egna läsningar av vikingatiden och av enskilda inskrifter — ett
+          exempel är Fredrik Ousbäck / YouTube-kanalen FORMAT HISTORIA. Sådana bidrag kan redovisas, men de
+          märks då tydligt <em>oberoende</em> (icke fackgranskade) och hålls åtskilda från den fackgranskade
+          runologin — aldrig jämställda med den, aldrig som "fakta". De bär ett lågt konfidensvärde och en
+          källkritisk not, och de förs bara in när upphovsmannen anger en kontrollerbar källhänvisning som en
+          runolog kan pröva. Det är samma spärr som gäller allt annat: en läsning utan belägg blir inte kanon.
+        </p>
+      </section>
+
+      {/* Proveniensnot per artikel */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+          <ShieldCheck className="h-6 w-6 text-gold" />
+          Proveniensnot på källbelagda artiklar
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+          Längre artiklar avslutas med en <strong>proveniensnot</strong> som redovisar tre saker öppet: vilka
+          källor texten vilar på, att materialet sammanställts och analyserats <em>med AI-stöd</em>, och att
+          det därefter kontrollerats och godkänts av en människa (Daniel Larsson). Noten upprepar också att
+          påståenden är märkta belagt, tolkning eller hypotes, och att obelagt anges som sådant. Så här ser
+          den ut:
+        </p>
+        <section className="rounded-lg border border-slate-700/70 bg-slate-900/30 p-4 text-[12px] leading-relaxed text-slate-400">
+          <p className="mb-1 font-medium text-slate-300">Källor</p>
+          <p className="mb-3">Källa A · Källa B · Källa C</p>
+          <p className="border-t border-slate-700/70 pt-3 text-slate-400">
+            <span className="font-medium text-slate-300">Metod &amp; granskning: </span>
+            Materialet har sammanställts och analyserats med AI-stöd och därefter kontrollerats och godkänts av
+            Daniel Larsson. Påståenden är märkta belagt, tolkning eller hypotes; obelagt anges som sådant.
+          </p>
+        </section>
       </section>
 
       {/* DEL 2 */}

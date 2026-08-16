@@ -55,6 +55,7 @@ export const Breadcrumbs: React.FC<{ bare?: boolean }> = ({ bare = false }) => {
       statistik: 'Statistik',
       prices: 'Priser',
       kungsnave: 'Kungsnäve',
+      bildarkiv: 'Bildarkiv',
       profile: 'Profil',
       admin: 'Admin',
       auth: 'Autentisering'
@@ -85,6 +86,7 @@ export const Breadcrumbs: React.FC<{ bare?: boolean }> = ({ bare = false }) => {
       statistics: 'Statistics',
       prices: 'Prices',
       kungsnave: 'Kungsnäve',
+      'image-archive': 'Image archive',
       profile: 'Profile',
       admin: 'Admin',
       auth: 'Authentication'

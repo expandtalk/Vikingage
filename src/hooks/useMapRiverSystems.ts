@@ -131,11 +131,16 @@ export const useMapRiverSystems = ({
           // hierarchy. The per-row `width` column is inconsistent (some
           // secondary rivers were wider than some primary ones), so we ignore
           // it and give primary routes one weight and secondary another.
+          // SCHEMATISK: geometrin är glesa handlagda punkter (median ~7 punkter/å, ibland bara 1–2),
+          // så en tjock heldragen linje läste som en exakt fåra och "gick över land" (Daniel).
+          // Ritas nu tunn + streckad + halvtransparent = tydligt schematisk huvudfåra. Riktig
+          // vägsträckning kräver hydrografi (Lantmäteri/SMHI vattendrag) — separat ingest.
+          const isCoarse = route.coordinates.length < 12;
           const riverLine = L.polyline(coordinates, {
             color: route.color || '#3b82f6',
-            weight: route.importance === 'primary' ? 4 : 2.5,
-            opacity: 0.8,
-            dashArray: route.type === 'coastal_route' ? '10, 5' : undefined
+            weight: route.importance === 'primary' ? 2.5 : 1.5,
+            opacity: 0.55,
+            dashArray: (route.type === 'coastal_route' || isCoarse) ? '6, 5' : undefined,
           });
 
           const lengthInfo = route.total_length_km ? `<p class="text-xs text-slate-400 mb-1">Längd: ${route.total_length_km} km</p>` : '';

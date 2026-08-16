@@ -44,6 +44,7 @@ const PlaceIndex = lazy(() => import("./pages/PlaceIndex"));
 const RoadPage = lazy(() => import("./pages/RoadPage"));
 const Vendelhjalmar = lazy(() => import("./pages/Vendelhjalmar"));
 const Models3D = lazy(() => import("./pages/Models3D"));
+const Bildarkiv = lazy(() => import("./pages/Bildarkiv"));
 const Ontology = lazy(() => import("./pages/Ontology"));
 const AiAgents = lazy(() => import("./pages/AiAgents"));
 const Tools = lazy(() => import("./pages/Tools"));
@@ -183,6 +184,9 @@ const App = () => (
                   <Route path="/sv/3d" element={<Models3D />} />
                   <Route path="/en/3d" element={<Models3D />} />
                   <Route path="/3d" element={<Models3D />} />
+                  <Route path="/sv/bildarkiv" element={<Bildarkiv />} />
+                  <Route path="/en/image-archive" element={<Bildarkiv />} />
+                  <Route path="/bildarkiv" element={<Bildarkiv />} />
                   <Route path="/ontology" element={<Ontology />} />
                   <Route path="/ontologi" element={<Ontology />} />
                   <Route path="/ai-agents" element={<AiAgents />} />
