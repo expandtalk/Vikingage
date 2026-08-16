@@ -275,7 +275,7 @@ const HogaKustenMap: React.FC<{
 // Detta är EJ publicerat innehåll. Innehållet är en tänkt struktur för tematiska
 // koordinat-berättelsevandringar, grupperade per kommun. Renderas som förslag, aldrig som fakta.
 
-interface StoryTheme { title: { sv: string; en: string }; note?: { sv: string; en: string } }
+interface StoryTheme { title: { sv: string; en: string }; note?: { sv: string; en: string }; href?: string }
 interface StoryKommun {
   key: string;
   name: { sv: string; en: string };
@@ -340,9 +340,10 @@ const STORY_KOMMUNER: StoryKommun[] = [
       {
         title: { sv: 'Häxprocesserna i Ångermanland', en: 'The Ångermanland witch trials' },
         note: {
-          sv: 'Torsåker → bålberget; massavrättningen 1 juni 1675, ~10 platser.',
-          en: 'Torsåker → the execution hill; the mass execution of 1 June 1675, ~10 sites.',
+          sv: 'Torsåker → Bålberget; massavrättningen 1 juni 1675, 11 anhalter. Publicerad berättelse.',
+          en: 'Torsåker → Bålberget; the mass execution of 1 June 1675, 11 stops. Published story.',
         },
+        href: '/sv/haxprocesserna-angermanland',
       },
       { title: { sv: 'Sandslåns flottningshistoria', en: 'The log-driving history of Sandslån' } },
       { title: { sv: 'Nora', en: 'Nora' } },
@@ -647,7 +648,13 @@ const HogaKusten: React.FC = () => {
                     <ul className="space-y-2">
                       {k.themes.map((t, i) => (
                         <li key={i} className="text-sm">
-                          <span className="text-foreground">{sv ? t.title.sv : t.title.en}</span>
+                          {t.href ? (
+                            <Link to={t.href} className="text-gold hover:underline font-medium">
+                              {sv ? t.title.sv : t.title.en} →
+                            </Link>
+                          ) : (
+                            <span className="text-foreground">{sv ? t.title.sv : t.title.en}</span>
+                          )}
                           {t.note && (
                             <span className="block text-xs text-muted-foreground mt-0.5">
                               {sv ? t.note.sv : t.note.en}

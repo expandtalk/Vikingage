@@ -240,6 +240,38 @@ const Vikingatid: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Fördjupning: samhällets militär-territoriella organisation (egna temasidor) */}
+        <Card>
+          <CardHeader><CardTitle className="text-lg">
+            {sv ? 'Fördjupning: samhällets organisation' : 'Deep dive: how society was organised'}
+          </CardTitle></CardHeader>
+          <CardContent className="text-sm leading-relaxed text-muted-foreground space-y-2">
+            <p>{sv
+              ? 'Tre sammanhängande temasidor om det militär-territoriella system som band samman kust och kungamakt — källkritiskt, med belagt skilt från hypotes:'
+              : 'Three connected theme pages on the military-territorial system that bound coast and kingship — source-critical, with the attested kept apart from the hypothetical:'}</p>
+            <ul className="space-y-1.5 pl-1">
+              <li>
+                <Link to={sv ? '/sv/ledung' : '/en/leidang'} className="text-amber-500 hover:underline font-medium">
+                  {sv ? 'Ledung' : 'Leidang'} →
+                </Link>{' '}
+                <span className="text-[13px]">{sv ? '— sjökrigsorganisationen: skeppslag, roddarlag, skatteledung.' : '— the naval levy: ship-districts, oarsman crews, the shift to a tax.'}</span>
+              </li>
+              <li>
+                <Link to={sv ? '/sv/hundare' : '/en/hundred'} className="text-amber-500 hover:underline font-medium">
+                  {sv ? 'Hundare' : 'The hundare'} →
+                </Link>{' '}
+                <span className="text-[13px]">{sv ? '— Svealands indelningsenhet före häradet, och dess koppling till ledungen.' : '— Svealand’s division before the härad, and its link to the levy.'}</span>
+              </li>
+              <li>
+                <Link to={sv ? '/sv/snacknamn' : '/en/snack-names'} className="text-amber-500 hover:underline font-medium">
+                  {sv ? 'Snäck-ortnamn' : 'Snäck place-names'} →
+                </Link>{' '}
+                <span className="text-[13px]">{sv ? '— ortnamn på Snäck- och deras omtvistade koppling till skeppshamnar.' : '— place-names in Snäck- and their disputed link to ship harbours.'}</span>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+
         <ArticleProvenance
           sv={sv}
           reviewedDate="2026-08-16"
