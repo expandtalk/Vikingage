@@ -261,6 +261,10 @@ const Eriksgatan: React.FC = () => {
                 <Stat kind="hypotes" sv={sv} />{' '}
                 {sv ? 'respektabelt minoritetsalternativ — inte den naiva ”ed + gata”, och inte den rådande uppfattningen.' : 'respectable minority alternative — not the naive “oath + road”, and not the prevailing view.'}
               </li>
+              <li>
+                <span className="text-foreground">{sv ? 'Uppsala-relik-hypotesen: leden utgick från Uppsala där Erik den heliges reliker förvarades' : 'The Uppsala-relic hypothesis: the progress began in Uppsala, where the relics of St Erik were kept'}</span>{' '}
+                — {sv ? 'namnet kan komma därav. Ett ' : 'the name may derive from this. A '}<Stat kind="hypotes" sv={sv} />{sv ? ' (Populär Historia 1/2021, Olle Larsson).' : ' (Populär Historia 1/2021, Olle Larsson).'}
+              </li>
               <li className="text-slate-400">
                 {sv ? '’Rida riket runt’ / ’lag’ — ' : '“Ride around the realm” / “law” — '}
                 <Stat kind="sagen" sv={sv} /> {sv ? '(ingen forskarförespråkare).' : '(no scholarly proponent).'}
@@ -270,6 +274,30 @@ const Eriksgatan: React.FC = () => {
               {sv
                 ? 'Att hålla isär: institutionen (belagt) och namnetymologin (hypotes). Lindroths/Wadsteins originalartiklar och Äldre Västgötalagens ordform bör läsas mot primärtext innan de citeras med namngiven forskare — den kontrollen är ännu inte gjord.'
                 : 'To keep apart: the institution (attested) and the name etymology (hypothesis). Lindroth’s/Wadstein’s original articles and the word form in the Older Västgöta Law should be read against the primary texts before being cited with named scholars — that check has not yet been done.'}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Belagd historik — kända eriksgator (fakta, källa Populär Historia; ej verbatim) */}
+        <Card className="mb-6">
+          <CardHeader><CardTitle className="text-xl">
+            {sv ? 'Kända eriksgator' : 'Documented Eriksgata journeys'}
+          </CardTitle></CardHeader>
+          <CardContent className="space-y-3 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              {sv
+                ? 'Institutionen nämns i landskapslagarna från 1200-talet, men den första eriksgata där den namngivne kungen är känd genomfördes av Magnus Eriksson 1335. Kungavalet skedde på Mora äng utanför Uppsala; utformningen kodifierades i Upplandslagens konungabalk (stadfäst 1296) och sedan i Magnus Erikssons landslag (~1350).'
+                : 'The institution is mentioned in the 13th-century provincial laws, but the first Eriksgata with a named king was made by Magnus Eriksson in 1335. The king was elected at Mora meadow outside Uppsala; the form was codified in the Uppland Law (1296) and later in the national law of Magnus Eriksson (~1350).'}
+            </p>
+            <p>
+              {sv
+                ? 'Fyra kungar red belagt eriksgata på 1400-talet: Erik av Pommern (1401), Kristofer (1442), Karl Knutsson (1448–49) och Kristian I (1458). Den sista lagenliga eriksgatan reds av Karl IX 1609 — nästan ett halvsekel efter att arvkungadömet infördes (Gustav Vasa 1544/Erik XIV 1560), varefter resan förlorade sin ursprungliga funktion.'
+                : 'Four kings are documented to have ridden the Eriksgata in the 1400s: Erik of Pomerania (1401), Christopher (1442), Karl Knutsson (1448–49) and Christian I (1458). The last lawful Eriksgata was ridden by Karl IX in 1609.'}
+            </p>
+            <p className="text-[12px] text-slate-500">
+              {sv
+                ? 'Fakta ur Populär Historia 1/2021 (Olle Larsson) + landskapslagarna — sammanställt i egna ord, ej verbatim (upphovsrätt).'
+                : 'Facts from Populär Historia 1/2021 (Olle Larsson) and the provincial laws — summarised in our own words, not verbatim (copyright).'}
             </p>
           </CardContent>
         </Card>
@@ -312,6 +340,7 @@ const Eriksgatan: React.FC = () => {
             'Hjalmar Lindroth, Historisk tidskrift (1912)',
             'Elis Wadstein, Historisk tidskrift (1914)',
             'Saxo Grammaticus, Gesta Danorum (~1200)',
+            'Populär Historia 1/2021, Olle Larsson (fakta, ej verbatim)',
             'thing_sites (RAÄ Fornsök m.fl.)',
           ]}
         />
