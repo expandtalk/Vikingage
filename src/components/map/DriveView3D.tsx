@@ -126,7 +126,15 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
     // Drar användaren i kartan → sluta följa (samma semantik som fältnav).
     map.on('dragstart', () => { /* följning styrs av useFieldNav.following i förälder */ });
 
-    return () => { map.remove(); mapRef.current = null; loadedRef.current = false; };
+    // ResizeObserver: MapLibre mäter containern vid init; om den ännu är 0 hög (layout ej klar)
+    // blir kartan blank tills en resize sker. Ritar om när containern får/ändrar storlek.
+    // (Fixar även SVART SKÄRM-buggen: MapLibres .maplibregl-map{position:relative} kan slå
+    // Tailwinds .absolute → höjd 0; inline-stylen på return-diven + denna resize garanterar höjd.)
+    const ro = new ResizeObserver(() => { try { map.resize(); } catch { /* noop */ } });
+    ro.observe(elRef.current);
+    requestAnimationFrame(() => { try { map.resize(); } catch { /* noop */ } });
+
+    return () => { ro.disconnect(); map.remove(); mapRef.current = null; loadedRef.current = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -206,7 +214,15 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
     return () => { cancelled = true; };
   }, [pos, demoCenter]);
 
-  return <div ref={elRef} className={className ?? 'absolute inset-0'} />;
+  // Inline-style GARANTERAR full storlek + absolut position — slår MapLibres egen
+  // .maplibregl-map{position:relative} (som annars nollar höjden → svart skärm).
+  return (
+    <div
+      ref={elRef}
+      className={className ?? 'absolute inset-0'}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+    />
+  );
 };
 
 export default DriveView3D;
