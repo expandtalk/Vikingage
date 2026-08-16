@@ -39,3 +39,12 @@ export const clearFieldNavTarget = () => { if (!state.target) return; state = { 
 
 export const getFieldNavSnapshot = () => state;
 export const useFieldNav = () => useSyncExternalStore(subscribe, getFieldNavSnapshot);
+
+// iOS 13+: enhetsorientering (kompass-fallback) kräver behörighet utlöst av en användargest.
+// Delad så den enda framdörren (Near me) kan begära den när fältläge startas till fots.
+export const requestCompassPermission = async () => {
+  const D = (window as unknown as { DeviceOrientationEvent?: { requestPermission?: () => Promise<string> } }).DeviceOrientationEvent;
+  if (D && typeof D.requestPermission === 'function') {
+    try { await D.requestPermission(); } catch { /* nekad → GPS-kurs räcker */ }
+  }
+};

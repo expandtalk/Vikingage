@@ -10,8 +10,8 @@ import { useTravelMode } from '@/hooks/useTravelMode';
 // Task 2) — och river ALLT i cleanup när ingen av dessa gäller längre. `enabled` matar bara
 // `setFieldNavPos` (som INTE rör `active`) — visningen av "här"-markören är alltså frikopplad
 // från att fältläge-HUD:en öppnas. Nekad GPS → ingen markör (aldrig en gissad position).
-// Kompassen är fallback när man står still; iOS-behörigheten begärs av FieldNavControl (knapp)
-// när den aktiva HUD:en startas — i alltid-på-läget (utan att ha startat HUD:en) faller vi
+// Kompassen är fallback när man står still; iOS-behörigheten begärs av Near me (enda framdörren,
+// requestCompassPermission ur useFieldNav) när fältläge startas — i alltid-på-läget faller vi
 // tillbaka på GPS-kurs (`heading` från Geolocation) tills/om användaren aktiverar fältläget.
 export const useFieldNavGeolocation = () => {
   const { active, dismissed } = useFieldNav();

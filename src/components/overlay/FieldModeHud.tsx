@@ -1,48 +1,27 @@
-// src/components/overlay/FieldNavControl.tsx
+// src/components/overlay/FieldModeHud.tsx
 import React from 'react';
 import { Navigation2, LocateFixed, X, Compass } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useDrivingMode } from '@/hooks/useDrivingMode';
-import { useFieldNav, startFieldNav, stopFieldNav, setFieldNavFollowing, clearFieldNavTarget } from '@/hooks/useFieldNav';
+import { useFieldNav, stopFieldNav, setFieldNavFollowing, clearFieldNavTarget } from '@/hooks/useFieldNav';
 import { haversineKm, bearingDeg, compassPoint8 } from '@/utils/geoDistance';
 
-// Fältläge steg 1 (bil): opt-in live-följning med riktningskägla. Bara mobil (Daniel: "mobilläge").
-// Position/följning hanteras av useFieldNavGeolocation + useMapFieldNav; detta är på/av + status.
+// Aktiv-läge-HUD för fältläget (gå/cykel). ENDA framdörren är Near me — den här komponenten
+// STARTAR aldrig läget; den visas bara MEDAN följning är aktiv (status + Centrera + kompass
+// till punkt + Avsluta). Bil-läget äger sin egen NavigatorHud (driving) → då döljs denna.
+// (Ersätter tidigare FieldNavControl, som också var en andra startknapp.)
 const sourceLabel = (s: string | null | undefined) =>
   s === 'gps' ? 'GPS-kurs' : s === 'compass' ? 'Kompass' : 'Söker riktning…';
 const fmtDist = (km: number) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`);
 const UNCERTAINTY_FALLBACK = 'Leder till markörens utsatta läge — kontrollera markörens egen källa/precision.';
 
-// iOS 13+: enhetsorientering (kompass-fallback) kräver behörighet utlöst av en användargest.
-const requestCompassPermission = async () => {
-  const D = (window as unknown as { DeviceOrientationEvent?: { requestPermission?: () => Promise<string> } }).DeviceOrientationEvent;
-  if (D && typeof D.requestPermission === 'function') {
-    try { await D.requestPermission(); } catch { /* nekad → GPS-kurs räcker i bil */ }
-  }
-};
-
-export const FieldNavControl: React.FC = () => {
+export const FieldModeHud: React.FC = () => {
   const isMobile = useIsMobile();
   const driving = useDrivingMode();
   const { active, pos, following, error, target } = useFieldNav();
-  if (!isMobile) return null; // fältläget är ett mobilläge
-  // I billäget körs följningen av Near me ("Kör") och kartan visar riktningskäglan; den egna
-  // Kompass till punkt-kontrollen döljs så vi inte får två paneler över kartan (Near me = enda ytan).
-  if (driving) return null;
-
-  if (!active) {
-    return (
-      <button
-        onClick={async () => { await requestCompassPermission(); startFieldNav(); }}
-        title="Kompass till punkt — visa färdriktning och riktning till mål"
-        aria-label="Kompass till punkt"
-        className="absolute z-[1050] bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center p-2 rounded-full bg-emerald-600/80 hover:bg-emerald-600 text-white border-2 border-emerald-400 shadow-lg backdrop-blur-md"
-        style={{ minWidth: 44, minHeight: 44 }}
-      >
-        <Navigation2 className="h-5 w-5" />
-      </button>
-    );
-  }
+  if (!isMobile) return null;      // fältläget är ett mobilläge
+  if (driving) return null;        // bil-läge → NavigatorHud äger nedre zonen
+  if (!active) return null;        // ingen startknapp längre — Near me är enda framdörren
 
   return (
     <div
@@ -51,7 +30,7 @@ export const FieldNavControl: React.FC = () => {
     >
       <div className="flex items-center justify-between">
         <span className="text-white text-sm font-semibold flex items-center gap-2">
-          <Navigation2 className="h-4 w-4 text-emerald-400" />Kompass till punkt
+          <Navigation2 className="h-4 w-4 text-emerald-400" />{target ? 'Kompass till punkt' : 'Fältläge'}
         </span>
         <button onClick={stopFieldNav} aria-label="Avsluta fältläge"
           className="flex items-center justify-center text-slate-300 hover:text-white" style={{ minWidth: 44, minHeight: 44 }}>

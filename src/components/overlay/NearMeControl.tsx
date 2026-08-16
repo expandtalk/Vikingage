@@ -22,7 +22,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { setProbe, setProbeShape, setProbeRadiusKm } from '@/hooks/useProximityProbe';
 import { useDraggable } from '@/hooks/useDraggable';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import { startFieldNav, stopFieldNav, useFieldNav } from '@/hooks/useFieldNav';
+import { startFieldNav, stopFieldNav, useFieldNav, setFieldNavTarget, requestCompassPermission } from '@/hooks/useFieldNav';
 import { bucketCorridor, gateBySpeed } from '@/utils/navCorridor';
 import { haversineKm } from '@/utils/geoDistance';
 
@@ -110,7 +110,8 @@ let sessionDismissed = false;
 export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }> = ({ enabledLayers }) => {
   const { open, pos, radiusKm, locating, error } = useNearMe();
   // Fältnavigeringens live-position (GPS-fart) — driver hastighetsgrindningen i korridorlistan.
-  const { pos: fieldPos } = useFieldNav();
+  // `active` = fältläge på → dölj Near me-pillen (FieldModeHud äger då nedre zonen; en framdörr).
+  const { pos: fieldPos, active: fieldActive } = useFieldNav();
   const [debouncedR, setDebouncedR] = useState(radiusKm);
   useEffect(() => { const t = setTimeout(() => setDebouncedR(radiusKm), 300); return () => clearTimeout(t); }, [radiusKm]);
   // Grupperad lista: en kollapsbar sektion per typ (Runstenar, Gravar, Kyrkor…).
@@ -246,6 +247,16 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // kartan tar hela skärmen. useMapNearMe flyger dit; nearby räknas om från nya punkten.
   const hopTo = (lat: number, lng: number) => { setNearMePos(lat, lng, 0); setMinimized(true); };
   const backToMyLocation = () => { const h = homePosRef.current; if (h) setNearMePos(h.lat, h.lng, 0); };
+  // "Visa vägen dit": upptäck → välj → guida. Sätter mål + startar fältläge (kompass-till-punkt)
+  // på den interaktiva /explore-kartan. Enda vägen in i fältläge (ingen separat grön startknapp).
+  // OBS: startFieldNav() nollar target → setFieldNavTarget MÅSTE ske efter.
+  const guideTo = async (lat: number, lng: number, label: string) => {
+    await requestCompassPermission();
+    startFieldNav();
+    setFieldNavTarget({ lat, lng, label });
+    closeNearMe();          // stäng panelen → FieldModeHud äger skärmen (en framdörr)
+    navigate('/explore');
+  };
   // "Kör hem": bilrutt från nuvarande position tillbaka till startpunkten.
   const goHome = async () => {
     const h = homePosRef.current; if (!h || !pos) return;
@@ -374,6 +385,10 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
     return () => { cancelled = true; };
   }, []); // en gång vid montering
 
+  // Fältläge aktivt → dölj pillen helt (FieldModeHud äger nedre zonen; en enda framdörr).
+  // Undvik två location-kontroller samtidigt nere på mobilen.
+  if (!open && fieldActive) return null;
+
   if (!open) {
     // EN kompakt pill (mobil + desktop) — ingen stor CTA-ruta med mörka textblock som täcker kartan
     // (Daniel: två mörkblå bakgrunder tog ~1/4 av mobilytan). Kom-ihåg + integritetsnotis bor i den
@@ -465,7 +480,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                 Läges-knapparna ovan förblir räckvidds-FILTER; "starta färden" = ETT separat steg. */}
             <button
               type="button"
-              onClick={() => { startFieldNav(); navigate('/explore'); }}
+              onClick={async () => { await requestCompassPermission(); startFieldNav(); closeNearMe(); navigate('/explore'); }}
               className="w-full mb-2 flex items-center justify-center gap-2 py-2 rounded-lg border border-gold/50 bg-gold/15 text-amber-100 text-sm font-medium hover:bg-gold/25"
               style={{ minHeight: 42 }}
             >
@@ -680,15 +695,20 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                   const isHer = f.feature_type === 'heritage';
                   const name = isHer ? (heritageName(f.label) || capFirst(heritageType(f.label))) : f.label;
                   return (
-                    <li key={`top-${f.feature_id}`}>
+                    <li key={`top-${f.feature_id}`} className="flex items-center gap-1">
                       {/* Klick → flytta referenspunkten hit (utforska härifrån), Daniel. */}
                       <button onClick={() => hopTo(f.lat, f.lng)} title="Utforska härifrån"
-                        className="w-full flex items-center justify-between gap-2 text-left px-2 rounded bg-amber-500/5 hover:bg-amber-500/15" style={{ minHeight: 44 }}>
+                        className="flex-1 min-w-0 flex items-center justify-between gap-2 text-left px-2 rounded bg-amber-500/5 hover:bg-amber-500/15" style={{ minHeight: 44 }}>
                         <span className="min-w-0">
                           <span className="block truncate text-sm text-slate-100">{name}</span>
                           <span className="block truncate text-[11px] text-amber-300/80">{f.rank_reason} · utforska härifrån →</span>
                         </span>
                         <span className="shrink-0 tabular-nums text-xs text-sky-300">{fmtDist(f.distance_km)}</span>
+                      </button>
+                      {/* Upptäck → välj → guida: sätt mål + starta fältläge (kompass till punkt). */}
+                      <button onClick={() => guideTo(f.lat, f.lng, name)} title="Visa vägen dit" aria-label={`Visa vägen till ${name}`}
+                        className="shrink-0 flex items-center justify-center rounded border border-emerald-600/50 text-emerald-300 hover:bg-emerald-600/15" style={{ minWidth: 40, minHeight: 44 }}>
+                        <Compass className="h-4 w-4" />
                       </button>
                     </li>
                   );

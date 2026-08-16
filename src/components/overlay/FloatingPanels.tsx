@@ -8,7 +8,7 @@ import { DraggableLegend } from '../legend/DraggableLegend';
 import { ProximityControl } from './ProximityControl';
 import { ElementSpotlightControl } from './ElementSpotlightControl';
 import { NearMeControl } from './NearMeControl';
-import { FieldNavControl } from './FieldNavControl';
+import { FieldModeHud } from './FieldModeHud';
 import { ChurchYearControl } from './ChurchYearControl';
 import { ClusterLegendControl } from './ClusterLegendControl';
 import { LegendItem } from '@/types/common';
@@ -118,7 +118,7 @@ export const FloatingPanels: React.FC<FloatingPanelsProps> = ({
       {!isMobile && <ElementSpotlightControl />}
       {/* Linjalen flyttad till breadcrumb-raden (RulerBar i Explore) — inte längre flytande på kartan. */}
       <NearMeControl enabledLayers={enabledLayers} />
-      <FieldNavControl />
+      <FieldModeHud />
       {!isMobile && <ClusterLegendControl onLegendToggle={onLegendToggle} enabledLayers={enabledLayers} />}
       {/* Control Button — single entry point. Filtret bor nu som ikon inuti legenden. */}
       {/* Stängd legend = kompakt återöppnings-knapp. Desktop: dockad top-RIGHT så den "lägger sig
