@@ -29,13 +29,21 @@ import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegend
 
 // De fyra Höga kusten-kommunerna. Motsvarar taskens municipality ~* '...' (PostgREST imatch).
 const REGION_REGEX = 'Härnösand|Örnsköldsvik|Kramfors|Sollefteå';
-const HERITAGE_CAP = 400; // medveten kapning av kartlagret; totalen visas ärligt bredvid
+const HERITAGE_CAP = 800; // regionen har ~518 → allt ryms; totalen visas ärligt om det ändå kapas
 
 // Kartsymbolik — färg BÄR lagret OCH formen bär det (WCAG 1.4.1: skiljs på form, ej bara färg).
 // Kyrka = gyllene rundad kvadrat med kors (matchar --gold-tokenet). Fornlämning = teal cirkel.
 const CHURCH_COLOR = '#f59e0b';
 const HERITAGE_COLOR = '#14b8a6';
 const EVENT_COLOR = '#e11d48'; // berättelse-/händelseankare (Ådalen 31, häxprocesserna) — röd romb
+const LABYRINTH_COLOR = '#a855f7'; // trojeborgar/labyrinter — violett spiral
+const EXECUTION_COLOR = '#991b1b'; // avrättningsplatser — mörkröd med kors
+const CAVE_COLOR = '#b45309';      // grottor/överhäng — brun
+
+// raa_type-strängar (exakt som i heritage_sites) som bryts ut till egna lager.
+const RAA_LABYRINTH = 'labyrint';
+const RAA_EXECUTION = 'Avrättningsplats';
+const raaIsCave = (t: string | null) => !!t && t.toLowerCase().startsWith('grott');
 
 const ok = (a?: number | null, b?: number | null) =>
   Number.isFinite(a as number) && Number.isFinite(b as number);
@@ -77,12 +85,37 @@ const eventIcon = L.divIcon({
   iconAnchor: [7, 7],
 });
 
+// Egna FORMER (WCAG 1.4.1: skiljs på form, ej bara färg) för de utbrutna typerna.
+const glyphIcon = (bg: string, border: string, glyph: string, round = true) => L.divIcon({
+  className: '',
+  html:
+    `<div style="width:16px;height:16px;border-radius:${round ? '50%' : '3px'};background:${bg};` +
+    `border:1.5px solid ${border};display:flex;align-items:center;justify-content:center;` +
+    `font-size:11px;line-height:1;color:#fff;font-weight:700">${glyph}</div>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+const labyrinthIcon = glyphIcon(LABYRINTH_COLOR, '#6b21a8', '§');   // spiral-lik glyf för labyrint
+const executionIcon = glyphIcon(EXECUTION_COLOR, '#450a0a', '†', false); // kors, kvadrat
+const caveIcon = glyphIcon(CAVE_COLOR, '#78350f', '◗');            // grotta/överhäng
+
 const LEGEND: LegendLayerDef[] = [
   { key: 'church', label: 'Kyrkor', color: CHURCH_COLOR, defaultOn: true },
-  { key: 'heritage', label: 'Fornlämningar', color: HERITAGE_COLOR, defaultOn: true },
+  { key: 'heritage', label: 'Fornlämningar (övrigt)', color: HERITAGE_COLOR, defaultOn: true },
+  { key: 'labyrinth', label: 'Labyrinter', color: LABYRINTH_COLOR, defaultOn: true },
+  { key: 'execution', label: 'Avrättningsplatser', color: EXECUTION_COLOR, defaultOn: true },
+  { key: 'cave', label: 'Grottor', color: CAVE_COLOR, defaultOn: true },
   { key: 'events', label: 'Berättelser (händelser)', color: EVENT_COLOR, defaultOn: true },
   { key: 'osm', label: 'Baskarta (OSM)', color: '#64748b', group: 'basemap', defaultOn: true },
 ];
+
+// Klassificera en fornlämning till rätt lager-nyckel utifrån raa_type.
+const heritageLayerKey = (raa: string | null): 'labyrinth' | 'execution' | 'cave' | 'heritage' => {
+  if (raa === RAA_LABYRINTH) return 'labyrinth';
+  if (raa === RAA_EXECUTION) return 'execution';
+  if (raaIsCave(raa)) return 'cave';
+  return 'heritage';
+};
 
 const HogaKustenMap: React.FC<{
   sv: boolean;
@@ -95,6 +128,9 @@ const HogaKustenMap: React.FC<{
   const tileRef = useRef<L.TileLayer | null>(null);
   const churchLayerRef = useRef<L.LayerGroup | null>(null);
   const heritageLayerRef = useRef<L.LayerGroup | null>(null);
+  const labyrinthLayerRef = useRef<L.LayerGroup | null>(null);
+  const executionLayerRef = useRef<L.LayerGroup | null>(null);
+  const caveLayerRef = useRef<L.LayerGroup | null>(null);
   const eventLayerRef = useRef<L.LayerGroup | null>(null);
   const { enabled, toggle } = useMapLegendState(LEGEND);
 
@@ -108,6 +144,9 @@ const HogaKustenMap: React.FC<{
       attribution: '© OpenStreetMap contributors', maxZoom: 18,
     }).addTo(map);
     heritageLayerRef.current = L.layerGroup().addTo(map);
+    labyrinthLayerRef.current = L.layerGroup().addTo(map);
+    executionLayerRef.current = L.layerGroup().addTo(map);
+    caveLayerRef.current = L.layerGroup().addTo(map);
     churchLayerRef.current = L.layerGroup().addTo(map);
     eventLayerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
@@ -115,6 +154,7 @@ const HogaKustenMap: React.FC<{
       map.remove();
       mapRef.current = null; tileRef.current = null;
       churchLayerRef.current = null; heritageLayerRef.current = null; eventLayerRef.current = null;
+      labyrinthLayerRef.current = null; executionLayerRef.current = null; caveLayerRef.current = null;
     };
   }, []);
 
@@ -131,31 +171,46 @@ const HogaKustenMap: React.FC<{
     const map = mapRef.current;
     const cl = churchLayerRef.current;
     const hl = heritageLayerRef.current;
+    const ll = labyrinthLayerRef.current;
+    const xl = executionLayerRef.current;
+    const gl = caveLayerRef.current;
     const el = eventLayerRef.current;
-    if (!map || !cl || !hl || !el) return;
+    if (!map || !cl || !hl || !ll || !xl || !gl || !el) return;
     cl.clearLayers();
     hl.clearLayers();
+    ll.clearLayers();
+    xl.clearLayers();
+    gl.clearLayers();
     el.clearLayers();
     const pts: [number, number][] = [];
 
-    if (enabled.heritage) {
-      heritage.forEach((h) => {
-        pts.push([h.lat, h.lng]);
-        const src = h.source_uri
-          ? (h.source_uri.startsWith('http') ? h.source_uri : 'https://' + h.source_uri) : null;
-        const html =
-          '<div style="max-width:250px">' +
-          `<b>${esc(h.name ?? (sv ? 'Fornlämning' : 'Heritage site'))}</b>` +
-          (h.raa_type ? `<br/><span style="font-size:11px;color:#0f766e">${esc(h.raa_type)}</span>` : '') +
-          (h.municipality ? `<br/><span style="font-size:10px;color:#64748b">${esc(h.municipality)}</span>` : '') +
-          (h.description ? `<div style="font-size:12px;color:#334155;margin-top:5px;line-height:1.35;max-height:160px;overflow-y:auto">${esc(h.description)}</div>` : '') +
-          (src ? `<a href="${src}" target="_blank" rel="noopener" style="font-size:11px;color:#0f766e;margin-top:6px;display:inline-block">${sv ? 'Källa: RAÄ Fornsök (CC0) →' : 'Source: RAÄ Fornsök (CC0) →'}</a>` : '') +
-          '</div>';
+    // Fornlämningar delas per raa_type till egna lager (labyrinter, avrättningsplatser,
+    // grottor) — övriga i baslagret. Alla bär källa (RAÄ Fornsök, CC0) i popupen.
+    const heritageIcon = { labyrinth: labyrinthIcon, execution: executionIcon, cave: caveIcon };
+    const heritageGroup = { labyrinth: ll, execution: xl, cave: gl, heritage: hl };
+    heritage.forEach((h) => {
+      const key = heritageLayerKey(h.raa_type);
+      if (!enabled[key]) return;
+      pts.push([h.lat, h.lng]);
+      const src = h.source_uri
+        ? (h.source_uri.startsWith('http') ? h.source_uri : 'https://' + h.source_uri) : null;
+      const html =
+        '<div style="max-width:250px">' +
+        `<b>${esc(h.name ?? (sv ? 'Fornlämning' : 'Heritage site'))}</b>` +
+        (h.raa_type ? `<br/><span style="font-size:11px;color:#0f766e">${esc(h.raa_type)}</span>` : '') +
+        (h.municipality ? `<br/><span style="font-size:10px;color:#64748b">${esc(h.municipality)}</span>` : '') +
+        (h.description ? `<div style="font-size:12px;color:#334155;margin-top:5px;line-height:1.35;max-height:160px;overflow-y:auto">${esc(h.description)}</div>` : '') +
+        (src ? `<a href="${src}" target="_blank" rel="noopener" style="font-size:11px;color:#0f766e;margin-top:6px;display:inline-block">${sv ? 'Källa: RAÄ Fornsök (CC0) →' : 'Source: RAÄ Fornsök (CC0) →'}</a>` : '') +
+        '</div>';
+      if (key === 'heritage') {
         L.circleMarker([h.lat, h.lng], {
           radius: 5, color: '#0f766e', weight: 1.5, fillColor: HERITAGE_COLOR, fillOpacity: 0.9,
         }).bindPopup(html).addTo(hl);
-      });
-    }
+      } else {
+        L.marker([h.lat, h.lng], { icon: heritageIcon[key], title: h.name ?? undefined })
+          .bindPopup(html).addTo(heritageGroup[key]);
+      }
+    });
 
     if (enabled.church) {
       churches.forEach((c) => {
@@ -198,7 +253,7 @@ const HogaKustenMap: React.FC<{
     }
 
     if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [28, 28] });
-  }, [churches, heritage, events, enabled.church, enabled.heritage, enabled.events, sv]);
+  }, [churches, heritage, events, enabled.church, enabled.heritage, enabled.labyrinth, enabled.execution, enabled.cave, enabled.events, sv]);
 
   return (
     <div className="relative">
