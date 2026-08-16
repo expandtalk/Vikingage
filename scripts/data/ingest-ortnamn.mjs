@@ -35,10 +35,14 @@ const COORD_KEYS = { e: ['ekoordinat', 'e', 'x'], n: ['nkoordinat', 'n', 'y'], l
 
 function buildExtId(row) {
   const guid = pick(row, EXT_KEYS);
-  if (guid) return guid;
+  const sprak = pick(row, SPRAK_KEYS) ?? '';
+  // Språk MÅSTE ingå i nyckeln: samma plats (E/N/typ/lopnr) kan bära flera språkvariant-namn
+  // (t.ex. svenskt + sydsamiskt namn på samma sjö) = SKILDA ortnamns-entiteter. Utan språk i nyckeln
+  // krockar de i samma batch (ON CONFLICT cannot affect row a second time).
+  if (guid) return `${guid}:${sprak}`;
   const e = pick(row, COORD_KEYS.e), n = pick(row, COORD_KEYS.n);
   const typ = pick(row, TYPE_KEYS), lop = pick(row, COORD_KEYS.lop);
-  if (e && n) return `xy:${e}_${n}:${typ ?? ''}:${lop ?? ''}`;
+  if (e && n) return `xy:${e}_${n}:${typ ?? ''}:${lop ?? ''}:${sprak}`;
   return null; // ingen stabil nyckel härledbar → felas i pre-flight
 }
 const BATCH = 1000;
@@ -118,13 +122,14 @@ async function main() {
 
   let seen = 0, inserted = 0;
   let bName = [], bWkb = [], bFt = [], bLang = [], bExt = [];
+  let batchKeys = new Set(); // dubblett-vakt per batch (nollställs vid flush)
   const flush = async () => {
     if (!bName.length) return;
     const params = [bName, bWkb, bFt, bLang, bExt, srsId];
     if (args.bbox) params.push(args.bbox[0], args.bbox[1], args.bbox[2], args.bbox[3]);
     const res = await db.query(sql, params);
     inserted += res.rowCount || 0;
-    bName = []; bWkb = []; bFt = []; bLang = []; bExt = [];
+    bName = []; bWkb = []; bFt = []; bLang = []; bExt = []; batchKeys.clear();
   };
 
   try {
@@ -144,11 +149,14 @@ async function main() {
         const sprakOk = args.spraks ? args.spraks.some((s) => langLc.includes(s)) : false;
         if (!typeOk && !sprakOk) continue;
       }
+      const ext = buildExtId(row);
+      if (batchKeys.has(ext)) continue; // dubblett-nyckel i SAMMA batch → ON CONFLICT skulle fela
+      batchKeys.add(ext);
       bName.push(pick(row, NAME_KEYS));
       bWkb.push(extractWKB(geom).toString('hex'));
       bFt.push(ftVal);
       bLang.push(langVal);
-      bExt.push(buildExtId(row));
+      bExt.push(ext);
       seen++;
       if (bName.length >= BATCH) { await flush(); if (seen % 20000 === 0) console.log(`  … ${seen} lästa, ${inserted} i bbox/insatta`); }
     }
