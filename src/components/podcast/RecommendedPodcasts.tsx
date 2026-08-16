@@ -57,7 +57,7 @@ export const RecommendedPodcasts: React.FC = () => {
         <Headphones className="h-6 w-6 text-gold" />
         {en ? 'History podcasts & channels' : 'Historiepoddar & kanaler'}
       </h2>
-      <p className="text-sm text-muted-foreground mb-4">
+      <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
         {en
           ? 'Third-party podcasts and YouTube channels we recommend. They belong to their respective creators — we link out.'
           : 'Externa poddar och YouTube-kanaler vi tipsar om. De tillhör respektive skapare — vi länkar bara ut.'}
@@ -88,7 +88,7 @@ export const RecommendedPodcasts: React.FC = () => {
         <p className="text-sm text-muted-foreground">{en ? 'No matches.' : 'Inga träffar.'}</p>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {shown.map((s) => (
           <a key={s.id} href={withUtm(s.url)} target="_blank" rel="noopener noreferrer"
             className="group rounded-lg border border-border bg-card/60 p-4 hover:bg-card transition-colors">

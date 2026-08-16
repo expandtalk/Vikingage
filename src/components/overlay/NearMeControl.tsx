@@ -14,11 +14,11 @@ import {
 import { useNearbyAlongRoute } from '@/hooks/useNearbyAlongRoute';
 import { geocode, route as computeRoute } from '@/services/routing';
 import { setDrivingMode, useCourseUp, setCourseUp } from '@/hooks/useDrivingMode';
-import { useTravelMode, setTravelMode, type TravelMode } from '@/hooks/useTravelMode';
+import { useTravelMode, setTravelMode, TRAVEL_MODE_LABELS, type TravelMode } from '@/hooks/useTravelMode';
 import { useNearbyPages } from '@/hooks/useNearbyPages';
 import { useCustomPoints, addCustomPoint, removeCustomPoint } from '@/hooks/useCustomPoints';
 import { useAuth } from '@/contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { setProbe, setProbeShape, setProbeRadiusKm } from '@/hooks/useProximityProbe';
 import { useDraggable } from '@/hooks/useDraggable';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -119,6 +119,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // Valt färdsätt styr radie-intervallet + hur listan presenteras (band / typ / översikt).
   // Delad store → samma läge som mobil-legendens Gå/Cykla/Kör.
   const mode = useTravelMode();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   // Nekad/otillgänglig plats → liten länk i st.f. stor panel. Kvarstår mellan besök.
   const [denied, setDenied] = useState(() => { try { return localStorage.getItem(DENIED_KEY) === '1'; } catch { return false; } });
@@ -459,6 +460,18 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                   style={{ minHeight: 36 }}>{m.label}</button>
               ))}
             </div>
+            {/* Primär-action: starta fält-/GPS-läge på den INTERAKTIVA Explore-kartan (klick på
+                objekt + nypa-zoom funkar där; INTE 3D-drive-betan, som var svart/låst i fält).
+                Läges-knapparna ovan förblir räckvidds-FILTER; "starta färden" = ETT separat steg. */}
+            <button
+              type="button"
+              onClick={() => { startFieldNav(); navigate('/explore'); }}
+              className="w-full mb-2 flex items-center justify-center gap-2 py-2 rounded-lg border border-gold/50 bg-gold/15 text-amber-100 text-sm font-medium hover:bg-gold/25"
+              style={{ minHeight: 42 }}
+            >
+              <span aria-hidden="true">{TRAVEL_MODE_LABELS[mode].icon}</span>
+              {mode === 'foot' ? 'Starta gångläge' : mode === 'bike' ? 'Starta cykelläge' : 'Starta körläge'}
+            </button>
             {/* Snabbstopp för valt färdsätt (regelbunden skala) */}
             <div className="flex flex-wrap gap-1 mb-2">
               {activeMode.stops.map((km) => (

@@ -6,6 +6,28 @@
 > till just nu. Bredare/äldre spår ligger i agent-minnet (`MEMORY.md`-indexet) och kan vävas in
 > på begäran.
 
+## 2026-08-15 — Admin-gränser, delad kartmotor (Fas 1), Lantmäteri/Wikidata-data
+
+### Klart (på main, EJ deployat om ej annat sägs)
+- [x] Kommungräns-lager (`admin_boundaries`, © Lantmäteriet) på **/sv/oland + /sv/kalmar + /sv/angermanland** — RPC `get_admin_boundary_geojson`, hook `useAdminBoundary`, alla kommuner default på.
+- [x] **Socken & stad (CC0)** ingestade: **2341 socken + 132 stad** i `admin_boundaries` (`ingest-sockenstad.mjs`).
+- [x] **Landskap 25/25 KLART.** 21 via Wikidata Q193556→OSM/polygons.osm.fr (`ingest-landskap-wikidata.mjs`); **de 4 sista (Dalarna/Halland/Härjedalen/Lappland) härledda ur Lantmäteri-socknar** via geoklassificering + union per län (`complete-landskap-from-socken.sql`). Areor matchar facit.
+- [x] Zoom-progressiv admin-RPC `get_admin_boundaries_in_bbox` (bbox-skalad, alla nivåer).
+- [x] **Kartmotor Fas 1 KOMPLETT & slutgranskad (APPROVE):** `PlaceMap` generaliserad (`layers` + `onEnabledChange`), **/sv/oland migrerad med full paritet**. Spec+plan i `docs/superpowers/`.
+- [x] **Kartmotor Fas 2 (kärna):** `useProgressiveAdmin` — zoom-progressivt admin-lager (landskap→kommun→socken/stad), `PlaceMap` prop `progressiveAdmin`, demo /sv/goteborg.
+- [x] Toppnav: **Podcast → Utforska-megamenyn, Spel → verktygskatalogen**.
+
+### Öppet — nästa steg (rekommenderad ordning)
+- [x] **1. Eriksgatan-sida** `/sv/eriksgatan` på PlaceMap — KLAR. Rutt + landmärken ur `viking_roads`/`road_overview`, tvåspråkig, zoom-progressivt landskaps-lager som kärna, nav-länk uppdaterad. (Explore-fokus `?focus=eriksgatan` finns kvar som utforskande vy.)
+- [ ] **2. Socken/landskap-polygoner in i Explore-vyerna** (`/explore?focus=parishes` + `?focus=hundreds`) — ersätt punkt-lagren med de nya `admin_boundaries`-polygonerna (MapCore-inkoppling).
+- [x] **3. Härad / ledungsdistrikt geoklassificering — KLART (kärna).** `district_boundaries` (230 polygoner: härad 172, Gotlands ting 20, skeppslag 6, tingslag 20, fylke 5, herred 7) via socken-union. Gotland via ting. TÄCKNING PARTIELL ~39% (`coverage='partiell'`, `n_socken`). KVAR: **socken↔härad-rekonciliering** (namn-normalisering + kollisioner) för full täckning; frontend-lager; länka snack_sites↔ting.
+- [ ] **Ledung-paragrafer ur lagtexterna (filolog-agent pågår):** PD Schlyter-original + egen övers. (aldrig Holmbäck-Wessén) → `source_texts`. Gutalagen(7 snäckor)+Upplandslagen först, sen Söderm/Östgöta/Skåne.
+- [ ] **Ontologi + vetenskapsmetodik-uppdatering:** registrera de nya admin-entiteterna (landskap/kommun/län/rike/socken/stad, + härad/ledung när klart) i `/ontology`; dokumentera **proveniens/härledning** (landskap 21 via OSM, 4 härledda via socken-union — märkt "härledd") på `/sv/vetenskapsmetodik`. Transparens = kärnvärde (ingen gissning).
+- [ ] **Fas 2 forts.:** GIS-verktygsrad (linjal/räckvidds-sond/export som app-rad) + fullskärm. WCAG 2.1 AA.
+- [ ] **Temporal landskap (Daniels modell):** `admin_boundaries.year` → gränser per tidpunkt (Brömsebro 1645, Roskilde 1658, 1766, 1952/1971).
+- [ ] **Fas 1-uppföljning (Minor):** gate `place_features_near`-RPC på `activeLayers.length>0` (Öland fyrar den i onödan).
+- [ ] **Ortofoto historiska WMS** (eata0001): kräver server-side proxy (auth ej i klienten).
+
 ## Öppet — genealogi / platskontext (`/en/genealogy`, `src/pages/Genealogy.tsx`)
 
 - [ ] **Fornsök existence-backfill — KÖR PER LÄN.** `scripts/data/backfill-fmis-existence.mjs`

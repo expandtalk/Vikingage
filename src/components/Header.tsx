@@ -115,13 +115,14 @@ export const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button 
+              <Button
                 onClick={handleSignIn}
-                variant="outline" 
+                variant="outline"
                 size="sm"
                 className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                aria-label={t.signIn}
               >
-                <LogIn className="h-4 w-4 sm:mr-2" />
+                <LogIn className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                 <span className="hidden sm:inline">{t.signIn}</span>
               </Button>
             )}

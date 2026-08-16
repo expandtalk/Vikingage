@@ -59,6 +59,10 @@ scripts/data/_recon.log
 hav.json
 kartsymboler/
 
+# Lantmäteriets höjddata (Markhöjdmodell, GB-stora GeoTIFF-tiles) – hämtas lokalt, ej i repot
+/hojd-staging/
+*.tif
+
 # AI-agentdefinitioner = kommersiell IP (säljbara), ej i repot
 .claude/agents/
 

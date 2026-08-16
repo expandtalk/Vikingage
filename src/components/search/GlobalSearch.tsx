@@ -417,6 +417,8 @@ const SideSenses: React.FC<{ query: string; sv: boolean }> = ({ query, sv }) => 
 const SUGGESTIONS_SV = ['runsten', 'Rökstenen', 'Karlevistenen', 'guld', 'Öland', 'Birka', 'Oden', 'Tor', 'Gustav Vasa', 'runor', 'Sigtuna', 'fornborg'];
 // 'guld' (ej 'gold'): guld-temat är svensk-labelat ('Guld') men tvåspråkigt; 'guld' träffar det,
 // engelska 'gold' faller under sök-golvet (fts-only + label-ankar). Byt tills tema-relevans tweakas.
+// 'Rök stone' löser nu via engelska also_known_as-alias (migration 20260813160000) → 148 träffar,
+// 12 bilder. Kända stenar har fått belagda engelska namn i sök-lagret, så EN-startarna fungerar.
 const SUGGESTIONS_EN = ['runestone', 'Rök stone', 'guld', 'Öland', 'Birka', 'Odin', 'Thor', 'runes', 'gods', 'Sigtuna', 'Gotland', 'hillfort'];
 
 // variant 'icon' = liten förstoringsglas-ikon (toppnav på övriga sidor) → öppnar dialog (⌘K);

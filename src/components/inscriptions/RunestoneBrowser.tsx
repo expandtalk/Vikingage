@@ -369,7 +369,24 @@ export const RunestoneBrowser: React.FC = () => {
               <div className="p-4 text-sm text-red-300">{sv ? 'Kunde inte ladda korpusen.' : 'Could not load the corpus.'}</div>
             ) : null}
 
-            <div ref={mapEl} className="h-[46vh] min-h-[320px] w-full bg-slate-900" />
+            <div className="relative">
+              <div ref={mapEl} className="h-[46vh] min-h-[320px] w-full bg-slate-900" />
+              {/* Teckenförklaring till höger — marker-nyckel (Daniel). pointer-events-none så den
+                  inte blockerar kartinteraktion. */}
+              <div className="pointer-events-none absolute right-3 top-3 z-[500] rounded-lg border border-slate-600 bg-slate-900/90 px-3 py-2 text-[11px] backdrop-blur-sm">
+                <div className="mb-1 font-semibold uppercase tracking-wide text-amber-300/80">
+                  {sv ? 'Teckenförklaring' : 'Legend'}
+                </div>
+                <div className="flex items-center gap-2 text-slate-200">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: '#f59e0b', border: '1.5px solid #ffffff' }} />
+                  {sv ? 'Runsten' : 'Runestone'}
+                </div>
+                <div className="mt-0.5 flex items-center gap-2 text-slate-200">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: '#c084fc', border: '1.5px solid #ffffff' }} />
+                  {sv ? 'Korsmarkerad (kristen)' : 'Cross-marked (Christian)'}
+                </div>
+              </div>
+            </div>
 
             {/* Lista (signum-sorterad) */}
             <div className="max-h-[34vh] overflow-y-auto border-t border-slate-700">

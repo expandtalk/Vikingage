@@ -3,6 +3,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useFieldNav } from '@/hooks/useFieldNav';
 import { useRoadtrip } from '@/hooks/useRoadtrip';
+import { useTravelMode, type TravelMode } from '@/hooks/useTravelMode';
 import { supabase } from '@/integrations/supabase/client';
 
 // MapLibre Fas 2 — äkta tiltat 3D-förarperspektiv (course-up), det Leaflet inte kan.
@@ -40,9 +41,14 @@ const routeGeoJSON = (coords?: [number, number][]) => ({
   },
 });
 
+// Pitch per färdsätt: gående flackare (lättare överblick av omgivningen), bil mest tiltat
+// 3D-förarperspektiv, cykel mittemellan.
+const pitchForMode = (m: TravelMode): number => (m === 'foot' ? 35 : m === 'bike' ? 50 : 60);
+
 export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: number; lng: number } }> = ({ className, demoCenter }) => {
   const { pos, following } = useFieldNav();
   const { route } = useRoadtrip();
+  const travelMode = useTravelMode();
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -62,7 +68,7 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
       style: OSM_STYLE,
       center: [start.lng, start.lat],
       zoom: pos ? 17 : (demoCenter ? 14.5 : 6),
-      pitch: 60,
+      pitch: pitchForMode(travelMode),
       maxPitch: 75,
       bearing: pos?.headingDeg ?? 0,
       attributionControl: { compact: true },
@@ -137,11 +143,11 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
     map.easeTo({
       center: [pos.lng, pos.lat],
       bearing: pos.headingDeg ?? map.getBearing(),
-      pitch: 60,
+      pitch: pitchForMode(travelMode),
       zoom: Math.max(map.getZoom(), 16.5),
       duration: 700,
     });
-  }, [pos, following]);
+  }, [pos, following, travelMode]);
 
   // Uppdatera rutten när billäget ändrar mål.
   useEffect(() => {

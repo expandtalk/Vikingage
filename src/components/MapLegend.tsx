@@ -237,7 +237,7 @@ export const MapLegend: React.FC<MapLegendProps> = ({
             )}
           </div>
           {travelMode === 'foot' && !hasPreset && (
-            <p className="px-1 pt-0.5 text-[10px] text-gray-500">{sv ? 'Gåläge: alla lager på, historiska kartor av.' : 'Walking: all layers on, historical maps off.'}</p>
+            <p className="px-1 pt-0.5 text-[10px] text-gray-400">{sv ? 'Gåläge: alla lager på, historiska kartor av.' : 'Walking: all layers on, historical maps off.'}</p>
           )}
         </div>
         )}
@@ -258,7 +258,7 @@ export const MapLegend: React.FC<MapLegendProps> = ({
                 : [];
               return (
                 <div key={theme.label} className="pt-2 first:pt-0">
-                  <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{theme.label}</p>
+                  <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400">{theme.label}</p>
                   {isMaps
                     ? <MapsControl historicalChildren={histChildren} onToggleItem={onToggleItem} />
                     : its.map(renderItem)}
@@ -267,7 +267,7 @@ export const MapLegend: React.FC<MapLegendProps> = ({
             })}
             {restItems.length > 0 && (
               <div className="pt-2">
-                <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">Övrigt</p>
+                <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400">Övrigt</p>
                 {restItems.map(renderItem)}
               </div>
             )}

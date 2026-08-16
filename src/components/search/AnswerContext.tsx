@@ -187,6 +187,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const [showAdv, setShowAdv] = useState(true);
   const [hiddenAdvKinds, setHiddenAdvKinds] = useState<Set<string>>(new Set()); // tom = alla badtyper/fiske synliga
   const [advExpanded, setAdvExpanded] = useState(false); // underkategorierna hopfällda som default (Daniel)
+  const [mapExpanded, setMapExpanded] = useState(false); // söksvarets karta i helskärm (Daniel)
   // Befästningsgeometri (linjer/polygoner) nära svarets center — riktig fort_element- + RAÄ-lämningsgeometri.
   // Källkritik: varje feature bär evidence_class → tolkat/hypotetiskt ritas streckat, bevarat heldraget.
   const { data: forts } = useQuery({
@@ -297,6 +298,14 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         roRef.current.observe(mapEl.current);
       }
       const m = mapRef.current;
+      // Äventyr & motion överst: egen pane z640 (> overlayPane 400 + markerPane 600,
+      // < tooltipPane 650/popupPane 700). Grott-/badmarkörerna hamnade annars i default-
+      // overlayPane och kunde döljas av andra lager — särskilt trångt på mobil. Nu ritas
+      // de alltid ovanpå övriga datalager, medan tooltips/popups förblir överst.
+      if (!m.getPane('adventurePane')) {
+        const p = m.createPane('adventurePane');
+        p.style.zIndex = '640';
+      }
       if (!layerRef.current) layerRef.current = L.layerGroup();
       if (!siteLayerRef.current) siteLayerRef.current = L.layerGroup();
       if (!churchLayerRef.current) churchLayerRef.current = L.layerGroup();
@@ -370,7 +379,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         const isFiske = a.feature_type === 'fiske';
         const metaBits = isFiske ? [a.subtype, a.season] : [sv ? st.sv : st.en, a.parish];
         const meta = metaBits.filter(Boolean).join(' · ');
-        L.circleMarker([a.lat, a.lng], { radius: 5, color: st.border, weight: 1.5, fillColor: st.fill, fillOpacity: 0.9 })
+        L.circleMarker([a.lat, a.lng], { radius: 5, color: st.border, weight: 1.5, fillColor: st.fill, fillOpacity: 0.9, pane: 'adventurePane' })
           .bindPopup(`<b>${a.label ?? ''}</b>${meta ? `<br/><span style="font-size:11px;color:#64748b">${meta}</span>` : ''}`)
           .addTo(advLayerRef.current!);
       });
@@ -455,7 +464,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   // Strukturerad LANDSKAPSNOD: när frågan löser ett landskap (även "hur många kyrkor på gotland")
   // → kategori-antal + kollapsbara drill-in-sektioner + lokala rättskällor. Gatas till rena
   // landskapsfrågor (ej när en egen kunskapssida/tema redan matchat).
-  const { data: overview } = useQuery({
+  const { data: overview, isLoading: overviewLoading } = useQuery({
     queryKey: ['landscape-overview', query],
     enabled: !!query && query.trim().length >= 3,
     queryFn: async () => {
@@ -555,10 +564,27 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       {/* SEKTION 2: karta i FULL BREDD (dominant) + legend-overlay uppe till höger (togglar lager).
           Panelerna ligger UNDER kartan i flerkolumn (Daniel: "använd hela skärmen").
           Döljs för landskaps-/hubbnoden — den har en egen grupperad karta (undviker dubbelkarta). */}
-      {hasCenter && !showLandscape && (
+      {/* Vänta med answer-kartan tills landskaps-/ort-översikten (city_radius_overview) landat, annars
+          ritas answer-kartan först och byts sedan mot LandscapeNode-kartan → såg ut som "två kartor". */}
+      {hasCenter && !showLandscape && !overviewLoading && (
         <div className="px-5 pb-4">
-          <div className="relative w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800" style={{ height: '52vh', minHeight: 340 }}>
+          <div
+            className={mapExpanded
+              ? 'fixed inset-0 z-[2000] overflow-hidden bg-slate-800'
+              : 'relative w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800'}
+            style={mapExpanded ? undefined : { height: '52vh', minHeight: 340 }}
+          >
             <div ref={mapEl} className="absolute inset-0" />
+            {/* Expandera/stäng helskärm (Daniel). ResizeObservern (i map-init) auto-invalidateSize:ar
+                när containern ändrar storlek, så Leaflet ritar om korrekt. Top-center undviker
+                zoom (top-left) + lager-legend (top-right). */}
+            <button
+              type="button"
+              onClick={() => setMapExpanded((v) => !v)}
+              className="absolute left-1/2 top-3 z-[600] inline-flex -translate-x-1/2 items-center gap-1 rounded-lg border border-slate-600 bg-slate-900/90 px-3 py-1.5 text-[11px] font-medium text-slate-100 backdrop-blur-sm hover:bg-slate-800"
+            >
+              {mapExpanded ? (sv ? '⤡ Stäng helskärm' : '⤡ Close fullscreen') : (sv ? '⤢ Expandera karta' : '⤢ Expand map')}
+            </button>
             {timeBounds && (
               <div className="absolute bottom-3 left-3 right-3 z-[500] rounded-lg border border-slate-600 bg-slate-900/90 px-3 py-2 backdrop-blur-sm">
                 <div className="flex items-center gap-2.5 text-[11px] text-slate-300">
@@ -581,6 +607,38 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
               <div className="mb-1.5 max-w-[180px] truncate text-[10px] font-semibold uppercase tracking-wide text-amber-300/80">
                 {data.page?.title || data.theme?.name || query}
               </div>
+              {/* Äventyr & motion FÖRST i legenden (Daniel) — utomhus/upplevelser är förstavalet. */}
+              {(adventures?.length ?? 0) > 0 && (
+                <div className="flex w-full items-center gap-1 py-0.5 text-xs">
+                  <button onClick={() => setShowAdv((v) => !v)} className="flex flex-1 items-center gap-2 text-left">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showAdv ? '#22c55e' : 'transparent', border: '1.5px solid #22c55e' }} />
+                    <span className={showAdv ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Äventyr & motion' : 'Adventure & outdoors'} · {adventures!.length}</span>
+                  </button>
+                  <button onClick={() => setAdvExpanded((v) => !v)} className="shrink-0 text-slate-400 hover:text-slate-100" aria-label={sv ? 'Visa badtyper' : 'Show categories'} aria-expanded={advExpanded}>
+                    {advExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+              )}
+              {showAdv && advExpanded && (adventures?.length ?? 0) > 0 && (() => {
+                const present = Array.from(new Set((adventures || []).map(advKindOf)));
+                if (present.length <= 1) return null;
+                return (
+                  <div className="ml-4 mb-0.5 flex flex-col gap-0.5 border-l border-slate-700 pl-2">
+                    {present.map((k) => {
+                      const st = ADV_KIND_STYLE[k] || ADV_KIND_STYLE.badplats;
+                      const on = !hiddenAdvKinds.has(k);
+                      const n = (adventures || []).filter((a) => advKindOf(a) === k).length;
+                      return (
+                        <button key={k} onClick={() => setHiddenAdvKinds((prev) => { const s = new Set(prev); if (s.has(k)) s.delete(k); else s.add(k); return s; })}
+                          className="flex items-center gap-2 py-0.5 text-left text-[11px]">
+                          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: on ? st.fill : 'transparent', border: `1.5px solid ${st.border}` }} />
+                          <span className={on ? 'text-slate-200' : 'text-slate-500'}>{sv ? st.sv : st.en} · {n}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
               <button onClick={() => setShowSites((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
                 <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showSites ? '#38bdf8' : 'transparent', border: '1.5px solid #38bdf8' }} />
                 <span className={showSites ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Sevärda platser' : 'Notable sites'}{data.sites?.length ? ` · ${data.sites.length}` : ''}</span>
@@ -619,39 +677,6 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                   <span className={showCrossings ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Sjösidan · överfart/grund' : 'Sea side · crossings/shoals'} · {(data as any).crossings.length}</span>
                 </button>
               )}
-              {(adventures?.length ?? 0) > 0 && (
-                <div className="flex w-full items-center gap-1 py-0.5 text-xs">
-                  <button onClick={() => setShowAdv((v) => !v)} className="flex flex-1 items-center gap-2 text-left">
-                    <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showAdv ? '#22c55e' : 'transparent', border: '1.5px solid #22c55e' }} />
-                    <span className={showAdv ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Äventyr & motion' : 'Adventure & outdoors'} · {adventures!.length}</span>
-                  </button>
-                  {/* Chevron: underkategorierna är hopfällda som default; öppna för att se/filtrera typer. */}
-                  <button onClick={() => setAdvExpanded((v) => !v)} className="shrink-0 text-slate-400 hover:text-slate-100" aria-label={sv ? 'Visa badtyper' : 'Show categories'} aria-expanded={advExpanded}>
-                    {advExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                  </button>
-                </div>
-              )}
-              {/* Underkategori-filter: badtyp/fiske/grotta — hopfällt tills chevron öppnar. Klick döljer/visar typen. */}
-              {showAdv && advExpanded && (adventures?.length ?? 0) > 0 && (() => {
-                const present = Array.from(new Set((adventures || []).map(advKindOf)));
-                if (present.length <= 1) return null;
-                return (
-                  <div className="ml-4 mt-0.5 flex flex-col gap-0.5 border-l border-slate-700 pl-2">
-                    {present.map((k) => {
-                      const st = ADV_KIND_STYLE[k] || ADV_KIND_STYLE.badplats;
-                      const on = !hiddenAdvKinds.has(k);
-                      const n = (adventures || []).filter((a) => advKindOf(a) === k).length;
-                      return (
-                        <button key={k} onClick={() => setHiddenAdvKinds((prev) => { const s = new Set(prev); if (s.has(k)) s.delete(k); else s.add(k); return s; })}
-                          className="flex items-center gap-2 py-0.5 text-left text-[11px]">
-                          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: on ? st.fill : 'transparent', border: `1.5px solid ${st.border}` }} />
-                          <span className={on ? 'text-slate-200' : 'text-slate-500'}>{sv ? st.sv : st.en} · {n}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
             </div>
           </div>
         </div>

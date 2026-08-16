@@ -99,7 +99,7 @@ export const MapLegend: React.FC<Props> = ({ defs, enabled, onToggle, title = 'L
           {layers.map(Item)}
           {base.length > 0 && (
             <>
-              <div className="mt-1.5 border-t border-slate-700 px-2 pt-1.5 text-[10px] uppercase tracking-wide text-slate-500">
+              <div className="mt-1.5 border-t border-slate-700 px-2 pt-1.5 text-[10px] uppercase tracking-wide text-slate-400">
                 Kartor (max 2)
               </div>
               {base.map(Item)}

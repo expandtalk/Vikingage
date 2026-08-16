@@ -134,15 +134,15 @@ const SourceLibrary = () => {
   return (
     <div className="min-h-screen viking-bg">
       <PageMeta
-        title="Texter & källor — Viking Age"
-        titleEn="Texts & sources — Viking Age"
+        title="Bibliotek: texter & källor — Viking Age"
+        titleEn="Library: texts & sources — Viking Age"
         description="Läs källorna i fulltext: Poetiska Eddan, landskapslagar, krönikor och sagor, ordnade efter typ."
         descriptionEn="Read the sources in full text: the Poetic Edda, provincial laws, chronicles and sagas, arranged by type."
       />
       <Header />
       <Breadcrumbs />
       <main className="container mx-auto px-4 py-8 max-w-7xl">
-        <h1 className="text-2xl font-bold text-white mb-1">{sv ? 'Texter & källor' : 'Texts & sources'}</h1>
+        <h1 className="text-2xl font-bold text-white mb-1">{sv ? 'Bibliotek: texter & källor' : 'Library: texts & sources'}</h1>
         <p className="text-sm text-gray-400 mb-6">
           {sv
             ? 'Källorna i fulltext, strof för strof, ordnade efter typ. Grön markering = lagrad text; annars metadata.'

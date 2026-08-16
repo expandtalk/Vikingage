@@ -165,7 +165,7 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
     // Därefter bara panorera (behåll användarens egen zoom).
     if (!flownRef.current) {
       flownRef.current = true;
-      const minZoom = mode === 'walk' ? 18 : mode === 'bike' ? 17 : 16;
+      const minZoom = mode === 'foot' ? 18 : mode === 'bike' ? 17 : 16;
       const z = Math.max(map.getZoom(), minZoom);
       try { map.flyTo(followCenter(), z, { duration: 0.6 }); } catch { /* noop */ }
     } else if (following) {

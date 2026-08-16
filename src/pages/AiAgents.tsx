@@ -102,13 +102,13 @@ const AiAgents = () => (
     />
     <Header />
     <Breadcrumbs />
-    <main className="container mx-auto px-4 py-8 max-w-4xl">
+    <main className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-foreground mb-3 flex items-center gap-3">
           <Bot className="h-8 w-8 text-gold" />
           AI-agenter
         </h1>
-        <p className="text-muted-foreground text-lg leading-relaxed">
+        <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl">
           Viking Age använder AI på två sätt: som <strong>funktioner i plattformen</strong> som du möter direkt,
           och som <strong>specialistagenter</strong> som hjälper till att bygga, verifiera och underhålla materialet.
           Gemensamt för alla är grundregeln: <strong>ingen gissning</strong>. AI <em>beskriver och föreslår</em> —
@@ -122,7 +122,7 @@ const AiAgents = () => (
           <ShieldCheck className="h-6 w-6 text-gold" />
           Så arbetar agenterna
         </h2>
-        <div className="grid gap-3 sm:grid-cols-2 text-sm text-muted-foreground">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm text-muted-foreground">
           <div className="viking-card rounded-lg border border-border p-4">
             <strong className="text-foreground">Källkritiska</strong> — varje uppgift verifieras mot källa
             (primärkälla, Wikidata P625, RAÄ Fornsök/K-samsök, publicerad forskning) och får sin proveniens.
@@ -151,7 +151,7 @@ const AiAgents = () => (
           <Cpu className="h-6 w-6 text-gold" />
           AI i plattformen
         </h2>
-        <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+        <p className="text-sm text-muted-foreground mb-5 leading-relaxed max-w-3xl">
           Funktioner du möter direkt. AI-genererat innehåll är märkt och länkar vidare till källorna så att
           du kan kontrollera det.
         </p>
@@ -178,11 +178,11 @@ const AiAgents = () => (
           <Users className="h-6 w-6 text-gold" />
           Forsknings- och utvecklingsagenter
         </h2>
-        <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+        <p className="text-sm text-muted-foreground mb-5 leading-relaxed max-w-3xl">
           Specialister som används i arbetet med att bygga och hålla materialet rent. De utreder och föreslår;
           besluten fattas av en människa.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {WORK_AGENTS.map((a) => (
             <Card key={a.title} className="viking-card">
               <CardHeader className="pb-2">
@@ -205,7 +205,7 @@ const AiAgents = () => (
           <Users className="h-6 w-6 text-gold" />
           Specialistagenter — körs på begäran
         </h2>
-        <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+        <p className="text-sm text-muted-foreground mb-5 leading-relaxed max-w-3xl">
           Ett lag av disciplin-specialister som vi <strong>kör på begäran</strong> när ett uppdrag rör deras
           område. Samma regler som allt annat: källkritik, konfidens och <strong>människa-i-loopen</strong> —
           varje agent utreder och föreslår, en människa granskar och beslutar. Varje agent-körning är i sig
@@ -215,7 +215,7 @@ const AiAgents = () => (
           och stämmer av kanon mot källorna. Kunskapen bor alltså i ett självunderhållande, dagligen granskat
           minne — inte i den enskilda körningen.
         </p>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {PLANNED_AGENTS.map((a) => (
             <div key={a.title} className="viking-card rounded-lg border border-border p-4 text-sm">
               <div className="flex items-center gap-2 text-foreground font-medium mb-1">

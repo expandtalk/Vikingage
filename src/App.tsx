@@ -66,6 +66,7 @@ const Medeltidsborgar = lazy(() => import("./pages/Medeltidsborgar"));
 const DriveView = lazy(() => import("./pages/DriveView"));
 const Grottor = lazy(() => import("./pages/Grottor"));
 const SvampGuide = lazy(() => import("./pages/SvampGuide"));
+const Vikingatid = lazy(() => import("./pages/Vikingatid"));
 const SanktOlof = lazy(() => import("./pages/SanktOlof"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Helgon = lazy(() => import("./pages/Helgon"));
@@ -271,6 +272,9 @@ const App = () => (
                   <Route path="/cave" element={<Navigate to="/caves" replace />} />
                   <Route path="/sv/svamp" element={<SvampGuide />} />
                   <Route path="/en/mushrooms" element={<SvampGuide />} />
+                  <Route path="/sv/vikingatid" element={<Vikingatid />} />
+                  <Route path="/en/viking-age" element={<Vikingatid />} />
+                  <Route path="/vikingatid" element={<Vikingatid />} />
                   <Route path="/staket" element={<Staket />} />
                   <Route path="/sv/sankt-olof" element={<SanktOlof />} />
                   <Route path="/en/saint-olav" element={<SanktOlof />} />

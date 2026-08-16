@@ -1,4 +1,10 @@
-// Route configuration with Swedish and English paths
+// Route configuration with Swedish and English paths.
+//
+// OBS: titleSv/En + descriptionSv/En här används i praktiken som NAV-konfiguration
+// (menyetikett + fallback-beskrivning i Navigation.tsx). Sidornas riktiga SEO/meta
+// (<title>, meta description, OG) sätts HÅRDKODAT per sida via <PageMeta ... /> — det
+// är DÄR den klickvärda SEO-texten bor, inte här. Håll därför titlarna KORTA (de blir
+// navlänkens etikett); den klickvärda copyn hör hemma i respektive sidas PageMeta.
 export interface RouteConfig {
   pathEn: string;
   pathSv: string;
@@ -140,5 +146,3 @@ export const getRouteByPath = (path: string): RouteConfig | undefined => {
 export const getAllPaths = (): string[] => {
   return routes.flatMap(route => [route.pathEn, route.pathSv]);
 };
-
-

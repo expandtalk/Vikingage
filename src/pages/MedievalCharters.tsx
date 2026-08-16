@@ -111,6 +111,33 @@ const MedievalCharters: React.FC = () => {
       <div className="container mx-auto px-4 py-6 space-y-4">
         <h1 className="text-2xl font-bold text-white">{label.title}</h1>
 
+        <details open className="rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-3 max-w-5xl">
+          <summary className="cursor-pointer text-sm font-semibold text-amber-300">{sv ? 'Om medeltidsbreven' : 'About the charters'}</summary>
+          {sv ? (
+            <div className="mt-2 grid gap-x-6 gap-y-2 text-[13px] leading-relaxed text-slate-300 md:grid-cols-2">
+              <div className="space-y-2">
+                <p><strong className="text-slate-100">Svenskt Diplomatariums huvudkartotek (SDHK)</strong> är Riksarkivets register över Sveriges medeltida brev — diplom, köpehandlingar, testamenten, gåvobrev, domar, privilegiebrev och kyrkliga urkunder — från äldsta tid fram till 1540. Här bläddrar du bland de <strong>44 264</strong> posterna: varje brev har en datering, en utfärdandeort, en regest (kort innehållssammanfattning på modern svenska) och, där det finns, den medeltida fulltexten på latin eller fornsvenska. Många brev bär också uppgifter om utfärdare, beseglare (sigill) och de vittnen eller fastar som bekräftade rättshandlingen.</p>
+                <p>Breven är den rikaste källan till det medeltida samhället: de visar hur jord bytte ägare, hur kloster och domkyrkor byggde upp sina gods, hur städer fick privilegier, och hur kungamakt, kyrka och frälse förhandlade. Genom att filtrera på århundrade, aktyp och geografi (facetterna till vänster) kan du följa mönster över tid — hur jordtransaktionerna ökar, eller var i riket en viss ätt var verksam.</p>
+              </div>
+              <div className="space-y-2">
+                <p>Källkritik gäller alltid: regesterna är Riksarkivets <em>moderniserade</em> sammanfattningar, medan den äkta medeltida ordalydelsen — och de gamla ort- och personnamnsformerna — finns i fulltexten. Datering och identifiering kan vara osäkra, och vidimationer och stadfästelser citerar äldre brev, så samma rättshandling kan förekomma flera gånger.</p>
+                <p>Materialet är fritt: SDHK tillgängliggörs av Riksarkivet under <strong>Creative Commons Erkännande 4.0 (CC BY 4.0)</strong>. Söker du på en ort i plattformens sökruta visas dessutom breven som är utfärdade där, direkt i svarspanelen.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-2 grid gap-x-6 gap-y-2 text-[13px] leading-relaxed text-slate-300 md:grid-cols-2">
+              <div className="space-y-2">
+                <p>The <strong className="text-slate-100">Swedish Diplomatarium's main catalogue (SDHK)</strong>, held by the National Archives of Sweden, registers Sweden's medieval charters — deeds, wills, gifts, judgments, privileges and ecclesiastical documents — up to 1540. Browse the <strong>44,264</strong> records: each has a date, a place of issue, an abstract, and, where available, the medieval full text in Latin or Old Swedish, plus issuers, seal-holders and witnesses.</p>
+                <p>The charters are the richest source for medieval society — land transfers, monastic and cathedral estates, town privileges, and the dealings of crown, church and nobility. Filter by century, act type and geography (facets on the left) to follow patterns over time.</p>
+              </div>
+              <div className="space-y-2">
+                <p>Note the source-criticism: abstracts are the archives' modernised summaries; the authentic wording — and the old place- and personal-name forms — is in the full text. Dating and identification can be uncertain, and confirmations and vidimations quote earlier charters, so the same act may recur.</p>
+                <p>The material is free under <strong>Creative Commons Attribution 4.0 (CC BY 4.0)</strong>. Search a place in the platform's search box to also see the charters issued there, right in the answer panel.</p>
+              </div>
+            </div>
+          )}
+        </details>
+
         <CenturyStats selected={century} onSelect={(c) => patch({ century: c == null ? null : String(c) })} />
 
         <div className="flex flex-col gap-4 lg:flex-row">

@@ -24,7 +24,7 @@ const DEFS: Record<string, Def> = {
   fortress:       { labelSv: 'Försvar', labelEn: 'Fortresses', icon: Castle, route: () => '/fortresses' },
   hillfort:       { labelSv: 'Fornborgar', labelEn: 'Hillforts', icon: Castle, route: () => '/fortresses' },
   estate:         { labelSv: 'Maktsäten', labelEn: 'Power seats', icon: Castle, route: (h) => `/explore?focus=fortresses&searchQuery=${enc(h.label)}` },
-  cult_site:      { labelSv: 'Kultplatser', labelEn: 'Cult sites', icon: Sparkles, route: () => '/explore?focus=cultSites' },
+  cult_site:      { labelSv: 'Kultplatser', labelEn: 'Cult sites', icon: Sparkles, route: (h) => h.signum ? `/sv/plats/${enc(h.signum)}` : '/explore?focus=cultSites' },
   folk_group:     { labelSv: 'Folkgrupper', labelEn: 'Peoples', icon: Users2, route: () => '/explore?focus=folkGroups' },
   city:           { labelSv: 'Städer', labelEn: 'Cities', icon: Castle, route: () => '/fortresses' },
   king:           { labelSv: 'Kungar', labelEn: 'Kings', icon: Crown, route: () => '/royal-chronicles' },
