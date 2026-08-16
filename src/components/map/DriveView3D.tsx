@@ -12,6 +12,15 @@ import { supabase } from '@/integrations/supabase/client';
 // husextrudering (PMTiles-vektor) är nästa iterationer inom Fas 2 (kräver självhostade tiles).
 // Principen "lagren är källan" gäller: pos ur useFieldNav, rutt ur useRoadtrip.
 
+// Självhostade Terrarium-RGB terräng-tiles (raster-dem) för äkta 3D-relief. PILOT: Gåseborg
+// (public_html/terrain/gaseborg/, genererade ur MHM 1m-DEM). Avgränsad med bounds+min/maxzoom
+// så MapLibre bara efterfrågar tiles inom täckningen (inga 404 utanför). Fler områden läggs
+// till som egna raster-dem-sources (t.ex. grott-områden) allt eftersom DEM+tiles finns.
+const TERRAIN_AREAS: { id: string; bounds: [number, number, number, number] }[] = [
+  { id: 'gaseborg', bounds: [17.70, 59.36, 17.83, 59.44] },
+];
+const TERRAIN_EXAGGERATION = 1.5;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const OSM_STYLE: any = {
   version: 8,
@@ -27,6 +36,16 @@ const OSM_STYLE: any = {
       maxzoom: 19,
       attribution: '© OpenStreetMap contributors',
     },
+    ...Object.fromEntries(TERRAIN_AREAS.map((a) => [`dem-${a.id}`, {
+      type: 'raster-dem',
+      tiles: [`https://vikingage.se/terrain/${a.id}/{z}/{x}/{y}.png`],
+      encoding: 'terrarium',
+      tileSize: 256,
+      minzoom: 11,
+      maxzoom: 15,
+      bounds: a.bounds,
+      attribution: 'Höjddata © Lantmäteriet (MHM)',
+    }])),
   },
   layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
 };
@@ -87,6 +106,9 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
       .addTo(map);
 
     map.on('load', () => {
+      // Aktivera terräng-relief (pilot: Gåseborg). setTerrain tar en source; för fler
+      // spridda områden (t.ex. grottor) slås de på sikt ihop till EN tile-träd-source.
+      try { map.setTerrain({ source: `dem-${TERRAIN_AREAS[0].id}`, exaggeration: TERRAIN_EXAGGERATION }); } catch { /* noop */ }
       map.addSource('route', { type: 'geojson', data: routeGeoJSON(route?.coords) as any });
       map.addLayer({
         id: 'route-line', type: 'line', source: 'route',

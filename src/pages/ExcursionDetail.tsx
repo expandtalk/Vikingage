@@ -528,6 +528,7 @@ const ExcursionDetail = () => {
             <div ref={containerRef} className="w-full rounded-lg border border-border" style={{ height: '55vh', minHeight: 380 }} />
             <div className="mt-2 flex flex-wrap gap-3">
               <a href={`/explore?center=${excursion.coords.lat},${excursion.coords.lng}&zoom=13`} className="inline-flex items-center gap-1 text-xs text-gold hover:underline"><Compass className="h-3 w-3" />{sv ? 'Utforska i kartan' : 'Explore on map'}</a>
+              <a href={`/3D-drive?lat=${excursion.coords.lat}&lng=${excursion.coords.lng}`} className="inline-flex items-center gap-1 text-xs text-gold hover:underline"><Navigation className="h-3 w-3" />{sv ? '3D-vy' : '3D view'}{excursion.id === 'gaseborg' ? (sv ? ' (med terräng)' : ' (with terrain)') : ''}</a>
               <a href={`https://www.openstreetmap.org/?mlat=${excursion.coords.lat}&mlon=${excursion.coords.lng}#map=15/${excursion.coords.lat}/${excursion.coords.lng}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-gold hover:underline"><ExternalLink className="h-3 w-3" />OpenStreetMap</a>
             </div>
           </div>

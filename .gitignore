@@ -71,3 +71,4 @@ kartsymboler/
 
 # Härledda MHM-strandlinje-geojsons (stora, utanför git)
 shoreline-mhm*/
+terrain-tiles/

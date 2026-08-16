@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DriveView3D } from '@/components/map/DriveView3D';
 import { useFieldNav, startFieldNav, stopFieldNav, setFieldNavFollowing } from '@/hooks/useFieldNav';
 import { useFieldNavGeolocation } from '@/hooks/map/useFieldNavGeolocation';
@@ -16,8 +16,14 @@ const DEMO_CENTER = { lat: 59.63056, lng: 16.64472 };
 const DriveView: React.FC = () => {
   const sv = useLanguage().language === 'sv';
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const { pos, following, error } = useFieldNav();
   useFieldNavGeolocation(); // matar setFieldNavPos medan aktiv
+
+  // Valfritt demo-center via ?lat&lng (t.ex. "3D-vy" från en utflykt → Gåseborg-terrängpiloten).
+  const qLat = parseFloat(params.get('lat') ?? '');
+  const qLng = parseFloat(params.get('lng') ?? '');
+  const demoCenter = Number.isFinite(qLat) && Number.isFinite(qLng) ? { lat: qLat, lng: qLng } : DEMO_CENTER;
 
   useEffect(() => {
     startFieldNav();
@@ -28,7 +34,7 @@ const DriveView: React.FC = () => {
 
   return (
     <div className="fixed inset-0 bg-slate-950">
-      <DriveView3D demoCenter={DEMO_CENTER} />
+      <DriveView3D demoCenter={demoCenter} />
 
       {/* Topbar: stäng + status */}
       <div className="absolute left-0 right-0 top-0 z-10 flex items-center gap-2 p-3">
