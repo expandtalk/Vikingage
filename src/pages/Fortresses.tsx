@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
-import { MapPin, Calendar, Castle, Shield, Users, Ruler, Building, Anchor, Crown } from "lucide-react";
+import { MapPin, Calendar, Castle, Shield, Users, Ruler, Building, Anchor, Crown, ChevronDown, ChevronRight } from "lucide-react";
 import { useVikingFortresses } from '../hooks/useVikingFortresses';
 import { useVikingCities, getCategoryColor, getCategoryLabel } from '../hooks/useVikingCities';
 import { useSwedishHillforts } from '../hooks/useSwedishHillforts';
@@ -18,6 +18,7 @@ import { useBeaconSites } from '../hooks/useBeaconSites';
 import { useMedievalCastles } from '../hooks/useMedievalCastles';
 import { useFortificationFinds } from '../hooks/useFortificationFinds';
 import { FortressesCitiesMap } from '../components/fortresses/FortressesCitiesMap';
+import { FortificationTypology } from '../components/fortresses/FortificationTypology';
 import { FingerprintDialog } from '../components/forensics/FingerprintDialog';
 import { FortGoldTerritoryCard } from '../components/fortresses/FortGoldTerritoryCard';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -131,6 +132,24 @@ const Fortresses = () => {
       .filter(h => !onlyOnHeight || h.on_height === true)
       .filter(overlapsPeriod)
   );
+
+  // Gruppera fornborgslistan i hopfällbara ÅLDERS-era-sektioner (Daniel: "ålderskategoriserat").
+  // Åldern läses ur period-texten via eraRank; odaterade = egen synlig hink (fejka ej ålder; TYP≠ÅLDER).
+  const ERA_BUCKETS: { key: string; label: string; test: (r: number) => boolean }[] = [
+    { key: 'bronze',     label: sv ? 'Bronsålder & äldre' : 'Bronze Age & earlier',         test: (r) => r <= -1000 },
+    { key: 'early_iron', label: sv ? 'Äldre / romersk järnålder' : 'Early / Roman Iron Age', test: (r) => r > -1000 && r < 400 },
+    { key: 'migration',  label: sv ? 'Folkvandringstid' : 'Migration Period',                test: (r) => r >= 400 && r < 550 },
+    { key: 'vendel',     label: sv ? 'Vendeltid' : 'Vendel Period',                           test: (r) => r >= 550 && r < 800 },
+    { key: 'viking',     label: sv ? 'Vikingatid' : 'Viking Age',                             test: (r) => r >= 800 && r < 1100 },
+    { key: 'medieval',   label: sv ? 'Medeltid' : 'Medieval',                                 test: (r) => r >= 1100 && r < 999998 },
+    { key: 'undated',    label: sv ? 'Odaterade' : 'Undated',                                 test: (r) => r >= 999998 },
+  ];
+  const hillfortGroups = ERA_BUCKETS
+    .map((b) => ({ ...b, items: visibleHillforts.filter((h) => b.test(eraRank(h.period))) }))
+    .filter((g) => g.items.length > 0);
+  // Default: alla grupper öppna (översikt); användaren kan fälla ihop en era.
+  const [closedEras, setClosedEras] = useState<Set<string>>(new Set());
+  const toggleEra = (k: string) => setClosedEras((p) => { const n = new Set(p); n.has(k) ? n.delete(k) : n.add(k); return n; });
 
   // Map state
   const [showFortresses, setShowFortresses] = useState(true);
@@ -276,6 +295,12 @@ const Fortresses = () => {
             </p>
           </div>
         </div>
+
+        {/* Källförd typologi-ryggrad: fornborg → vikingaborg → kastal → riksborg → adelsborg/fast hus → fästning */}
+        <FortificationTypology
+          sv={sv}
+          counts={{ fornborg: hillforts.length, vikingaborg: fortresses.length, riksborg: medievalCastles.length }}
+        />
 
         {/* Hybrid Layout: Map on top */}
         <div className="mb-8">
@@ -440,8 +465,21 @@ const Fortresses = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {visibleHillforts.map((hillfort) => (
+            {hillfortGroups.map((grp) => (
+              <section key={grp.key} className="mb-6">
+                <button
+                  type="button"
+                  onClick={() => toggleEra(grp.key)}
+                  aria-expanded={!closedEras.has(grp.key)}
+                  className="flex w-full items-center gap-2 text-left border-b border-border/60 pb-2 mb-4"
+                >
+                  {closedEras.has(grp.key) ? <ChevronRight className="h-4 w-4 text-gold" /> : <ChevronDown className="h-4 w-4 text-gold" />}
+                  <span className="text-lg font-semibold text-foreground">{grp.label}</span>
+                  <span className="text-sm text-muted-foreground">({grp.items.length})</span>
+                </button>
+                {!closedEras.has(grp.key) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {grp.items.map((hillfort) => (
                 <Card
                   key={hillfort.id}
                   className={`viking-card hover:bg-card/80 transition-colors animate-fade-in cursor-pointer ${
@@ -617,8 +655,11 @@ const Fortresses = () => {
                     )}
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            ))}
 
             {(selectedLandscape === 'all' ? hillforts : hillforts.filter(h => h.landscape === selectedLandscape)).length === 0 && (
               <Card className="viking-card">
