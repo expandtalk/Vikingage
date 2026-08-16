@@ -176,8 +176,8 @@ const Staket = () => (
     <PageMeta
       title="Stäket och Mälaren — var seglade Olav den helige 1007?"
       titleEn="Stäket and Lake Mälaren — where did St Olav sail in 1007?"
-      description="Forskningssida om Mälaren som havsvik omkring år 1000 och frågan om Olav Haraldssons seglats 1007–08 ägde rum vid Almarestäket eller vid Norrström i Stockholm. DEM-härledd strandlinje (Copernicus GLO-30 + landhöjning) visar landskapet vid ~5 m högre havsnivå."
-      descriptionEn="Research page on Lake Mälaren as a sea bay around AD 1000 and the debate over whether St Olav's 1007–08 voyage took place at Almarestäket or at Norrström in Stockholm. A DEM-derived shoreline (Copernicus GLO-30 + land uplift) reconstructs the landscape at ~5 m higher sea level."
+      description="Forskningssida om Mälaren som havsvik omkring år 1000 och frågan om Olav Haraldssons seglats 1007–08 ägde rum vid Almarestäket eller vid Norrström i Stockholm. Strandlinje ur Lantmäteriets Markhöjdmodell (1 m bar jord) + landhöjning visar landskapet vid ~5 m högre havsnivå."
+      descriptionEn="Research page on Lake Mälaren as a sea bay around AD 1000 and the debate over whether St Olav's 1007–08 voyage took place at Almarestäket or at Norrström in Stockholm. A shoreline derived from the Swedish 1 m bare-earth elevation model (Lantmäteriet) plus land uplift reconstructs the landscape at ~5 m higher sea level."
       keywords="Stäket, Almarestäket, Mälaren, Olav den helige, Stocksund, Sigtuna, Fornsigtuna, landhöjning, strandförskjutning, Börje Sandén, vikingatid, Långhundraleden"
     />
     <Header />
@@ -205,7 +205,8 @@ const Staket = () => (
         <CardContent>
           <StaketMap />
           <p className="text-xs text-muted-foreground mt-2 opacity-75">
-            Strandlinjen är <strong>härledd ur höjddata</strong> (Copernicus DEM GLO-30, ~30 m) tröskad mot projektets
+            Strandlinjen är <strong>härledd ur höjddata</strong> — för Stäket–Stockholm-korridoren
+            <strong> Lantmäteriets Markhöjdmodell (MHM, 1 m bar jord, RH2000)</strong> — tröskad mot projektets
             landhöjningsmodell (<code>paleo_rsl</code>, 4,7 mm/år, kontrollpunkt "Mälaren", konfidens hög). Vid år 950
             stod havet ~+4,9 m. Öar återges som hål i vattnet. De namngivna <strong>Mälaröarna</strong> (Adelsö, Björkö/Birka,
             Munsö, Kurön, Ridön, Lovön, Kungshatt, Kärsön; koordinater ur Isof) visar vilket land som stack upp.
@@ -275,7 +276,7 @@ const Staket = () => (
           <CardTitle className="text-base flex items-center gap-2 text-amber-300"><AlertTriangle className="h-5 w-5" /> Förbehåll (redovisade)</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-1 text-xs">
-          <p>• <strong>Copernicus DEM är en ytmodell</strong> — hus/skog kan läsas som mark; inne i stadskärnan är strandlinjen ungefärlig.</p>
+          <p>• <strong>MHM är en bar-jords-modell</strong> (hus/skog bortfiltrerade) för Stäket-korridoren; inne i tät stadskärna är strandlinjen ändå ungefärlig. Västra Mälaren saknar ännu 1 m-täckning.</p>
           <p>• <strong>Ingen batymetri</strong> — metoden kan inte gå under dagens havsyta, och modern utfyllnad visas som land.</p>
           <p>• <strong>Vertikalt datum</strong> (EGM2008) skiljer sig någon decimeter från RH2000; landhöjningen är en linjär förstaordningsmodell.</p>
           <p>• <strong>Sandéns Stäket-tes är en hypotes</strong>, inte konsensus — sidan visar geografin, inte en dom.</p>
@@ -284,7 +285,7 @@ const Staket = () => (
 
       <p className="text-xs text-muted-foreground mt-6 opacity-75 flex items-start gap-2">
         <Info className="h-4 w-4 shrink-0 mt-0.5" />
-        <span>Höjd: Copernicus DEM GLO-30 © ESA (fri/CC-BY). Landhöjning: projektets <code>paleo_rsl</code> (SGU-kalibrerad). Koordinater: Wikipedia (P625), RAÄ Fornsök, Upplandsmuseets rapport 2022:15, <code>place_names</code>, Isof ortnamnsregistret. Tolkningsdiskussion: Börje Sandén / UKF (ukforsk.se) samt Nils Ahnlund, <em>Stockholms historia före Gustav Vasa</em>. Metoden delas med <a href="/sv/kalmar" className="text-gold hover:underline">Kalmar-sidan</a>.</span>
+        <span>Höjd: Lantmäteriets Markhöjdmodell 1 m (bar jord, RH2000) © Lantmäteriet (villkor: värdefulla datamängder, attribution krävs); härledda strandlinje-polygoner, ej råhöjdrastret. Landhöjning: projektets <code>paleo_rsl</code> (SGU-kalibrerad). Koordinater: Wikipedia (P625), RAÄ Fornsök, Upplandsmuseets rapport 2022:15, <code>place_names</code>, Isof ortnamnsregistret. Tolkningsdiskussion: Börje Sandén / UKF (ukforsk.se) samt Nils Ahnlund, <em>Stockholms historia före Gustav Vasa</em>. Metoden delas med <a href="/sv/kalmar" className="text-gold hover:underline">Kalmar-sidan</a>.</span>
       </p>
     </main>
     <Footer />

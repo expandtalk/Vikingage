@@ -11,9 +11,22 @@ import path from 'node:path';
 import pg from 'pg';
 
 const argDir = (() => { const i = process.argv.indexOf('--dir'); return i > -1 ? process.argv[i + 1] : '../shoreline-mhm'; })();
+// --bbox=minLon,minLat,maxLon,maxLat → radera BARA mhm-rader i detta område (så en region-ingest
+// inte torkar en annan; t.ex. Mälaren ska ej radera Öland). Utan --bbox: full mhm-radering (Öland-omkörning).
+const argBbox = (() => {
+  const i = process.argv.indexOf('--bbox');
+  if (i < 0) return null;
+  const b = String(process.argv[i + 1]).split(',').map(Number);
+  return b.length === 4 && b.every((n) => !Number.isNaN(n)) ? b : null;
+})();
 
-// år → relativ havsnivå (m RH2000), samma som derive-steget (spårbarhet).
-const RSL = { 950: 1.26, 750: 1.50, 450: 1.86, 250: 2.10, 50: 2.34 };
+// år → relativ havsnivå (m RH2000), samma som derive-steget (spårbarhet). Default = Kalmar/Öland-regionen.
+// Region med annan landhöjning (Mälaren 4,7 mm/år) lägger en rsl.json i --dir som skriver över detta.
+let RSL = { 950: 1.26, 750: 1.50, 450: 1.86, 250: 2.10, 50: 2.34 };
+{
+  const rslFile = path.join(argDir, 'rsl.json');
+  if (fs.existsSync(rslFile)) RSL = JSON.parse(fs.readFileSync(rslFile, 'utf8'));
+}
 
 function dbPassword() {
   const env = fs.readFileSync(path.resolve('.env'), 'utf8');
@@ -28,7 +41,15 @@ async function main() {
   });
   await client.connect();
   try {
-    await client.query("DELETE FROM paleo_shorelines WHERE model_version = 'mhm_lantmateri'");
+    if (argBbox) {
+      const del = await client.query(
+        "DELETE FROM paleo_shorelines WHERE model_version = 'mhm_lantmateri' AND ST_Intersects(geom, ST_MakeEnvelope($1,$2,$3,$4,4326))",
+        argBbox,
+      );
+      console.log(`Raderade ${del.rowCount} befintliga mhm-rader i AOI ${argBbox.join(',')} (övriga regioner orörda).`);
+    } else {
+      await client.query("DELETE FROM paleo_shorelines WHERE model_version = 'mhm_lantmateri'");
+    }
     const source = '© Lantmäteriet, Markhöjdmodell 1 m (bar jord, RH2000, EPSG:5845). Härledd strandlinje: DEM tröskladt mot relativ havsnivå (RSL ur paleo_rsl); nedsamplad 10 m.';
     const license = 'Lantmäteriet – värdefulla datamängder (attribution krävs, ej CC0)';
     const attribution = '© Lantmäteriet';
