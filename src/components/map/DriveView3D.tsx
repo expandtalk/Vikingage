@@ -42,8 +42,9 @@ const routeGeoJSON = (coords?: [number, number][]) => ({
 });
 
 // Pitch per färdsätt: gående flackare (lättare överblick av omgivningen), bil mest tiltat
-// 3D-förarperspektiv, cykel mittemellan.
-const pitchForMode = (m: TravelMode): number => (m === 'foot' ? 35 : m === 'bike' ? 50 : 60);
+// 3D-förarperspektiv, cykel mittemellan. Höjt 2026-08-16 för starkare 3D-känsla (Daniel).
+// Ej ända upp mot maxPitch: utan terräng/husextrudering blir extrem lutning mest tom himmel.
+const pitchForMode = (m: TravelMode): number => (m === 'foot' ? 48 : m === 'bike' ? 62 : 72);
 
 export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: number; lng: number } }> = ({ className, demoCenter }) => {
   const { pos, following } = useFieldNav();
@@ -69,7 +70,7 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
       center: [start.lng, start.lat],
       zoom: pos ? 17 : (demoCenter ? 14.5 : 6),
       pitch: pitchForMode(travelMode),
-      maxPitch: 75,
+      maxPitch: 82,
       bearing: pos?.headingDeg ?? 0,
       attributionControl: { compact: true },
     });
