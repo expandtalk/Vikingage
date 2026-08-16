@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -92,36 +93,46 @@ const buildPopup = (row: PlaceNameRow): string => {
  * @param isEnabled           Slå av hela queryn (t.ex. utanför relevant läge).
  */
 export const usePlaceNameMarkers = (
+  map: L.Map | null,
   enabledLegendItems: { [key: string]: boolean } = {},
   isEnabled: boolean = true
 ) => {
-  // Ortnamn är OPT-IN (default AV) — annars klottrade ~495 ortnamn ner kartan och dolde
-  // det relevanta. Slås på via legenden, en intresseprofil (t.ex. lingvist), eller sök/filter.
-  // Samma === true-gate som övriga punktlager (species/coins/adna/paleo_shoreline).
+  // Ortnamn är OPT-IN (default AV). VIEWPORT + ZOOM-GATED: efter nationell ingest (358k namn) laddar
+  // vi bara namn i vyn vars label_min_zoom <= aktuell zoom via place_names_in_view-RPC (cappad) —
+  // annars .neq('osm')=316k rader = frys/godtyckliga 1000. Refetch på moveend/zoomend.
   const layerOn = enabledLegendItems.place_names === true;
 
-  return useQuery({
-    queryKey: ['place-name-markers'],
-    queryFn: async (): Promise<PlaceNameMarker[]> => {
-      // Cast: place_names finns inte i genererade typer förrän migrationen körts.
-      const { data, error } = await (supabase as any)
-        .from('place_names')
-        .select(
-          'id, name, lat, lng, element_keys, element_category, feature_type, province, earliest_attestation_year, attested_form, source, source_license, imported_at'
-        )
-        // OSM-gazetteern (~42k) är analysunderlag, inte kartlager — annars 43k
-        // markörer i ett all-load-lager. Kartan visar det kurerade urvalet;
-        // distans-RPC:erna använder hela place_names (inkl. OSM).
-        .neq('source', 'osm');
+  const [, setView] = useState(0);
+  useEffect(() => {
+    if (!map) return;
+    const onMove = () => setView((v) => v + 1);
+    map.on('moveend zoomend', onMove);
+    return () => { map.off('moveend zoomend', onMove); };
+  }, [map]);
 
+  const zoom = map ? Math.round(map.getZoom()) : 0;
+  // Zoom-golv: under z7 visas inga namn (lägsta label_min_zoom=7) → skippa RPC helt. Det undviker
+  // det dyra/timeout-benägna bred-bbox-anropet vid riksöversikt (explore-initialvyn gav 500).
+  const MIN_ZOOM = 7;
+  const b = layerOn && map && zoom >= MIN_ZOOM ? map.getBounds() : null;
+  // Runda bbox till ~1 km så små panoreringar inte refetchar; queryKey styr omhämtning.
+  const bboxKey = b ? [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()].map((n) => n.toFixed(2)).join(',') : '';
+
+  return useQuery({
+    queryKey: ['place-name-markers', bboxKey, zoom],
+    queryFn: async (): Promise<PlaceNameMarker[]> => {
+      if (!b) return [];
+      const bbox = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
+      const { data, error } = await (supabase as any)
+        .rpc('place_names_in_view', { p_bbox: bbox, p_zoom: zoom, p_limit: 800 });
       if (error) {
         console.error('❌ Error fetching place names:', error);
         throw error;
       }
-
       return ((data as PlaceNameRow[]) ?? []).map((row) => {
+        const keys = row.element_keys ?? []; // nya LM-namn saknar element_keys (null) → []
         const cat = row.element_category ? ELEMENT_CATEGORY_META[row.element_category] : null;
-        const contested = row.element_keys.some((k) => getElement(k)?.contested);
+        const contested = keys.some((k) => getElement(k)?.contested);
         return {
           id: row.id,
           position: new L.LatLng(row.lat, row.lng),
@@ -129,14 +140,14 @@ export const usePlaceNameMarkers = (
           // Markera omtvistade element visuellt (rapport §5.2).
           symbol: contested ? '~' : cat?.symbol ?? '●',
           name: row.name,
-          elementKeys: row.element_keys,
+          elementKeys: keys,
           contested,
           popupContent: buildPopup(row),
         };
       });
     },
-    enabled: isEnabled && layerOn,
-    staleTime: 5 * 60 * 1000,
+    enabled: isEnabled && layerOn && !!map && zoom >= MIN_ZOOM,
+    staleTime: 60 * 1000,
   }).data?.filter((marker) => {
     // Kategorifilter: visa markören om någon av dess element-kategorier är aktiv.
     const cats = new Set(

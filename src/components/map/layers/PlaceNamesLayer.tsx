@@ -28,7 +28,7 @@ export const PlaceNamesLayer: React.FC<PlaceNamesLayerProps> = ({
   const markersRef = useRef<L.Marker[]>([]);
   const layerGroupRef = useRef<L.LayerGroup | null>(null);
 
-  const placeNames = usePlaceNameMarkers(enabledLegendItems, isVisible);
+  const placeNames = usePlaceNameMarkers(map, enabledLegendItems, isVisible);
 
   const activeProfile = useActiveExploreProfile();
   const emphasis = emphasisStyle(layerEmphasis(activeProfile, 'place_names'));
