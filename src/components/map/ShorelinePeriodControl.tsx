@@ -54,6 +54,9 @@ interface Props {
   variant?: 'inline' | 'floating';
   /** Sant när RPC:n bara hittade en skiva för långt bort (>tolerans) — se useShorelineOverlay. */
   noData?: boolean;
+  /** Ersätter CE-årens modell-/attributionscaption (t.ex. när en sida använder MHM ist. för SGU).
+   *  Djuptidscaptionen (SGU) lämnas orörd — MHM täcker inte djuptid. Hederlighet: rätt källa märks. */
+  modelCaption?: string;
 }
 
 const PeriodButton: React.FC<{ p: Period; active: boolean; onChange: (y: number | null) => void }> = ({ p, active, onChange }) => (
@@ -86,9 +89,12 @@ const NoDataNote: React.FC<{ show?: boolean }> = ({ show }) => {
   );
 };
 
-export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, variant = 'inline', noData }) => {
+export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, variant = 'inline', noData, modelCaption }) => {
   const [open, setOpen] = useState(false);
   const showNoData = Boolean(noData) && value != null;
+  // Djuptid (negativa år) = alltid SGU-modellen; CE-år kan vara MHM (modelCaption-override).
+  const isDeep = value != null && DEEP_PERIODS.some((p) => p.year === value);
+  const ceCaption = modelCaption ?? CAPTION;
 
   if (variant === 'floating') {
     return (
@@ -118,7 +124,7 @@ export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, varia
             </div>
             {showNoData
               ? <p className="mt-2"><NoDataNote show /></p>
-              : <p className="mt-2 text-[10px] leading-snug text-muted-foreground opacity-80">{value != null && DEEP_PERIODS.some((p) => p.year === value) ? DEEP_CAPTION : CAPTION}</p>}
+              : <p className="mt-2 text-[10px] leading-snug text-muted-foreground opacity-80">{isDeep ? DEEP_CAPTION : ceCaption}</p>}
           </div>
         )}
       </div>
@@ -131,7 +137,7 @@ export const ShorelinePeriodControl: React.FC<Props> = ({ value, onChange, varia
       <PeriodButtons value={value} onChange={onChange} />
       {showNoData
         ? <NoDataNote show />
-        : <span className="text-[10px] text-muted-foreground opacity-70">{value != null && DEEP_PERIODS.some((p) => p.year === value) ? DEEP_CAPTION : CAPTION}</span>}
+        : <span className="text-[10px] text-muted-foreground opacity-70">{isDeep ? DEEP_CAPTION : ceCaption}</span>}
     </div>
   );
 };

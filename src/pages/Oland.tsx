@@ -125,7 +125,17 @@ const OlandMap: React.FC<{
   // ~200 m så nationell täckning väger ~1 MB. Öland syns default på, panorera för fastlandet.
   const { data: adminBoundary = [] } = useAdminBoundary('kommun', null, 0.002);
   const [shoreYear, setShoreYear] = useState<number | null>(950);
-  const { status: shoreStatus } = useShorelineOverlay(mapRef, shoreYear);
+  // Öland: för CE-år (50–950) använd Lantmäteris MHM-härledda strandlinje (bar jord 1 m, RH2000 —
+  // sannare än SGU:s grova raster; get_paleo_shorelines_dem föredrar mhm_lantmateri inom denna bbox).
+  // För djuptid (negativa år: Littorina/Ancylus/Yoldia) finns MHM ej → falla tillbaka på SGU-modellen.
+  const OLAND_BBOX: [number, number, number, number] = [16.30, 56.15, 17.15, 57.40];
+  const MHM_CAPTION = 'Lantmäteriet Markhöjdmodell 1 m (bar jord, RH2000) — härledd kustlinje mot relativ havsnivå. © Lantmäteriet';
+  const useDem = shoreYear != null && shoreYear >= 0;
+  const { status: shoreStatus } = useShorelineOverlay(
+    mapRef, shoreYear,
+    useDem ? 'get_paleo_shorelines_dem' : 'get_paleo_shorelines_nearest',
+    useDem ? OLAND_BBOX : undefined,
+  );
 
   // drawAll: samlar de tidigare per-lager-effekterna. Ritar varje bespoke-lager gated på
   // enabled[key]. Definieras om varje render (closure över aktuella points/solidi/adminBoundary);
@@ -375,12 +385,12 @@ const OlandMap: React.FC<{
         .oland-fort-label::before { display:none; }
       `}</style>
       <div className="hidden sm:block">
-        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} />
+        <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} modelCaption={useDem ? MHM_CAPTION : undefined} />
       </div>
       <div className="relative">
         {/* Mobil: flytande strandlinje-kontroll (frigör kartytan) — inline på desktop ovan. */}
         <div className="sm:hidden absolute left-2 top-16 z-[1105]">
-          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} />
+          <ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} modelCaption={useDem ? MHM_CAPTION : undefined} />
         </div>
         <PlaceMap
           center={{ lat: 56.7, lng: 16.55 }}
