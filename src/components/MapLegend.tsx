@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Map, ToggleLeft, ToggleRight, ExternalLink, Save, RotateCcw, Sparkles } from 'lucide-react';
+import { Map, ToggleLeft, ToggleRight, ExternalLink, Save, RotateCcw, Sparkles, Navigation2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { startFieldNav } from '@/hooks/useFieldNav';
 import { useTravelMode, setTravelMode, TRAVEL_MODE_LABELS, type TravelMode } from '@/hooks/useTravelMode';
 import { saveModePreset, clearModePreset, useHasModePreset } from '@/hooks/useModePresets';
 import { LegendItemComponent } from './legend/LegendItem';
@@ -62,6 +64,10 @@ export const MapLegend: React.FC<MapLegendProps> = ({
   const isMobile = useIsMobile();
   const travelMode = useTravelMode();
   const hasPreset = useHasModePreset(travelMode);
+  const navigate = useNavigate();
+  // "Starta [läge]" direkt i mobil-drawern där färdsättet väljs — annars låg start-knappen i en
+  // ANNAN panel (Near me) och det såg ut som att inget hände (fältrapport 2026-08-16).
+  const startTravel = () => { startFieldNav(); onModeSelected?.(); navigate('/explore'); };
   // Gå-läge: fyll alla lager + släck historiska rasterkartor (de täcker vägarna). Engångsåtgärd
   // vid val (funktionella updaters → sekventiellt, ingen race), inte per render → förblir togglingsbart.
   // Släck historiska rasterlager (fula färgade fyrkanter som täcker vägarna): historical_maps +
@@ -92,10 +98,12 @@ export const MapLegend: React.FC<MapLegendProps> = ({
   };
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['religious_places', 'heritage_sites']);
   
+  // Null-vakt på varje count (som LegendCategory) — ETT odefinierat count gav annars NaN som
+  // propagerade till hela summan (mobilens "Map Legend NaN"-badge, fältrapport 2026-08-16).
   const totalVisible = legendItems.filter(item => item.enabled).reduce((sum, item) => {
-    let total = item.count;
+    let total = item.count || 0;
     if (item.children) {
-      total += item.children.filter(child => child.enabled).reduce((childSum, child) => childSum + child.count, 0);
+      total += item.children.filter(child => child.enabled).reduce((childSum, child) => childSum + (child.count || 0), 0);
     }
     return sum + total;
   }, 0);
@@ -201,6 +209,17 @@ export const MapLegend: React.FC<MapLegendProps> = ({
               );
             })}
           </div>
+          {/* Primär-action: starta valt färdsätt direkt härifrån (live-GPS-fältläge på kartan). */}
+          <button
+            onClick={startTravel}
+            className="mt-1.5 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold"
+            style={{ minHeight: 44 }}
+          >
+            <Navigation2 className="h-4 w-4" />
+            {sv
+              ? (travelMode === 'foot' ? 'Starta gångläge' : travelMode === 'bike' ? 'Starta cykelläge' : 'Starta körläge')
+              : (travelMode === 'foot' ? 'Start walking mode' : travelMode === 'bike' ? 'Start cycling mode' : 'Start driving mode')}
+          </button>
           {/* Spara/återställ egen vy per läge (localStorage; funkar utan konto). */}
           <div className="flex items-center gap-1 px-1 pt-1">
             <Button onClick={saveCurrentAsPreset} variant="ghost" size="sm"

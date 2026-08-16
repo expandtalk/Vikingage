@@ -16,14 +16,18 @@ interface State {
   following: boolean; // kartan pannar med mig; AV när användaren själv dragit kartan
   error: string | null;
   target: FieldNavTarget | null; // "Led mig hit"-mål; bäring/avstånd räknas mot detta
+  // Användaren har AKTIVT avslutat fältläget (tryckt X). Bryter mobilens always-on-GPS-gate i
+  // useFieldNavGeolocation så watchern + "här"-markören faktiskt stängs av — annars levde de kvar
+  // (isMobile tvingade på GPS) och X kändes dött (fältrapport 2026-08-16). startFieldNav nollar det.
+  dismissed: boolean;
 }
-let state: State = { active: false, pos: null, following: true, error: null, target: null };
+let state: State = { active: false, pos: null, following: true, error: null, target: null, dismissed: false };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
 
-export const startFieldNav = () => { state = { active: true, pos: null, following: true, error: null, target: null }; emit(); };
-export const stopFieldNav = () => { state = { active: false, pos: null, following: true, error: null, target: null }; emit(); };
+export const startFieldNav = () => { state = { active: true, pos: null, following: true, error: null, target: null, dismissed: false }; emit(); };
+export const stopFieldNav = () => { state = { active: false, pos: null, following: true, error: null, target: null, dismissed: true }; emit(); };
 export const setFieldNavPos = (pos: FieldNavPos) => { state = { ...state, pos, error: null }; emit(); };
 export const setFieldNavError = (error: string) => { state = { ...state, error }; emit(); };
 export const setFieldNavFollowing = (following: boolean) => {

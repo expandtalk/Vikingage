@@ -14,10 +14,12 @@ import { useTravelMode } from '@/hooks/useTravelMode';
 // när den aktiva HUD:en startas — i alltid-på-läget (utan att ha startat HUD:en) faller vi
 // tillbaka på GPS-kurs (`heading` från Geolocation) tills/om användaren aktiverar fältläget.
 export const useFieldNavGeolocation = () => {
-  const { active } = useFieldNav();
+  const { active, dismissed } = useFieldNav();
   const isMobile = useIsMobile();
   const mode = useTravelMode();
-  const enabled = active || isMobile || mode === 'car';
+  // dismissed (användaren tryckte X) bryter mobilens always-on-gate → watchern + "här"-markören
+  // stängs faktiskt av. startFieldNav nollar dismissed och sätter igång igen.
+  const enabled = !dismissed && (active || isMobile || mode === 'car');
   const compassRef = useRef<number | null>(null);
 
   useEffect(() => {
