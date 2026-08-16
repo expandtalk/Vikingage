@@ -123,7 +123,9 @@ const loadCategoryCounts = async (): Promise<CategoryCounts> => {
     baths,
     excursions,
     churches,
-    coins,
+    coinsBase,
+    solidi,
+    hoards,
     charters,
     sources,
     media,
@@ -148,6 +150,8 @@ const loadCategoryCounts = async (): Promise<CategoryCounts> => {
     headCount('excursions'),
     headCount('ecclesiastical_sites'),
     headCount('coins'),
+    headCount('solidi'),
+    headCount('hoards'),
     chartersPromise,
     headCount('historical_sources'),
     headCount('media_sources'),
@@ -159,6 +163,11 @@ const loadCategoryCounts = async (): Promise<CategoryCounts> => {
     (n): n is number => typeof n === 'number'
   );
   const waterways = waterParts.length > 0 ? waterParts.reduce((a, b) => a + b, 0) : null;
+
+  // Mynt = kurerade mynt (coins) + solidi-korpuset (1200+) + skatter (hoards). De ligger i
+  // tre tabeller men är ETT numismatiskt bestånd för användaren.
+  const coinParts = [coinsBase, solidi, hoards].filter((n): n is number => typeof n === 'number');
+  const coins = coinParts.length > 0 ? coinParts.reduce((a, b) => a + b, 0) : null;
 
   return {
     inscriptions,

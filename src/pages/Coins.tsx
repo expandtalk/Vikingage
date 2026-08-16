@@ -93,7 +93,9 @@ const SolidiSection: React.FC<{ sv: boolean }> = ({ sv }) => {
   const { data: solidi = [], isLoading } = useSolidi();
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const layerRef = useRef<L.LayerGroup>(new L.LayerGroup());
+  // KLUSTRAT: 1200+ solidi (tät klump på Öland) → markerClusterGroup gör kartan läsbar.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const clusterRef = useRef<any>(null);
   const byLand = useMemo(() => {
     const m = new Map<string, number>();
     for (const s of solidi) { const l = s.landscape || (sv ? '(okänt läge)' : '(unknown)'); m.set(l, (m.get(l) || 0) + 1); }
@@ -105,19 +107,21 @@ const SolidiSection: React.FC<{ sv: boolean }> = ({ sv }) => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, center: [57.2, 17], zoom: 6, scrollWheelZoom: true });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
-    layerRef.current.addTo(map); mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    clusterRef.current = (L as any).markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 45, spiderfyOnMaxZoom: true });
+    clusterRef.current.addTo(map); mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; clusterRef.current = null; };
   }, []);
   useEffect(() => {
-    const map = mapRef.current; if (!map) return;
-    layerRef.current.clearLayers(); const pts: [number, number][] = [];
+    const map = mapRef.current, cluster = clusterRef.current; if (!map || !cluster) return;
+    cluster.clearLayers(); const pts: [number, number][] = [];
     for (const s of solidi) {
       const co = parseCoinCoord(s.coordinates as any); if (!co) continue; pts.push([co.lat, co.lng]);
-      L.circleMarker([co.lat, co.lng], { radius: 4, color: '#78350f', fillColor: '#eab308', fillOpacity: 0.7, weight: 1 })
-        .bindPopup(`<strong>${s.ruler || 'Solidus'}</strong>${s.find_place ? `<br/>${s.find_place}` : ''}${s.parish ? `, ${s.parish} sn` : ''}${s.landscape ? `<br/><em>${s.landscape}</em>` : ''}`)
-        .addTo(layerRef.current);
+      L.circleMarker([co.lat, co.lng], { radius: 5, color: '#78350f', fillColor: '#eab308', fillOpacity: 0.8, weight: 1 })
+        .bindPopup(`<strong>${s.ruler || 'Solidus'}</strong>${s.find_place ? `<br/>${s.find_place}` : ''}${s.parish ? `, ${s.parish} sn` : ''}${s.landscape ? `<br/><em>${s.landscape}</em>` : ''}${s.source ? `<br/><span style="font-size:10px;color:#78350f">Källa: ${s.source}</span>` : ''}`)
+        .addTo(cluster);
     }
-    if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 7 });
+    if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 8 });
     setTimeout(() => map.invalidateSize(), 100);
   }, [solidi]);
 
@@ -131,8 +135,13 @@ const SolidiSection: React.FC<{ sv: boolean }> = ({ sv }) => {
       </h2>
       <p className="text-muted-foreground text-sm mb-4 max-w-3xl">
         {sv
-          ? `Individuella guldmynt (400–500-tal) ur SHM:s samlingar (CC BY 4.0) + Fischer. Fyndplats på socken-/bynivå. Summerat: ≈ ${grams} g guld (solidus ~4,5 g). Öland och Gotland dominerar — jämför nedan.`
-          : `Individual gold coins (5th c.) from SHM (CC BY 4.0) + Fischer. Find-place at parish/village level. Total: ≈ ${grams} g gold (solidus ~4.5 g).`}
+          ? `Individuella guldmynt (400–500-tal) ur SHM:s samlingar (CC BY 4.0) + Svante Fischers korpus. Fyndplats på socken-/bynivå (klustrat på kartan). Summerat: ≈ ${grams} g guld (solidus ~4,5 g). Öland och Gotland dominerar — jämför nedan.`
+          : `Individual gold coins (5th c.) from SHM (CC BY 4.0) + Svante Fischer's corpus. Find-place at parish/village level (clustered). Total: ≈ ${grams} g gold (solidus ~4.5 g). Öland and Gotland dominate.`}
+      </p>
+      <p className="text-[12px] text-muted-foreground/70 mb-4 max-w-3xl">
+        {sv
+          ? 'Forskare & källor: Svante Fischer, "The Late Roman and Early Byzantine Solidi of Småland" (2023) och LEO-projektet; Joan Fagerlie, "Late Roman and Byzantine Solidi Found in Sweden and Denmark" (1967); Statens historiska museer (SHM, CC BY 4.0). Silverskatterna (nedan/på huvudkartan) bygger på bl.a. Fischer, Fagerlie samt — för Gotlands vikingatida korpus — Mårten Stenberger och Majvor Östergren.'
+          : 'Researchers & sources: Svante Fischer (2023) and the LEO project; Joan Fagerlie (1967); the Swedish History Museum (SHM, CC BY 4.0). The silver hoards draw on Fischer, Fagerlie and — for the Gotland Viking-Age corpus — Mårten Stenberger and Majvor Östergren.'}
       </p>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-4">
         <div ref={containerRef} className="w-full h-[420px] rounded-lg overflow-hidden border border-white/10" />
