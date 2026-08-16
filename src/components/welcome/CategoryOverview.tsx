@@ -154,7 +154,9 @@ const loadCategoryCounts = async (): Promise<CategoryCounts> => {
     headCount('hoards'),
     chartersPromise,
     headCount('historical_sources'),
-    headCount('media_sources'),
+    // Poddar & video: räkna AVSNITT (media_items ~2111), inte kanaler (10) — varje podd har
+    // många kategoriserade avsnitt. Det är den meningsfulla mängden för användaren.
+    headCount('media_items'),
   ]);
 
   // Vattenvägar = floder + handelsvägar + farleder. Summera de delar som gick att
@@ -322,9 +324,9 @@ const CATEGORIES: CategoryDef[] = [
   {
     key: 'media', to: '/podcast', icon: Podcast,
     sv: 'Poddar & video', en: 'Podcasts & video',
-    descSv: 'Poddavsnitt och film om nordisk historia.',
-    descEn: 'Podcast episodes and film on Nordic history.',
-    unitSv: 'källor', unitEn: 'sources',
+    descSv: 'Kategoriserade poddavsnitt och film om nordisk historia.',
+    descEn: 'Categorised podcast episodes and film on Nordic history.',
+    unitSv: 'avsnitt', unitEn: 'episodes',
   },
 ];
 
