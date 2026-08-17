@@ -114,21 +114,19 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
           Förfina-panelen kommer sent, först när sökningen är klar. */}
       {searching && <SearchVisualizer sv={!en} label={query} />}
 
-      {/* Lager 4: sök vidare externt + bidra — visas FÖRST när sökningen är klar (searching=false). */}
-      {!searching && (
+      {/* Lager 4: sök vidare externt + förfina + bidra — visas BARA när sökningen är klar OCH gav
+          NOLL interna träffar (Daniel: "först då handlar det om Förfina din sökning"). Finns det
+          träffar (hasHits) döljs hela blocket — inget "ingen exakt träff" ovanpå riktiga resultat. */}
+      {!searching && !hasHits && (
       <div className="mt-4 rounded-xl border border-slate-700 bg-slate-800/60 p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-amber-300">
           <Search className="h-4 w-4" />
-          {en ? (hasHits ? 'Search further afield' : 'Refine your search') : (hasHits ? 'Sök vidare externt' : 'Förfina din sökning')}
+          {en ? 'Refine your search' : 'Förfina din sökning'}
         </div>
         <p className="text-xs leading-relaxed text-slate-400">
-          {hasHits
-            ? (en
-                ? <>Not what you meant? You can also search externally — links open in a new tab, so you stay here.</>
-                : <>Inte det du menade? Du kan också söka vidare externt — länkarna öppnas i ny flik, så du är kvar här.</>)
-            : (en
-                ? <>No exact match for <span className="text-slate-200">“{query}”</span>{hadMedia ? ' — but see the podcasts & videos above.' : '.'} Try a different spelling, a place name or a runestone signum, or broaden the terms. You can also search on externally — links open in a new tab, so you stay here.</>
-                : <>Ingen exakt träff för <span className="text-slate-200">”{query}”</span>{hadMedia ? ' — men se poddar & video ovan.' : '.'} Prova en annan stavning, ett ortnamn eller ett runsten-signum, eller bredda sökorden. Du kan också söka vidare externt — länkarna öppnas i ny flik, så du är kvar här.</>)}
+          {en
+            ? <>No exact match for <span className="text-slate-200">“{query}”</span>{hadMedia ? ' — but see the podcasts & videos above.' : '.'} Try a different spelling, a place name or a runestone signum, or broaden the terms. You can also search externally — links open in a new tab, so you stay here.</>
+            : <>Ingen exakt träff för <span className="text-slate-200">”{query}”</span>{hadMedia ? ' — men se poddar & video ovan.' : '.'} Prova en annan stavning, ett ortnamn eller ett runsten-signum, eller bredda sökorden. Du kan också söka vidare externt — länkarna öppnas i ny flik, så du är kvar här.</>}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {externalLinks(query).map((l) => (
@@ -142,8 +140,7 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
           {en ? 'External sources — not vetted by us.' : 'Externa källor — ej granskade av oss.'}
         </p>
 
-        {/* Bidra: håll dem kvar + fånga innehållsluckan — bara när vi VERKLIGEN saknar träffar */}
-        {!hasHits && (
+        {/* Bidra: håll dem kvar + fånga innehållsluckan (hela blocket visas bara vid noll träffar). */}
         <div className="mt-3 flex items-start gap-2 border-t border-slate-700/70 pt-3">
           <PenLine className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
           <p className="text-xs leading-relaxed text-slate-400">
@@ -152,7 +149,6 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
               : <>Tycker du att detta borde finnas på Viking Age? Vi bygger plattformen med bidrag — din sökning noteras så vi vet vad vi ska skriva om härnäst.</>}
           </p>
         </div>
-        )}
       </div>
       )}
     </section>
