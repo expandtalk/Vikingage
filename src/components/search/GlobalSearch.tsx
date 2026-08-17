@@ -441,6 +441,10 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   const [aiQuestion, setAiQuestion] = useState<string | null>(null);
   // Starkaste träffen — driver "Gå vidare"-sektionen (dess graf-grannar).
   const [topEntity, setTopEntity] = useState<Hit | null>(null);
+  // Typeahead: ortnamn + personer + namn direkt medan man skriver (search_typeahead, ~15ms).
+  // Visas överst i listan innan/medan den fulla rankade sökningen laddar (Daniel: "ortnamnen ska
+  // snabbt dyka upp"). Kort debounce (80ms) så det känns omedelbart.
+  const [typeahead, setTypeahead] = useState<{ entity_type: string; entity_id: string; label: string; sublabel: string | null; signum: string | null; grp: string }[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   // Hero-varianten: inline-fält + utfällbar träfflista (ingen dialog).
   const heroWrapRef = useRef<HTMLDivElement>(null);
@@ -566,6 +570,19 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     return () => clearTimeout(t);
   }, [query, theme]);
 
+  // Snabb typeahead (80ms debounce) — oberoende av den tyngre rankade sökningen.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2 || theme) { setTypeahead([]); return; }
+    const t = setTimeout(async () => {
+      try {
+        const { data } = await sb.rpc('search_typeahead', { p_q: q, p_limit: 12 });
+        setTypeahead(Array.isArray(data) ? (data as typeof typeahead) : []);
+      } catch { setTypeahead([]); }
+    }, 80);
+    return () => clearTimeout(t);
+  }, [query, theme]);
+
   const go = useCallback((route: string) => { setOpen(false); setHeroActive(false); navigate(route); }, [navigate]);
   const total = groups.reduce((n, g) => n + g.rows.length, 0);
 
@@ -616,6 +633,34 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     const showPanel = wide && !!topEntity && !theme;
     const list = (
     <div className={`${scrollClass} overflow-y-auto text-left`}>
+      {/* TYPEAHEAD: ortnamn + personer + namn direkt (search_typeahead). Visas medan den rankade
+          sökningen laddar (eller om den inte gav grupper) → namnen "snabbt dyker upp" (Daniel). */}
+      {typeahead.length > 0 && (loading || total === 0) && (
+        <div className="border-b border-slate-800 px-2 py-2">
+          {(['place', 'person', 'name', 'other'] as const).map((grp) => {
+            const items = typeahead.filter((s) => s.grp === grp);
+            if (items.length === 0) return null;
+            const head = grp === 'place' ? (sv ? 'Ortnamn' : 'Places') : grp === 'person' ? (sv ? 'Personer' : 'People') : grp === 'name' ? (sv ? 'Namn' : 'Names') : (sv ? 'Övrigt' : 'Other');
+            return (
+              <div key={grp} className="mb-1">
+                <div className="px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-500">{head}</div>
+                {items.map((s) => {
+                  const m = META[s.entity_type];
+                  const route = m ? m.route(s as unknown as Hit) : `/explore?searchQuery=${enc(s.label)}`;
+                  return (
+                    <button key={`ta-${s.entity_type}-${s.entity_id}`}
+                      onClick={() => { logSearchClick(query, s.entity_type, s.entity_id); go(route); }}
+                      className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-amber-500/10">
+                      <span className="truncate text-slate-100">{s.signum && s.signum !== s.label ? `${s.signum} · ${s.label}` : s.label}</span>
+                      {s.sublabel && <span className="ml-auto shrink-0 truncate text-[11px] text-slate-500">{s.sublabel}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      )}
       {/* Kanonisk mening överst (t.ex. Skansen → friluftsmuseet), homonymer vid sidan under */}
       <CanonicalSense query={query} sv={sv} onGo={go} />
       {/* Homonym vid sidan — off-topic betydelser (Tor Browser etc.), avmarkerade */}
