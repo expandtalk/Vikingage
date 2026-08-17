@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin, BookOpen, GraduationCap, ArrowRight, Library, X, ExternalLink, Image as ImageIcon, Users, Clock, ChevronDown, ChevronRight } from 'lucide-react';
+import { MapPin, BookOpen, GraduationCap, ArrowRight, Library, X, ExternalLink, Image as ImageIcon, Users, Clock, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { useAnswerContext } from '@/hooks/useAnswerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FindBookLink } from './FindBookLink';
@@ -19,6 +19,9 @@ const LANDSKAP = new Set([
   'dalarna', 'dalecarlia', 'gästrikland', 'hälsingland', 'härjedalen', 'medelpad', 'ångermanland',
   'jämtland', 'västerbotten', 'norrbotten', 'lappland', 'lappmarken',
 ]);
+
+// Minimal HTML-escape för popup-text (ortnamn m.m.).
+const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 // RAÄ-bildtexter är långa ("Resmo kyrka. Runsignum Öl 4 — Anmärkning: …") — visa bara den
 // läsbara ledtexten (före första ". " eller " — "), kapad, så man ser VAD bilden är.
@@ -157,9 +160,32 @@ const PRED_SV: Record<string, string> = {
   located_in: 'ligger i', part_of: 'del av', mentions: 'nämner', depicts: 'avbildar', founded_by: 'grundad av',
 };
 export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => void; onQuery?: (q: string) => void }> = ({ query, onGo, onQuery }) => {
-  const { data } = useAnswerContext(query);
+  const { data, isLoading } = useAnswerContext(query);
   const { language } = useLanguage();
   const sv = language === 'sv';
+  const placesLayerRef = useRef<L.LayerGroup | null>(null); // alla platser som matchar sökningen (multi-plats)
+
+  // Multi-plats: alla ortnamn som matchar frågan (exakt + prefix) med koordinat → plottas ALLA på
+  // kartan (Daniel: "om det är flera platser bör alla visas"), och den sökta orten (t.ex. Mörbylånga)
+  // blir en tydlig egen markör. Cappad; parishes/städer via search_document-geom är redan i center.
+  const { data: matchingPlaces = [] } = useQuery({
+    queryKey: ['answer-matching-places', query],
+    enabled: query.trim().length >= 2,
+    staleTime: 10 * 60 * 1000,
+    queryFn: async (): Promise<{ name: string; feature_type: string | null; lat: number; lng: number }[]> => {
+      const q = query.trim();
+      const { data } = await (supabase as any).from('place_names')
+        .select('name, feature_type, lat, lng')
+        .ilike('name', `${q}%`).not('lat', 'is', null).limit(60);
+      // Exakt namn först, sen tätorter/städer före mikrotoponymer.
+      const rank = (t: string | null) => (t && /tätort|stad|BEBT|socken|parish/i.test(t) ? 0 : 1);
+      return ((data ?? []) as any[])
+        .map((r) => ({ name: r.name as string, feature_type: r.feature_type as string | null, lat: Number(r.lat), lng: Number(r.lng) }))
+        .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
+        .sort((a, b) => (a.name.toLowerCase() === q.toLowerCase() ? -1 : 0) - (b.name.toLowerCase() === q.toLowerCase() ? -1 : 0) || rank(a.feature_type) - rank(b.feature_type))
+        .slice(0, 40);
+    },
+  });
   // Giltig center = både lat OCH lng är tal (t.ex. Gotland gav {null,null} → rita ingen trasig karta).
   const hasCenter = !!(data?.center && data.center.lat != null && data.center.lng != null);
   const mapEl = useRef<HTMLDivElement>(null);
@@ -318,6 +344,20 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       churchLayerRef.current.clearLayers(); wreckLayerRef.current.clearLayers(); eventLayerRef.current.clearLayers();
       fortLayerRef.current.clearLayers(); crossingLayerRef.current.clearLayers(); advLayerRef.current.clearLayers();
       const pts: [number, number][] = [];
+      // MULTI-PLATS: alla ortnamn som matchar frågan (t.ex. "Smedby" på flera ställen) → gyllene
+      // pin med namn. Den sökta orten blir en tydlig markör; flera träffar plottas allihop och
+      // ramas in av fitBounds nedan (deras punkter läggs i pts). Egen guld-markör (ej cyan sevärd).
+      if (!placesLayerRef.current) placesLayerRef.current = L.layerGroup();
+      placesLayerRef.current.clearLayers();
+      (matchingPlaces || []).forEach((p) => {
+        pts.push([p.lat, p.lng]);
+        L.marker([p.lat, p.lng], {
+          icon: L.divIcon({ className: '', iconSize: [14, 14], iconAnchor: [7, 7],
+            html: `<div style="width:14px;height:14px;border-radius:50%;background:#f59e0b;border:2px solid #78350f;box-shadow:0 0 0 1px rgba(255,255,255,.6)"></div>` }),
+        }).bindPopup(`<b>${esc(p.name)}</b>${p.feature_type ? `<br/><span style="font-size:11px;color:#78350f">${esc(p.feature_type)}</span>` : ''}`)
+          .addTo(placesLayerRef.current!);
+      });
+      placesLayerRef.current.addTo(m);
       (data.inscriptions || []).forEach((r) => {
         if (r.lat == null || r.lng == null) return;
         if (afterYmax((r as any).from)) return;
@@ -422,7 +462,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       if (showCrossings) crossingLayerRef.current.addTo(m); else m.removeLayer(crossingLayerRef.current);
       if (showAdv) advLayerRef.current.addTo(m); else m.removeLayer(advLayerRef.current);
       // fitBounds bara vid NYTT center (ny fråga) — inte vid tids-scrub (annars zoomar kartan om hela tiden).
-      const fitKey = `${data.center.lat},${data.center.lng}`;
+      // fitKey inkluderar antal matchande platser → kartan ramar om när multi-plats-lagret laddat.
+      const fitKey = `${data.center.lat},${data.center.lng}|mp${matchingPlaces.length}`;
       if (fitKeyRef.current !== fitKey) {
         if (pts.length >= 2) m.fitBounds(L.latLngBounds(pts), { padding: [24, 24], maxZoom: 11 });
         else m.setView([data.center.lat, data.center.lng], pts.length ? 11 : 9);
@@ -431,7 +472,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       // Flera omritningar över några frames tills layouten satt sig (belt-and-suspenders utöver RO).
       [0, 80, 250, 600].forEach((d) => setTimeout(() => { try { m.invalidateSize(); } catch { /* noop */ } }, d));
     } catch { /* karta-init misslyckades → panelen visar ändå listor/bilder */ }
-  }, [data, forts, adventures, showRunes, showSites, showChurches, showWrecks, showEvents, showForts, showCrossings, showAdv, hiddenAdvKinds, ymax]);
+  }, [data, forts, adventures, matchingPlaces, showRunes, showSites, showChurches, showWrecks, showEvents, showForts, showCrossings, showAdv, hiddenAdvKinds, ymax]);
 
   useEffect(() => () => {
     try { roRef.current?.disconnect(); } catch { /* noop */ }
@@ -439,6 +480,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     roRef.current = null; mapRef.current = null; layerRef.current = null; siteLayerRef.current = null;
     churchLayerRef.current = null; wreckLayerRef.current = null; eventLayerRef.current = null;
     fortLayerRef.current = null; crossingLayerRef.current = null; advLayerRef.current = null;
+    placesLayerRef.current = null;
   }, []);
 
   // Kurerad "relaterat/se även" (t.ex. Göteborg → Nya Lödöse/Kungahälla/Älvsborgs lösen) — FAKTA i vår
@@ -566,6 +608,20 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           Döljs för landskaps-/hubbnoden — den har en egen grupperad karta (undviker dubbelkarta). */}
       {/* Vänta med answer-kartan tills landskaps-/ort-översikten (city_radius_overview) landat, annars
           ritas answer-kartan först och byts sedan mot LandscapeNode-kartan → såg ut som "två kartor". */}
+      {/* "Genererar karta…"-loader medan svaret/översikten laddar (Daniel: kartan tog ett tag på
+          Mörbylånga). Visas i kartans plats tills center/översikt landat, sen byts den mot kartan. */}
+      {!showLandscape && (isLoading || overviewLoading) && !hasCenter && query.trim().length >= 2 && (
+        <div className="px-5 pb-4">
+          <div className="relative flex w-full items-center justify-center rounded-xl border border-slate-700 bg-slate-800/60"
+            style={{ height: '52vh', minHeight: 340 }}>
+            <div className="flex flex-col items-center gap-3 text-slate-400">
+              <Loader2 className="h-6 w-6 animate-spin text-gold" />
+              <span className="text-sm">{sv ? 'Genererar karta…' : 'Generating map…'}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {hasCenter && !showLandscape && !overviewLoading && (
         <div className="px-5 pb-4">
           <div
