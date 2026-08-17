@@ -81,10 +81,12 @@ const flyTo = (
 interface TravelMode { key: string; label: string; min: number; def: number; max: number; step: number; stops: number[] }
 const TRAVEL_MODES: TravelMode[] = [
   // Gå: upp till ~5 km (~5000 steg). Cykla: 500 m – 5 mil (50 km). Kör: 100 m – 500 km (log-lika steg).
-  // "Vad finns här"-sonden (meter) är golvet under detta. Stegen snäpper via stops[].
+  // Båt: 500 m – 30 km (3 mil — man åker sällan längre; Daniel). "Vad finns här"-sonden (meter) är
+  // golvet under detta. Stegen snäpper via stops[].
   { key: 'foot', label: 'Gå',    min: 0.1, def: 0.5, max: 5,   step: 0.1, stops: [0.1, 0.25, 0.5, 1, 2, 3, 5] },
   { key: 'bike', label: 'Cykla', min: 0.5, def: 3,   max: 50,  step: 0.5, stops: [0.5, 1, 2, 5, 10, 20, 30, 50] },
   { key: 'car',  label: 'Kör',   min: 0.1, def: 5,   max: 500, step: 0.1, stops: [0.1, 0.5, 1, 5, 10, 25, 50, 100, 200, 300, 500] },
+  { key: 'boat', label: 'Båt',   min: 0.5, def: 5,   max: 30,  step: 0.5, stops: [0.5, 1, 2, 5, 10, 15, 20, 30] },
 ];
 // Koncentriska bandkanter i gång-läget (meter): "Inom 100 m", "100–200 m", … regelbunden skala.
 const FOOT_BAND_EDGES_M = [100, 200, 500, 1000, 2000, 3000, 4000, 5000];
@@ -485,7 +487,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
               style={{ minHeight: 42 }}
             >
               <span aria-hidden="true">{TRAVEL_MODE_LABELS[mode].icon}</span>
-              {mode === 'foot' ? 'Starta gångläge' : mode === 'bike' ? 'Starta cykelläge' : 'Starta körläge'}
+              {mode === 'foot' ? 'Starta gångläge' : mode === 'bike' ? 'Starta cykelläge' : mode === 'boat' ? 'Starta båtläge' : 'Starta körläge'}
             </button>
             {/* Snabbstopp för valt färdsätt (regelbunden skala) */}
             <div className="flex flex-wrap gap-1 mb-2">

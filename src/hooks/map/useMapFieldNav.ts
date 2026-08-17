@@ -103,7 +103,7 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
     // (HUD) är aktivt — det är den alltid-på nuvarande-position-markören. Annars, i aktivt
     // fältläge på icke-mobil/icke-bil, blå prick + riktningskägla (som tidigare). ALDRIG båda
     // samtidigt — det ska bara finnas EN positionsmarkör.
-    const showHereMarker = isMobile || mode === 'car';
+    const showHereMarker = isMobile || mode === 'car' || mode === 'boat';
 
     // Heading-up: rotera kartan så färdriktningen pekar UPP. Bara i aktivt billäge + följning + när
     // vi har en kurs (pos.headingDeg). Botar sjösjukan vid färd söderut (norr-upp → allt rör sig mot
@@ -165,7 +165,7 @@ export const useMapFieldNav = ({ map, isMapReady }: Props) => {
     // Därefter bara panorera (behåll användarens egen zoom).
     if (!flownRef.current) {
       flownRef.current = true;
-      const minZoom = mode === 'foot' ? 18 : mode === 'bike' ? 17 : 16;
+      const minZoom = mode === 'foot' ? 18 : mode === 'bike' ? 17 : mode === 'boat' ? 15 : 16;
       const z = Math.max(map.getZoom(), minZoom);
       try { map.flyTo(followCenter(), z, { duration: 0.6 }); } catch { /* noop */ }
     } else if (following) {

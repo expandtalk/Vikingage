@@ -19,7 +19,7 @@ export const useFieldNavGeolocation = () => {
   const mode = useTravelMode();
   // dismissed (användaren tryckte X) bryter mobilens always-on-gate → watchern + "här"-markören
   // stängs faktiskt av. startFieldNav nollar dismissed och sätter igång igen.
-  const enabled = !dismissed && (active || isMobile || mode === 'car');
+  const enabled = !dismissed && (active || isMobile || mode === 'car' || mode === 'boat');
   const compassRef = useRef<number | null>(null);
 
   useEffect(() => {

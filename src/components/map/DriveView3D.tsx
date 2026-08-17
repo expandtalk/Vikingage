@@ -63,7 +63,15 @@ const routeGeoJSON = (coords?: [number, number][]) => ({
 // Pitch per färdsätt: gående flackare (lättare överblick av omgivningen), bil mest tiltat
 // 3D-förarperspektiv, cykel mittemellan. Höjt 2026-08-16 för starkare 3D-känsla (Daniel).
 // Ej ända upp mot maxPitch: utan terräng/husextrudering blir extrem lutning mest tom himmel.
-const pitchForMode = (m: TravelMode): number => (m === 'foot' ? 48 : m === 'bike' ? 62 : 72);
+const pitchForMode = (m: TravelMode): number => (m === 'foot' ? 48 : m === 'bike' ? 62 : 72); // kör + båt = 72
+// Radie (km) för "allt i närheten" per färdsätt (jfr Near me-skalorna; båt = 3 mil, Daniel).
+const nearbyRadiusKm = (m: TravelMode): number => (m === 'foot' ? 5 : m === 'bike' ? 15 : m === 'boat' ? 30 : 25);
+// Svenska typ-etiketter för popup (samma som Near me-panelen).
+const FT_SV: Record<string, string> = {
+  runestone: 'Runsten', church: 'Kyrka', fortress: 'Fornborg', heritage: 'Lämning',
+  estate: 'Gods/gård', beacon: 'Vårdkase', thing_site: 'Tingsplats', coin: 'Myntfynd',
+  cult_site: 'Kultplats', maritime_node: 'Maritim nod',
+};
 
 export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: number; lng: number } }> = ({ className, demoCenter }) => {
   const { pos, following } = useFieldNav();
@@ -75,6 +83,7 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
   const arrowRef = useRef<HTMLDivElement | null>(null);
   const loadedRef = useRef(false);
   const advCenterRef = useRef<{ lat: number; lng: number } | null>(null);
+  const nearbyCenterRef = useRef<{ lat: number; lng: number; mode: string } | null>(null);
 
   // Init MapLibre en gång.
   useEffect(() => {
@@ -143,6 +152,40 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
       });
       map.on('mouseenter', 'adventures-pts', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'adventures-pts', () => { map.getCanvas().style.cursor = ''; });
+
+      // "Allt i närheten" — nearby_features (runstenar/kyrkor/fornborgar/heritage/gods/vårdkasar/
+      // tingsplatser/mynt/kultplatser/maritima noder) som ETT klickbart lager. Kärnan i att 3D-
+      // rörelseläget visar samma upptäckts-uppsättning som explore, men tiltat. Radie per färdsätt.
+      map.addSource('nearby', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } as any });
+      map.addLayer({
+        id: 'nearby-pts', type: 'circle', source: 'nearby',
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 4, 16, 7],
+          'circle-color': ['match', ['get', 'ft'],
+            'runestone', '#f59e0b', 'church', '#38bdf8', 'fortress', '#fb923c',
+            'heritage', '#c084fc', 'estate', '#34d399', 'beacon', '#f87171',
+            'thing_site', '#22d3ee', 'coin', '#fbbf24', 'cult_site', '#e879f9',
+            'maritime_node', '#22d3ee',
+            /* default */ '#94a3b8'] as any,
+          'circle-stroke-width': 1.2,
+          'circle-stroke-color': '#1e293b',
+          'circle-opacity': 0.9,
+        },
+      });
+      map.on('click', 'nearby-pts', (e) => {
+        const f = e.features?.[0]; if (!f) return;
+        const p = (f.properties ?? {}) as any;
+        const coords = (f.geometry as any).coordinates as [number, number];
+        // "Visa vägen dit" i popupen → fältnav-mål (tap-to-route, steg 3 kopplar rutten).
+        const html =
+          `<b>${p.label ?? ''}</b>` +
+          (p.typeSv ? `<br/><span style="font-size:11px;color:#64748b">${p.typeSv}</span>` : '') +
+          `<br/><button data-route-lat="${coords[1]}" data-route-lng="${coords[0]}" data-route-label="${(p.label ?? '').replace(/"/g, '&quot;')}" ` +
+          `style="margin-top:6px;font-size:12px;color:#b45309;background:none;border:none;padding:0;cursor:pointer;text-decoration:underline">Visa vägen dit →</button>`;
+        new maplibregl.Popup({ closeButton: true }).setLngLat(coords).setHTML(html).addTo(map);
+      });
+      map.on('mouseenter', 'nearby-pts', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'nearby-pts', () => { map.getCanvas().style.cursor = ''; });
       loadedRef.current = true;
     });
 
@@ -236,6 +279,46 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
     })();
     return () => { cancelled = true; };
   }, [pos, demoCenter]);
+
+  // "Allt i närheten" (nearby_features) — multityp-lagret som gör 3D-vyn till en riktig upptäckts-
+  // vy (samma uppsättning som explore). Radie per färdsätt; refetch när man rört sig eller bytt läge.
+  useEffect(() => {
+    const map = mapRef.current;
+    const c = pos ?? demoCenter;
+    if (!map || !c) return;
+    const radiusKm = nearbyRadiusKm(travelMode);
+    const last = nearbyCenterRef.current;
+    if (last && last.mode === travelMode) {
+      const dLat = (c.lat - last.lat) * 111000;
+      const dLng = (c.lng - last.lng) * 111000 * Math.cos((c.lat * Math.PI) / 180);
+      if (Math.hypot(dLat, dLng) < 2000) return; // < 2 km + samma läge → behåll
+    }
+    nearbyCenterRef.current = { lat: c.lat, lng: c.lng, mode: travelMode };
+    let cancelled = false;
+    (async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any).rpc('nearby_features', { p_lat: c.lat, p_lng: c.lng, p_radius_km: radiusKm, p_limit: 600 });
+      if (cancelled || !data) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const features = ((data ?? []) as any[]).filter((f) => f.lat != null && f.lng != null).slice(0, 600).map((f) => {
+        // heritage-label bär "raa_type – namn"; visa namnet om det finns.
+        const raw = String(f.name ?? f.label ?? '');
+        const name = raw.includes(' – ') ? raw.split(' – ').slice(1).join(' – ') || raw : raw;
+        return {
+          type: 'Feature',
+          properties: { ft: f.feature_type, label: name, typeSv: FT_SV[f.feature_type] ?? f.feature_type },
+          geometry: { type: 'Point', coordinates: [Number(f.lng), Number(f.lat)] },
+        };
+      });
+      const fc = { type: 'FeatureCollection', features };
+      const apply = () => {
+        const src = map.getSource('nearby') as maplibregl.GeoJSONSource | undefined;
+        src?.setData(fc as any);
+      };
+      if (loadedRef.current) apply(); else map.once('load', apply);
+    })();
+    return () => { cancelled = true; };
+  }, [pos, demoCenter, travelMode]);
 
   // Inline-style GARANTERAR full storlek + absolut position — slår MapLibres egen
   // .maplibregl-map{position:relative} (som annars nollar höjden → svart skärm).
