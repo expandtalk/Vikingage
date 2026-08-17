@@ -222,16 +222,21 @@
 .leaflet-container.vp-labels-off .vp-medallion .vp-mlabel--hover { display: none; }
 .leaflet-marker-icon.monumental-stone { z-index: 2020 !important; }
 
-/* Kompakt kartattribution. På mobil kollapsas den långa kreditraden till en tappbar
-   "ⓘ Kartdata"-chip (licenskravet uppfyllt men tar inte över kartan). Tap → full text. */
-.leaflet-control-attribution { font-size: 10px; }
+/* Kompakt kartattribution — kondenserad: liten, dämpad, tight padding, tar minimal plats.
+   Licenskravet uppfyllt men den skriker inte. På mobil (och kollapsad desktop) blir den en
+   tappbar "ⓘ Kartdata"-chip. Tap → full text. */
+.leaflet-control-attribution {
+  font-size: 9px; line-height: 1.25; padding: 0 4px;
+  background: rgba(255, 255, 255, 0.6); color: #64748b;
+}
+.leaflet-control-attribution a { color: #475569; }
+.leaflet-control-attribution.attribution-collapsed { font-size: 0; padding: 1px 5px; }
+.leaflet-control-attribution.attribution-collapsed::after {
+  content: "ⓘ Kartdata";
+  font-size: 9px; color: #0369a1; cursor: pointer;
+}
 @media (max-width: 640px) {
-  .leaflet-control-attribution { max-width: 80vw; line-height: 1.35; }
-  .leaflet-control-attribution.attribution-collapsed { font-size: 0; }
-  .leaflet-control-attribution.attribution-collapsed::after {
-    content: "ⓘ Kartdata & licens";
-    font-size: 10px; color: #0369a1; cursor: pointer;
-  }
+  .leaflet-control-attribution { max-width: 80vw; }
 }
 
 /* Fältlägets positionsmarkör: blå prick + roterande riktningskägla (norr-upp-karta). */
