@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
@@ -7,11 +7,19 @@ import { PageMeta } from '../components/PageMeta';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { MapPin, Compass, Calendar, ExternalLink } from 'lucide-react';
+import { MapPin, Compass, Calendar, ExternalLink, Search, Navigation } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 import { EXCURSIONS, EXCURSION_GROUPS } from '@/data/excursions';
 import { ExcursionsMap } from '@/components/excursions/ExcursionsMap';
 import { excerptText } from '@/components/excursions/ExcursionProse';
+
+// Fågelvägsavstånd (km) för "närliggande utflykter".
+const haversineKm = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+  const R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLng = (b.lng - a.lng) * Math.PI / 180;
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+};
 
 const Excursions = () => {
   const { language } = useLanguage();
@@ -38,6 +46,49 @@ const Excursions = () => {
   const [openSections, setOpenSections] = useState<string[]>(() =>
     sections.length ? [sections[0].key] : [],
   );
+
+  // Sök: filtrera utflykter på namn/region/beskrivning/period + "närliggande utflykter" genom att
+  // geokoda frågan mot ortnamnsregistret och sortera på fågelvägsavstånd (Daniel).
+  const [q, setQ] = useState('');
+  const [dq, setDq] = useState('');
+  useEffect(() => { const t = setTimeout(() => setDq(q.trim()), 250); return () => clearTimeout(t); }, [q]);
+
+  // Geokoda frågan → koordinat (för "närliggande"). Prefix mot place_names, tätort/stad först.
+  const [placeCoord, setPlaceCoord] = useState<{ lat: number; lng: number; name: string } | null>(null);
+  useEffect(() => {
+    if (dq.length < 2) { setPlaceCoord(null); return; }
+    let cancel = false;
+    (async () => {
+      const { data } = await (supabase as any).from('place_names')
+        .select('name, feature_type, lat, lng').ilike('name', `${dq}%`).not('lat', 'is', null).limit(20);
+      if (cancel) return;
+      const rows = ((data ?? []) as any[]).filter((r) => Number.isFinite(Number(r.lat)));
+      const best = rows.sort((a, b) =>
+        (a.name.toLowerCase() === dq.toLowerCase() ? -1 : 0) - (b.name.toLowerCase() === dq.toLowerCase() ? -1 : 0)
+        || (/(tätort|stad|BEBT|socken)/i.test(a.feature_type || '') ? -1 : 0) - (/(tätort|stad|BEBT|socken)/i.test(b.feature_type || '') ? -1 : 0),
+      )[0];
+      setPlaceCoord(best ? { lat: Number(best.lat), lng: Number(best.lng), name: best.name } : null);
+    })();
+    return () => { cancel = true; };
+  }, [dq]);
+
+  // Textträffar (namn/region/beskrivning/period).
+  const textMatches = useMemo(() => {
+    if (dq.length < 2) return [];
+    const n = dq.toLowerCase();
+    return EXCURSIONS.filter((e) => [e.name, e.region, e.period, (e as any).description_sv, (e as any).description_en]
+      .filter(Boolean).some((f: string) => f.toLowerCase().includes(n)));
+  }, [dq]);
+
+  // Närliggande utflykter (till den geokodade platsen), sorterade på avstånd, topp 9.
+  const nearbyMatches = useMemo(() => {
+    if (!placeCoord) return [];
+    return EXCURSIONS
+      .map((e) => ({ e, km: haversineKm(placeCoord, e.coords) }))
+      .sort((a, b) => a.km - b.km).slice(0, 9);
+  }, [placeCoord]);
+
+  const searching = dq.length >= 2;
 
   const handleSelect = useCallback((id: string) => {
     const exc = EXCURSIONS.find((e) => e.id === id);
@@ -157,6 +208,15 @@ const Excursions = () => {
               ? 'Platser att besöka på riktigt — heliga åsar, handelsstäder och fornborgar från vikingatiden och äldre. Klicka en markör på kartan eller fäll ut en region nedan.'
               : 'Places to visit in real life — sacred eskers, trading towns and hillforts from the Viking Age and earlier. Click a marker on the map or expand a region below.'}
           </p>
+          {/* Sök: filtrera utflykter (namn/region/tema) ELLER skriv en ort → närliggande utflykter. */}
+          <div className="relative mt-4 max-w-md">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              value={q} onChange={(e) => setQ(e.target.value)}
+              placeholder={sv ? 'Sök utflykt eller ort (t.ex. Kalmar, Öland)…' : 'Search excursion or place…'}
+              className="w-full rounded-lg border border-border bg-card/60 py-2 pl-8 pr-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-1 focus:ring-gold"
+            />
+          </div>
         </div>
 
         {/* Översiktskarta */}
@@ -178,6 +238,41 @@ const Excursions = () => {
           </div>
         </div>
 
+        {/* Sökläge: textträffar + närliggande utflykter (till geokodad ort). Annars grupperad accordion. */}
+        {searching ? (
+          <div className="mt-8 space-y-8">
+            <section>
+              <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-foreground">
+                <Search className="h-5 w-5 text-gold" />
+                {sv ? `Träffar för ”${dq}”` : `Matches for “${dq}”`}
+                <Badge variant="secondary" className="text-xs">{textMatches.length}</Badge>
+              </h2>
+              {textMatches.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{textMatches.map(renderCard)}</div>
+              ) : (
+                <p className="text-sm text-muted-foreground">{sv ? 'Ingen utflykt matchar texten — se närliggande nedan.' : 'No excursion matches the text — see nearby below.'}</p>
+              )}
+            </section>
+            {nearbyMatches.length > 0 && (
+              <section>
+                <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-foreground">
+                  <Navigation className="h-5 w-5 text-sky-400" />
+                  {sv ? `Närliggande utflykter kring ${placeCoord?.name}` : `Nearby excursions around ${placeCoord?.name}`}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {nearbyMatches.map(({ e, km }) => (
+                    <div key={`nb-${e.id}`} className="relative">
+                      <span className="absolute right-2 top-2 z-10 rounded-full bg-slate-900/85 px-2 py-0.5 text-[11px] font-medium text-sky-200 backdrop-blur-sm">
+                        {km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`}
+                      </span>
+                      {renderCard(e)}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        ) : (
         <Accordion
           type="multiple"
           value={openSections}
@@ -206,6 +301,7 @@ const Excursions = () => {
             </AccordionItem>
           ))}
         </Accordion>
+        )}
       </main>
       <Footer />
     </div>
