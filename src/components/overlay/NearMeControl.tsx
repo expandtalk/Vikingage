@@ -256,8 +256,10 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
     await requestCompassPermission();
     startFieldNav();
     setFieldNavTarget({ lat, lng, label });
-    closeNearMe();          // stäng panelen → FieldModeHud äger skärmen (en framdörr)
-    navigate('/explore');
+    closeNearMe();
+    // 3D-rörelseläget är hemmet för navigering (tiltat, följer mig, nearby-lager); ?lat&lng ger
+    // startvy vid målet om GPS ännu saknas. Explore är kvar som platt "se allt"-hem.
+    navigate(`/3D-drive?lat=${lat}&lng=${lng}`);
   };
   // "Kör hem": bilrutt från nuvarande position tillbaka till startpunkten.
   const goHome = async () => {
@@ -477,12 +479,13 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                   style={{ minHeight: 36 }}>{m.label}</button>
               ))}
             </div>
-            {/* Primär-action: starta fält-/GPS-läge på den INTERAKTIVA Explore-kartan (klick på
-                objekt + nypa-zoom funkar där; INTE 3D-drive-betan, som var svart/låst i fält).
-                Läges-knapparna ovan förblir räckvidds-FILTER; "starta färden" = ETT separat steg. */}
+            {/* Primär-action: starta det TILTADE 3D-rörelseläget (/3D-drive) — position, följ-mig,
+                "allt i närheten" (nearby_features) + tap-to-route, pitch per färdsätt. Explore är kvar
+                som platt "se allt"-hem (Utforska-knappen i 3D-HUD:en tar tillbaka dit).
+                Läges-knapparna ovan är räckvidds-FILTER; "starta färden" = ETT separat steg. */}
             <button
               type="button"
-              onClick={async () => { await requestCompassPermission(); startFieldNav(); closeNearMe(); navigate('/explore'); }}
+              onClick={async () => { await requestCompassPermission(); startFieldNav(); closeNearMe(); navigate('/3D-drive'); }}
               className="w-full mb-2 flex items-center justify-center gap-2 py-2 rounded-lg border border-gold/50 bg-gold/15 text-amber-100 text-sm font-medium hover:bg-gold/25"
               style={{ minHeight: 42 }}
             >

@@ -4,7 +4,7 @@ import { DriveView3D } from '@/components/map/DriveView3D';
 import { useFieldNav, startFieldNav, stopFieldNav, setFieldNavFollowing } from '@/hooks/useFieldNav';
 import { useFieldNavGeolocation } from '@/hooks/map/useFieldNavGeolocation';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { X, LocateFixed, Navigation2 } from 'lucide-react';
+import { X, LocateFixed, Navigation2, Map } from 'lucide-react';
 
 // /3D-bil (en: /3D-drive) — MapLibre Fas 2: tiltat 3D-förarperspektiv. Helskärm, mobil-först.
 // Startar fältlägets GPS-följning; river den vid unmount. HUD: fart + recenter + stäng.
@@ -48,6 +48,14 @@ const DriveView: React.FC = () => {
         <span className="rounded-lg border border-slate-600 bg-slate-900/85 px-2.5 py-1.5 text-[11px] text-slate-300 backdrop-blur-sm">
           {sv ? '3D-förarperspektiv (beta)' : '3D drive view (beta)'}
         </span>
+        {/* Tillbaka till den platta explore-kartan (alla lager) — 3D är rörelseläget, explore är hemmet. */}
+        <button
+          type="button"
+          onClick={() => navigate('/explore')}
+          className="inline-flex items-center gap-1 rounded-lg border border-slate-600 bg-slate-900/85 px-3 py-1.5 text-sm text-slate-100 backdrop-blur-sm"
+        >
+          <Map className="h-4 w-4" />{sv ? 'Utforska (platt)' : 'Explore (flat)'}
+        </button>
         {!following && (
           <button
             type="button"

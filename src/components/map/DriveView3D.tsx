@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { useFieldNav } from '@/hooks/useFieldNav';
-import { useRoadtrip } from '@/hooks/useRoadtrip';
+import { useFieldNav, setFieldNavTarget } from '@/hooks/useFieldNav';
+import { useRoadtrip, setRoadtripSearching, setRoadtripResult, setRoadtripError } from '@/hooks/useRoadtrip';
 import { useTravelMode, type TravelMode } from '@/hooks/useTravelMode';
+import { route as computeRoute } from '@/services/routing';
 import { supabase } from '@/integrations/supabase/client';
 
 // MapLibre Fas 2 — äkta tiltat 3D-förarperspektiv (course-up), det Leaflet inte kan.
@@ -46,8 +47,20 @@ const OSM_STYLE: any = {
       bounds: a.bounds,
       attribution: 'Höjddata © Lantmäteriet (MHM)',
     }])),
+    // OpenSeaMap sjömärkes-overlay (ODbL) — transparent, visas bara i båt-läge. Cookiefritt
+    // (samma modell som OSM). Framtida licensierat Sjöfartsverket-sjökort byts in via basemaps.ts.
+    seamark: {
+      type: 'raster',
+      tiles: ['https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '© OpenSeaMap contributors (ODbL)',
+    },
   },
-  layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+  // Sjömärkes-lagret ligger sist (överst) men börjar dolt (visibility none) → tänds i båt-läge.
+  layers: [
+    { id: 'osm', type: 'raster', source: 'osm' },
+    { id: 'seamark', type: 'raster', source: 'seamark', layout: { visibility: 'none' } },
+  ],
 };
 
 // RouteResult.coords är [lat,lng] (Leaflet-konvention) → MapLibre vill ha [lng,lat].
@@ -84,6 +97,9 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
   const loadedRef = useRef(false);
   const advCenterRef = useRef<{ lat: number; lng: number } | null>(null);
   const nearbyCenterRef = useRef<{ lat: number; lng: number; mode: string } | null>(null);
+  const posRef = useRef<{ lat: number; lng: number } | null>(null);
+  posRef.current = pos ? { lat: pos.lat, lng: pos.lng } : (demoCenter ?? null);
+  const routeClickRef = useRef<((ev: Event) => void) | null>(null);
 
   // Init MapLibre en gång.
   useEffect(() => {
@@ -186,11 +202,43 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
       });
       map.on('mouseenter', 'nearby-pts', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'nearby-pts', () => { map.getCanvas().style.cursor = ''; });
+
+      // Farleder (historiska segelleder + moderna korridorer) — båt-läge. Streckad linje.
+      map.addSource('fairways', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } as any });
+      map.addLayer({
+        id: 'fairways-line', type: 'line', source: 'fairways',
+        layout: { 'line-cap': 'round', 'line-join': 'round', visibility: 'none' },
+        paint: { 'line-color': '#a855f7', 'line-width': 2.5, 'line-opacity': 0.8, 'line-dasharray': [2, 2] },
+      });
       loadedRef.current = true;
     });
 
     // Drar användaren i kartan → sluta följa (samma semantik som fältnav).
     map.on('dragstart', () => { /* följning styrs av useFieldNav.following i förälder */ });
+
+    // TAP-TO-ROUTE: klick på popupens "Visa vägen dit" → rutt från min position till punkten.
+    // Event-delegation på container (popupen är DOM inuti kartan). Bil/båt får riktig OSRM-rutt;
+    // saknas position faller vi till att bara sätta målet (ledlinje/fågelväg).
+    const onRouteClick = async (ev: Event) => {
+      const btn = (ev.target as HTMLElement)?.closest?.('[data-route-lat]') as HTMLElement | null;
+      if (!btn) return;
+      ev.preventDefault();
+      const tLat = parseFloat(btn.getAttribute('data-route-lat') || '');
+      const tLng = parseFloat(btn.getAttribute('data-route-lng') || '');
+      const label = btn.getAttribute('data-route-label') || 'Mål';
+      if (!Number.isFinite(tLat) || !Number.isFinite(tLng)) return;
+      setFieldNavTarget({ lat: tLat, lng: tLng, label });
+      const from = posRef.current;
+      if (!from) return; // ingen position → bara mål satt (ledlinje ritas av fältnavet)
+      setRoadtripSearching();
+      try {
+        const r = await computeRoute(from, { lat: tLat, lng: tLng });
+        if (r) setRoadtripResult({ lat: tLat, lng: tLng, label }, r);
+        else setRoadtripError('Kunde inte beräkna en rutt dit.');
+      } catch { setRoadtripError('Fel vid ruttberäkningen.'); }
+    };
+    elRef.current.addEventListener('click', onRouteClick);
+    routeClickRef.current = onRouteClick;
 
     // ResizeObserver: MapLibre mäter containern vid init; om den ännu är 0 hög (layout ej klar)
     // blir kartan blank tills en resize sker. Ritar om när containern får/ändrar storlek.
@@ -200,7 +248,12 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
     ro.observe(elRef.current);
     requestAnimationFrame(() => { try { map.resize(); } catch { /* noop */ } });
 
-    return () => { ro.disconnect(); map.remove(); mapRef.current = null; loadedRef.current = false; };
+    const container = elRef.current;
+    return () => {
+      ro.disconnect();
+      if (container && routeClickRef.current) container.removeEventListener('click', routeClickRef.current);
+      map.remove(); mapRef.current = null; loadedRef.current = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -230,6 +283,37 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
     const src = map.getSource('route') as maplibregl.GeoJSONSource | undefined;
     src?.setData(routeGeoJSON(route?.coords) as any);
   }, [route]);
+
+  // Båt-läge: tänd OpenSeaMap-sjömärken + farleder; hämta farledsgeometrin en gång. Andra lägen → dölj.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    // Kartan kanske inte laddats än vid mount → kör om på 'load'.
+    if (!loadedRef.current) { const h = () => { setBoatLayers(); }; map.once('load', h); return () => { map.off('load', h); }; }
+    return setBoatLayers();
+
+    function setBoatLayers() {
+    const boat = travelMode === 'boat';
+    const setVis = (id: string, on: boolean) => { try { map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none'); } catch { /* noop */ } };
+    setVis('seamark', boat);
+    setVis('fairways-line', boat);
+    if (!boat) return;
+    let cancelled = false;
+    (async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any).rpc('fairways_geojson');
+      if (cancelled || !data) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const features = ((data ?? []) as any[]).map((f) => {
+        let geom; try { geom = JSON.parse(f.geojson); } catch { return null; }
+        return { type: 'Feature', properties: { name: f.name ?? '', kind: f.fairway_kind ?? '' }, geometry: geom };
+      }).filter(Boolean);
+      const src = map.getSource('fairways') as maplibregl.GeoJSONSource | undefined;
+      src?.setData({ type: 'FeatureCollection', features } as any);
+    })();
+    return () => { cancelled = true; };
+    }
+  }, [travelMode]);
 
   // Äventyr & motion nära positionen (grottor + bad + fiske). Throttlat: hämtar bara om
   // man rört sig > ~3 km sedan senaste hämtning (glesa grottor — 143 i hela landet — så
