@@ -241,6 +241,18 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     },
   });
 
+  // REGION-HUBBAR: kurerade regionsidor (Ölandsprojektet, Kalmar, Höga kusten…) nära platsen via
+  // pages_near → "Färjestaden" (Öland) surfar /sv/oland (Daniel: fick inte upp Ölandskartan/projektet).
+  const { data: regionPages = [] } = useQuery({
+    queryKey: ['answer-region-pages', data?.center?.lat, data?.center?.lng],
+    enabled: !!(data?.center && data.center.lat != null && data.center.lng != null),
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ title: string; url: string; kind: string | null; km: number }[]> => {
+      const { data: rows } = await (supabase as any).rpc('pages_near', { p_lat: data!.center!.lat, p_lng: data!.center!.lng, radius_m: 60000 });
+      return ((rows ?? []) as any[]).map((r) => ({ title: r.title_sv, url: r.url, kind: r.kind ?? null, km: (r.dist_m ?? 0) / 1000 })).slice(0, 5);
+    },
+  });
+
   // TEOFOR-GRUPPERING: söker man en gud (Tor/Oden/Frej…, inkl int. stavning) → orter uppkallade
   // efter guden (place_names.element_keys, element_category='sacral'). KÄLLKRITISKT: teofora
   // härledningar är TOLKNING, inte fastställt — märks som sådant. Guden→led-mappning nedan.
@@ -820,6 +832,23 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                   </li>
                 ))}
               </ul>
+            </section>
+          )}
+
+          {/* REGION-HUBBAR: kurerade regionsidor/projekt nära platsen (Ölandsprojektet m.fl.). */}
+          {regionPages.length > 0 && (
+            <section className="order-first">
+              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-gold">
+                <BookOpen className="h-3.5 w-3.5" /> {sv ? 'Utforska regionen' : 'Explore the region'}
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {regionPages.map((p) => (
+                  <button key={p.url} onClick={() => onGo(p.url)}
+                    className="rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-sm font-medium text-amber-100 hover:bg-gold/20">
+                    {p.title} →
+                  </button>
+                ))}
+              </div>
             </section>
           )}
 
