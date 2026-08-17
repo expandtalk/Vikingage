@@ -4,7 +4,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useMediaForTopic } from '@/hooks/useMediaForTopic';
 import { TopicMedia } from '@/components/media/TopicMedia';
-import { ExternalLink, Search, PenLine, Loader2 } from 'lucide-react';
+import { ExternalLink, Search, PenLine } from 'lucide-react';
+import { SearchVisualizer } from './SearchVisualizer';
 
 // Sista-lagret dead-endade tidigare till "ingen träff/externt" även när det GENERELLA sök-indexet
 // (search_v1) HAR träffar — svarspanelens entitets-resolvers (entity_node/get_search_related) och den
@@ -107,13 +108,9 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
         </div>
       )}
 
-      {/* Medan sökningen pågår: söker-indikator, INTE "ingen träff". Förfina-panelen kommer sent. */}
-      {searching && (
-        <div className="mt-4 flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/40 px-4 py-3 text-sm text-slate-400">
-          <Loader2 className="h-4 w-4 animate-spin text-gold" />
-          {en ? 'Searching Viking Age…' : 'Söker i Viking Age…'}
-        </div>
-      )}
+      {/* Medan sökningen pågår: KG-visualisering (letar i grafen), INTE "ingen träff".
+          Förfina-panelen kommer sent, först när sökningen är klar. */}
+      {searching && <SearchVisualizer sv={!en} label={query} />}
 
       {/* Lager 4: sök vidare externt + bidra — visas FÖRST när sökningen är klar (searching=false). */}
       {!searching && (
