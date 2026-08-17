@@ -17,6 +17,7 @@ import { useOffTopicSenses, useCanonicalSense } from '@/hooks/useOffTopicSenses'
 import { useSearchThumbs } from '@/hooks/useSearchThumbs';
 import { RelationMindmap } from './RelationMindmap';
 import { AnswerContext } from './AnswerContext';
+import { SearchHelp } from './SearchHelp';
 import { GodQuestions } from './GodQuestions';
 import { SuggestPlaceForm } from './SuggestPlaceForm';
 import { EXCURSIONS } from '@/data/excursions';
@@ -101,6 +102,7 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   maritime_node:  { labelSv: 'Hamnar & noder', labelEn: 'Harbours', icon: Ship, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   trade_route:    { labelSv: 'Handelsvägar', labelEn: 'Trade routes', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   content_page:   { labelSv: 'Sidor', labelEn: 'Pages', icon: BookOpen, route: (h) => h.signum ?? '/explore' },
+  road_waypoint:  { labelSv: 'Vägpunkter', labelEn: 'Route waypoints', icon: Compass, route: (h) => h.signum ?? `/explore?searchQuery=${enc(h.label)}` },
   experience:     { labelSv: 'Upplevelser', labelEn: 'Experiences', icon: Compass, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   investigation:  { labelSv: 'Undersökningar', labelEn: 'Investigations', icon: ScrollText, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   archaeological_site: { labelSv: 'Arkeologiska platser', labelEn: 'Archaeological sites', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
@@ -828,6 +830,9 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
           {sv ? `Visa alla runinskrifter för “${query}” på kartan` : `Show all inscriptions for “${query}” on the map`}
         </button>
       )}
+
+      {/* Söktips / avancerad sök-hjälp — alltid tillgänglig längst ned i dropdownen. */}
+      <SearchHelp sv={sv} />
     </div>
     );
 

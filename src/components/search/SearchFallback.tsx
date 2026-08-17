@@ -23,12 +23,13 @@ const TYPE_LABEL: Record<string, { sv: string; en: string }> = {
   ecclesiastical_site: { sv: 'Kyrka', en: 'Church' }, heritage_site: { sv: 'Fornlämning', en: 'Heritage' },
   experience: { sv: 'Upplevelse', en: 'Experience' },
   content_page: { sv: 'Sida', en: 'Page' },
+  road_waypoint: { sv: 'Vägpunkt', en: 'Route waypoint' },
 };
 const routeFor = (h: FbHit) =>
   h.entity_type === 'source' ? `/sources/${h.entity_id}`
   : h.entity_type === 'source_text' ? `/sources/text/${h.entity_id}`
-  // content_page (t.ex. Fornvännen-samlingen, Höga kusten) bär sin URL i signum.
-  : h.entity_type === 'content_page' && h.signum ? h.signum
+  // content_page (Fornvännen-samlingen, Höga kusten) + road_waypoint bär sin URL i signum.
+  : (h.entity_type === 'content_page' || h.entity_type === 'road_waypoint') && h.signum ? h.signum
   : `/explore?searchQuery=${encodeURIComponent(h.label)}`;
 
 // Sök-kaskadens sista lager: när ingen kärnentitet (plats/runsten/…) matchar visar vi ändå media
