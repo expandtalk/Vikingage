@@ -882,6 +882,19 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
             value={query}
             onChange={(e) => { setQuery(e.target.value); if (e.target.value) setTheme(null); }}
             onFocus={() => setHeroActive(true)}
+            onKeyDown={(e) => {
+              // Enter → känd-post-navigering: om frågan är en EXAKT namn-match mot en entitet
+              // (t.ex. "fornvännen" → Fornvännen-sidan), hoppa direkt dit. Annars låt dropdownen stå.
+              if (e.key !== 'Enter') return;
+              const q = query.trim().toLowerCase();
+              if (q.length < 2) return;
+              const exact = typeahead.find((s) => s.label.trim().toLowerCase() === q)
+                ?? (topEntity && topEntity.label?.trim().toLowerCase() === q ? topEntity : null);
+              if (!exact) return;
+              const m = META[exact.entity_type];
+              const route = m ? m.route(exact as unknown as Hit) : null;
+              if (route) { e.preventDefault(); logSearchClick(query, exact.entity_type, exact.entity_id); go(route); }
+            }}
             aria-label={sv ? 'Sök' : 'Search'}
             placeholder={sv
               ? 'Sök allt — runsten, ort, socken, gud, kung, mynt…'

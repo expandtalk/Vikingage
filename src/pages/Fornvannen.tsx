@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '../components/Header';
@@ -40,7 +40,10 @@ interface Row { id: string; title: string; author: string | null; written_year: 
 const Fornvannen: React.FC = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
-  const [cat, setCat] = useState<string | null>(null);
+  // ?cat=<slug> deep-länk (t.ex. från en kategori-sökning) → öppna redan filtrerad.
+  const [params] = useSearchParams();
+  const initialCat = params.get('cat');
+  const [cat, setCat] = useState<string | null>(initialCat && CAT_LABEL[initialCat] ? initialCat : null);
   const [q, setQ] = useState('');
   const [dq, setDq] = useState('');
   const [page, setPage] = useState(0);
