@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useMediaForTopic } from '@/hooks/useMediaForTopic';
 import { TopicMedia } from '@/components/media/TopicMedia';
-import { ExternalLink, Search, PenLine } from 'lucide-react';
+import { ExternalLink, Search, PenLine, Loader2 } from 'lucide-react';
 
 // Sista-lagret dead-endade tidigare till "ingen träff/externt" även när det GENERELLA sök-indexet
 // (search_v1) HAR träffar — svarspanelens entitets-resolvers (entity_node/get_search_related) och den
@@ -49,26 +49,33 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
   const hadMedia = !!(data && ((data.podcasts?.length ?? 0) + (data.videos?.length ?? 0) > 0));
 
   // Sista utväg: generella sök-indexet (search_v1). Om det HAR träffar visar vi dem — då är det
-  // ingen "ingen träff" längre.
+  // ingen "ingen träff" längre. VIKTIGT (Daniel): förfina-/ingen-träff-panelen får INTE visas
+  // medan sökningen fortfarande pågår (hits börjar tomt) — den ska komma SENT, först när sökningen
+  // är klar och verkligen gav noll. `searching` gate:ar det; gap-loggning sker först då också.
   const [hits, setHits] = useState<FbHit[]>([]);
+  const [searching, setSearching] = useState(true);
   useEffect(() => {
     let cancel = false;
     const q = query.trim();
-    if (q.length < 2) { setHits([]); return; }
+    if (q.length < 2) { setHits([]); setSearching(false); return; }
+    setSearching(true);
     (supabase as any).rpc('search_v1', { p_q: q, p_limit: 24 }).then(
-      (r: { data?: FbHit[] }) => { if (!cancel) setHits((r.data ?? []) as FbHit[]); },
-      () => { if (!cancel) setHits([]); },
+      (r: { data?: FbHit[] }) => {
+        if (cancel) return;
+        const rows = (r.data ?? []) as FbHit[];
+        setHits(rows); setSearching(false);
+        // Logga innehållslucka BARA när sökningen är klar OCH gav noll (inte eagerly per tangent).
+        const t = q.toLowerCase();
+        if (rows.length === 0 && !logged.has(t)) {
+          logged.add(t);
+          (supabase as any).rpc('log_search_gap', { p_term: query, p_had_media: hadMedia }).then(() => {}, () => {});
+        }
+      },
+      () => { if (!cancel) { setHits([]); setSearching(false); } },
     );
     return () => { cancel = true; };
-  }, [query]);
-  const hasHits = hits.length > 0;
-
-  useEffect(() => {
-    const t = query.trim().toLowerCase();
-    if (t.length < 2 || logged.has(t)) return;
-    logged.add(t);
-    (supabase as any).rpc('log_search_gap', { p_term: query, p_had_media: hadMedia }).then(() => {}, () => {});
   }, [query, hadMedia]);
+  const hasHits = hits.length > 0;
 
   return (
     <section className="px-5 py-4 text-left">
@@ -97,7 +104,16 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
         </div>
       )}
 
-      {/* Lager 4: sök vidare externt + bidra (dead-end-språket bara när vi verkligen saknar träffar) */}
+      {/* Medan sökningen pågår: söker-indikator, INTE "ingen träff". Förfina-panelen kommer sent. */}
+      {searching && (
+        <div className="mt-4 flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/40 px-4 py-3 text-sm text-slate-400">
+          <Loader2 className="h-4 w-4 animate-spin text-gold" />
+          {en ? 'Searching Viking Age…' : 'Söker i Viking Age…'}
+        </div>
+      )}
+
+      {/* Lager 4: sök vidare externt + bidra — visas FÖRST när sökningen är klar (searching=false). */}
+      {!searching && (
       <div className="mt-4 rounded-xl border border-slate-700 bg-slate-800/60 p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-amber-300">
           <Search className="h-4 w-4" />
@@ -136,6 +152,7 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
         </div>
         )}
       </div>
+      )}
     </section>
   );
 };
