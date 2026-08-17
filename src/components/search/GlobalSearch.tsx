@@ -10,6 +10,7 @@ import {
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { logSearchClick } from '@/utils/search/logSearchClick';
 import { useEntityNeighbors } from '@/hooks/useEntityNeighbors';
 import { useEntityFacets } from '@/hooks/useEntityFacets';
 import { useOffTopicSenses, useCanonicalSense } from '@/hooks/useOffTopicSenses';
@@ -735,7 +736,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
               return (
               <button
                 key={row.key}
-                onClick={() => go(row.route)}
+                onClick={() => { logSearchClick(query, g.type, row.id); go(row.route); }}
                 className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-amber-500/10"
               >
                 {/* Tumnagel för runinskrifter (övriga typer saknar bild → ingen tom ruta) */}

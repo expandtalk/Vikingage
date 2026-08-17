@@ -6,6 +6,7 @@ import { useMediaForTopic } from '@/hooks/useMediaForTopic';
 import { TopicMedia } from '@/components/media/TopicMedia';
 import { ExternalLink, Search, PenLine } from 'lucide-react';
 import { SearchVisualizer } from './SearchVisualizer';
+import { logSearchClick } from '@/utils/search/logSearchClick';
 
 // Sista-lagret dead-endade tidigare till "ingen träff/externt" även när det GENERELLA sök-indexet
 // (search_v1) HAR träffar — svarspanelens entitets-resolvers (entity_node/get_search_related) och den
@@ -96,7 +97,8 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
           <ul className="max-h-72 space-y-0.5 overflow-y-auto">
             {hits.map((h) => (
               <li key={`${h.entity_type}-${h.entity_id}`}>
-                <Link to={routeFor(h)} className="flex flex-wrap items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800">
+                <Link to={routeFor(h)} onClick={() => logSearchClick(query, h.entity_type, h.entity_id)}
+                  className="flex flex-wrap items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800">
                   <span className="text-slate-100">{h.signum && h.signum !== h.label ? `${h.signum} · ${h.label}` : h.label}</span>
                   <span className="ml-auto rounded border border-slate-600 px-1.5 py-0.5 text-[10px] text-slate-400">
                     {(TYPE_LABEL[h.entity_type] ? (en ? TYPE_LABEL[h.entity_type].en : TYPE_LABEL[h.entity_type].sv) : h.entity_type)}
