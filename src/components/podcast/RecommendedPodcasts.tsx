@@ -32,6 +32,15 @@ export const RecommendedPodcasts: React.FC = () => {
     staleTime: 1000 * 60 * 10,
   });
 
+  // Total-antal avsnitt över alla poddar/kanaler (visar skalan: "mer än 10 poddar").
+  const totals = useMemo(() => {
+    const rows = data ?? [];
+    const eps = rows.reduce((a, s) => a + (s.episodes || 0), 0);
+    const pods = rows.filter((s) => s.medium !== 'youtube').length;
+    return { eps, pods, channels: rows.length };
+  }, [data]);
+  const fmt = (n: number) => n.toLocaleString('sv-SE').replace(/ |,/g, ' '); // svenskt mellanslag
+
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
     let rows = (data ?? []).slice();
@@ -57,11 +66,18 @@ export const RecommendedPodcasts: React.FC = () => {
         <Headphones className="h-6 w-6 text-gold" />
         {en ? 'History podcasts & channels' : 'Historiepoddar & kanaler'}
       </h2>
-      <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
+      <p className="text-sm text-muted-foreground mb-1 max-w-3xl">
         {en
           ? 'Third-party podcasts and YouTube channels we recommend. They belong to their respective creators — we link out.'
           : 'Externa poddar och YouTube-kanaler vi tipsar om. De tillhör respektive skapare — vi länkar bara ut.'}
       </p>
+      {totals.channels > 0 && (
+        <p className="text-sm text-gold/90 font-medium mb-4">
+          {en
+            ? `${totals.channels} channels · ${fmt(totals.eps)} episodes catalogued`
+            : `${totals.channels} kanaler · ${fmt(totals.eps)} kategoriserade avsnitt`}
+        </p>
+      )}
 
       {/* Sök + sortering */}
       <div className="flex flex-col sm:flex-row gap-2 mb-5">
@@ -101,7 +117,7 @@ export const RecommendedPodcasts: React.FC = () => {
                 ? <Youtube className="h-3.5 w-3.5 text-gold/80" />
                 : <Headphones className="h-3.5 w-3.5 text-gold/80" />}
               {s.creator && <span>{s.creator}</span>}
-              {s.episodes > 0 && <span>· {s.episodes} {en ? 'episodes' : 'avsnitt'}</span>}
+              {s.episodes > 0 && <span className="text-gold/90 font-medium">· {fmt(s.episodes)} {en ? 'episodes' : 'avsnitt'}</span>}
               {s.latest && <span className="tabular-nums">· {en ? 'updated' : 'uppd.'} {s.latest}</span>}
             </div>
             {(en ? s.blurb_en : s.blurb_sv) && (
