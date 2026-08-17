@@ -57,6 +57,7 @@ const EconomicHistory = lazy(() => import("./pages/EconomicHistory"));
 const Angermanland = lazy(() => import("./pages/Angermanland"));
 const HogaKusten = lazy(() => import("./pages/HogaKusten"));
 const HaxprocessTorsaker = lazy(() => import("./pages/HaxprocessTorsaker"));
+const Fornvannen = lazy(() => import("./pages/Fornvannen"));
 const Ledung = lazy(() => import("./pages/Ledung"));
 const Snacknamn = lazy(() => import("./pages/Snacknamn"));
 const Hundare = lazy(() => import("./pages/Hundare"));
@@ -222,6 +223,8 @@ const App = () => (
                   <Route path="/hoga-kusten" element={<HogaKusten />} />
                   <Route path="/sv/haxprocesserna-angermanland" element={<HaxprocessTorsaker />} />
                   <Route path="/en/witch-trials-angermanland" element={<HaxprocessTorsaker />} />
+                  <Route path="/sv/fornvannen" element={<Fornvannen />} />
+                  <Route path="/en/fornvannen" element={<Fornvannen />} />
                   <Route path="/sv/ledung" element={<Ledung />} />
                   <Route path="/en/leidang" element={<Ledung />} />
                   <Route path="/sv/snacknamn" element={<Snacknamn />} />

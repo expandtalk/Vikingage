@@ -143,11 +143,23 @@ const SourceLibrary = () => {
       <Breadcrumbs />
       <main className="container mx-auto px-4 py-8 max-w-7xl">
         <h1 className="text-2xl font-bold text-white mb-1">{sv ? 'Bibliotek: texter & källor' : 'Library: texts & sources'}</h1>
-        <p className="text-sm text-gray-400 mb-6">
+        <p className="text-sm text-gray-400 mb-4">
           {sv
             ? 'Källorna i fulltext, strof för strof, ordnade efter typ. Grön markering = lagrad text; annars metadata.'
             : 'The sources in full text, stanza by stanza, arranged by type. Green = stored text; otherwise metadata.'}
         </p>
+
+        {/* Samlingsingång: Fornvännen (3604 artiklar) har en egen bläddringsbar sida. */}
+        <Link to={sv ? '/sv/fornvannen' : '/en/fornvannen'}
+          className="mb-6 flex items-center gap-3 rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 hover:bg-gold/15 transition-colors">
+          <BookOpen className="h-5 w-5 text-gold shrink-0" />
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-gold">Fornvännen</span>
+            <span className="block text-xs text-gray-400">
+              {sv ? 'Sveriges äldsta arkeologiska tidskrift — 3 604 artiklar, filtrerbara på ämne, med PDF →' : "Sweden's oldest archaeology journal — 3,604 articles, filter by subject, with PDF →"}
+            </span>
+          </span>
+        </Link>
 
         {isLoading && (
           <div className="flex items-center gap-2 text-muted-foreground py-16 justify-center">

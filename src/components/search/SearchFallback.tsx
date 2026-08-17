@@ -20,10 +20,13 @@ const TYPE_LABEL: Record<string, { sv: string; en: string }> = {
   viking_name: { sv: 'Namn', en: 'Name' }, excursion: { sv: 'Utflykt', en: 'Excursion' },
   ecclesiastical_site: { sv: 'Kyrka', en: 'Church' }, heritage_site: { sv: 'Fornlämning', en: 'Heritage' },
   experience: { sv: 'Upplevelse', en: 'Experience' },
+  content_page: { sv: 'Sida', en: 'Page' },
 };
 const routeFor = (h: FbHit) =>
   h.entity_type === 'source' ? `/sources/${h.entity_id}`
   : h.entity_type === 'source_text' ? `/sources/text/${h.entity_id}`
+  // content_page (t.ex. Fornvännen-samlingen, Höga kusten) bär sin URL i signum.
+  : h.entity_type === 'content_page' && h.signum ? h.signum
   : `/explore?searchQuery=${encodeURIComponent(h.label)}`;
 
 // Sök-kaskadens sista lager: när ingen kärnentitet (plats/runsten/…) matchar visar vi ändå media
