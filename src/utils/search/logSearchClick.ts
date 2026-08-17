@@ -20,3 +20,20 @@ export const logSearchClick = (term: string, entityType: string, entityId: strin
       .then(() => {}, () => {}); // tyst — signalen får aldrig störa UX
   } catch { /* noop */ }
 };
+
+// Logga ALLA sökningar (aggregat) så vi ser vad folk söker på + om det gav träff — systemet lär
+// sig vad vi bör bygga (Daniel). GDPR: ingen individdata, bara term→antal. Dedup per term i minnet
+// per sidladdning så en enskild sökning (många tangenttryck) inte dubbelräknas.
+const termsSent = new Set<string>();
+export const logSearchTerm = (term: string, hadHits: boolean): void => {
+  try {
+    const t = (term ?? '').trim().toLowerCase();
+    if (t.length < 2 || t.length > 60) return;
+    // Nyckel inkl. hadHits så en term som först missar och sen träffar loggas rätt en gång vardera.
+    const key = `${t}|${hadHits ? 1 : 0}`;
+    if (termsSent.has(key)) return;
+    termsSent.add(key);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rpc('log_search_term', { p_term: term, p_had_hits: hadHits }).then(() => {}, () => {});
+  } catch { /* noop */ }
+};

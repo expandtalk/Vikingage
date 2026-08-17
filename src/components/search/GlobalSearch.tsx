@@ -10,7 +10,7 @@ import {
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { logSearchClick } from '@/utils/search/logSearchClick';
+import { logSearchClick, logSearchTerm } from '@/utils/search/logSearchClick';
 import { useEntityNeighbors } from '@/hooks/useEntityNeighbors';
 import { useEntityFacets } from '@/hooks/useEntityFacets';
 import { useOffTopicSenses, useCanonicalSense } from '@/hooks/useOffTopicSenses';
@@ -555,6 +555,8 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         }
         setGroups(groupHits(hits));
         setTopEntity(hits[0] ?? null);
+        // Logga sökningen (aggregat, GDPR-säkert) → vi ser vad folk söker + om det gav träff.
+        logSearchTerm(q, (hits?.length ?? 0) > 0);
       } catch {
         setGroups([]);
       } finally {
