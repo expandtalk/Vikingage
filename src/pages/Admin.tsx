@@ -7,10 +7,11 @@ import { SignumManagement } from '../components/admin/SignumManagement';
 import { AdminRoles } from '../components/admin/AdminRoles';
 import { EntityEditor } from '../components/admin/entity-editor/EntityEditor';
 import { AdminDiscussion } from '../components/admin/AdminDiscussion';
+import { AdminSearchAnalytics } from '../components/admin/AdminSearchAnalytics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, Settings, Database, UserCog, Network, MessagesSquare } from "lucide-react";
+import { ArrowLeft, Shield, Settings, Database, UserCog, Network, MessagesSquare, Search } from "lucide-react";
 
 // Åtkomstkontroll sker centralt i <RequireRole roles={['admin']}> (App.tsx).
 const Admin = () => {
@@ -37,7 +38,7 @@ const Admin = () => {
 
         {/* Admin functionality */}
         <Tabs defaultValue="content" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 bg-white/10 border-white/20">
+          <TabsList className="grid w-full grid-cols-7 bg-white/10 border-white/20">
             <TabsTrigger value="content" className="data-[state=active]:bg-white/20 text-white">
               <Network className="h-4 w-4 mr-2" />
               Innehåll
@@ -61,6 +62,10 @@ const Admin = () => {
             <TabsTrigger value="security" className="data-[state=active]:bg-white/20 text-white">
               <Shield className="h-4 w-4 mr-2" />
               Security Audit
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-white/20 text-white">
+              <Search className="h-4 w-4 mr-2" />
+              Sök-analys
             </TabsTrigger>
           </TabsList>
           
@@ -93,6 +98,12 @@ const Admin = () => {
           <TabsContent value="security" className="mt-6">
             <div className="bg-white/5 backdrop-blur-md border-white/10 rounded-lg p-6">
               <SecurityAuditDashboard />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="mt-6">
+            <div className="bg-white/5 backdrop-blur-md border-white/10 rounded-lg p-6">
+              <AdminSearchAnalytics />
             </div>
           </TabsContent>
         </Tabs>
