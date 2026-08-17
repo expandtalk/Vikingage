@@ -214,6 +214,32 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const [hiddenAdvKinds, setHiddenAdvKinds] = useState<Set<string>>(new Set()); // tom = alla badtyper/fiske synliga
   const [advExpanded, setAdvExpanded] = useState(false); // underkategorierna hopfällda som default (Daniel)
   const [mapExpanded, setMapExpanded] = useState(false); // söksvarets karta i helskärm (Daniel)
+
+  // PLATS-NAV (nivå 2): dra ihop tvärgående fasetter för en plats. Medeltidsbrev som NÄMNER platsen
+  // (medieval_charters_browse, ilike på regest/plats/utfärdare) — "40 brev nämner Brännkyrka" — och
+  // vägpunkter (road_waypoints) där platsen ligger på en historisk väg. Gör medeltidsdiariet + vägnätet
+  // till ett tvärgående lager över hela plattformen (Daniel).
+  const { data: charters } = useQuery({
+    queryKey: ['answer-charters', query],
+    enabled: query.trim().length >= 2,
+    staleTime: 10 * 60 * 1000,
+    queryFn: async (): Promise<{ total: number; rows: { sdhk_id: number; year: number | null; date_display: string | null; regest: string | null }[] }> => {
+      const { data } = await (supabase as any).rpc('medieval_charters_browse', { q: query.trim(), page_size: 6 });
+      const rows = (data ?? []) as any[];
+      return { total: Number(rows[0]?.total_count ?? 0), rows };
+    },
+  });
+  const { data: waypoints = [] } = useQuery({
+    queryKey: ['answer-waypoints', query],
+    enabled: query.trim().length >= 2,
+    staleTime: 10 * 60 * 1000,
+    queryFn: async (): Promise<{ name: string; sublabel: string | null; signum: string | null }[]> => {
+      // Ur search_document (road_waypoint bär väg·typ i sublabel + explore-URL i signum).
+      const { data } = await (supabase as any).from('search_document')
+        .select('label, sublabel, signum').eq('entity_type', 'road_waypoint').ilike('label', `%${query.trim()}%`).limit(6);
+      return ((data ?? []) as any[]).map((r) => ({ name: r.label, sublabel: r.sublabel, signum: r.signum }));
+    },
+  });
   // Befästningsgeometri (linjer/polygoner) nära svarets center — riktig fort_element- + RAÄ-lämningsgeometri.
   // Källkritik: varje feature bär evidence_class → tolkat/hypotetiskt ritas streckat, bevarat heldraget.
   const { data: forts } = useQuery({
@@ -753,6 +779,52 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                     {(r.role || r.affiliation) && (
                       <span className="block text-xs text-slate-400">{[r.role, r.affiliation].filter(Boolean).join(' · ')}</span>
                     )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* PLATS-NAV: medeltidsbrev som nämner platsen (tvärgående lager). */}
+          {charters && charters.total > 0 && (
+            <section>
+              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
+                <Library className="h-3.5 w-3.5" /> {sv ? 'Medeltidsbrev som nämner platsen' : 'Charters mentioning this place'} · {charters.total}
+              </h3>
+              <ul className="space-y-1.5">
+                {charters.rows.map((c) => (
+                  <li key={c.sdhk_id}>
+                    <button onClick={() => onGo(`/sv/medeltidsbrev/${c.sdhk_id}`)}
+                      className="w-full text-left border-l-2 border-slate-700 pl-2.5 hover:border-amber-500/60">
+                      <span className="text-xs font-medium text-amber-200">{c.date_display || c.year || 'SDHK ' + c.sdhk_id}</span>
+                      {c.regest && <span className="block text-xs text-slate-400 leading-snug line-clamp-2">{c.regest}</span>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {charters.total > charters.rows.length && (
+                <button onClick={() => onGo(`/sv/medeltidsbrev?q=${encodeURIComponent(query.trim())}`)}
+                  className="mt-2 flex items-center gap-1 text-xs text-amber-300 hover:text-amber-100">
+                  <ArrowRight className="h-3 w-3" />{sv ? `Se alla ${charters.total} brev` : `See all ${charters.total} charters`}
+                </button>
+              )}
+            </section>
+          )}
+
+          {/* PLATS-NAV: ligger platsen på en historisk väg (vägpunkter)? */}
+          {waypoints.length > 0 && (
+            <section>
+              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
+                <MapPin className="h-3.5 w-3.5" /> {sv ? 'På historisk väg' : 'On a historic route'}
+              </h3>
+              <ul className="space-y-1.5">
+                {waypoints.map((w, i) => (
+                  <li key={`${w.name}-${i}`}>
+                    <button onClick={() => w.signum && onGo(w.signum)}
+                      className="w-full text-left border-l-2 border-slate-700 pl-2.5 hover:border-amber-500/60">
+                      <span className="text-sm font-medium text-white">{w.name}</span>
+                      {w.sublabel && <span className="block text-xs text-slate-400">{w.sublabel}</span>}
+                    </button>
                   </li>
                 ))}
               </ul>
