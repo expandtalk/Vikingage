@@ -240,6 +240,34 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       return ((data ?? []) as any[]).map((r) => ({ name: r.label, sublabel: r.sublabel, signum: r.signum }));
     },
   });
+
+  // TEOFOR-GRUPPERING: söker man en gud (Tor/Oden/Frej…, inkl int. stavning) → orter uppkallade
+  // efter guden (place_names.element_keys, element_category='sacral'). KÄLLKRITISKT: teofora
+  // härledningar är TOLKNING, inte fastställt — märks som sådant. Guden→led-mappning nedan.
+  const deity = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const map: Record<string, { key: string; god: string }> = {
+      tor: { key: 'tor', god: 'Tor' }, thor: { key: 'tor', god: 'Tor' }, 'þórr': { key: 'tor', god: 'Tor' },
+      oden: { key: 'oden', god: 'Oden' }, odin: { key: 'oden', god: 'Oden' }, 'óðinn': { key: 'oden', god: 'Oden' },
+      frej: { key: 'frö', god: 'Frej' }, freyr: { key: 'frö', god: 'Frej' }, frö: { key: 'frö', god: 'Frej/Freja' },
+      freja: { key: 'frö', god: 'Freja' }, freyja: { key: 'frö', god: 'Freja' }, freya: { key: 'frö', god: 'Freja' },
+      härn: { key: 'härn', god: 'Härn' }, skade: { key: 'skade', god: 'Skade' }, inge: { key: 'inge', god: 'Inge/Yngve' },
+    };
+    return map[q] ?? null;
+  }, [query]);
+  const { data: theophoric } = useQuery({
+    queryKey: ['answer-theophoric', deity?.key],
+    enabled: !!deity,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ total: number; rows: { name: string; element_keys: string[]; lat: number; lng: number }[] }> => {
+      const { data, count } = await (supabase as any).from('place_names')
+        .select('name, element_keys, lat, lng', { count: 'exact' })
+        .contains('element_keys', [deity!.key]).eq('element_category', 'sacral').not('lat', 'is', null).limit(40);
+      const rows = ((data ?? []) as any[]).map((r) => ({ name: r.name, element_keys: r.element_keys, lat: Number(r.lat), lng: Number(r.lng) }))
+        .filter((p) => Number.isFinite(p.lat));
+      return { total: typeof count === 'number' ? count : rows.length, rows };
+    },
+  });
   // Befästningsgeometri (linjer/polygoner) nära svarets center — riktig fort_element- + RAÄ-lämningsgeometri.
   // Källkritik: varje feature bär evidence_class → tolkat/hypotetiskt ritas streckat, bevarat heldraget.
   const { data: forts } = useQuery({
@@ -383,6 +411,15 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         }).bindPopup(`<b>${esc(p.name)}</b>${p.feature_type ? `<br/><span style="font-size:11px;color:#78350f">${esc(p.feature_type)}</span>` : ''}`)
           .addTo(placesLayerRef.current!);
       });
+      // Teofora orter (uppkallade efter guden) — violett pin. Tolkning (teofor härledning), ej fastställt.
+      (theophoric?.rows ?? []).forEach((p) => {
+        pts.push([p.lat, p.lng]);
+        L.marker([p.lat, p.lng], {
+          icon: L.divIcon({ className: '', iconSize: [12, 12], iconAnchor: [6, 6],
+            html: `<div style="width:12px;height:12px;border-radius:50%;background:#a855f7;border:2px solid #4c1d95;box-shadow:0 0 0 1px rgba(255,255,255,.5)"></div>` }),
+        }).bindPopup(`<b>${esc(p.name)}</b><br/><span style="font-size:11px;color:#6b21a8">teofort ortnamn (${esc((p.element_keys || []).join('+'))}) — tolkning</span>`)
+          .addTo(placesLayerRef.current!);
+      });
       placesLayerRef.current.addTo(m);
       (data.inscriptions || []).forEach((r) => {
         if (r.lat == null || r.lng == null) return;
@@ -489,7 +526,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       if (showAdv) advLayerRef.current.addTo(m); else m.removeLayer(advLayerRef.current);
       // fitBounds bara vid NYTT center (ny fråga) — inte vid tids-scrub (annars zoomar kartan om hela tiden).
       // fitKey inkluderar antal matchande platser → kartan ramar om när multi-plats-lagret laddat.
-      const fitKey = `${data.center.lat},${data.center.lng}|mp${matchingPlaces.length}`;
+      const fitKey = `${data.center.lat},${data.center.lng}|mp${matchingPlaces.length}|th${theophoric?.rows.length ?? 0}`;
       if (fitKeyRef.current !== fitKey) {
         if (pts.length >= 2) m.fitBounds(L.latLngBounds(pts), { padding: [24, 24], maxZoom: 11 });
         else m.setView([data.center.lat, data.center.lng], pts.length ? 11 : 9);
@@ -498,7 +535,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       // Flera omritningar över några frames tills layouten satt sig (belt-and-suspenders utöver RO).
       [0, 80, 250, 600].forEach((d) => setTimeout(() => { try { m.invalidateSize(); } catch { /* noop */ } }, d));
     } catch { /* karta-init misslyckades → panelen visar ändå listor/bilder */ }
-  }, [data, forts, adventures, matchingPlaces, showRunes, showSites, showChurches, showWrecks, showEvents, showForts, showCrossings, showAdv, hiddenAdvKinds, ymax]);
+  }, [data, forts, adventures, matchingPlaces, theophoric, showRunes, showSites, showChurches, showWrecks, showEvents, showForts, showCrossings, showAdv, hiddenAdvKinds, ymax]);
 
   useEffect(() => () => {
     try { roRef.current?.disconnect(); } catch { /* noop */ }
@@ -586,7 +623,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   ) : null;
 
   if (!data || (data.count === 0 && (data.images?.length ?? 0) === 0 && !data.page
-      && (data.research?.length ?? 0) === 0 && (data.literature?.length ?? 0) === 0)) {
+      && (data.research?.length ?? 0) === 0 && (data.literature?.length ?? 0) === 0
+      && (theophoric?.total ?? 0) === 0 && (charters?.total ?? 0) === 0)) {
     // Ingen plats/entitet i kärnskopet (t.ex. "Hitler", "nazism", 1900-talsbegrepp). Sök-kaskadens
     // sista lager: media (poddar/video) + externa sök-URL:er + bidra — och sökordet loggas.
     // + relaterat-block överst (för t.ex. Göteborg som saknar egen entitet men har föregångare).
@@ -808,6 +846,28 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                   <ArrowRight className="h-3 w-3" />{sv ? `Se alla ${charters.total} brev` : `See all ${charters.total} charters`}
                 </button>
               )}
+            </section>
+          )}
+
+          {/* TEOFOR-GRUPPERING: orter uppkallade efter guden (Tor/Oden/Frej…). Tolkning, ej fastställt. */}
+          {deity && theophoric && theophoric.total > 0 && (
+            <section>
+              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-fuchsia-300">
+                <MapPin className="h-3.5 w-3.5" /> {sv ? `Orter uppkallade efter ${deity.god}` : `Places named after ${deity.god}`} · {theophoric.total}
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {theophoric.rows.slice(0, 24).map((p, i) => (
+                  <button key={`${p.name}-${i}`} onClick={() => onGo(`/explore?searchQuery=${encodeURIComponent(p.name)}`)}
+                    className="rounded-full border border-fuchsia-500/40 bg-fuchsia-500/10 px-2 py-0.5 text-xs text-fuchsia-100 hover:bg-fuchsia-500/20">
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-[11px] text-slate-500">
+                {sv
+                  ? `Teofora ortnamn (${deity.god}-led) — tolkning av ortnamnsforskningen, inte fastställt. Violetta prickar på kartan.`
+                  : `Theophoric place names — a scholarly interpretation, not established fact. Purple dots on the map.`}
+              </p>
             </section>
           )}
 
