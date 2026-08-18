@@ -141,6 +141,16 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   theme:          { labelSv: 'Teman', labelEn: 'Themes', icon: Sparkles, route: () => '/explore' },
 };
 
+// Enter ska INTE hoppa iväg till en generisk kart-vy för geo-/platstyper — svarspanelen visar
+// redan kartan + all kontext, och att t.ex. en socken-exaktmatch kapade allt till parishes-kartan
+// var en tydlig försämring (Daniel). Enter navigerar bara för "sidlika" destinationer (runsten,
+// kurerad sida, ristare, kung, mynt, källa…); geo-typerna behåller den rika svarspanelen.
+const ENTER_SKIP_TYPES = new Set([
+  'parish', 'place', 'place_name', 'landscape', 'heritage_site', 'city', 'estate', 'cult_site',
+  'christian_site', 'ecclesiastical_site', 'archaeological_site', 'road', 'fairway', 'trade_route',
+  'maritime_node', 'thing_site', 'crossing_point', 'town', 'event', 'experience', 'shipwreck', 'hundred',
+]);
+
 // Entitetstyper med geografiskt läge → erbjud "Visa på kartan" i svarspanelen.
 const GEO_TYPES = new Set([
   'place', 'place_name', 'heritage_site', 'city', 'parish', 'landscape', 'hillfort',
@@ -953,6 +963,8 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
               const exact = typeahead.find((s) => s.label.trim().toLowerCase() === q)
                 ?? (topEntity && topEntity.label?.trim().toLowerCase() === q ? topEntity : null);
               if (!exact) return;
+              // Geo-/platstyp → behåll den rika svarspanelen i st.f. att hoppa till en generisk karta.
+              if (ENTER_SKIP_TYPES.has(exact.entity_type)) return;
               const m = META[exact.entity_type];
               const route = m ? m.route(exact as unknown as Hit) : null;
               if (route) { e.preventDefault(); logSearchClick(query, exact.entity_type, exact.entity_id); go(route); }

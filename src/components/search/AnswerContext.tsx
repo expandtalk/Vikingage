@@ -1005,28 +1005,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             </section>
           )}
 
-          {/* FORNVÄNNEN: relevanta artiklar (direkt-PDF) som "läs mer" (Daniel). Extern länk, ny flik. */}
-          {fornvannen.length > 0 && (
-            <section className="text-left">
-              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300">
-                <Library className="h-3.5 w-3.5" /> {sv ? 'Läs mer i Fornvännen' : 'Read more in Fornvännen'}
-              </h3>
-              <ul className="space-y-1.5">
-                {fornvannen.map((a) => (
-                  <li key={a.id}>
-                    <a href={a.url} target="_blank" rel="noopener noreferrer"
-                      className="block border-l-2 border-slate-700 pl-2.5 hover:border-sky-500/60">
-                      <span className="text-sm font-medium text-white leading-snug line-clamp-2">{a.title}</span>
-                      {a.year && <span className="block text-xs text-slate-400">Fornvännen · {a.year}</span>}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-2 text-[11px] text-slate-500">
-                {sv ? 'Fornvännen (KVHAA/RAÄ), CC BY 4.0 — öppnas som PDF hos utgivaren.' : 'Fornvännen (KVHAA), CC BY 4.0 — opens as publisher PDF.'}
-              </p>
-            </section>
-          )}
+          {/* FORNVÄNNEN flyttat till "Fördjupning"-raden (bredvid poddar/video) längre ned. */}
 
           {/* HISTORIEMÅLNINGAR (PD, 1800-tal) knutna till kung/händelse. KÄLLKRITISK VARNING syns tydligt
               (Daniel): konstnärlig tolkning, ej historisk källa. Full caveat i lightboxen. */}
@@ -1252,8 +1231,33 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
       )}
 
-      {/* Poddar & video: begränsad bredd (~50% på desktop) — korta rader ska inte spänna hela ytan (Daniel). */}
-      <div className="px-5 pb-4 lg:max-w-[52%]"><TopicMedia query={query} /></div>
+      {/* FÖRDJUPNING — 50/50: poddar/video (lyssna) till vänster, Fornvännen-artiklar (läs) till höger,
+          så ytan täcks 100% i st.f. tom halva. Utan Fornvännen-träffar håller podden ~52% (korta rader
+          ska inte spänna hela bredden). */}
+      <div className={`px-5 pb-4 ${fornvannen.length > 0 ? 'grid gap-4 lg:grid-cols-2 lg:items-start' : 'lg:max-w-[52%]'}`}>
+        <div><TopicMedia query={query} /></div>
+        {fornvannen.length > 0 && (
+          <section className="text-left">
+            <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300">
+              <Library className="h-3.5 w-3.5" /> {sv ? 'Läs mer i Fornvännen' : 'Read more in Fornvännen'}
+            </h3>
+            <ul className="space-y-1.5">
+              {fornvannen.map((a) => (
+                <li key={a.id}>
+                  <a href={a.url} target="_blank" rel="noopener noreferrer"
+                    className="block border-l-2 border-slate-700 pl-2.5 hover:border-sky-500/60">
+                    <span className="text-sm font-medium text-white leading-snug line-clamp-2">{a.title}</span>
+                    {a.year && <span className="block text-xs text-slate-400">Fornvännen · {a.year}</span>}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-[11px] text-slate-500">
+              {sv ? 'Fornvännen (KVHAA/RAÄ), CC BY 4.0 — öppnas som PDF hos utgivaren.' : 'Fornvännen (KVHAA), CC BY 4.0 — opens as publisher PDF.'}
+            </p>
+          </section>
+        )}
+      </div>
 
       {/* Medeltidsbrev (SDHK) utfärdade i orten — efter podden. Visas bara för länkade KG-orter. */}
       <CharterAnswerSection name={query} sv={sv} />
