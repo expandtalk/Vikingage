@@ -3,8 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, MapPin, X } from 'lucide-react';
+import { Search, MapPin, X, Clock } from 'lucide-react';
 import { getElement } from '@/utils/placeNameElements';
+import { PlaceNameTwoAxisCard } from './PlaceNameTwoAxisCard';
 
 // Sök-FÖRST-ruta högst upp på /sv/ortnamn. Söker HELA nationella ortnamnsregistret
 // (place_names, ~358k) server-side via pg_trgm — inte det lilla kurerade urvalet i
@@ -21,6 +22,7 @@ const elementLabel = (k: string) => getElement(k)?.label ?? (k.charAt(0).toUpper
 export const PlaceNameQuickSearch: React.FC<{ sv: boolean }> = ({ sv }) => {
   const [raw, setRaw] = useState('');
   const [q, setQ] = useState('');
+  const [selected, setSelected] = useState<string | null>(null); // valt namn → tvåaxel-kort
 
   // Debounce (250 ms) så vi inte frågar per tangenttryck.
   useEffect(() => {
@@ -103,24 +105,41 @@ export const PlaceNameQuickSearch: React.FC<{ sv: boolean }> = ({ sv }) => {
           {results.length > 0 && (
             <ul className="max-h-80 space-y-1 overflow-y-auto">
               {results.map((h) => (
-                <li key={h.id} className="flex flex-wrap items-center gap-2 rounded-md border border-slate-700/50 bg-slate-800/40 px-3 py-2">
-                  <span className="font-medium text-foreground">{h.name}</span>
-                  {h.province && <span className="text-xs text-muted-foreground">{h.province}</span>}
-                  {h.earliest_attestation_year != null && (
-                    <span className="text-[11px] text-slate-400">{sv ? 'äldsta belägg' : 'attested'} {h.earliest_attestation_year}{h.attested_form ? ` (${h.attested_form})` : ''}</span>
-                  )}
-                  {(h.element_keys ?? []).slice(0, 4).map((k) => (
-                    <Badge key={k} variant="outline" className="text-[10px]">{elementLabel(k)}</Badge>
-                  ))}
-                  {h.lat != null && h.lng != null && (
-                    <a href={`/explore?lat=${h.lat}&lng=${h.lng}`} className="ml-auto inline-flex items-center gap-1 text-xs text-gold hover:underline">
-                      <MapPin className="h-3 w-3" />{sv ? 'Visa på kartan' : 'Show on map'}
-                    </a>
-                  )}
+                <li key={h.id}>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(h.name)}
+                    aria-pressed={selected === h.name}
+                    title={sv ? 'Visa tvåaxel (belägg + namnålder)' : 'Show two axes (attestation + name-age)'}
+                    className={`flex w-full flex-wrap items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors ${selected === h.name ? 'border-gold/70 bg-gold/10' : 'border-slate-700/50 bg-slate-800/40 hover:border-gold/50 hover:bg-slate-800/70'}`}
+                  >
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-gold/70" />
+                    <span className="font-medium text-foreground">{h.name}</span>
+                    {h.province && <span className="text-xs text-muted-foreground">{h.province}</span>}
+                    {h.earliest_attestation_year != null && (
+                      <span className="text-[11px] text-slate-400">{sv ? 'äldsta belägg' : 'attested'} {h.earliest_attestation_year}{h.attested_form ? ` (${h.attested_form})` : ''}</span>
+                    )}
+                    {(h.element_keys ?? []).slice(0, 4).map((k) => (
+                      <Badge key={k} variant="outline" className="text-[10px]">{elementLabel(k)}</Badge>
+                    ))}
+                    {h.lat != null && h.lng != null && (
+                      <a
+                        href={`/explore?lat=${h.lat}&lng=${h.lng}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="ml-auto inline-flex items-center gap-1 text-xs text-gold hover:underline"
+                      >
+                        <MapPin className="h-3 w-3" />{sv ? 'Visa på kartan' : 'Show on map'}
+                      </a>
+                    )}
+                  </button>
                 </li>
               ))}
             </ul>
           )}
+          {results.length > 0 && !selected && (
+            <p className="mt-1.5 text-[11px] text-muted-foreground/70">{sv ? 'Klicka på ett namn för tvåaxeln — när det skrevs (belägg) vs namnets ålder (skikt).' : 'Click a name for the two axes — when it was written (attestation) vs the name’s age (stratum).'}</p>
+          )}
+          {selected && <PlaceNameTwoAxisCard name={selected} sv={sv} onClose={() => setSelected(null)} />}
           {attrib && (
             <p className="mt-2 text-[10px] text-slate-500">{sv ? 'Källa' : 'Source'}: {attrib}</p>
           )}
