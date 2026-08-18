@@ -290,6 +290,18 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
   // HISTORIEMÅLNINGAR (PD, 1800-tal — Cederström/Hellqvist m.fl.) knutna till kungar/händelser.
   // KÄLLKRITISKT: konstnärlig tolkning, ej historisk källa → caveat visas tydligt (Daniel).
+  // ARKIVBILDER: bild-på-sök över bildarkivet (runstensteckningar, kyrkor, landmärken, målningar)
+  // så topiska sökningar ("runstenar", "runestone drawings", "kyrkor") drar in relevanta bilder.
+  const { data: archiveImages = [] } = useQuery({
+    queryKey: ['answer-archive-images', query],
+    enabled: query.trim().length >= 2,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ image_url: string; thumb_url: string | null; title: string | null; credit: string | null; license_code: string | null; source_institution: string | null; category: string }[]> => {
+      const { data } = await (supabase as any).rpc('images_for_query', { p_q: query.trim(), p_limit: 12 });
+      return (data ?? []) as any[];
+    },
+  });
+
   const { data: paintings = [] } = useQuery({
     queryKey: ['answer-paintings', query],
     enabled: query.trim().length >= 2,
@@ -1320,6 +1332,47 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         <TieredGallery images={data.images ?? []} missing={data.missing ?? []} sv={sv}
           onOpen={(img) => setLightbox({ url: img.url, desc: img.desc, license: img.license, credit: img.credit })} />
       )}
+
+      {/* ARKIVBILDER: bild-på-sök (images_for_query) — fyller topiska sökningar (runstenar, kyrkor,
+          runestone drawings). Dedupas mot redan visade bilder + heron. */}
+      {(() => {
+        const shown = new Set<string>([
+          ...((data.images ?? []) as any[]).map((im) => im.url),
+          ...(heroPainting ? [heroPainting.image_url] : []),
+        ]);
+        const arch = archiveImages.filter((a) => !shown.has(a.image_url));
+        if (!arch.length) return null;
+        const CAT: Record<string, { sv: string; en: string }> = {
+          runestone_drawing: { sv: 'Runstensteckning', en: 'Runestone drawing' },
+          runestone: { sv: 'Runsten', en: 'Runestone' },
+          church: { sv: 'Kyrka', en: 'Church' },
+          history_painting: { sv: 'Historiemålning', en: 'History painting' },
+          landmark: { sv: 'Landmärke', en: 'Landmark' },
+        };
+        return (
+          <section className="px-5 pb-5 text-left">
+            <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
+              <ImageIcon className="h-3.5 w-3.5" /> {sv ? 'Arkivbilder' : 'Archive images'}
+            </h3>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+              {arch.map((a, i) => (
+                <button key={a.image_url + i} type="button" title={a.title ?? undefined}
+                  onClick={() => setLightbox({ url: a.image_url, desc: a.title ?? undefined, license: a.license_code ?? undefined, credit: a.credit ?? a.source_institution ?? undefined })}
+                  className="group relative overflow-hidden rounded-lg border border-slate-700 bg-slate-800 text-left">
+                  <img src={a.thumb_url || a.image_url} alt={a.title ?? ''} loading="lazy"
+                    className="aspect-square w-full object-cover transition group-hover:opacity-90" onError={hideCard} />
+                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-1.5 pb-1 pt-4 text-[9px] font-medium leading-tight text-white line-clamp-2">
+                    {(CAT[a.category]?.[sv ? 'sv' : 'en']) ?? ''}{a.title ? ` · ${a.title}` : ''}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-slate-500">
+              {sv ? 'Ur bildarkivet — varje bild med källa/licens (öppnas i visaren).' : 'From the image archive — each with source/licence.'}
+            </p>
+          </section>
+        );
+      })()}
 
       {/* Lightbox: större bild + bildtext + "öppna källan"-länk (för den som VILL lämna). */}
       {lightbox && (
