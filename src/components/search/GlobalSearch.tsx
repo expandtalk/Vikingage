@@ -80,7 +80,7 @@ const stripTags = (s: string | null) => (s ? s.replace(/<\/?b>/g, '') : undefine
 // själva frågetexten innan sökning så den inte förorenar träffarna.
 const DEV_RE = /(?:^|\s)--?dev\b/i;
 const stripDev = (s: string) => s.replace(/(?:^|\s)--?dev\b/gi, '').trim();
-interface DevInfo { q: string; path: string; ms: number; count: number; hits: Hit[]; }
+interface DevInfo { q: string; path: string; ms: number; count: number; hits: Hit[]; queries: string[]; }
 
 // Presentationsmeta per entitetstyp i search_document.
 const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon; route: (h: Hit) => string }> = {
@@ -553,6 +553,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
       setLoading(true);
       const t0 = performance.now();
       let path = 'hybrid (search-hybrid)';
+      const queries: string[] = [];
       try {
         // Hybrid (lexikalt search_v1 + semantiskt) via edge-funktionen search-hybrid.
         // Fallback till rena search_v1 om edge:n fallerar → sök går aldrig sönder.
@@ -567,21 +568,25 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
           const arr = (data as { hits?: Hit[] } | null)?.hits;
           if (!error && Array.isArray(arr) && arr.length > 0) {
             hits = arr;
+            queries.push('edge search-hybrid → rpc search_v1 (tabell: search_document) + pgvector-embeddings');
           }
-        } catch { /* faller igenom till lexikalt */ }
+        } catch { queries.push('edge search-hybrid — fel/timeout → fallback'); }
         if (!hits) {
           path = 'fallback (search_v1)';
+          queries.push('rpc search_v1 (tabell: search_document)');
           const res = await sb.rpc('search_v1', { p_q: q, p_limit: 120 });
           hits = res.data ?? [];
         }
+        queries.push('rpc search_typeahead (tabeller: place_names, viking_names, carvers) — parallellt');
+        queries.push('svarspanel AnswerContext: resolve_place, nearby_experiences, media_for_topic, charter_mentions m.fl.');
         setGroups(groupHits(hits));
         setTopEntity(hits[0] ?? null);
-        if (dev) setDevInfo({ q, path, ms: performance.now() - t0, count: hits.length, hits: hits.slice(0, 25) });
+        if (dev) setDevInfo({ q, path, ms: performance.now() - t0, count: hits.length, hits: hits.slice(0, 25), queries });
         // Logga sökningen (aggregat, GDPR-säkert) → vi ser vad folk söker + om det gav träff.
         logSearchTerm(q, (hits?.length ?? 0) > 0);
       } catch {
         setGroups([]);
-        if (dev) setDevInfo({ q, path: `${path} — FEL`, ms: performance.now() - t0, count: 0, hits: [] });
+        if (dev) setDevInfo({ q, path: `${path} — FEL`, ms: performance.now() - t0, count: 0, hits: [], queries });
       } finally {
         setLoading(false);
       }
@@ -664,6 +669,12 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                 q: "<span className="text-amber-200">{devInfo.q}</span>" · path: <span className="text-sky-300">{devInfo.path}</span>
                 {' · '}<span className="text-emerald-300">{Math.round(devInfo.ms)} ms</span> · {devInfo.count} träffar
               </div>
+              {devInfo.queries.length > 0 && (
+                <div className="mt-1 border-l-2 border-slate-700 pl-2 text-slate-400">
+                  <div className="text-slate-500">anrop / tabeller:</div>
+                  {devInfo.queries.map((qr, i) => <div key={i} className="truncate">· {qr}</div>)}
+                </div>
+              )}
               <div className="mt-1 max-h-44 overflow-y-auto">
                 {devInfo.hits.map((h, i) => (
                   <div key={`${h.entity_type}-${h.entity_id}-${i}`} className="flex items-baseline gap-2 leading-relaxed">

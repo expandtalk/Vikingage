@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ScrollText, MapPin, Hammer, Castle, Flame, Anchor, Waves, Landmark,
@@ -280,7 +280,7 @@ const CATEGORIES: CategoryDef[] = [
     unitSv: 'grottor', unitEn: 'caves',
   },
   {
-    key: 'baths', to: '/explore', icon: Droplets,
+    key: 'baths', to: '/explore?focus=baths', icon: Droplets,
     sv: 'Badplatser', en: 'Bathing spots',
     descSv: 'Bad i sjö, hav och vattendrag — säsongsmedvetet.',
     descEn: 'Lake, sea and river bathing — season-aware.',
@@ -339,10 +339,27 @@ export const CategoryOverview: React.FC = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
 
+  // Prestanda: sektionen ligger under folden. Vänta med de ~17 räkne-anropen tills den scrollas
+  // nära (IntersectionObserver) → av kritiska LCP-vägen på startsidan (annars konkurrerade de
+  // med hero-bilden och gav pop-in). Kör direkt om IntersectionObserver saknas.
+  const rootRef = useRef<HTMLElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') { setInView(true); return; }
+    const el = rootRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { setInView(true); io.disconnect(); }
+    }, { rootMargin: '300px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   const { data, isLoading } = useQuery({
     queryKey: ['category-overview-counts-v2'],
     queryFn: loadCategoryCounts,
     staleTime: 5 * 60 * 1000,
+    enabled: inView,
   });
 
   const headingId = 'category-overview-heading';
@@ -354,7 +371,7 @@ export const CategoryOverview: React.FC = () => {
     'focus-visible:ring-offset-transparent';
 
   return (
-    <section aria-labelledby={headingId} className="container mx-auto px-4 py-8">
+    <section ref={rootRef} aria-labelledby={headingId} className="container mx-auto px-4 py-8">
       <div className="max-w-5xl mx-auto">
         <h2 id={headingId} className="text-xl md:text-2xl font-bold text-white">
           {sv ? 'Plattformen i siffror' : 'The platform by the numbers'}
@@ -366,8 +383,8 @@ export const CategoryOverview: React.FC = () => {
         </p>
 
         <ul role="list" className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {isLoading
-            ? // Skeleton: samma antal som kategorierna så layouten inte hoppar.
+          {(isLoading || !data)
+            ? // Skeleton medan datan laddas (eller innan sektionen scrollats in) — layouten hoppar inte.
               CATEGORIES.map((c) => (
                 <li key={c.key} aria-hidden="true">
                   <div className="h-[8.5rem] rounded-lg bg-white/[0.05] border border-white/10 animate-pulse" />

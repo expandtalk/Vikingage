@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin, BookOpen, GraduationCap, ArrowRight, Library, X, ExternalLink, Image as ImageIcon, Users, Clock, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { MapPin, BookOpen, GraduationCap, ArrowRight, Library, X, ExternalLink, Image as ImageIcon, Users, Clock, ChevronDown, ChevronRight, Loader2, AlertTriangle, Compass } from 'lucide-react';
 import { useAnswerContext } from '@/hooks/useAnswerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FindBookLink } from './FindBookLink';
@@ -74,7 +75,10 @@ const TieredGallery: React.FC<{
 }> = ({ images, missing, sv, onOpen }) => {
   // Rangordna "snyggast först": foto > image > teckning/etsning (ärlig signal ur RPC:ns typ, ingen
   // påhittad kvalitetspoäng). Hero = bästa fotot; teckningar/arkivplanscher hamnar sist.
-  const q = (t?: string | null) => { const x = (t || '').toLowerCase(); return x === 'foto' || x === 'photo' ? 0 : (x === 'teckning' || x === 'etsning' ? 2 : 1); };
+  // landmark (byggnad/monument, t.ex. Kalmar slott) FÖRST — det är den mest platsrelevanta bilden
+  // (Daniel: "ranka Kalmar-bilder högre"). Sen foto > image > teckning/etsning. Stabil sort bevarar
+  // RPC:ns interfoliering inom varje tier.
+  const q = (t?: string | null) => { const x = (t || '').toLowerCase(); return x === 'landmark' ? -1 : (x === 'foto' || x === 'photo' ? 0 : (x === 'teckning' || x === 'etsning' ? 2 : 1)); };
   const imgs = dedupImages(images).slice().sort((a, b) => q(a.type) - q(b.type));
   // Liggande foton (naturalWidth > höjd) får bredare kort så de inte klipps till en stående strimla.
   const [wide, setWide] = useState<Record<string, boolean>>({});
@@ -186,6 +190,22 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         .slice(0, 40);
     },
   });
+
+  // ÄLDSTA BELÄGG: sökt ortnamn → tidigaste skriftbelägg + belagd form + källa (Isof/SDHK). Tidigast
+  // över källor (place_names.earliest_attestation_year). Källkritiskt kärnvärde — visas prominent.
+  const { data: attestation } = useQuery({
+    queryKey: ['answer-attestation', query],
+    enabled: query.trim().length >= 2,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ name: string; year: number; form: string | null; source: string | null } | null> => {
+      const { data } = await (supabase as any).from('place_names')
+        .select('name, earliest_attestation_year, attested_form, attestation_source')
+        .ilike('name', query.trim()).not('earliest_attestation_year', 'is', null)
+        .order('earliest_attestation_year', { ascending: true }).limit(1);
+      const r = (data ?? [])[0];
+      return r ? { name: r.name, year: r.earliest_attestation_year, form: r.attested_form, source: r.attestation_source } : null;
+    },
+  });
   // Giltig center = både lat OCH lng är tal (t.ex. Gotland gav {null,null} → rita ingen trasig karta).
   const hasCenter = !!(data?.center && data.center.lat != null && data.center.lng != null);
   const mapEl = useRef<HTMLDivElement>(null);
@@ -238,6 +258,45 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       const { data } = await (supabase as any).from('search_document')
         .select('label, sublabel, signum').eq('entity_type', 'road_waypoint').ilike('label', `%${query.trim()}%`).limit(6);
       return ((data ?? []) as any[]).map((r) => ({ name: r.label, sublabel: r.sublabel, signum: r.signum }));
+    },
+  });
+
+  // LANDMÄRKEN: byggnads-/monumentbilder (Kalmar slott, domkyrka, stadsmur…) via landmarks_for_place
+  // (place_context ELLER närhet). Visas som egen remsa högt upp — även i LandscapeNode-läget där
+  // entity_answer_context-galleriet inte renderas. Daniel: "visa bilder på landmärkena i Kalmar".
+  const { data: landmarkImages = [] } = useQuery({
+    queryKey: ['answer-landmarks', query, data?.center?.lat, data?.center?.lng],
+    enabled: query.trim().length >= 2,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ image_url: string; landmark_name: string; category: string | null; license_code: string | null; license_url: string | null; photographer: string | null; descr_url: string | null; source_institution: string | null }[]> => {
+      const { data: rows } = await (supabase as any).rpc('landmarks_for_place', {
+        p_name: query.trim(), p_lat: data?.center?.lat ?? null, p_lng: data?.center?.lng ?? null, p_radius_m: 25000,
+      });
+      return (rows ?? []) as any[];
+    },
+  });
+
+  // FORNVÄNNEN: relevanta artiklar (3605 st, direkt-PDF) som "läs mer". Matchar titel+ämnesord via
+  // fornvannen_for_query (case-insensitivt server-side). Daniel: "Den är mer om man vill läsa mer."
+  const { data: fornvannen = [] } = useQuery({
+    queryKey: ['answer-fornvannen', query],
+    enabled: query.trim().length >= 2,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ id: string; title: string; year: number | null; url: string }[]> => {
+      const { data } = await (supabase as any).rpc('fornvannen_for_query', { q: query.trim(), lim: 6 });
+      return ((data ?? []) as any[]).map((r) => ({ id: r.id, title: r.title, year: r.written_year, url: r.url }));
+    },
+  });
+
+  // HISTORIEMÅLNINGAR (PD, 1800-tal — Cederström/Hellqvist m.fl.) knutna till kungar/händelser.
+  // KÄLLKRITISKT: konstnärlig tolkning, ej historisk källa → caveat visas tydligt (Daniel).
+  const { data: paintings = [] } = useQuery({
+    queryKey: ['answer-paintings', query],
+    enabled: query.trim().length >= 2,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ image_url: string; title: string; artist: string; year: number | null; depicts_event: string | null; license_code: string | null; caveat: string }[]> => {
+      const { data } = await (supabase as any).rpc('paintings_for_query', { p_name: query.trim(), lim: 6 });
+      return (data ?? []) as any[];
     },
   });
 
@@ -398,6 +457,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         const p = m.createPane('adventurePane');
         p.style.zIndex = '640';
       }
+      // Sökta platsen ska ALLTID ligga överst (Daniel: "det man söker på bör visas mer prominent").
+      // Egen pane ovanför alla datalager (adventurePane 640), under tooltip/popup (650/700).
+      if (!m.getPane('heroPane')) {
+        const p = m.createPane('heroPane');
+        p.style.zIndex = '646';
+      }
       if (!layerRef.current) layerRef.current = L.layerGroup();
       if (!siteLayerRef.current) siteLayerRef.current = L.layerGroup();
       if (!churchLayerRef.current) churchLayerRef.current = L.layerGroup();
@@ -432,6 +497,30 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         }).bindPopup(`<b>${esc(p.name)}</b><br/><span style="font-size:11px;color:#6b21a8">teofort ortnamn (${esc((p.element_keys || []).join('+'))}) — tolkning</span>`)
           .addTo(placesLayerRef.current!);
       });
+      // HERO-markör: den sökta platsen, prominent och märkt, så den inte drunknar bland POI:erna
+      // (Daniel: "det går inte att se var Resmo ligger"). Stor guldpin + permanent namntagg, egen
+      // pane överst. Läget = data.center (upplöst plats). Läggs i pts så fitBounds ramar in den.
+      if (data.center && data.center.lat != null && data.center.lng != null) {
+        const heroName = data.page?.title || (query || '').trim();
+        pts.push([data.center.lat, data.center.lng]);
+        const hero = L.marker([data.center.lat, data.center.lng], {
+          pane: 'heroPane',
+          zIndexOffset: 1000,
+          icon: L.divIcon({
+            className: '', iconSize: [30, 40], iconAnchor: [15, 38], popupAnchor: [0, -34], tooltipAnchor: [0, -30],
+            html: `<div style="position:relative;width:30px;height:40px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.55))">
+              <svg viewBox="0 0 30 40" width="30" height="40"><path d="M15 39C15 39 27 24 27 14A12 12 0 1 0 3 14C3 24 15 39 15 39Z" fill="#f59e0b" stroke="#78350f" stroke-width="2"/><circle cx="15" cy="14" r="5" fill="#fff7ed" stroke="#78350f" stroke-width="1.5"/></svg>
+            </div>`,
+          }),
+        });
+        if (heroName) {
+          hero.bindTooltip(heroName, {
+            permanent: true, direction: 'top', offset: [0, -30], className: 'answer-hero-label',
+          });
+          hero.bindPopup(`<b>${esc(heroName)}</b>`);
+        }
+        hero.addTo(placesLayerRef.current);
+      }
       placesLayerRef.current.addTo(m);
       (data.inscriptions || []).forEach((r) => {
         if (r.lat == null || r.lng == null) return;
@@ -636,7 +725,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
   if (!data || (data.count === 0 && (data.images?.length ?? 0) === 0 && !data.page
       && (data.research?.length ?? 0) === 0 && (data.literature?.length ?? 0) === 0
-      && (theophoric?.total ?? 0) === 0 && (charters?.total ?? 0) === 0)) {
+      && (theophoric?.total ?? 0) === 0 && (charters?.total ?? 0) === 0 && fornvannen.length === 0 && paintings.length === 0 && !attestation)) {
     // Ingen plats/entitet i kärnskopet (t.ex. "Hitler", "nazism", 1900-talsbegrepp). Sök-kaskadens
     // sista lager: media (poddar/video) + externa sök-URL:er + bidra — och sökordet loggas.
     // + relaterat-block överst (för t.ex. Göteborg som saknar egen entitet men har föregångare).
@@ -647,6 +736,58 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     <div className="border-b border-slate-800 bg-slate-900">
       {showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}
       {!data.page && !showLandscape && nodeBlock}
+      {/* LANDMÄRKEN — byggnads-/monumentbilder högt upp (mest platsrelevanta bilden, Daniel). */}
+      {landmarkImages.length > 0 && (
+        <div className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4">
+          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
+            <ImageIcon className="h-3.5 w-3.5" /> {sv ? 'Landmärken' : 'Landmarks'}
+          </h3>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+            {landmarkImages.map((lm) => (
+              <button key={lm.image_url} type="button" title={lm.landmark_name}
+                onClick={() => setLightbox({ url: lm.image_url, desc: lm.landmark_name, license: lm.license_code, credit: lm.photographer })}
+                className="group relative overflow-hidden rounded-lg border border-slate-700 bg-slate-800 text-left">
+                <img src={lm.image_url} alt={lm.landmark_name} loading="lazy"
+                  className="aspect-square w-full object-cover transition group-hover:opacity-90" onError={hideCard} />
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-1.5 pb-1 pt-5 text-[10px] font-medium leading-tight text-white line-clamp-1">
+                  {lm.landmark_name}
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-1.5 text-[11px] text-slate-500">
+            {sv ? 'Byggnader & monument · Wikimedia Commons (fri licens), hotlänkade — klicka för källa.' : 'Buildings & monuments · Wikimedia Commons (free license), hotlinked — click for source.'}
+          </p>
+        </div>
+      )}
+      {/* ÄLDSTA BELÄGG — källkritiskt kärnvärde: tidigaste skriftbelägg + belagd form + källa (Isof/SDHK). */}
+      {attestation && (
+        <div className="border-b border-slate-800 bg-slate-900 px-5 pt-3 pb-3">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm">
+            <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-300/80">
+              <Library className="h-3.5 w-3.5" /> {sv ? 'Äldsta belägg' : 'Earliest attestation'}
+            </span>
+            <span className="font-semibold text-white">{attestation.year}</span>
+            {attestation.form && <span className="italic text-amber-100">”{attestation.form}”</span>}
+            {attestation.source && <span className="text-xs text-slate-400">· {attestation.source}</span>}
+            {/* Belägg ur ett medeltidsbrev (SDHK) → länk till brevet i diariet (vår sida resolvar
+                vidare till Riksarkivet). Parsar SDHK-numret ur källtexten; inget nummer = ingen länk. */}
+            {(() => {
+              const m = attestation.source?.match(/SDHK\s+(\d+)/i);
+              if (!m) return null;
+              const nr = m[1];
+              return (
+                <Link
+                  to={sv ? `/sv/medeltidsbrev/${nr}` : `/en/medieval-charters/${nr}`}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-amber-300 hover:text-amber-100 underline decoration-amber-300/40 underline-offset-2"
+                >
+                  {sv ? 'läs brevet' : 'read the charter'} <ExternalLink className="h-3 w-3" />
+                </Link>
+              );
+            })()}
+          </div>
+        </div>
+      )}
       {relatedBlock}
       {/* SEKTION 1 (överst, spänner): platsnod-header — tydlig typografisk hierarki */}
       {data.page && (
@@ -814,11 +955,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
       )}
 
-      {/* PANELER — full bredd, flerkolumn på desktop. Sevärda platser HÖGST (order-first). */}
-      <div className="grid gap-4 px-5 pb-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* PANELER — 2/3 huvud + 1/3 höger-rail (Utforska & upplev). Använder ytan, undviker tomma kolumner. */}
+      <div className="px-5 pb-4 lg:flex lg:gap-5">
+        <div className="min-w-0 lg:flex-[2] grid gap-4 sm:grid-cols-2 content-start">
         <div className="contents">
           {data.research?.length > 0 && (
-            <section>
+            <section className="order-last">
               <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
                 <GraduationCap className="h-3.5 w-3.5" /> {sv ? 'Relaterad forskning' : 'Related research'}
               </h3>
@@ -835,22 +977,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             </section>
           )}
 
-          {/* REGION-HUBBAR: kurerade regionsidor/projekt nära platsen (Ölandsprojektet m.fl.). */}
-          {regionPages.length > 0 && (
-            <section className="order-first">
-              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-gold">
-                <BookOpen className="h-3.5 w-3.5" /> {sv ? 'Utforska regionen' : 'Explore the region'}
-              </h3>
-              <div className="flex flex-wrap gap-1.5">
-                {regionPages.map((p) => (
-                  <button key={p.url} onClick={() => onGo(p.url)}
-                    className="rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-sm font-medium text-amber-100 hover:bg-gold/20">
-                    {p.title} →
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
+          {/* Utforska regionen flyttad till höger-railen (aside nedan). */}
 
           {/* PLATS-NAV: medeltidsbrev som nämner platsen (tvärgående lager). */}
           {charters && charters.total > 0 && (
@@ -875,6 +1002,56 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                   <ArrowRight className="h-3 w-3" />{sv ? `Se alla ${charters.total} brev` : `See all ${charters.total} charters`}
                 </button>
               )}
+            </section>
+          )}
+
+          {/* FORNVÄNNEN: relevanta artiklar (direkt-PDF) som "läs mer" (Daniel). Extern länk, ny flik. */}
+          {fornvannen.length > 0 && (
+            <section className="text-left">
+              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300">
+                <Library className="h-3.5 w-3.5" /> {sv ? 'Läs mer i Fornvännen' : 'Read more in Fornvännen'}
+              </h3>
+              <ul className="space-y-1.5">
+                {fornvannen.map((a) => (
+                  <li key={a.id}>
+                    <a href={a.url} target="_blank" rel="noopener noreferrer"
+                      className="block border-l-2 border-slate-700 pl-2.5 hover:border-sky-500/60">
+                      <span className="text-sm font-medium text-white leading-snug line-clamp-2">{a.title}</span>
+                      {a.year && <span className="block text-xs text-slate-400">Fornvännen · {a.year}</span>}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[11px] text-slate-500">
+                {sv ? 'Fornvännen (KVHAA/RAÄ), CC BY 4.0 — öppnas som PDF hos utgivaren.' : 'Fornvännen (KVHAA), CC BY 4.0 — opens as publisher PDF.'}
+              </p>
+            </section>
+          )}
+
+          {/* HISTORIEMÅLNINGAR (PD, 1800-tal) knutna till kung/händelse. KÄLLKRITISK VARNING syns tydligt
+              (Daniel): konstnärlig tolkning, ej historisk källa. Full caveat i lightboxen. */}
+          {paintings.length > 0 && (
+            <section>
+              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
+                <ImageIcon className="h-3.5 w-3.5" /> {sv ? 'Historiemålningar' : 'History paintings'}
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {paintings.map((p) => (
+                  <button key={p.image_url} type="button" title={p.title}
+                    onClick={() => setLightbox({ url: p.image_url, desc: `${p.title} — ${p.artist} (${p.year ?? ''}). ${p.depicts_event ?? ''}. ⚠ ${p.caveat}`, license: p.license_code, credit: p.artist })}
+                    className="group relative overflow-hidden rounded-lg border border-slate-700 bg-slate-800 text-left">
+                    <img src={p.image_url} alt={p.title} loading="lazy"
+                      className="aspect-[4/3] w-full object-cover transition group-hover:opacity-90" onError={hideCard} />
+                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-1.5 pb-1 pt-5 text-[10px] font-medium leading-tight text-white line-clamp-2">
+                      {p.title} · {p.year}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 flex items-start gap-1 text-[11px] text-amber-300/80">
+                <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
+                {sv ? '1800-talets historiemåleri — konstnärlig tolkning, inte en historisk källa (ofta romantiserad). Klicka för källkritik.' : '19th-c history painting — an artistic interpretation, not a historical source. Click for source criticism.'}
+              </p>
             </section>
           )}
 
@@ -1010,6 +1187,49 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             )}
           </div>
         </section>
+        </div>
+        {/* HÖGER-RAIL (1/3): Utforska & upplev — region + utflykter + äventyr + svamp (säsong). */}
+        <aside className="mt-4 space-y-4 lg:mt-0 lg:w-72 lg:shrink-0 xl:w-80">
+          {regionPages.length > 0 && (
+            <section>
+              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-gold">
+                <BookOpen className="h-3.5 w-3.5" /> {sv ? 'Utforska regionen' : 'Explore the region'}
+              </h3>
+              <div className="flex flex-col gap-1.5">
+                {regionPages.map((p) => (
+                  <button key={p.url} onClick={() => onGo(p.url)}
+                    className="rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-left text-sm font-medium text-amber-100 hover:bg-gold/20">
+                    {p.title} →
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+          <section>
+            <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-emerald-300">
+              <Compass className="h-3.5 w-3.5" /> {sv ? 'Utforska & upplev' : 'Explore & experience'}
+            </h3>
+            <div className="flex flex-col gap-1.5 text-sm">
+              <button onClick={() => onGo(sv ? '/sv/utflykter' : '/excursions')}
+                className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-left font-medium text-slate-100 hover:border-emerald-500/50 hover:text-emerald-100">
+                {sv ? 'Utflykter i trakten' : 'Excursions nearby'} →
+              </button>
+              {(adventures?.length ?? 0) > 0 && (
+                <span className="px-1 text-xs text-slate-400">{sv ? `Äventyr & motion · ${adventures!.length} (se kartlagret)` : `Adventure & outdoors · ${adventures!.length} (see map layer)`}</span>
+              )}
+              {(() => {
+                // Säsongsstyrt (browser-tid): svamp aug–nov lyfts fram, annars visas nästa säsong.
+                const m = new Date().getMonth() + 1; const inSeason = m >= 8 && m <= 11;
+                return (
+                  <button onClick={() => onGo('/sv/svamp')}
+                    className={`rounded-lg border px-3 py-1.5 text-left font-medium ${inSeason ? 'border-amber-500/50 bg-amber-500/10 text-amber-100 hover:bg-amber-500/20' : 'border-slate-700 bg-slate-800/60 text-slate-300 hover:border-amber-500/40'}`}>
+                    🍄 {sv ? 'Svampkarta' : 'Mushroom map'} {inSeason ? (sv ? '· i säsong nu' : '· in season now') : (sv ? '· säsong aug–nov' : '· season Aug–Nov')} →
+                  </button>
+                );
+              })()}
+            </div>
+          </section>
+        </aside>
       </div>
 
       {/* Podcast — tredjeparts historiepoddar (länk ut), full bredd under panelerna */}
@@ -1032,7 +1252,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
       )}
 
-      <div className="px-5 pb-4"><TopicMedia query={query} /></div>
+      {/* Poddar & video: begränsad bredd (~50% på desktop) — korta rader ska inte spänna hela ytan (Daniel). */}
+      <div className="px-5 pb-4 lg:max-w-[52%]"><TopicMedia query={query} /></div>
 
       {/* Medeltidsbrev (SDHK) utfärdade i orten — efter podden. Visas bara för länkade KG-orter. */}
       <CharterAnswerSection name={query} sv={sv} />
