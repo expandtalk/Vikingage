@@ -22,6 +22,7 @@ interface Img { url: string; thumb?: string | null; description: string | null; 
 interface Carver { id: string; name: string; }
 interface Reading { type: string | null; text: string; }
 interface Interpretation { version: string | null; language: string | null; text: string; }
+interface InterpretationClaim { part_key: string | null; reading_translit: string | null; normalization: string | null; translation: string | null; scholar: string | null; year: number | null; source: string | null; status: string | null; confidence: number | null; note: string | null; }
 interface LitLink { title: string; source_id: string; relation: string | null; }
 interface InscriptionData {
   id: string; signum: string; name: string | null; name_en: string | null; name_source: string | null;
@@ -35,6 +36,7 @@ interface InscriptionData {
   k_samsok_uri: string | null; raa_number: string | null; bibliography: string | null;
   lat: number | null; lng: number | null;
   images: Img[]; carvers: Carver[]; readings: Reading[]; interpretations: Interpretation[]; literary_links: LitLink[];
+  interpretation_claims?: InterpretationClaim[];
 }
 
 const READING_LABEL: Record<string, { sv: string; en: string }> = {
@@ -308,7 +310,7 @@ const InscriptionPage = () => {
             )}
 
             {/* PROSAZON (kapad läsbredd): läsningar & tolkningar + forskning & kontext */}
-            {(data.readings.length > 1 || data.interpretations.length > 1 || data.scholarly_notes || data.historical_context || data.paleographic_notes || data.condition_notes) && (
+            {(data.readings.length > 1 || data.interpretations.length > 1 || (data.interpretation_claims?.length ?? 0) > 0 || data.scholarly_notes || data.historical_context || data.paleographic_notes || data.condition_notes) && (
               <div className="max-w-3xl space-y-6">
                 {(data.readings.length > 1 || data.interpretations.length > 1) && (
                   <Section icon={<Scroll className="h-5 w-5 text-gold" />} title={sv ? 'Läsningar & tolkningar' : 'Readings & interpretations'}>
@@ -342,6 +344,30 @@ const InscriptionPage = () => {
                         ))}
                       </div>
                     )}
+                  </Section>
+                )}
+
+                {(data.interpretation_claims?.length ?? 0) > 0 && (
+                  <Section icon={<Scroll className="h-5 w-5 text-gold" />} title={sv ? 'Forskningstolkningar' : 'Scholarly interpretations'}>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      {sv ? 'Enskilda forskares tolkningsförslag (t.ex. läsordning) — refererade i egna ord, med källa och status. Inte nödvändigtvis konsensus.'
+                          : 'Individual scholars’ interpretive proposals (e.g. reading order) — summarised, with source and status. Not necessarily consensus.'}
+                    </p>
+                    <div className="space-y-4">
+                      {data.interpretation_claims!.map((ic, i) => (
+                        <div key={i} className="border-l-2 border-gold/40 pl-3">
+                          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                            {ic.scholar && <span className="text-sm font-semibold text-slate-100">{ic.scholar}{ic.year ? ` (${ic.year})` : ''}</span>}
+                            {ic.part_key && <span className="text-[11px] text-gold/80">{ic.part_key}</span>}
+                            {ic.status && <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-amber-200">{ic.status}</span>}
+                          </div>
+                          {ic.normalization && <div className="mt-1 font-serif italic text-slate-200 text-sm">{ic.normalization}</div>}
+                          {ic.translation && <div className="text-sm text-slate-300">{ic.translation}</div>}
+                          {ic.note && <p className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{ic.note}</p>}
+                          {ic.source && <p className="mt-1 text-[11px] text-slate-500">{ic.source}</p>}
+                        </div>
+                      ))}
+                    </div>
                   </Section>
                 )}
 
