@@ -29,6 +29,8 @@ const PAGES = [
   { p: '/sv/kungakronikor', pair: '/royal-chronicles', lang: 'sv', title: 'Kungakrönikor', desc: 'Medeltida och vikingatida härskare i Skandinavien och Östeuropa. Dynastier, källor och historiska kungar.' },
   { p: '/carvers', pair: '/sv/ristare', lang: 'en', title: 'Carvers', desc: 'Runic carvers and masters of the Viking Age — inscriptions, workshops and geographical distribution.' },
   { p: '/sv/ristare', pair: '/carvers', lang: 'sv', title: 'Ristare', desc: 'Runristare och mästare från vikingatiden. Se deras inskrifter, verkstäder och geografiska spridning.' },
+  { p: '/sv/forsvunna-runstenar', pair: '/en/lost-runestones', lang: 'sv', title: 'De försvunna stenarna', desc: 'Runstenar som överlever som 1600- och 1700-talsteckningar (Peringskiöld, Hadorph, Bautil) — ibland allt som finns kvar.' },
+  { p: '/en/lost-runestones', pair: '/sv/forsvunna-runstenar', lang: 'en', title: 'The Lost Stones', desc: 'Runestones that survive as 17th- and 18th-century drawings (Peringskiöld, Hadorph, Bautil) — sometimes all that remains.' },
 ];
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

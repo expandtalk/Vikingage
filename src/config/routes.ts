@@ -152,6 +152,15 @@ export const routes: RouteConfig[] = [
     descriptionEn: 'How the platform keeps bad data out and uses AI critically — a non-destructive, source-preserving method.'
   },
   {
+    pathEn: '/en/lost-runestones',
+    pathSv: '/sv/forsvunna-runstenar',
+    component: 'ForsvunnaRunstenar',
+    titleSv: 'De försvunna stenarna',
+    titleEn: 'The Lost Stones',
+    descriptionSv: 'Runstenar som överlever som 1600- och 1700-talsteckningar (Peringskiöld, Hadorph, Bautil) — ibland allt som finns kvar.',
+    descriptionEn: 'Runestones that survive as 17th- and 18th-century drawings (Peringskiöld, Hadorph, Bautil) — sometimes all that remains.'
+  },
+  {
     pathEn: '/ai-agents',
     pathSv: '/ai-agenter',
     component: 'AiAgents',
