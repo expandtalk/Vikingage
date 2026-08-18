@@ -40,7 +40,8 @@ const Privacy = () => {
                 Vi mäter besök med <strong>CortIQ</strong> (cortiq.se) i cookie-fritt läge. Statistiken är
                 aggregerad och anonym — inga cookies, IP-adresser anonymiseras (maskas), ingen korssajtsspårning.
                 Aggregerad statistik raderas automatiskt efter högst 1 år. Tjänsten identifierar även AI-robotar
-                (t.ex. GPTBot, ClaudeBot, PerplexityBot) som hämtar sidorna.
+                (t.ex. GPTBot, ClaudeBot, PerplexityBot) som hämtar sidorna. <strong>Rättslig grund:</strong> berättigat
+                intresse (GDPR art. 6.1.f) — cookie-fri publikmätning utan profilering kräver inte samtycke, därför ingen banner.
               </p>
 
               <h2>Vad som sparas i din webbläsare</h2>
@@ -73,6 +74,11 @@ const Privacy = () => {
                 Du kan använda hela sajten utan konto. Ett konto behövs bara för att <strong>bidra</strong> —
                 skriva i diskussioner, betygsätta, ladda upp foton eller dokument, dela position. När du skapar
                 konto lagrar vi din e-postadress (för inloggning) samt de profilfält du själv väljer att fylla i.
+                <strong> Rättslig grund:</strong> avtal (GDPR art. 6.1.b) — behandlingen är nödvändig för den
+                kontotjänst du själv begär. Inloggningssessionen som lagras lokalt är <em>strikt nödvändig</em> och
+                kräver därför inget samtycke (ingen banner). Kontodata lagras så länge du har kontot och raderas när
+                du raderar det. Kontot lagras säkert hos vår databasleverantör (Supabase) med radnivåsäkerhet (RLS).
+                Din anonyma webbstatistik kopplas <strong>aldrig</strong> till ditt konto — de två systemen hålls åtskilda.
               </p>
               <p>
                 Din <strong>publika forskarprofil</strong> (<code>/forskare/ditt-handle</code>) visar bara de
@@ -100,16 +106,27 @@ const Privacy = () => {
               <h2>Dina rättigheter</h2>
               <p>
                 Eftersom vi inte samlar personuppgifter om anonyma besökare finns inget besökarregister att
-                begära ut. Har du ett konto kan du när som helst redigera din profil, ta bort din adress eller
-                radera hela kontot via din profilsida. Vill du att ett publicerat bidrag tas bort, kontakta oss.
+                begära ut. Har du ett konto har du enligt GDPR rätt till: <strong>tillgång</strong> till dina
+                uppgifter, <strong>rättelse</strong>, <strong>radering</strong> ("rätten att bli glömd"),
+                <strong> begränsning</strong>, <strong>dataportabilitet</strong> och rätt att <strong>invända</strong>
+                mot behandling. Det mesta gör du direkt själv: redigera din profil, ta bort din adress eller radera
+                hela kontot via din profilsida. Vill du att ett publicerat bidrag tas bort, eller vill utöva någon
+                annan rättighet, kontakta oss (se nedan).
+              </p>
+              <p>
+                Du har också rätt att lämna klagomål till tillsynsmyndigheten, <strong>Integritetsskyddsmyndigheten
+                (IMY)</strong>, imy.se.
               </p>
 
-              <h2>Kontakt</h2>
+              <h2>Personuppgiftsansvarig &amp; kontakt</h2>
+              <p>
+                Personuppgiftsansvarig är <strong>Expandtalk Corporation AB</strong>.{' '}
+              </p>
               <p>
                 {/* TODO: Daniel — bekräfta personuppgiftsansvarig + kontaktadress innან publicering */}
-                Frågor om integritet: <em>[kontaktuppgift fylls i av redaktören]</em>.
+                Frågor om integritet eller för att utöva dina rättigheter: <em>[kontakt-e-post fylls i av redaktören]</em>.
               </p>
-              <p className="text-sm text-muted-foreground">Senast uppdaterad: 2026-08-08.</p>
+              <p className="text-sm text-muted-foreground">Senast uppdaterad: 2026-08-18.</p>
             </>
           ) : (
             <>
@@ -124,7 +141,9 @@ const Privacy = () => {
                 We measure visits with <strong>CortIQ</strong> (cortiq.se) in cookie-free mode. The statistics
                 are aggregated and anonymous — no cookies, IP addresses are anonymised (masked), no cross-site
                 tracking. Aggregated statistics are deleted automatically after at most 1 year. The service also
-                identifies AI bots (e.g. GPTBot, ClaudeBot, PerplexityBot) fetching the pages.
+                identifies AI bots (e.g. GPTBot, ClaudeBot, PerplexityBot) fetching the pages. <strong>Legal basis:</strong>
+                legitimate interest (GDPR art. 6.1.f) — cookie-free audience measurement without profiling needs no
+                consent, hence no banner.
               </p>
 
               <h2>What is stored in your browser</h2>
@@ -157,7 +176,12 @@ const Privacy = () => {
                 You can use the entire site without an account. An account is only needed to
                 <strong> contribute</strong> — post in discussions, rate, upload photos or documents, share a
                 position. When you create an account we store your email address (for login) and the profile
-                fields you choose to fill in.
+                fields you choose to fill in. <strong>Legal basis:</strong> contract (GDPR art. 6.1.b) — the
+                processing is necessary for the account service you request. The login session stored locally is
+                <em> strictly necessary</em> and therefore needs no consent (no banner). Account data is kept for as
+                long as you have the account and is deleted when you delete it. The account is stored securely with our
+                database provider (Supabase) with row-level security (RLS). Your anonymous web analytics are
+                <strong> never</strong> linked to your account — the two systems are kept separate.
               </p>
               <p>
                 Your <strong>public researcher profile</strong> (<code>/forskare/your-handle</code>) shows only
@@ -185,14 +209,24 @@ const Privacy = () => {
               <h2>Your rights</h2>
               <p>
                 Since we collect no personal data about anonymous visitors, there is no visitor record to
-                request. If you have an account, you can edit your profile, remove your address, or delete the
-                whole account from your profile page at any time. To have a published contribution removed,
-                contact us.
+                request. If you have an account you have, under GDPR, the right to: <strong>access</strong> your
+                data, <strong>rectification</strong>, <strong>erasure</strong> ("right to be forgotten"),
+                <strong> restriction</strong>, <strong>data portability</strong> and the right to <strong>object</strong>.
+                Most of it you do yourself: edit your profile, remove your address, or delete the whole account from
+                your profile page. To have a published contribution removed, or to exercise any other right, contact
+                us (below).
+              </p>
+              <p>
+                You also have the right to lodge a complaint with the supervisory authority — in Sweden the
+                <strong> Swedish Authority for Privacy Protection (IMY)</strong>, imy.se.
               </p>
 
-              <h2>Contact</h2>
-              <p>Privacy questions: <em>[contact to be filled in]</em>.</p>
-              <p className="text-sm text-muted-foreground">Last updated: 2026-08-08.</p>
+              <h2>Data controller &amp; contact</h2>
+              <p>
+                The data controller is <strong>Expandtalk Corporation AB</strong>. Privacy questions or to exercise
+                your rights: <em>[contact email to be filled in]</em>.
+              </p>
+              <p className="text-sm text-muted-foreground">Last updated: 2026-08-18.</p>
             </>
           )}
         </article>
