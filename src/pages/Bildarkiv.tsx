@@ -140,6 +140,8 @@ const Bildarkiv: React.FC = () => {
   const { data, isLoading, isError } = useImageArchive();
   const [facet, setFacet] = useState<Facet>('all');
   const [region, setRegion] = useState<string>('all');
+  const [parish, setParish] = useState<string>('all');
+  const [city, setCity] = useState<string>('all');
   const [query, setQuery] = useState('');
 
   // Landskap/region-facett: distinkta regioner ur datan (bärs av runstensbilderna som har
@@ -150,16 +152,31 @@ const Bildarkiv: React.FC = () => {
     return Array.from(set).sort((a, b) => a.localeCompare(b, 'sv'));
   }, [data]);
 
+  // Stad (kommun) + socken-facetter — bärs av runstensbilderna (inscription.municipality/socken).
+  // Beror på vald landskaps-facett så listorna inte svämmar över (visar bara relevanta värden).
+  const cities = useMemo(() => {
+    const set = new Set<string>();
+    for (const it of data?.items ?? []) if (it.city && (region === 'all' || it.region === region)) set.add(it.city);
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'sv'));
+  }, [data, region]);
+  const parishes = useMemo(() => {
+    const set = new Set<string>();
+    for (const it of data?.items ?? []) if (it.parish && (region === 'all' || it.region === region)) set.add(it.parish);
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'sv'));
+  }, [data, region]);
+
   const filtered = useMemo(() => {
     const items = data?.items ?? [];
     const q = query.trim().toLowerCase();
     return items.filter((it) => {
       if (facet !== 'all' && it.category !== facet) return false;
       if (region !== 'all' && it.region !== region) return false;
+      if (city !== 'all' && it.city !== city) return false;
+      if (parish !== 'all' && it.parish !== parish) return false;
       if (!q) return true;
-      return [it.title, it.caption, it.credit, it.region].filter(Boolean).some((s) => s!.toLowerCase().includes(q));
+      return [it.title, it.caption, it.credit, it.region, it.parish, it.city].filter(Boolean).some((s) => s!.toLowerCase().includes(q));
     });
-  }, [data, facet, region, query]);
+  }, [data, facet, region, city, parish, query]);
 
   const counts = data?.counts;
 
@@ -217,24 +234,43 @@ const Bildarkiv: React.FC = () => {
           })}
         </div>
 
-        {/* Landskaps-/region-facett — dropdown (runstensbilder bär landskap; övriga kategorier
-            plats-taggas ännu ej). Källkritik: inget landskap gissas — saknas det, ingen etikett. */}
-        {regions.length > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <label htmlFor="image-archive-region" className="text-sm text-muted-foreground">
-              {sv ? 'Landskap' : 'Province'}
-            </label>
-            <select
-              id="image-archive-region"
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
-              className="min-h-[36px] rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-            >
-              <option value="all" className="bg-slate-900 text-white">{sv ? 'Alla landskap' : 'All provinces'}</option>
-              {regions.map((r) => (
-                <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>
-              ))}
-            </select>
+        {/* Plats-facetter — landskap, stad (kommun) och socken. Runstensbilder bär dessa (via
+            inscription.province/municipality/socken); övriga kategorier plats-taggas ännu ej.
+            Källkritik: inget läge gissas — saknas det, ingen etikett. Stad/socken beror på valt
+            landskap så listorna inte svämmar över. */}
+        {(regions.length > 0 || cities.length > 0 || parishes.length > 0) && (
+          <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-2">
+            {regions.length > 0 && (
+              <>
+                <label htmlFor="image-archive-region" className="text-sm text-muted-foreground">{sv ? 'Landskap' : 'Province'}</label>
+                <select id="image-archive-region" value={region}
+                  onChange={(e) => { setRegion(e.target.value); setCity('all'); setParish('all'); }}
+                  className="min-h-[36px] rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
+                  <option value="all" className="bg-slate-900 text-white">{sv ? 'Alla landskap' : 'All provinces'}</option>
+                  {regions.map((r) => <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>)}
+                </select>
+              </>
+            )}
+            {cities.length > 0 && (
+              <>
+                <label htmlFor="image-archive-city" className="text-sm text-muted-foreground">{sv ? 'Stad/kommun' : 'City'}</label>
+                <select id="image-archive-city" value={city} onChange={(e) => setCity(e.target.value)}
+                  className="min-h-[36px] rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
+                  <option value="all" className="bg-slate-900 text-white">{sv ? 'Alla städer' : 'All cities'}</option>
+                  {cities.map((r) => <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>)}
+                </select>
+              </>
+            )}
+            {parishes.length > 0 && (
+              <>
+                <label htmlFor="image-archive-parish" className="text-sm text-muted-foreground">{sv ? 'Socken' : 'Parish'}</label>
+                <select id="image-archive-parish" value={parish} onChange={(e) => setParish(e.target.value)}
+                  className="min-h-[36px] rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
+                  <option value="all" className="bg-slate-900 text-white">{sv ? 'Alla socknar' : 'All parishes'}</option>
+                  {parishes.map((r) => <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>)}
+                </select>
+              </>
+            )}
           </div>
         )}
 

@@ -40,6 +40,8 @@ export interface ArchiveImage {
   sourceUrl: string | null;  // extern källänk (kulturarvsdata, museum, wikimedia …)
   region: string | null;     // landskap/plats — härlett ur källan (runsten=province/landskap,
                              // 3D=place_slug, mynt=mint). null = ingen känd plats (gissas ALDRIG).
+  parish?: string | null;    // socken (runstensbilder) — egen facett.
+  city?: string | null;      // stad/kommun (runstensbilder) — egen facett.
 }
 
 // --- licens-normalisering -------------------------------------------------
@@ -97,7 +99,7 @@ const RUNESTONE_LIMIT = 600;
 type InscMediaRow = {
   id: string; media_url: string; thumb_url: string | null; media_type: string | null; description: string | null; motive: string | null;
   photographer: string | null; source_institution: string | null; license_code: string | null;
-  inscription: { signum: string | null; province: string | null; landscape: string | null } | null;
+  inscription: { signum: string | null; province: string | null; landscape: string | null; socken: string | null; municipality: string | null } | null;
 };
 function mapInscriptionMedia(rows: InscMediaRow[], category: ImageCategory): ArchiveImage[] {
   const fallbackTitle = category === 'historical_drawing' ? 'Historisk avbildning' : 'Runinskrift';
@@ -119,12 +121,14 @@ function mapInscriptionMedia(rows: InscMediaRow[], category: ImageCategory): Arc
       license,
       sourceUrl: r.media_url,
       region: normalizeRegion(r.inscription?.landscape ?? r.inscription?.province ?? null),
+      parish: normalizeRegion(r.inscription?.socken ?? null),
+      city: normalizeRegion(r.inscription?.municipality ?? null),
     }];
   });
 }
 
 const INSC_MEDIA_SELECT =
-  'id, media_url, thumb_url, media_type, description, motive, photographer, source_institution, license_code, inscription:inscription_id(signum, province, landscape)';
+  'id, media_url, thumb_url, media_type, description, motive, photographer, source_institution, license_code, inscription:inscription_id(signum, province, landscape, socken, municipality)';
 
 async function fetchRunestones(): Promise<ArchiveImage[]> {
   // Foton av runstenar. Endast bildmedia med känd FRI licens (kontrollerad vokab); 'unknown'/null
