@@ -1280,7 +1280,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           så ytan täcks 100% i st.f. tom halva. Utan Fornvännen-träffar håller podden ~52% (korta rader
           ska inte spänna hela bredden). */}
       <div className={`px-5 pb-4 ${fornvannen.length > 0 ? 'grid gap-4 lg:grid-cols-2 lg:items-start' : 'lg:max-w-[52%]'}`}>
-        <div><TopicMedia query={query} /></div>
+        <div><TopicMedia query={query} lat={data.center?.lat} lng={data.center?.lng} /></div>
         {fornvannen.length > 0 && (
           <section className="text-left">
             <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300">

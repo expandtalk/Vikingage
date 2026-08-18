@@ -1,8 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Headphones, Youtube, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Headphones, Youtube, ExternalLink, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useMediaForTopic, type MediaHit } from '@/hooks/useMediaForTopic';
+
+interface NearHit { item_id: string; medium: string; source_name: string; title: string; url: string; published_at: string | null; summary_sv: string | null; matched_place: string; }
 
 // Ämnesmatchad media i söksvaret, GRUPPERAD per podd/kanal (namnet står som underrubrik EN gång),
 // sorterad nyast först, 10 per sida med paginering (matchar Fornvännen-kolumnens längd). Länkarna
@@ -81,13 +85,53 @@ const MediumBlock: React.FC<{ icon: React.ReactNode; label: string; items: Media
   );
 };
 
-export const TopicMedia: React.FC<{ query: string }> = ({ query }) => {
+export const TopicMedia: React.FC<{ query: string; lat?: number | null; lng?: number | null }> = ({ query, lat, lng }) => {
   const { language } = useLanguage();
   const en = language === 'en';
   const { data } = useMediaForTopic(query, 40);
   const pods = data?.podcasts ?? [];
   const vids = data?.videos ?? [];
-  if (!pods.length && !vids.length) return null;
+  const noDirect = !pods.length && !vids.length;
+
+  // Fallback "om trakten": saknar platsen egen media → media för notabla närliggande orter
+  // (media_near, ~8 km) så t.ex. Birkaborgen får Birka-avsnitten (Daniel).
+  const { data: near = [] } = useQuery<NearHit[]>({
+    queryKey: ['media-near', lat, lng],
+    enabled: noDirect && lat != null && lng != null,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async () => {
+      const { data: d } = await (supabase as any).rpc('media_near', { p_lat: lat, p_lng: lng, p_radius_m: 8000, p_limit: 10 });
+      return (d ?? []) as NearHit[];
+    },
+  });
+
+  if (noDirect) {
+    if (!near.length) return null;
+    return (
+      <section className="mt-8 pt-6 border-t border-border/60 text-left">
+        <h2 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-gold" />
+          {en ? 'Podcasts & video about the area' : 'Poddar & video om trakten'}
+        </h2>
+        <p className="text-xs text-muted-foreground mb-4">
+          {en ? 'No episodes about this exact place — here is media about notable sites nearby.'
+              : 'Inga avsnitt om just denna plats — här är media om notabla platser i närheten.'}
+        </p>
+        <div className="space-y-2">
+          {near.map((m) => (
+            <a key={m.item_id} href={m.url} target="_blank" rel="noopener noreferrer" data-wfa-track data-wfa-event="click"
+              className="group block text-left rounded-lg border border-border bg-card/60 p-3 hover:bg-card transition-colors">
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-semibold text-gold leading-snug">{m.title}</span>
+                <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-gold shrink-0 mt-0.5" />
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">{m.source_name} · {en ? 'via' : 'via'} {m.matched_place}</div>
+            </a>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mt-8 pt-6 border-t border-border/60 text-left">
