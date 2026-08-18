@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
@@ -71,6 +71,10 @@ const FortressDetail = () => {
   const { language } = useLanguage();
   const sv = language === 'sv';
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  // Param kan vara en UUID (gamla länkar) ELLER en läsbar slug (birkaborgen). UUID → slå upp på id
+  // och canonical-redirecta till slug-URL:en; slug → slå upp direkt.
+  const isUuid = !!id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
   const [fort, setFort] = useState<Fort | null>(null);
   const [similar, setSimilar] = useState<number | null>(null);
   const [rc, setRc] = useState<RcDate[]>([]);
@@ -148,10 +152,12 @@ const FortressDetail = () => {
     (async () => {
       const sb = supabase as any;
       const { data, error } = await sb.from('swedish_hillforts')
-        .select('id,name,coordinates,raa_number,landscape,parish,municipality,fortress_type,description,period,cultural_significance,source_reference,dating_basis,dating_confidence,nearby_runestones')
-        .eq('id', id).maybeSingle();
+        .select('id,slug,name,coordinates,raa_number,landscape,parish,municipality,fortress_type,description,period,cultural_significance,source_reference,dating_basis,dating_confidence,nearby_runestones')
+        .eq(isUuid ? 'id' : 'slug', id).maybeSingle();
       if (error) { setErr(error.message); setLoading(false); return; }
       if (data) {
+        // Kom man in via UUID men raden har en slug → byt till den rena URL:en (cache/SEO/delning).
+        if (isUuid && (data as any).slug) { navigate(`/fortresses/${(data as any).slug}`, { replace: true }); return; }
         setFort(data as Fort);
         const { count } = await sb.from('swedish_hillforts')
           .select('id', { count: 'exact', head: true }).eq('landscape', (data as Fort).landscape);
@@ -159,8 +165,9 @@ const FortressDetail = () => {
         setLoading(false);
         return;
       }
-      // Fallback: kurerad viking_fortresses (borgar utan swedish_hillforts-motsvarighet) så deras
-      // /fortresses/:id-länk fungerar (Daniel: fixa fortress-länkarna). Mappar region→landscape m.m.
+      // Fallback: kurerad viking_fortresses (borgar utan swedish_hillforts-motsvarighet, endast
+      // UUID-länkade) så deras /fortresses/:id-länk fungerar. Mappar region→landscape m.m.
+      if (!isUuid) { setErr(sv ? 'Borgen hittades inte' : 'Fortress not found'); setLoading(false); return; }
       const { data: vf } = await sb.from('viking_fortresses')
         .select('id,name,coordinates,raa_number,region,fortress_type,description,construction_period,historical_significance')
         .eq('id', id).maybeSingle();
