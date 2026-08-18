@@ -444,6 +444,33 @@ html { font-size: calc(100% * var(--a11y-font-scale, 1)); }
 .text-on-media { color: #ffffff; }
 :root[data-theme="light"] .text-on-media,
 :root[data-theme="light"][data-contrast="high"] .text-on-media { color: #ffffff !important; }
+/* Mörka GRADIENT-stopp (kort-gradienter på /verktyg, /ai-agenter, /sv/kyrkor m.fl.) → ljusa.
+   Kort-sidorna använder bg-gradient-to-br from-slate-900 to-slate-800 som lagret annars missar. */
+:root[data-theme="light"] .from-slate-950,
+:root[data-theme="light"] .from-slate-900,
+:root[data-theme="light"] .from-slate-800,
+:root[data-theme="light"] .from-slate-700,
+:root[data-theme="light"] .from-gray-900,
+:root[data-theme="light"] .from-gray-800,
+:root[data-theme="light"] .from-gray-700,
+:root[data-theme="light"] .from-gray-600 {
+  --tw-gradient-from: #f8fafc var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(248 250 252 / 0) var(--tw-gradient-to-position) !important;
+}
+:root[data-theme="light"] .via-slate-900,
+:root[data-theme="light"] .via-slate-800 {
+  --tw-gradient-stops: var(--tw-gradient-from), #eef2f7 var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+}
+:root[data-theme="light"] .to-slate-950,
+:root[data-theme="light"] .to-slate-900,
+:root[data-theme="light"] .to-slate-800,
+:root[data-theme="light"] .to-slate-700,
+:root[data-theme="light"] .to-gray-800 {
+  --tw-gradient-to: #e2e8f0 var(--tw-gradient-to-position) !important;
+}
+/* Hero-scrim: mörk overlay i mörkt tema, LJUS i ljust (så mörk hero-text går att läsa på bilden). */
+.hero-scrim { background: rgba(0,0,0,0.6); }
+:root[data-theme="light"] .hero-scrim { background: rgba(248,250,252,0.80); }
 
 /* Reducerad rörelse: stäng av animationer/övergångar (utöver OS-inställningen). */
 :root[data-motion="reduced"] *,
