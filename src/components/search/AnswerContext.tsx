@@ -763,7 +763,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/25 to-transparent" />
           <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 sm:p-5">
-            <h1 className="max-w-2xl text-2xl font-bold leading-tight text-white drop-shadow-lg sm:text-3xl">{heroTitle}</h1>
+            <h1 className="text-on-media max-w-2xl text-2xl font-bold leading-tight drop-shadow-lg sm:text-3xl">{heroTitle}</h1>
             <button
               type="button"
               onClick={() => setLightbox({ url: heroPainting.image_url, desc: `${heroPainting.title} — ${heroPainting.artist} (${heroPainting.year ?? ''}). ${heroPainting.depicts_event ?? ''}. ⚠ ${heroPainting.caveat}`, license: heroPainting.license_code, credit: heroPainting.artist })}

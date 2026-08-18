@@ -349,7 +349,7 @@ html { font-size: calc(100% * var(--a11y-font-scale, 1)); }
    (kan behöva enstaka puts efter test). --gold mörknas (46 68% 52% klarar ej text
    på vitt); mörka scrims (bg-black/xx) + hero-gradienter lämnas medvetet mörka. */
 :root[data-theme="light"] {
-  --background: 0 0% 100%;
+  --background: 210 20% 97%;   /* väldigt ljus grå (ej ren vit) — mjukare, mindre bländning, WCAG-ok */
   --foreground: 222 47% 11%;
   --card: 0 0% 100%;
   --card-foreground: 222 47% 11%;
@@ -439,6 +439,11 @@ html { font-size: calc(100% * var(--a11y-font-scale, 1)); }
 :root[data-theme="light"][data-contrast="high"] .text-slate-300,
 :root[data-theme="light"][data-contrast="high"] .text-slate-400,
 :root[data-theme="light"][data-contrast="high"] .text-slate-500 { color: #000000; }
+/* Text som ligger PÅ en mörk bild/gradient/scrim (hero-titel, lightbox) ska förbli vit i BÅDA
+   teman — annars flippar kompatibilitetslagret den till mörk = oläsbar på mörk bild (Daniel). */
+.text-on-media { color: #ffffff; }
+:root[data-theme="light"] .text-on-media,
+:root[data-theme="light"][data-contrast="high"] .text-on-media { color: #ffffff !important; }
 
 /* Reducerad rörelse: stäng av animationer/övergångar (utöver OS-inställningen). */
 :root[data-motion="reduced"] *,
