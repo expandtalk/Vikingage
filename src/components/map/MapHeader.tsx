@@ -2,7 +2,6 @@
 import React from 'react';
 import { useSearchParams } from "react-router-dom";
 import { CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { MapPin } from "lucide-react";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -45,26 +44,25 @@ export const MapHeader: React.FC<MapHeaderProps> = ({
     return language === 'sv' ? 'Utforska' : 'Explore';
   };
 
+  const sv = language === 'sv';
+  // Räknaren ligger som en DÄMPAD undertext direkt efter rubriken (baslinjejusterad) i st.f.
+  // badge-pillar längst till höger — de kolliderade med "Anpassa karta"-legenden som flyter i
+  // kartans övre högra hörn (Daniel). tabular-nums håller siffrorna på linje.
+  const places = `${totalLocations.toLocaleString(sv ? 'sv-SE' : 'en-GB')} ${sv ? 'platser' : 'places'}`;
+  const realms = `${geoCount} ${isVikingMode ? (sv ? 'riken' : 'realms') : (sv ? 'länder' : 'countries')}`;
   return (
     <CardHeader>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
         <CardTitle className="text-white flex items-center gap-2 font-norse">
           <MapPin className="h-5 w-5" />
           {getTitle()}
         </CardTitle>
-        <div className="flex gap-2">
-          <Badge variant="secondary" className="text-xs">
-            {isVikingMode ? 
-              `${totalLocations} platser • ${geoCount} riken` : 
-              `${totalLocations} platser • ${geoCount} länder`
-            }
-          </Badge>
-          {totalInscriptions && (
-            <Badge variant="outline" className="text-xs border-blue-400 text-blue-200">
-              {totalInscriptions} inskrifter
-            </Badge>
-          )}
-        </div>
+        <p className="text-sm text-slate-400 tabular-nums">
+          {places} <span className="text-slate-600">•</span> {realms}
+          {totalInscriptions ? (
+            <> <span className="text-slate-600">·</span> {totalInscriptions.toLocaleString(sv ? 'sv-SE' : 'en-GB')} {sv ? 'inskrifter' : 'inscriptions'}</>
+          ) : null}
+        </p>
       </div>
     </CardHeader>
   );
