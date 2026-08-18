@@ -74,6 +74,7 @@ const Welcome = () => {
       {/* Mobil = fältverktyg: Near me som primär handling direkt på startsidan (dold på desktop). */}
       <WelcomeNearMe />
 
+      <main id="main-content">
       <HeroSection
         dbStats={displayStats}
         localizedText={localizedText}
@@ -95,6 +96,7 @@ const Welcome = () => {
           <WelcomeFooter />
         </Suspense>
       </div>
+      </main>
     </div>
   );
 };

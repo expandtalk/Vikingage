@@ -15,6 +15,7 @@ import { Navigation, MobileNav } from './Navigation';
 import { GlobalSearch } from './search/GlobalSearch';
 import { BuildViewDialog } from './welcome/BuildViewDialog';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { AccessibilityMenu } from './AccessibilityMenu';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   DropdownMenu,
@@ -78,6 +79,7 @@ export const Header = () => {
             {/* Liten förstoringsglas-ikon på övriga sidor; startsidan har den stora sökrutan före korten. */}
             {!isHome && <GlobalSearch variant="icon" />}
             <LanguageSwitcher />
+            <AccessibilityMenu />
             <MobileNav />
             
             {user ? (

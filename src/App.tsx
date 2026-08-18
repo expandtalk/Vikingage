@@ -9,6 +9,8 @@ import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AccountSync } from "@/components/AccountSync";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
+import { SkipLink } from "@/components/SkipLink";
 import { RequireRole } from "@/components/auth/RequireRole";
 import Welcome from "./pages/Welcome";
 
@@ -119,7 +121,9 @@ const App = () => (
         <AuthProvider>
           <AccountSync />
           <LanguageProvider>
+            <AccessibilityProvider>
             <TooltipProvider>
+              <SkipLink />
               <Toaster />
               <Sonner />
               <Suspense fallback={<RouteFallback />}>
@@ -360,6 +364,7 @@ const App = () => (
                 </Routes>
               </Suspense>
             </TooltipProvider>
+            </AccessibilityProvider>
           </LanguageProvider>
         </AuthProvider>
       </BrowserRouter>
