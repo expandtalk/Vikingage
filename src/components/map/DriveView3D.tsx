@@ -267,11 +267,16 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
       if (pos.headingDeg != null) arrowRef.current.style.transform = `rotate(${pos.headingDeg}deg)`;
     }
     if (!following) return;
+    // Puck-offset (bil-nav): placera "du är här" i NEDRE mitten så vägen framför fyller skärmen.
+    // padding.top skjuter geografiska centrum (= pucken) nedåt; mindre offset till fots.
+    const h = map.getContainer().clientHeight || 600;
+    const topPad = Math.round(h * (travelMode === 'foot' ? 0.28 : 0.52));
     map.easeTo({
       center: [pos.lng, pos.lat],
       bearing: pos.headingDeg ?? map.getBearing(),
       pitch: pitchForMode(travelMode),
       zoom: Math.max(map.getZoom(), 16.5),
+      padding: { top: topPad, bottom: 0, left: 0, right: 0 },
       duration: 700,
     });
   }, [pos, following, travelMode]);

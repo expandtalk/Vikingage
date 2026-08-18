@@ -21,6 +21,7 @@ export const useFieldNavGeolocation = () => {
   // stängs faktiskt av. startFieldNav nollar dismissed och sätter igång igen.
   const enabled = !dismissed && (active || isMobile || mode === 'car' || mode === 'boat');
   const compassRef = useRef<number | null>(null);
+  const lastFixRef = useRef<{ lat: number; lng: number; t: number } | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
@@ -45,6 +46,20 @@ export const useFieldNavGeolocation = () => {
     const watchId = navigator.geolocation.watchPosition(
       (p) => {
         const { latitude, longitude, accuracy, heading, speed } = p.coords;
+        // GPS-outlier-vakt: enstaka fel-spikar (dålig noggrannhet) fick kartan att "hoppa rejält"
+        // under färd. Hoppa över en fix som ligger orimligt långt från förra givet tid+fart OCH
+        // har dålig noggrannhet — kameran rycker då inte, den fortsätter från senaste rimliga läge.
+        const now = Date.now();
+        const prev = lastFixRef.current;
+        if (prev) {
+          const dt = Math.max(0.2, (now - prev.t) / 1000);
+          const dLat = (latitude - prev.lat) * 111320;
+          const dLng = (longitude - prev.lng) * 111320 * Math.cos((latitude * Math.PI) / 180);
+          const dist = Math.hypot(dLat, dLng);
+          const maxStep = Math.max(speed ?? 0, 14) * dt * 2 + 25 + (accuracy ?? 15);
+          if (dist > maxStep && (accuracy ?? 999) > 20) return;
+        }
+        lastFixRef.current = { lat: latitude, lng: longitude, t: now };
         const r = resolveHeading({
           gpsHeading: heading ?? null,
           gpsSpeed: speed ?? null,
@@ -67,6 +82,7 @@ export const useFieldNavGeolocation = () => {
       window.removeEventListener('deviceorientationabsolute', onOrient as EventListener);
       window.removeEventListener('deviceorientation', onOrient as EventListener);
       compassRef.current = null;
+      lastFixRef.current = null;
     };
   }, [enabled]);
 };
