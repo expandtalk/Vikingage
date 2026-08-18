@@ -6,3 +6,5 @@ verify_jwt = true
 # embed-search gör egen auktorisering (service-role eller admin) i funktionskroppen.
 [functions.embed-search]
 verify_jwt = true
+[functions.topowebb-tile]
+verify_jwt = false
