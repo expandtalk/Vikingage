@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 // strukturerad licens (mynt) märks tydligt "Licens ej fastställd — se källa" och får aldrig
 // en grön fri-licens-badge.
 
-export type ImageCategory = 'runestone' | 'historical_drawing' | 'historical_depiction' | 'church_art' | 'model3d' | 'coin' | 'history_painting';
+export type ImageCategory = 'runestone' | 'historical_drawing' | 'historical_depiction' | 'manuscript' | 'church_art' | 'model3d' | 'coin' | 'history_painting';
 
 // Normaliserad licensstatus. `free` = fri/öppen licens som får visas med grön badge.
 // `unverified` = licens saknas/okänd → amber-varning, kräver källa. `blocked` visas aldrig.
@@ -163,6 +163,7 @@ const DEPICTION_SUBJECT: Record<string, { sv: string; en: string }> = {
   mound:     { sv: 'Gravhög',          en: 'Burial mound' },
   king:      { sv: 'Kung/dynasti',     en: 'King/dynasty' },
   monument:  { sv: 'Monument',         en: 'Monument' },
+  manuscript:{ sv: 'Manuskript',       en: 'Manuscript' },
   other:     { sv: 'Objekt',           en: 'Object' },
 };
 async function fetchHistoricalDepictions(): Promise<ArchiveImage[]> {
@@ -182,9 +183,11 @@ async function fetchHistoricalDepictions(): Promise<ArchiveImage[]> {
     const license = licenseFromCode(r.license_code) ?? { label: 'Public domain', url: LICENSE_URLS['PD'], status: 'free' as const };
     const subj = DEPICTION_SUBJECT[r.subject_type] ?? DEPICTION_SUBJECT.other;
     const credit = [r.artist, r.work_ref, r.year].filter(Boolean).join(' · ') || null;
+    // Manuskript får en egen facett; övriga objekt (kyrkor, kungar, hög…) samlas under 'historical_depiction'.
+    const category: ImageCategory = r.subject_type === 'manuscript' ? 'manuscript' : 'historical_depiction';
     return [{
       id: r.id,
-      category: 'historical_depiction' as const,
+      category,
       kind: 'image' as const,
       src: r.image_url,
       thumb: r.thumb_url ?? null,
@@ -350,7 +353,7 @@ export const useImageArchive = () =>
       ]);
       const items = results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
       const counts: Record<ImageCategory, number> = {
-        runestone: 0, historical_drawing: 0, historical_depiction: 0, church_art: 0, model3d: 0, coin: 0, history_painting: 0,
+        runestone: 0, historical_drawing: 0, historical_depiction: 0, manuscript: 0, church_art: 0, model3d: 0, coin: 0, history_painting: 0,
       };
       for (const it of items) counts[it.category] += 1;
       return { items, counts };

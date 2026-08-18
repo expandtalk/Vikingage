@@ -22,6 +22,7 @@ const FACETS: { key: Facet; sv: string; en: string }[] = [
   { key: 'runestone',        sv: 'Runstenar',     en: 'Runestones' },
   { key: 'historical_drawing', sv: 'Runstensteckningar', en: 'Runestone drawings' },
   { key: 'historical_depiction', sv: 'Kyrkor & objekt', en: 'Churches & objects' },
+  { key: 'manuscript',       sv: 'Manuskript',    en: 'Manuscripts' },
   { key: 'church_art',       sv: 'Kyrkokonst',    en: 'Church art' },
   { key: 'history_painting', sv: 'Historiemåleri', en: 'History paintings' },
   { key: 'coin',             sv: 'Mynt',          en: 'Coins' },
@@ -32,6 +33,7 @@ const CAT_LABEL: Record<ImageCategory, { sv: string; en: string }> = {
   runestone:        { sv: 'Runsten',      en: 'Runestone' },
   historical_drawing: { sv: 'Teckning',   en: 'Drawing' },
   historical_depiction: { sv: 'Avbildning', en: 'Depiction' },
+  manuscript:       { sv: 'Manuskript',   en: 'Manuscript' },
   church_art:       { sv: 'Kyrkokonst',   en: 'Church art' },
   history_painting: { sv: 'Historiemåleri', en: 'History painting' },
   coin:             { sv: 'Mynt',         en: 'Coin' },
@@ -224,11 +226,11 @@ const Bildarkiv: React.FC = () => {
               id="image-archive-region"
               value={region}
               onChange={(e) => setRegion(e.target.value)}
-              className="min-h-[36px] rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+              className="min-h-[36px] rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
             >
-              <option value="all">{sv ? 'Alla landskap' : 'All provinces'}</option>
+              <option value="all" className="bg-slate-900 text-white">{sv ? 'Alla landskap' : 'All provinces'}</option>
               {regions.map((r) => (
-                <option key={r} value={r}>{r}</option>
+                <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>
               ))}
             </select>
           </div>
