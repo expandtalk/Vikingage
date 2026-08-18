@@ -18,7 +18,7 @@ import { InscriptionDiscussion } from '@/components/inscriptions/InscriptionDisc
 // 3-kol-band (fakta | bred karta | ristare/källor) → capped prosazon (läsningar/forskning, ~läsbar bredd).
 // All data i ett RPC-anrop (get_inscription_page). Egen dokumentation prioriteras bland bilder.
 
-interface Img { url: string; description: string | null; photographer: string | null; credit: string | null; source: string | null; }
+interface Img { url: string; thumb?: string | null; description: string | null; photographer: string | null; credit: string | null; source: string | null; }
 interface Carver { id: string; name: string; }
 interface Reading { type: string | null; text: string; }
 interface Interpretation { version: string | null; language: string | null; text: string; }
@@ -160,7 +160,7 @@ const InscriptionPage = () => {
                 {data.images.length > 0 ? (
                   <figure className="m-0">
                     <a href={data.images[0].url} target="_blank" rel="noopener noreferrer" className="block">
-                      <img src={data.images[0].url} alt={data.images[0].description || data.signum} loading="eager"
+                      <img src={data.images[0].thumb ?? data.images[0].url} alt={data.images[0].description || data.signum} loading="eager"
                         className="w-full h-auto rounded-lg border border-border bg-black/20"
                         title={[data.images[0].photographer, data.images[0].credit].filter(Boolean).join(', ') || undefined} />
                     </a>
@@ -294,7 +294,7 @@ const InscriptionPage = () => {
                     <a key={i} href={img.url} target="_blank" rel="noopener noreferrer"
                       className="mb-3 block break-inside-avoid overflow-hidden rounded-md border border-border bg-black/20"
                       title={[img.description, img.photographer, img.credit].filter(Boolean).join(' — ') || undefined}>
-                      <img src={img.url} alt={img.description || data.signum} loading="lazy"
+                      <img src={img.thumb ?? img.url} alt={img.description || data.signum} loading="lazy"
                         className="w-full h-auto transition-opacity hover:opacity-90" />
                     </a>
                   ))}

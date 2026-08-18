@@ -30,7 +30,8 @@ export interface ArchiveImage {
   id: string;
   category: ImageCategory;
   kind: 'image' | 'model';   // model = 3D GLB (ej rasterbild) → länkas ut, bäddas ej in i grid
-  src: string;               // media_url / image_url / file_path (hotlänk till original)
+  src: string;               // media_url / image_url / file_path (hotlänk till original) — visas vid klick
+  thumb?: string | null;     // komprimerad Wikimedia-thumb (Commons-API), default i grid; null → använd src
   href: string | null;       // intern detaljsida eller extern källa
   title: string;             // primär etikett
   caption: string | null;    // används för alt-text + bildtext
@@ -94,7 +95,7 @@ const RUNESTONE_LIMIT = 600;
 
 // Gemensam mappning för inscription_media-rader (foto och teckning) → ArchiveImage.
 type InscMediaRow = {
-  id: string; media_url: string; media_type: string | null; description: string | null; motive: string | null;
+  id: string; media_url: string; thumb_url: string | null; media_type: string | null; description: string | null; motive: string | null;
   photographer: string | null; source_institution: string | null; license_code: string | null;
   inscription: { signum: string | null; province: string | null; landscape: string | null } | null;
 };
@@ -110,6 +111,7 @@ function mapInscriptionMedia(rows: InscMediaRow[], category: ImageCategory): Arc
       category,
       kind: 'image' as const,
       src: r.media_url,
+      thumb: r.thumb_url ?? null,
       href: signum ? `/inscription/${encodeURIComponent(signum)}` : null,
       title: signum ?? fallbackTitle,
       caption: r.motive ?? r.description ?? null,
@@ -122,7 +124,7 @@ function mapInscriptionMedia(rows: InscMediaRow[], category: ImageCategory): Arc
 }
 
 const INSC_MEDIA_SELECT =
-  'id, media_url, media_type, description, motive, photographer, source_institution, license_code, inscription:inscription_id(signum, province, landscape)';
+  'id, media_url, thumb_url, media_type, description, motive, photographer, source_institution, license_code, inscription:inscription_id(signum, province, landscape)';
 
 async function fetchRunestones(): Promise<ArchiveImage[]> {
   // Foton av runstenar. Endast bildmedia med känd FRI licens (kontrollerad vokab); 'unknown'/null
@@ -166,13 +168,13 @@ const DEPICTION_SUBJECT: Record<string, { sv: string; en: string }> = {
 async function fetchHistoricalDepictions(): Promise<ArchiveImage[]> {
   const { data, error } = await sb
     .from('historical_depictions')
-    .select('id, subject_type, title, place_name, province, image_url, artist, work_ref, year, license_code, source_url')
+    .select('id, subject_type, title, place_name, province, image_url, thumb_url, artist, work_ref, year, license_code, source_url')
     .not('image_url', 'is', null)
     .limit(400);
   if (error) throw error;
   const rows = (data ?? []) as Array<{
     id: string; subject_type: string; title: string; place_name: string | null; province: string | null;
-    image_url: string; artist: string | null; work_ref: string | null; year: string | null;
+    image_url: string; thumb_url: string | null; artist: string | null; work_ref: string | null; year: string | null;
     license_code: string | null; source_url: string | null;
   }>;
   return rows.flatMap((r) => {
@@ -185,6 +187,7 @@ async function fetchHistoricalDepictions(): Promise<ArchiveImage[]> {
       category: 'historical_depiction' as const,
       kind: 'image' as const,
       src: r.image_url,
+      thumb: r.thumb_url ?? null,
       href: r.source_url,
       title: r.place_name ?? r.title,
       caption: `${subj.sv} — ${r.title}`,

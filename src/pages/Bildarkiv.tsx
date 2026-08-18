@@ -87,7 +87,7 @@ const ArchiveCard: React.FC<{ item: ArchiveImage; sv: boolean }> = ({ item, sv }
           </div>
         ) : (
           <img
-            src={item.src}
+            src={item.thumb ?? item.src}
             alt={alt}
             loading="lazy"
             decoding="async"
