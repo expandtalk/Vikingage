@@ -63,7 +63,7 @@ export const FEATURE_ICON: Record<string, string> = {
   'cult': 'idol', 'kultplats': 'idol', 'offerplats': 'idol',
   // Tematiska lager-kinder (forskningssidornas egna nyckelord → glyf; formen bär typen).
   'bridge': 'bro', 'bro/vadställe': 'bro', 'thing': 'scales', 'tingsplats': 'scales',
-  'fort': 'hus_slott', 'borg': 'hus_slott', 'endpoint': 'dot',
+  'fort': 'hus_slott', 'endpoint': 'dot',
   'sacral': 'idol', 'sakralt': 'idol', 'power': 'shield', 'makt': 'shield', 'central': 'crown', 'centralort': 'crown',
   // Kurerade heritage_sites-typer (Kalmar m.fl.) — formen bär typen inom ett annars enfärgat lager.
   'kyrkogård': 'begravningsplats', 'synagoga': 'kulturminne', 'fästning/skans': 'fort',
