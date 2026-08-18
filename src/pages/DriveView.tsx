@@ -36,8 +36,16 @@ const DriveView: React.FC = () => {
     <div className="fixed inset-0 bg-slate-950">
       <DriveView3D demoCenter={demoCenter} />
 
-      {/* Topbar: stäng + status */}
+      {/* Topbar: Explore → Stäng (Daniel) + status. Explore öppnar den platta kartan på SAMMA
+          position/zoom så man inte tappar orienteringen (i st.f. utzoomad Sverigekarta). */}
       <div className="absolute left-0 right-0 top-0 z-10 flex items-center gap-2 p-3">
+        <button
+          type="button"
+          onClick={() => { const c = pos ?? demoCenter; navigate(`/explore?center=${c.lat},${c.lng}&zoom=15`); }}
+          className="inline-flex items-center gap-1 rounded-lg border border-slate-600 bg-slate-900/85 px-3 py-1.5 text-sm text-slate-100 backdrop-blur-sm"
+        >
+          <Map className="h-4 w-4" />{sv ? 'Utforska' : 'Explore'}
+        </button>
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -48,14 +56,6 @@ const DriveView: React.FC = () => {
         <span className="rounded-lg border border-slate-600 bg-slate-900/85 px-2.5 py-1.5 text-[11px] text-slate-300 backdrop-blur-sm">
           {sv ? '3D-förarperspektiv (beta)' : '3D drive view (beta)'}
         </span>
-        {/* Tillbaka till den platta explore-kartan (alla lager) — 3D är rörelseläget, explore är hemmet. */}
-        <button
-          type="button"
-          onClick={() => navigate('/explore')}
-          className="inline-flex items-center gap-1 rounded-lg border border-slate-600 bg-slate-900/85 px-3 py-1.5 text-sm text-slate-100 backdrop-blur-sm"
-        >
-          <Map className="h-4 w-4" />{sv ? 'Utforska (platt)' : 'Explore (flat)'}
-        </button>
         {!following && (
           <button
             type="button"

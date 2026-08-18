@@ -569,6 +569,13 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     const q = stripDev(query);
     if (q.length < 2) { setGroups([]); setFaqHits([]); setDevInfo(null); return; }
     const dev = DEV_RE.test(query);
+    let cancelled = false;
+    // FAQ-förslag (get_faq-navet) hämtas PARALLELLT och OBEROENDE av fritextsöket — ett långsamt
+    // eller felande huvudsök får aldrig nolla FAQ-listan (gudar/koncept ska synas direkt).
+    (async () => {
+      try { const fr = await sb.rpc('faq_suggest', { p_q: q, p_limit: 5 }); if (!cancelled) setFaqHits((fr.data ?? []) as { slug: string; question_sv: string }[]); }
+      catch { if (!cancelled) setFaqHits([]); }
+    })();
     const t = setTimeout(async () => {
       setLoading(true);
       const t0 = performance.now();
@@ -601,20 +608,17 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         queries.push('svarspanel AnswerContext: resolve_place, nearby_experiences, media_for_topic, charter_mentions m.fl.');
         setGroups(groupHits(hits));
         setTopEntity(hits[0] ?? null);
-        // FAQ-förslag (get_faq-navet) överst i listan — så gudar/koncept syns direkt.
-        try { const fr = await sb.rpc('faq_suggest', { p_q: q, p_limit: 5 }); setFaqHits((fr.data ?? []) as { slug: string; question_sv: string }[]); }
-        catch { setFaqHits([]); }
         if (dev) setDevInfo({ q, path, ms: performance.now() - t0, count: hits.length, hits: hits.slice(0, 25), queries });
         // Logga sökningen (aggregat, GDPR-säkert) → vi ser vad folk söker + om det gav träff.
         logSearchTerm(q, (hits?.length ?? 0) > 0);
       } catch {
-        setGroups([]); setFaqHits([]);
+        setGroups([]);
         if (dev) setDevInfo({ q, path: `${path} — FEL`, ms: performance.now() - t0, count: 0, hits: [], queries });
       } finally {
         setLoading(false);
       }
     }, 250);
-    return () => clearTimeout(t);
+    return () => { cancelled = true; clearTimeout(t); };
   }, [query, theme]);
 
   // Snabb typeahead (80ms debounce) — oberoende av den tyngre rankade sökningen.

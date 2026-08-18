@@ -32,7 +32,7 @@ const BIAS_LABEL: Record<string, { sv: string; en: string }> = {
 export const FaqAnswer: React.FC<{ faq: FaqData; sv: boolean; onQuery?: (q: string) => void }> = ({ faq, sv, onQuery }) => {
   if (!faq || (!faq.lenses?.length && !faq.bias?.length)) return null;
   return (
-    <section className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4">
+    <section className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4 text-left [&_*]:text-left">
       <Helmet>
         <script type="application/ld+json">{JSON.stringify({
           '@context': 'https://schema.org', '@type': 'FAQPage',

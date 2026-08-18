@@ -906,7 +906,9 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
       )}
 
-      {hasCenter && !showLandscape && !overviewLoading && (
+      {/* FAQ-svar (koncept/gud/period) är INTE en plats → dölj kartan. En fråga som "Vilka var
+          vikingarna?" ska inte resolve:a till en orelaterad ort och centrera kartan där. */}
+      {hasCenter && !faq && !showLandscape && !overviewLoading && (
         <div className="px-5 pb-4">
           <div
             className={mapExpanded
