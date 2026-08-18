@@ -700,6 +700,20 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   // matchat (t.ex. "Kalmar slott" → entity_node för slottet vinner, ej hela Kalmar-översikten).
   const showLandscape = !!overview && !data?.page && !data?.theme && !node;
 
+  // HERO: en PD-historiemålning (t.ex. Hellqvist) som full-bleed banner ÖVER innehållet. Ramen
+  // beskärs med CSS (object-cover + lätt scale) — vi hotlinkar Commons, rehostar aldrig. Diskret
+  // hörn-caption bär källkritiken (konstnär/år + "konstnärlig tolkning", klick → full caveat i
+  // lightbox). AI-svaret (titel+beskrivning) flyttas då under hero+karta (Daniel).
+  const heroPainting = (!showLandscape && paintings.length > 0) ? paintings[0] : null;
+  const galleryPaintings = heroPainting ? paintings.slice(1) : paintings;
+  const heroTitle = node?.title || data?.page?.title || data?.theme?.name || query;
+  const descBelowMap = (heroPainting && node?.description) ? (
+    <div className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-3">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-300/70">{node!.kind}{node!.dating ? ` · ${node!.dating}` : ''}</div>
+      <p className="mt-1 max-w-3xl whitespace-pre-line text-sm leading-relaxed text-slate-300">{node!.description}</p>
+    </div>
+  ) : null;
+
   const nodeBlock = node ? (
     <div className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-3">
       <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-300/70">{node.kind}{node.dating ? ` · ${node.dating}` : ''}</div>
@@ -738,8 +752,32 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
   return (
     <div className="border-b border-slate-800 bg-slate-900">
+      {/* HERO: full-bleed historiemålning (ramen CSS-beskuren via object-cover + scale). */}
+      {heroPainting && (
+        <figure className="relative m-0 w-full overflow-hidden">
+          <img
+            src={heroPainting.image_url}
+            alt={heroPainting.title}
+            className="h-56 w-full scale-[1.05] object-cover object-center sm:h-72 md:h-80"
+            onError={hideCard}
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/25 to-transparent" />
+          <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 sm:p-5">
+            <h1 className="max-w-2xl text-2xl font-bold leading-tight text-white drop-shadow-lg sm:text-3xl">{heroTitle}</h1>
+            <button
+              type="button"
+              onClick={() => setLightbox({ url: heroPainting.image_url, desc: `${heroPainting.title} — ${heroPainting.artist} (${heroPainting.year ?? ''}). ${heroPainting.depicts_event ?? ''}. ⚠ ${heroPainting.caveat}`, license: heroPainting.license_code, credit: heroPainting.artist })}
+              className="pointer-events-auto shrink-0 rounded-md bg-slate-900/70 px-2 py-1 text-right text-[10px] leading-tight text-slate-300 backdrop-blur-sm hover:bg-slate-900/90"
+              title={sv ? 'Visa källkritik' : 'Show source criticism'}
+            >
+              {heroPainting.artist}{heroPainting.year ? ` · ${heroPainting.year}` : ''}<br />
+              <span className="text-amber-300/90">{sv ? 'konstnärlig tolkning ⚠' : 'artistic interpretation ⚠'}</span>
+            </button>
+          </figcaption>
+        </figure>
+      )}
       {showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}
-      {!data.page && !showLandscape && nodeBlock}
+      {!data.page && !showLandscape && !heroPainting && nodeBlock}
       {/* LANDMÄRKEN — byggnads-/monumentbilder högt upp (mest platsrelevanta bilden, Daniel). */}
       {landmarkImages.length > 0 && (
         <div className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4">
@@ -959,6 +997,9 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
       )}
 
+      {/* AI-svar (entitetens beskrivning) UNDER hero+karta — ramas in bättre typografiskt (Daniel). */}
+      {descBelowMap}
+
       {/* PANELER — 2/3 huvud + 1/3 höger-rail (Utforska & upplev). Använder ytan, undviker tomma kolumner. */}
       <div className="px-5 pb-4 lg:flex lg:gap-5">
         <div className="min-w-0 lg:flex-[2] grid gap-4 sm:grid-cols-2 content-start">
@@ -1013,13 +1054,13 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
           {/* HISTORIEMÅLNINGAR (PD, 1800-tal) knutna till kung/händelse. KÄLLKRITISK VARNING syns tydligt
               (Daniel): konstnärlig tolkning, ej historisk källa. Full caveat i lightboxen. */}
-          {paintings.length > 0 && (
+          {galleryPaintings.length > 0 && (
             <section>
               <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
                 <ImageIcon className="h-3.5 w-3.5" /> {sv ? 'Historiemålningar' : 'History paintings'}
               </h3>
               <div className="grid grid-cols-2 gap-2">
-                {paintings.map((p) => (
+                {galleryPaintings.map((p) => (
                   <button key={p.image_url} type="button" title={p.title}
                     onClick={() => setLightbox({ url: p.image_url, desc: `${p.title} — ${p.artist} (${p.year ?? ''}). ${p.depicts_event ?? ''}. ⚠ ${p.caveat}`, license: p.license_code, credit: p.artist })}
                     className="group relative overflow-hidden rounded-lg border border-slate-700 bg-slate-800 text-left">
