@@ -65,7 +65,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           />
         </picture>
         {/* Tema-medveten scrim: mörk i mörkt läge; ljus i white mode så den (då mörka) texten läses. */}
-        <div className="absolute inset-0 hero-scrim">
+        <div className="absolute inset-0 hero-scrim"></div>
       </div>
 
       <div
