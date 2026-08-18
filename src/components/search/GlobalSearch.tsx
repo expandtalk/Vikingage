@@ -452,6 +452,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<DbTheme | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [faqHits, setFaqHits] = useState<{ slug: string; question_sv: string }[]>([]);
   const [loading, setLoading] = useState(false);
   // AI-svar (grounded RAG via edge-funktionen search-answer).
   const [aiAnswer, setAiAnswer] = useState<string | null>(null);
@@ -566,7 +567,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     setAiAnswer(null); setAiSources([]); setTopEntity(null); // nytt frågeord → släng gammalt AI-svar
     if (theme) return;
     const q = stripDev(query);
-    if (q.length < 2) { setGroups([]); setDevInfo(null); return; }
+    if (q.length < 2) { setGroups([]); setFaqHits([]); setDevInfo(null); return; }
     const dev = DEV_RE.test(query);
     const t = setTimeout(async () => {
       setLoading(true);
@@ -600,11 +601,14 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         queries.push('svarspanel AnswerContext: resolve_place, nearby_experiences, media_for_topic, charter_mentions m.fl.');
         setGroups(groupHits(hits));
         setTopEntity(hits[0] ?? null);
+        // FAQ-förslag (get_faq-navet) överst i listan — så gudar/koncept syns direkt.
+        try { const fr = await sb.rpc('faq_suggest', { p_q: q, p_limit: 5 }); setFaqHits((fr.data ?? []) as { slug: string; question_sv: string }[]); }
+        catch { setFaqHits([]); }
         if (dev) setDevInfo({ q, path, ms: performance.now() - t0, count: hits.length, hits: hits.slice(0, 25), queries });
         // Logga sökningen (aggregat, GDPR-säkert) → vi ser vad folk söker + om det gav träff.
         logSearchTerm(q, (hits?.length ?? 0) > 0);
       } catch {
-        setGroups([]);
+        setGroups([]); setFaqHits([]);
         if (dev) setDevInfo({ q, path: `${path} — FEL`, ms: performance.now() - t0, count: 0, hits: [], queries });
       } finally {
         setLoading(false);
@@ -834,7 +838,23 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         );
       })()}
 
-      {((query.trim().length >= 2) || theme) && !loading && total === 0 && (
+      {/* FAQ-förslag (fler-perspektiv-svar) överst — visas även när entitetssöket är tomt. */}
+      {faqHits.length > 0 && (
+        <div className="py-1">
+          <div className="flex items-center gap-1.5 px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+            <Sparkles className="h-3 w-3" /> {sv ? 'Frågor & svar' : 'Q&A'}
+          </div>
+          {faqHits.map((f) => (
+            <button key={f.slug} onClick={() => { logSearchClick(query, 'faq', f.slug); go(`/explore?searchQuery=${enc(f.question_sv)}`); }}
+              className="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-slate-800/60">
+              <span className="text-sm text-amber-100">{f.question_sv}</span>
+              <span className="ml-auto shrink-0 rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-300">FAQ</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {((query.trim().length >= 2) || theme) && !loading && total === 0 && faqHits.length === 0 && (
         <div className="p-6 text-center text-sm text-slate-400">
           <p>{sv ? 'Inga träffar för' : 'No matches for'} “{theme ? (sv ? theme.name : theme.name_en ?? theme.name) : query}”</p>
           {/* Tomt läge → föreslå platsen (granskningskö, verifieras mot källa). Bara för fritextsök. */}
