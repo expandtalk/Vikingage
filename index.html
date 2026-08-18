@@ -71,7 +71,12 @@
         siteId: '47825658-d66e-4dfe-9bbb-5b20aeb0f6b2',
         apiKey: 'tk_5538237980894f44b11d2552efe81fe2',
         contentType: 'page',
-        platform: 'web'
+        platform: 'web',
+        // cookieless: true = webbläsaren fingerprintar ALDRIG och profilerar inte återvändare
+        // (ingen /visitor-identification, session-id bara i minnet). Aggregerad mätning på GDPR
+        // Art 6.1.f — ingen cookie-banner, ingen individnivå. requireConsent lämnas default så att
+        // klick/heatmap/konvertering aldrig aktiveras utan samtycke (och därmed aldrig lagrar PII).
+        cookieless: true
       };
     </script>
     <script src="https://cortiq.se/spa-tracking.js" defer></script>
