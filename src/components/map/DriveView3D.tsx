@@ -176,16 +176,19 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
       map.addLayer({
         id: 'nearby-pts', type: 'circle', source: 'nearby',
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 4, 16, 7],
+          // Större + vit halo → syns tydligt mot terräng/basemap i tiltad förarvy (var för
+          // små tidigare — "ser inga objekt"). circle ritas i skärmrymd, ovanpå terrängen.
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 6, 14, 9, 17, 13],
           'circle-color': ['match', ['get', 'ft'],
             'runestone', '#f59e0b', 'church', '#38bdf8', 'fortress', '#fb923c',
             'heritage', '#c084fc', 'estate', '#34d399', 'beacon', '#f87171',
             'thing_site', '#22d3ee', 'coin', '#fbbf24', 'cult_site', '#e879f9',
             'maritime_node', '#22d3ee',
             /* default */ '#94a3b8'] as any,
-          'circle-stroke-width': 1.2,
-          'circle-stroke-color': '#1e293b',
-          'circle-opacity': 0.9,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+          'circle-opacity': 0.95,
+          'circle-pitch-alignment': 'viewport',
         },
       });
       map.on('click', 'nearby-pts', (e) => {
