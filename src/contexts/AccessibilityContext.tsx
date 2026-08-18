@@ -5,6 +5,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 // data-contrast / data-motion). Respekterar även OS-inställningen prefers-reduced-motion som default.
 
 export type FontScale = 1 | 1.15 | 1.3;
+export type Theme = 'dark' | 'light';
 
 interface AccessibilityState {
   fontScale: FontScale;
@@ -13,6 +14,8 @@ interface AccessibilityState {
   setHighContrast: (v: boolean) => void;
   reducedMotion: boolean;
   setReducedMotion: (v: boolean) => void;
+  theme: Theme;
+  setTheme: (t: Theme) => void;
 }
 
 const Ctx = createContext<AccessibilityState | undefined>(undefined);
@@ -30,21 +33,26 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
   const [fontScale, setFontScale] = useState<FontScale>(() => read<FontScale>('a11y-font', 1));
   const [highContrast, setHighContrast] = useState<boolean>(() => read<boolean>('a11y-contrast', false));
   const [reducedMotion, setReducedMotion] = useState<boolean>(() => read<boolean>('a11y-motion', prefersReducedMotion()));
+  // Tema: default mörkt (sajtens ursprungsläge). Ljust läge = data-theme="light" på <html>,
+  // som index.css läser för en WCAG-tunad ljus palett + kompatibilitetslager för hårdkodade färger.
+  const [theme, setTheme] = useState<Theme>(() => read<Theme>('a11y-theme', 'dark'));
 
   useEffect(() => {
     const el = document.documentElement;
     el.style.setProperty('--a11y-font-scale', String(fontScale));
     if (highContrast) el.setAttribute('data-contrast', 'high'); else el.removeAttribute('data-contrast');
     if (reducedMotion) el.setAttribute('data-motion', 'reduced'); else el.removeAttribute('data-motion');
+    if (theme === 'light') el.setAttribute('data-theme', 'light'); else el.removeAttribute('data-theme');
     try {
       localStorage.setItem('a11y-font', JSON.stringify(fontScale));
       localStorage.setItem('a11y-contrast', JSON.stringify(highContrast));
       localStorage.setItem('a11y-motion', JSON.stringify(reducedMotion));
+      localStorage.setItem('a11y-theme', JSON.stringify(theme));
     } catch { /* private mode */ }
-  }, [fontScale, highContrast, reducedMotion]);
+  }, [fontScale, highContrast, reducedMotion, theme]);
 
   return (
-    <Ctx.Provider value={{ fontScale, setFontScale, highContrast, setHighContrast, reducedMotion, setReducedMotion }}>
+    <Ctx.Provider value={{ fontScale, setFontScale, highContrast, setHighContrast, reducedMotion, setReducedMotion, theme, setTheme }}>
       {children}
     </Ctx.Provider>
   );

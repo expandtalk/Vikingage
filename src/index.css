@@ -339,6 +339,107 @@ html { font-size: calc(100% * var(--a11y-font-scale, 1)); }
 :root[data-contrast="high"] a:not([class*="btn"]):not([role="button"]) { text-decoration: underline; }
 :root[data-contrast="high"] *:focus-visible { outline: 3px solid hsl(var(--gold)) !important; outline-offset: 2px !important; }
 
+/* ============================================================================
+   LJUST WCAG-LÄGE (data-theme="light")
+   Sajten är mörk-först med hårdkodade slate/white-klasser. Detta lager gör hela
+   sajten tema-medveten: (1) shadcn-tokens → ljus palett, (2) ett kompatibilitets-
+   lager som mappar de dominerande hårdkodade klasserna till WCAG AA-tunade ljusa
+   värden. Selektorn :root[data-theme="light"] .X (specificitet 0,1,1) vinner över
+   Tailwinds .X (0,1,0). hover:/sm:/lg:-varianter är EGNA klassnamn → påverkas ej
+   (kan behöva enstaka puts efter test). --gold mörknas (46 68% 52% klarar ej text
+   på vitt); mörka scrims (bg-black/xx) + hero-gradienter lämnas medvetet mörka. */
+:root[data-theme="light"] {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 222 47% 11%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 25% 35%;
+  --accent: 210 40% 94%;
+  --accent-foreground: 222 47% 11%;
+  --gold: 42 95% 28%;
+  --destructive: 0 72% 42%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 82%;
+  --input: 214 32% 82%;
+  --ring: 222 47% 40%;
+  color-scheme: light;
+}
+/* Bakgrunder: mörka paneler → ljusa ytor */
+:root[data-theme="light"] .bg-slate-950,
+:root[data-theme="light"] .bg-slate-900,
+:root[data-theme="light"] .bg-gray-950,
+:root[data-theme="light"] .bg-gray-900 { background-color: #ffffff; }
+:root[data-theme="light"] .bg-slate-800,
+:root[data-theme="light"] .bg-gray-800 { background-color: #f1f5f9; }
+:root[data-theme="light"] .bg-slate-700,
+:root[data-theme="light"] .bg-gray-700 { background-color: #e2e8f0; }
+:root[data-theme="light"] .bg-slate-600,
+:root[data-theme="light"] .bg-slate-500,
+:root[data-theme="light"] .bg-gray-600,
+:root[data-theme="light"] .bg-gray-500 { background-color: #cbd5e1; }
+:root[data-theme="light"] .bg-slate-100,
+:root[data-theme="light"] .bg-slate-50 { background-color: #f8fafc; }
+/* Translucenta paneler/overlays (vanliga alfa-varianter) → ljus translucent */
+:root[data-theme="light"] .bg-slate-900\/95,
+:root[data-theme="light"] .bg-slate-900\/90,
+:root[data-theme="light"] .bg-slate-800\/95,
+:root[data-theme="light"] .bg-slate-800\/90,
+:root[data-theme="light"] .bg-slate-900\/80,
+:root[data-theme="light"] .bg-slate-800\/80 { background-color: rgba(255,255,255,0.94); }
+:root[data-theme="light"] .bg-slate-900\/70,
+:root[data-theme="light"] .bg-slate-800\/70,
+:root[data-theme="light"] .bg-slate-900\/60,
+:root[data-theme="light"] .bg-slate-800\/60,
+:root[data-theme="light"] .bg-slate-900\/50,
+:root[data-theme="light"] .bg-slate-800\/50 { background-color: rgba(241,245,249,0.88); }
+:root[data-theme="light"] .bg-slate-800\/40,
+:root[data-theme="light"] .bg-slate-800\/30,
+:root[data-theme="light"] .bg-slate-700\/50,
+:root[data-theme="light"] .bg-slate-700\/40 { background-color: rgba(226,232,240,0.7); }
+/* Text: ljus på mörkt → mörk på ljust (WCAG AA) */
+:root[data-theme="light"] .text-white,
+:root[data-theme="light"] .text-slate-100,
+:root[data-theme="light"] .text-gray-100 { color: #0f172a; }
+:root[data-theme="light"] .text-slate-200,
+:root[data-theme="light"] .text-gray-200 { color: #1e293b; }
+:root[data-theme="light"] .text-slate-300,
+:root[data-theme="light"] .text-gray-300 { color: #334155; }
+:root[data-theme="light"] .text-slate-400,
+:root[data-theme="light"] .text-gray-400 { color: #475569; }
+:root[data-theme="light"] .text-slate-500,
+:root[data-theme="light"] .text-gray-500 { color: #5b6b7f; }
+/* Kanter */
+:root[data-theme="light"] .border-slate-800,
+:root[data-theme="light"] .border-slate-700,
+:root[data-theme="light"] .border-slate-600,
+:root[data-theme="light"] .border-slate-500,
+:root[data-theme="light"] .border-gray-700,
+:root[data-theme="light"] .border-gray-600,
+:root[data-theme="light"] .border-gray-500 { border-color: #cbd5e1; }
+/* Ljust "viking-bg" */
+:root[data-theme="light"] .viking-bg {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 50%, #e2e8f0 100%);
+}
+/* Ljust + högkontrast: ren svart text (annars sätter contrast-blocket --foreground vitt) */
+:root[data-theme="light"][data-contrast="high"] {
+  --foreground: 0 0% 0%;
+  --muted-foreground: 0 0% 15%;
+  --border: 0 0% 40%;
+}
+:root[data-theme="light"][data-contrast="high"] .text-white,
+:root[data-theme="light"][data-contrast="high"] .text-slate-100,
+:root[data-theme="light"][data-contrast="high"] .text-slate-200,
+:root[data-theme="light"][data-contrast="high"] .text-slate-300,
+:root[data-theme="light"][data-contrast="high"] .text-slate-400,
+:root[data-theme="light"][data-contrast="high"] .text-slate-500 { color: #000000; }
+
 /* Reducerad rörelse: stäng av animationer/övergångar (utöver OS-inställningen). */
 :root[data-motion="reduced"] *,
 :root[data-motion="reduced"] *::before,

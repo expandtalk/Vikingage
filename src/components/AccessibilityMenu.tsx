@@ -1,19 +1,19 @@
 import React from 'react';
-import { Accessibility, Check } from 'lucide-react';
+import { Accessibility, Check, Sun, Moon } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useAccessibility, type FontScale } from '@/contexts/AccessibilityContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-// WCAG-inställningsmeny i toppnavigeringen: textstorlek, högkontrast, reducerad rörelse.
+// WCAG-inställningsmeny i toppnavigeringen: tema (mörkt/ljust), textstorlek, högkontrast, reducerad rörelse.
 // onSelect e.preventDefault() håller menyn öppen så man kan ställa in flera saker.
 export const AccessibilityMenu: React.FC = () => {
-  const { fontScale, setFontScale, highContrast, setHighContrast, reducedMotion, setReducedMotion } = useAccessibility();
+  const { fontScale, setFontScale, highContrast, setHighContrast, reducedMotion, setReducedMotion, theme, setTheme } = useAccessibility();
   const sv = useLanguage().language === 'sv';
   const t = sv
-    ? { label: 'Tillgänglighet', text: 'Textstorlek', normal: 'Normal', large: 'Stor', xl: 'Störst', contrast: 'Högkontrast', motion: 'Reducera rörelse', aria: 'Tillgänglighetsinställningar' }
-    : { label: 'Accessibility', text: 'Text size', normal: 'Normal', large: 'Large', xl: 'Largest', contrast: 'High contrast', motion: 'Reduce motion', aria: 'Accessibility settings' };
+    ? { label: 'Tillgänglighet', theme: 'Tema', dark: 'Mörkt', light: 'Ljust', text: 'Textstorlek', normal: 'Normal', large: 'Stor', xl: 'Störst', contrast: 'Högkontrast', motion: 'Reducera rörelse', aria: 'Tillgänglighetsinställningar' }
+    : { label: 'Accessibility', theme: 'Theme', dark: 'Dark', light: 'Light', text: 'Text size', normal: 'Normal', large: 'Large', xl: 'Largest', contrast: 'High contrast', motion: 'Reduce motion', aria: 'Accessibility settings' };
 
   const sizes: { v: FontScale; l: string }[] = [{ v: 1, l: t.normal }, { v: 1.15, l: t.large }, { v: 1.3, l: t.xl }];
   const row = 'flex w-full items-center justify-between gap-3 rounded px-2 py-1.5 text-sm text-slate-200 hover:bg-slate-800 focus:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold';
@@ -28,6 +28,24 @@ export const AccessibilityMenu: React.FC = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60 bg-slate-900 border-slate-700 text-slate-200">
         <DropdownMenuLabel className="text-slate-400">{t.label}</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-slate-700" />
+        <div className="px-2 py-1 text-xs text-slate-400">{t.theme}</div>
+        <div className="flex gap-1 px-2 pb-2" role="group" aria-label={t.theme}>
+          {([['dark', t.dark, Moon], ['light', t.light, Sun]] as const).map(([v, l, Icon]) => (
+            <button
+              key={v}
+              type="button"
+              aria-pressed={theme === v}
+              onClick={() => setTheme(v)}
+              className={[
+                'flex flex-1 items-center justify-center gap-1.5 rounded border px-1.5 py-1.5 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold',
+                theme === v ? 'border-gold bg-gold/15 text-gold font-semibold' : 'border-slate-600 text-slate-300 hover:bg-slate-800',
+              ].join(' ')}
+            >
+              <Icon className="h-3.5 w-3.5" />{l}
+            </button>
+          ))}
+        </div>
         <DropdownMenuSeparator className="bg-slate-700" />
         <div className="px-2 py-1 text-xs text-slate-400">{t.text}</div>
         <div className="flex gap-1 px-2 pb-2" role="group" aria-label={t.text}>
