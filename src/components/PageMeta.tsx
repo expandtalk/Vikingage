@@ -76,6 +76,17 @@ export const PageMeta: React.FC<PageMetaProps> = ({
       <meta name="twitter:title" content={displayTitle} />
       <meta name="twitter:description" content={displayDescription} />
       <meta name="twitter:image" content={imageUrl} />
+
+      {/* Per-sida WebPage-schema (JSON-LD) — knyter sidan till sajt-grafen i index.html. */}
+      <script type="application/ld+json">{JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: displayTitle,
+        description: displayDescription,
+        url: canonical,
+        inLanguage: language === 'en' ? 'en' : 'sv',
+        isPartOf: { '@id': 'https://vikingage.se/#website' },
+      })}</script>
     </Helmet>
   );
 };

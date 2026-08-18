@@ -56,7 +56,7 @@ for (const page of PAGES) {
     .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${esc(page.title)}" />`)
     .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${esc(page.desc)}" />`)
     .replace(/<html lang="[^"]*">/, `<html lang="${page.lang}">`)
-    .replace('</head>', `  <link rel="canonical" href="${canonical}" />\n  <meta property="og:url" content="${canonical}" />\n  <meta property="og:locale" content="${locale}" />\n${alt}  </head>`);
+    .replace('</head>', `  <link rel="canonical" href="${canonical}" />\n  <meta property="og:url" content="${canonical}" />\n  <meta property="og:locale" content="${locale}" />\n${alt}  <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebPage', name: page.title, description: page.desc, url: canonical, inLanguage: page.lang, isPartOf: { '@id': 'https://vikingage.se/#website' } })}</script>\n  </head>`);
 
   // <noscript>-innehåll för JS-lösa crawlers/agenter (SPA:n ersätter det när JS kör).
   const noscript = `<noscript><main><h1>${esc(page.title)}</h1><p>${esc(page.desc)}</p>`
