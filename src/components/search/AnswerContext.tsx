@@ -11,6 +11,7 @@ import { TopicMedia } from '@/components/media/TopicMedia';
 import { SearchFallback } from './SearchFallback';
 import { LandscapeNode, type LandscapeOverview } from './LandscapeNode';
 import { CharterAnswerSection } from './CharterAnswerSection';
+import { FaqAnswer } from './FaqAnswer';
 
 // De 25 svenska landskapen (etablerade, ej gissade) → routas till HELA-landskaps-vyn i stället för
 // den radie-justerbara ort-vyn. Gemener + trim jämförs. Gotland är både landskap OCH kommun → hit.
@@ -290,6 +291,17 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
   // HISTORIEMÅLNINGAR (PD, 1800-tal — Cederström/Hellqvist m.fl.) knutna till kungar/händelser.
   // KÄLLKRITISKT: konstnärlig tolkning, ej historisk källa → caveat visas tydligt (Daniel).
+  // FAQ/PAA: fler-perspektiv-svar (disciplin-linser + bias-ruta) för frågor. get_faq normaliserar.
+  const { data: faq } = useQuery<import('./FaqAnswer').FaqData | null>({
+    queryKey: ['answer-faq', query],
+    enabled: query.trim().length >= 2,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await (supabase as any).rpc('get_faq', { p_q: query.trim() });
+      return (data ?? null) as import('./FaqAnswer').FaqData | null;
+    },
+  });
+
   // ARKIVBILDER: bild-på-sök över bildarkivet (runstensteckningar, kyrkor, landmärken, målningar)
   // så topiska sökningar ("runstenar", "runestone drawings", "kyrkor") drar in relevanta bilder.
   const { data: archiveImages = [] } = useQuery({
@@ -790,6 +802,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       )}
       {showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}
       {!data.page && !showLandscape && !heroPainting && nodeBlock}
+      {faq && <FaqAnswer faq={faq} sv={sv} onQuery={(qq) => onQuery?.(qq)} />}
       {/* LANDMÄRKEN — byggnads-/monumentbilder högt upp (mest platsrelevanta bilden, Daniel). */}
       {landmarkImages.length > 0 && (
         <div className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4">
