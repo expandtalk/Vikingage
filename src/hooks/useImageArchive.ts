@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 // strukturerad licens (mynt) märks tydligt "Licens ej fastställd — se källa" och får aldrig
 // en grön fri-licens-badge.
 
-export type ImageCategory = 'runestone' | 'church_art' | 'model3d' | 'coin';
+export type ImageCategory = 'runestone' | 'historical_drawing' | 'church_art' | 'model3d' | 'coin' | 'history_painting';
 
 // Normaliserad licensstatus. `free` = fri/öppen licens som får visas med grön badge.
 // `unverified` = licens saknas/okänd → amber-varning, kräver källa. `blocked` visas aldrig.
@@ -37,6 +37,8 @@ export interface ArchiveImage {
   credit: string | null;     // fotograf / attribution / institution
   license: NormalizedLicense;
   sourceUrl: string | null;  // extern källänk (kulturarvsdata, museum, wikimedia …)
+  region: string | null;     // landskap/plats — härlett ur källan (runsten=province/landskap,
+                             // 3D=place_slug, mynt=mint). null = ingen känd plats (gissas ALDRIG).
 }
 
 // --- licens-normalisering -------------------------------------------------
@@ -78,27 +80,26 @@ function licenseFromFreeText(raw: string | null): NormalizedLicense {
   return { label: 'Licens ej fastställd', url: null, status: 'unverified' };
 }
 
+// Region/landskap-normalisering: trimma, släpp tomt. Gissar ALDRIG ett landskap som saknas.
+function normalizeRegion(raw: string | null): string | null {
+  const t = (raw ?? '').trim();
+  return t.length ? t : null;
+}
+
 // --- fetch ---------------------------------------------------------------
 
 const sb = supabase as unknown as { from: (t: string) => any };
 
-const RUNESTONE_LIMIT = 300;
+const RUNESTONE_LIMIT = 600;
 
-async function fetchRunestones(): Promise<ArchiveImage[]> {
-  // Endast bildmedia med känd FRI licens (kontrollerad vokab). 'unknown'/null utesluts i klienten.
-  const { data, error } = await sb
-    .from('inscription_media')
-    .select('id, media_url, media_type, description, motive, photographer, source_institution, license_code, inscription:inscription_id(signum)')
-    .eq('media_type', 'image')
-    .not('media_url', 'is', null)
-    .in('license_code', ['PD', 'CC0', 'CC-BY', 'CC-BY-SA'])
-    .limit(RUNESTONE_LIMIT);
-  if (error) throw error;
-  const rows = (data ?? []) as Array<{
-    id: string; media_url: string; description: string | null; motive: string | null;
-    photographer: string | null; source_institution: string | null; license_code: string | null;
-    inscription: { signum: string | null } | null;
-  }>;
+// Gemensam mappning för inscription_media-rader (foto och teckning) → ArchiveImage.
+type InscMediaRow = {
+  id: string; media_url: string; media_type: string | null; description: string | null; motive: string | null;
+  photographer: string | null; source_institution: string | null; license_code: string | null;
+  inscription: { signum: string | null; province: string | null; landscape: string | null } | null;
+};
+function mapInscriptionMedia(rows: InscMediaRow[], category: ImageCategory): ArchiveImage[] {
+  const fallbackTitle = category === 'historical_drawing' ? 'Historisk avbildning' : 'Runinskrift';
   return rows.flatMap((r) => {
     const license = licenseFromCode(r.license_code);
     if (!license) return []; // extra skyddsnät
@@ -106,17 +107,50 @@ async function fetchRunestones(): Promise<ArchiveImage[]> {
     const credit = [r.photographer, r.source_institution].filter(Boolean).join(', ') || null;
     return [{
       id: r.id,
-      category: 'runestone' as const,
+      category,
       kind: 'image' as const,
       src: r.media_url,
       href: signum ? `/inscription/${encodeURIComponent(signum)}` : null,
-      title: signum ?? 'Runinskrift',
+      title: signum ?? fallbackTitle,
       caption: r.motive ?? r.description ?? null,
       credit,
       license,
       sourceUrl: r.media_url,
+      region: normalizeRegion(r.inscription?.landscape ?? r.inscription?.province ?? null),
     }];
   });
+}
+
+const INSC_MEDIA_SELECT =
+  'id, media_url, media_type, description, motive, photographer, source_institution, license_code, inscription:inscription_id(signum, province, landscape)';
+
+async function fetchRunestones(): Promise<ArchiveImage[]> {
+  // Foton av runstenar. Endast bildmedia med känd FRI licens (kontrollerad vokab); 'unknown'/null
+  // utesluts i klienten. Inskrifts-join ger signum + province/landscape → region-facett (landskap).
+  const { data, error } = await sb
+    .from('inscription_media')
+    .select(INSC_MEDIA_SELECT)
+    .eq('media_type', 'image')
+    .not('media_url', 'is', null)
+    .in('license_code', ['PD', 'CC0', 'CC-BY', 'CC-BY-SA'])
+    .limit(RUNESTONE_LIMIT);
+  if (error) throw error;
+  return mapInscriptionMedia((data ?? []) as InscMediaRow[], 'runestone');
+}
+
+async function fetchHistoricalDrawings(): Promise<ArchiveImage[]> {
+  // media_type 'teckning' = historiska avbildningar (Peringskiöld, Hadorph, Dybeck, Säve m.fl.) —
+  // primärkällor för många nu FÖRSVUNNA stenar. Egen kategori + egen hämtning så alla garanterat
+  // surfar (delar annars 600-radersgränsen med tusentals foton). Samma URL-format och PD/CC-krav.
+  const { data, error } = await sb
+    .from('inscription_media')
+    .select(INSC_MEDIA_SELECT)
+    .eq('media_type', 'teckning')
+    .not('media_url', 'is', null)
+    .in('license_code', ['PD', 'CC0', 'CC-BY', 'CC-BY-SA'])
+    .limit(400);
+  if (error) throw error;
+  return mapInscriptionMedia((data ?? []) as InscMediaRow[], 'historical_drawing');
 }
 
 async function fetchChurchArt(): Promise<ArchiveImage[]> {
@@ -150,6 +184,7 @@ async function fetchChurchArt(): Promise<ArchiveImage[]> {
       credit,
       license,
       sourceUrl: r.source_url ?? r.image_url,
+      region: null, // kyrkokonst plats-taggas ej ännu (via church_id) — v1
     }];
   });
 }
@@ -179,6 +214,7 @@ async function fetchModels3D(): Promise<ArchiveImage[]> {
       credit: r.attribution ?? 'Statens historiska museer / SHM · SweDigArch',
       license: { label: 'CC BY 4.0', url: LICENSE_URLS['CC-BY'], status: 'free' },
       sourceUrl: r.sketchfab_url ?? '/sv/3d',
+      region: null, // 3D-modeller: place_slug är en enskild plats, ej landskap → utanför facetten (v1)
     }];
   });
 }
@@ -209,6 +245,40 @@ async function fetchCoins(): Promise<ArchiveImage[]> {
       credit: r.sources ? `Källa: ${r.sources}` : null,
       license: { label: 'Licens ej fastställd', url: null, status: 'unverified' },
       sourceUrl: null,
+      region: normalizeRegion(r.mint), // myntort som region (fåtal) — text ur källan, ej gissad
+    }];
+  });
+}
+
+// Historiemålningar (PD, 1800-tal) — knutna till kung/händelse. KÄLLKRITISKT: konstnärlig tolkning,
+// ej historisk källa → caveat visas i bildtexten. Hotlänk (Commons, PD-Art).
+async function fetchHistoryPaintings(): Promise<ArchiveImage[]> {
+  const { data, error } = await sb
+    .from('history_paintings')
+    .select('id, title, artist, year, image_url, descr_url, license_code, depicts_event, caveat')
+    .not('image_url', 'is', null)
+    .limit(200);
+  if (error) throw error;
+  const rows = (data ?? []) as Array<{
+    id: string; title: string; artist: string; year: number | null; image_url: string;
+    descr_url: string | null; license_code: string | null; depicts_event: string | null; caveat: string | null;
+  }>;
+  return rows.flatMap((r) => {
+    if (!r.image_url) return [];
+    const license = licenseFromCode(r.license_code) ?? { label: 'Public domain', url: LICENSE_URLS['PD'], status: 'free' as const };
+    return [{
+      id: r.id,
+      category: 'history_painting' as const,
+      kind: 'image' as const,
+      src: r.image_url,
+      href: r.descr_url,
+      title: r.title,
+      // Källkritik i bildtexten: motiv + varning (konstnärlig tolkning).
+      caption: [`${r.artist}${r.year ? ` (${r.year})` : ''}`, r.depicts_event, r.caveat ? `⚠ ${r.caveat}` : null].filter(Boolean).join(' — '),
+      credit: r.artist,
+      license,
+      sourceUrl: r.descr_url,
+      region: null,
     }];
   });
 }
@@ -225,13 +295,15 @@ export const useImageArchive = () =>
     queryFn: async (): Promise<ImageArchiveData> => {
       const results = await Promise.allSettled([
         fetchRunestones(),
+        fetchHistoricalDrawings(),
         fetchChurchArt(),
         fetchModels3D(),
         fetchCoins(),
+        fetchHistoryPaintings(),
       ]);
       const items = results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
       const counts: Record<ImageCategory, number> = {
-        runestone: 0, church_art: 0, model3d: 0, coin: 0,
+        runestone: 0, historical_drawing: 0, church_art: 0, model3d: 0, coin: 0, history_painting: 0,
       };
       for (const it of items) counts[it.category] += 1;
       return { items, counts };

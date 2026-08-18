@@ -5,7 +5,7 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Input } from '@/components/ui/input';
-import { Images, Boxes, ExternalLink, AlertTriangle, Search } from 'lucide-react';
+import { Images, Boxes, ExternalLink, AlertTriangle, Search, MapPin } from 'lucide-react';
 import {
   useImageArchive, type ArchiveImage, type ImageCategory, type NormalizedLicense,
 } from '@/hooks/useImageArchive';
@@ -18,18 +18,22 @@ import {
 type Facet = 'all' | ImageCategory;
 
 const FACETS: { key: Facet; sv: string; en: string }[] = [
-  { key: 'all',        sv: 'Alla',                        en: 'All' },
-  { key: 'runestone',  sv: 'Runstenar',                   en: 'Runestones' },
-  { key: 'church_art', sv: 'Kyrkokonst',                  en: 'Church art' },
-  { key: 'coin',       sv: 'Mynt',                        en: 'Coins' },
-  { key: 'model3d',    sv: '3D-modeller',                 en: '3D models' },
+  { key: 'all',              sv: 'Alla',          en: 'All' },
+  { key: 'runestone',        sv: 'Runstenar',     en: 'Runestones' },
+  { key: 'historical_drawing', sv: 'Historiska avbildningar', en: 'Historical drawings' },
+  { key: 'church_art',       sv: 'Kyrkokonst',    en: 'Church art' },
+  { key: 'history_painting', sv: 'Historiemåleri', en: 'History paintings' },
+  { key: 'coin',             sv: 'Mynt',          en: 'Coins' },
+  { key: 'model3d',          sv: '3D-modeller',   en: '3D models' },
 ];
 
 const CAT_LABEL: Record<ImageCategory, { sv: string; en: string }> = {
-  runestone:  { sv: 'Runsten',    en: 'Runestone' },
-  church_art: { sv: 'Kyrkokonst', en: 'Church art' },
-  coin:       { sv: 'Mynt',       en: 'Coin' },
-  model3d:    { sv: '3D-modell',  en: '3D model' },
+  runestone:        { sv: 'Runsten',      en: 'Runestone' },
+  historical_drawing: { sv: 'Teckning',   en: 'Drawing' },
+  church_art:       { sv: 'Kyrkokonst',   en: 'Church art' },
+  history_painting: { sv: 'Historiemåleri', en: 'History painting' },
+  coin:             { sv: 'Mynt',         en: 'Coin' },
+  model3d:          { sv: '3D-modell',    en: '3D model' },
 };
 
 const LicenseBadge: React.FC<{ license: NormalizedLicense; sv: boolean }> = ({ license, sv }) => {
@@ -106,6 +110,11 @@ const ArchiveCard: React.FC<{ item: ArchiveImage; sv: boolean }> = ({ item, sv }
             <ExternalLink className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
           )}
         </div>
+        {item.region && (
+          <span className="inline-flex w-fit items-center gap-1 text-[11px] text-muted-foreground/90">
+            <MapPin className="h-3 w-3 text-gold/70" aria-hidden="true" /> {item.region}
+          </span>
+        )}
         {item.credit && (
           <span className="text-[11px] leading-tight text-muted-foreground/80">{item.credit}</span>
         )}
@@ -124,17 +133,27 @@ const Bildarkiv: React.FC = () => {
   const sv = language === 'sv';
   const { data, isLoading, isError } = useImageArchive();
   const [facet, setFacet] = useState<Facet>('all');
+  const [region, setRegion] = useState<string>('all');
   const [query, setQuery] = useState('');
+
+  // Landskap/region-facett: distinkta regioner ur datan (bärs av runstensbilderna som har
+  // landskap; övriga kategorier plats-taggas ännu ej → syns bara under "Alla landskap").
+  const regions = useMemo(() => {
+    const set = new Set<string>();
+    for (const it of data?.items ?? []) if (it.region) set.add(it.region);
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'sv'));
+  }, [data]);
 
   const filtered = useMemo(() => {
     const items = data?.items ?? [];
     const q = query.trim().toLowerCase();
     return items.filter((it) => {
       if (facet !== 'all' && it.category !== facet) return false;
+      if (region !== 'all' && it.region !== region) return false;
       if (!q) return true;
-      return [it.title, it.caption, it.credit].filter(Boolean).some((s) => s!.toLowerCase().includes(q));
+      return [it.title, it.caption, it.credit, it.region].filter(Boolean).some((s) => s!.toLowerCase().includes(q));
     });
-  }, [data, facet, query]);
+  }, [data, facet, region, query]);
 
   const counts = data?.counts;
 
@@ -191,6 +210,27 @@ const Bildarkiv: React.FC = () => {
             );
           })}
         </div>
+
+        {/* Landskaps-/region-facett — dropdown (runstensbilder bär landskap; övriga kategorier
+            plats-taggas ännu ej). Källkritik: inget landskap gissas — saknas det, ingen etikett. */}
+        {regions.length > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <label htmlFor="image-archive-region" className="text-sm text-muted-foreground">
+              {sv ? 'Landskap' : 'Province'}
+            </label>
+            <select
+              id="image-archive-region"
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              className="min-h-[36px] rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            >
+              <option value="all">{sv ? 'Alla landskap' : 'All provinces'}</option>
+              {regions.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Textsök */}
         <div className="mb-6 max-w-md">

@@ -195,8 +195,8 @@ const App = () => (
                   <Route path="/bildarkiv" element={<Bildarkiv />} />
                   <Route path="/ontology" element={<Ontology />} />
                   <Route path="/ontologi" element={<Ontology />} />
-                  <Route path="/ai-agents" element={<AiAgents />} />
-                  <Route path="/ai-agenter" element={<AiAgents />} />
+                  <Route path="/ai-agents" element={<AiAgents forceLang="en" />} />
+                  <Route path="/ai-agenter" element={<AiAgents forceLang="sv" />} />
                   <Route path="/verktyg" element={<Tools />} />
                   <Route path="/sv/verktyg" element={<Tools />} />
                   <Route path="/tools" element={<Tools />} />

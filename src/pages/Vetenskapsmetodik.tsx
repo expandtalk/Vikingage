@@ -110,6 +110,36 @@ const HW_TODO = [
   'Hålla AI-svarens ton konditional (kan, möjligen) och explicit skilja beskrivning från tolkning.',
 ];
 
+// Icke-destruktiv metod vs. destruktiv extraktion ("Project Panama"). Tvåspråkigt — svensk brödtext
+// med engelsk spegel för internationell spridning. Fakta: Papmehl-Dufay (Kalmar läns museum); Sö 333
+// (Rundata, "dräpt ute i Kalmarsund", 1000-tal); Peringskiöld 1680 (förkastad rudbeckiansk läsning).
+const PANAMA_CONTRAST: { bad: string; badEn: string; good: string; goodEn: string }[] = [
+  {
+    bad: 'Slukar hela verket — dess ordval och röst — in i modellens vikter',
+    badEn: 'Ingests the whole work — its wording and voice — into model weights',
+    good: 'Extraherar fakta (ett årtal, en koordinat, en etymologi — inte upphovsrättsligt) och citerar källan',
+    goodEn: 'Extracts facts (a date, a coordinate, an etymology — not copyrightable) and cites the source',
+  },
+  {
+    bad: 'Den fysiska boken förstörs efter skanning',
+    badEn: 'The physical copy is destroyed after scanning',
+    good: 'Källan lämnas hel; vi länkar till den och lyfter dess synlighet',
+    goodEn: 'The source is left whole; we link to it and raise its visibility',
+  },
+  {
+    bad: 'Proveniensen döljs ("we don’t want it to be known")',
+    badEn: 'Provenance is hidden ("we don’t want it to be known")',
+    good: 'Proveniens är obligatorisk — varje påstående bär källa, konfidens och statusmärkning',
+    goodEn: 'Provenance is mandatory — every claim carries source, confidence and a status label',
+  },
+  {
+    bad: '"Skanna allt, klart"',
+    badEn: '"Scan everything, done"',
+    good: 'Människa-i-loopen: agenter föreslår, en människa befordrar, en drift-vakt rekoncilierar',
+    goodEn: 'Human-in-the-loop: agents propose, a person promotes, a drift-guard reconciles',
+  },
+];
+
 // Del 3 — vanliga frågor. Svaren är verifierade mot databasen (i metodikens anda:
 // belagt, inte antaget). Siffrorna nedan är kontrollerade 2026-08-03.
 const FAQS: { q: string; a: React.ReactNode }[] = [
@@ -163,9 +193,9 @@ const Vetenskapsmetodik = () => (
     <PageMeta
       title="Vetenskapsmetodik och AI"
       titleEn="Scientific Methodology and AI"
-      description="Vetenskapsmetodik och AI på forskningsplattformen Viking Age: metoden för att hålla dålig data ute — belagt eller markerat obelagt, källa före påstående, koordinater ur verifierad källa, konfidensgradering — och hur AI används källkritiskt i analysen, mätt mot Marnie Hughes-Warringtons ramverk för historia och artificiell intelligens."
-      descriptionEn="Scientific methodology and AI at the Viking Age research platform: how bad data is kept out — attested or flagged unattested, source before claim, verified coordinates, confidence grading — and how AI is used critically in analysis, measured against Marnie Hughes-Warrington's framework for history and AI."
-      keywords="vetenskapsmetodik, källkritik, datakvalitet, historia och AI, Hughes-Warrington, artificiell intelligens, forskningsetik"
+      description="Vetenskapsmetodik och AI på forskningsplattformen Viking Age: en icke-destruktiv, källbevarande metod — vi extraherar fakta och citerar källan i stället för att sluka och strimla original (jfr Project Panama). Belagt eller markerat obelagt, källa före påstående, koordinater ur verifierad källa, konfidensgradering, människa-i-loopen — mätt mot Marnie Hughes-Warringtons ramverk för historia och AI."
+      descriptionEn="Scientific methodology and AI at the Viking Age research platform: a non-destructive, source-preserving method — we extract facts and cite the source instead of ingesting and shredding originals (cf. Project Panama). Attested or flagged unattested, source before claim, verified coordinates, confidence grading, human-in-the-loop — measured against Marnie Hughes-Warrington's framework for history and AI."
+      keywords="vetenskapsmetodik, källkritik, datakvalitet, non-destructive AI, Project Panama, historia och AI, Hughes-Warrington, artificiell intelligens, forskningsetik"
     />
     <Header />
     <Breadcrumbs />
@@ -357,6 +387,197 @@ const Vetenskapsmetodik = () => (
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gold hover:underline">
           <Bot className="h-4 w-4" /> Så arbetar AI-agenterna →
         </Link>
+      </section>
+
+      {/* Icke-destruktiv metod vs. destruktiv extraktion — tvåspråkigt (sv + en) */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+          <BookOpen className="h-6 w-6 text-gold" />
+          Icke-destruktiv metod — vår metodik mot destruktiv extraktion
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+          Under 2026 avslöjades att AI-bolag köpt sällsynta och utgångna böcker i miljontal, skurit av
+          ryggarna, kört sidorna genom höghastighetsskannrar och strimlat originalen — en satsning som
+          enligt interna dokument kallades <em>Project Panama</em>, med det uttalade målet att
+          "destructively scan all the books in the world" och hålla det tyst. Viking Age bygger på den
+          motsatta principen. Skillnaden är <strong>arkitektonisk, inte kosmetisk</strong>:
+        </p>
+        <div className="overflow-x-auto mb-5">
+          <table className="w-full text-xs border-collapse">
+            <thead>
+              <tr className="text-left">
+                <th className="border-b border-border/60 pb-2 pr-3 font-medium text-slate-400">Destruktiv extraktion</th>
+                <th className="border-b border-border/60 pb-2 pl-3 font-medium text-gold">Viking Age</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PANAMA_CONTRAST.map((r, i) => (
+                <tr key={i} className="align-top">
+                  <td className="border-b border-border/30 py-2 pr-3 text-muted-foreground">{r.bad}</td>
+                  <td className="border-b border-border/30 py-2 pl-3 text-muted-foreground">{r.good}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="space-y-3 mb-5">
+          <div className="viking-card rounded-lg p-3">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">1. Fakta, inte uttryck.</strong> Fakta är fria att
+              återge; formuleringar är det inte. Ordagrann text lagras bara om den är public domain eller
+              öppet licensierad — en databas-spärr blockerar upphovsrättsskyddad fulltext. En forskares bok
+              blir en <em>hänvisning som leder läsaren till hen</em>, inte en tyst donator till en modell.
+            </p>
+          </div>
+          <div className="viking-card rounded-lg p-3">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">2. En hänvisningsmotor, inte en dränering.</strong>{' '}
+              Destruktiv skanning avslutar originalets liv och skär bort upphovsmannen. Vår pipeline gör
+              tvärtom: den gör källan <em>mer</em> synlig och driver trafik till antikvariat, arkiv och
+              levande forskare — som krediteras med fullständigt namn.
+            </p>
+          </div>
+          <div className="viking-card rounded-lg p-3">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">3. Där det fungerar — AI-agent-pipelinen.</strong>{' '}
+              Källkritiska specialistagenter <em>utreder och föreslår</em> — de skriver aldrig till kanon
+              själva. Maskinellt verifierbara fynd (koordinat via Wikidata&nbsp;P625, RAÄ-URI, DB-räkning)
+              kan befordras automatiskt <em>med proveniens</em>; tolkning och etymologi kräver alltid en
+              människa eller en adversariell verifierar-agent. LLM:en är ett <em>resonemangsverktyg ovanpå
+              citerad data med en verifieringsväg</em> — inte ett kunskapslager byggt av strimlade böcker.
+            </p>
+          </div>
+        </div>
+
+        <h3 className="text-base font-semibold text-foreground mb-2">Exempel: hur metoden fångar övertolkning</h3>
+        <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+          Staden <Link to="/sv/kalmar" className="text-gold hover:underline">Kalmar</Link> är belagd först
+          från 1200-talet (vårt tidigaste brevbelägg: 1266). Men <em>namnet</em> är äldre: 1000-talsstenen
+          <Link to="/inscription/S%C3%B6%20333" className="text-gold hover:underline"> Sö 333</Link> vid Ärja i Södermanland omtalar en man som "blev dräpt ute i
+          <strong> Kalmarsund</strong>". Namnet är alltså belagt på vikingatiden fast staden är medeltida —
+          <em> belägg är inte namnets ålder</em>, och vi håller de två på skilda axlar.
+        </p>
+        <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+          Den källkritiska poängen visar samtidigt varför vi skiljer <strong>observation från tolkning</strong>.
+          Johan Peringskiöld (1654–1720) var riksantikvarie och en av tidens främsta runstenstecknare — en
+          nykter och exakt fältiakttagare vars teckningar i dag är <em>primärkällor för många stenar som sedan
+          har försvunnit</em>. Men som runtolkare var han ett barn av sin tid och rudbeckian: i runföljden
+          <em> kalmarna · sutuma</em> på Sö 333 läste han på 1680-talet in både "det galileiska havet" och
+          "Sodom" — ett tänkt bevis för att forntida svenskar format den bibliska historien. I verkligheten är
+          det en udda skrivning för <strong>Kalmarsund</strong> (Magnus Källström, RAÄ). Samma person:
+          pålitlig som iakttagare, ideologisk som uttolkare — den förmoderna föregångaren till en
+          AI-hallucination. Därför hålls hans teckning (en datakälla vi litar på och vill använda) skild från
+          hans Sodom-läsning (förkastad, men bevarad som forskningshistoria). Metoden gör båda felslagen
+          omöjliga att smyga in som fakta:
+        </p>
+        <ul className="list-disc pl-5 space-y-1.5 text-xs text-muted-foreground mb-4">
+          <li>den etablerade läsningen (<em>Kalmarsund</em>) lagras som <strong>tolkning</strong>, inte som
+            oomtvistad sanning — och bär en noterad osäkerhet, eftersom ristaren Eskils omkastade och
+            utelämnade runor gör vissa namnformer instabila (Wessén);</li>
+          <li>1680-läsningen bevaras som <strong>forskningshistoria</strong>, tydligt märkt som förkastad och
+            källkritiskt vederlagd — synlig, inte raderad;</li>
+          <li>etymologin (<em>kalm</em> "ett grund/stenrev under vatten" + <em>mar</em> "grund vik") är märkt
+            som standardläsning med sin källa (Ludvig Papmehl-Dufay, Kalmar läns museum), inte påstådd som
+            avgjord;</li>
+          <li>och eftersom homonymer skiljs åt (Ärja socken, där stenen står, är inte Ärla socken, först
+            belagt 1278) är påståendet förankrat i rätt plats.</li>
+        </ul>
+        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+          En destruktiv modell slukar allt detta — den rätta läsningen, 1680-fantasin och osäkerheten — och
+          medelvärdesbildar till ett slätt svar utan väg tillbaka till stenen. Vi behåller stenen, källorna
+          och oenigheten i öppen dager. <em>Ärlig reservation: vi använder också en generativ modell (Claude,
+          server-side). Skillnaden är rollen — den resonerar över citerad, människo-verifierad data och pekar
+          alltid tillbaka till källan; den är aldrig auktoriteten, och ingen modell-utdata går in i databasen
+          på egen hand.</em>
+        </p>
+
+        {/* Engelsk spegel för internationell spridning */}
+        <div className="rounded-lg border border-slate-700/70 bg-slate-900/30 p-4">
+          <p className="text-[11px] uppercase tracking-wide text-slate-400 mb-3 font-medium">In English</p>
+          <h3 className="text-base font-semibold text-foreground mb-2">Non-destructive by design: our method vs. destructive extraction</h3>
+          <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+            In 2026, reporting revealed that AI labs were buying rare and out-of-print books by the million,
+            slicing off their spines, running the pages through high-speed scanners and shredding the
+            originals — an effort reportedly named <em>Project Panama</em>, whose stated goal was to
+            "destructively scan all the books in the world", and to keep it quiet. Viking Age is built on the
+            opposite principle. The difference is <strong>architectural, not cosmetic</strong>:
+          </p>
+          <div className="overflow-x-auto mb-4">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="text-left">
+                  <th className="border-b border-border/60 pb-2 pr-3 font-medium text-slate-400">Destructive extraction</th>
+                  <th className="border-b border-border/60 pb-2 pl-3 font-medium text-gold">Viking Age</th>
+                </tr>
+              </thead>
+              <tbody>
+                {PANAMA_CONTRAST.map((r, i) => (
+                  <tr key={i} className="align-top">
+                    <td className="border-b border-border/30 py-2 pr-3 text-muted-foreground">{r.badEn}</td>
+                    <td className="border-b border-border/30 py-2 pl-3 text-muted-foreground">{r.goodEn}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <ol className="list-decimal pl-5 space-y-1.5 text-xs text-muted-foreground mb-4">
+            <li><strong className="text-foreground">Facts, not expression.</strong> Facts are free to
+              restate; wording is not. Verbatim text is stored only when public domain or openly licensed — a
+              database guard blocks copyrighted full text. A scholar’s book becomes a citation that sends
+              readers to them, not a silent donor to a model.</li>
+            <li><strong className="text-foreground">A referral engine, not a drain.</strong> Destructive
+              scanning ends the original’s life and cuts the author out. Our pipeline does the reverse: it
+              makes the source more findable and drives traffic to antiquarian sellers, archives and living
+              researchers — credited by full name.</li>
+            <li><strong className="text-foreground">Where it works — the AI-agent pipeline.</strong>{' '}
+              Source-critical specialist agents investigate and propose — they never write to canon on their
+              own. Machine-verifiable findings (a coordinate via Wikidata&nbsp;P625, a heritage URI, a
+              database count) can be promoted automatically with provenance; interpretation and etymology
+              always require a human or an adversarial verifier-agent. The LLM is a reasoning tool over cited
+              data with a verify path — not a knowledge store built from shredded books.</li>
+          </ol>
+          <p className="text-xs font-medium text-foreground mb-1">Worked example: how the method catches over-interpretation</p>
+          <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
+            The town of Kalmar is documented only from the 13th century (our earliest charter attestation:
+            1266). But the <em>name</em> is older: the 11th-century runestone <Link to="/inscription/S%C3%B6%20333" className="text-gold hover:underline">Sö 333</Link> at Ärja,
+            Södermanland, records a man "slain out in <strong>Kalmarsund</strong>". The name is attested in
+            the Viking Age even though the town is medieval — attestation is not the age of the name, and we
+            keep the two on separate axes.
+          </p>
+          <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
+            The source-critical point also shows why we separate <strong>observation from interpretation</strong>.
+            Johan Peringskiöld (1654–1720) was Sweden’s antiquary-royal and one of the finest runestone
+            illustrators of his age — a sober, exact field observer whose drawings are today <em>primary sources
+            for many stones since lost</em>. But as a rune-interpreter he was a child of his time, a follower of
+            Rudbeck: in the sequence <em>kalmarna · sutuma</em> on Sö 333 he read, in the 1680s, both "the
+            Galilean sea" and "Sodom" — supposed proof that ancient Swedes shaped biblical history. In reality it
+            is an odd spelling of <strong>Kalmarsund</strong> (Magnus Källström, Swedish National Heritage
+            Board). The same man: reliable as an observer, ideological as an interpreter — the pre-modern
+            ancestor of an AI hallucination. So we keep his drawing (a data source we trust and want to use)
+            apart from his Sodom reading (rejected, but preserved as history of scholarship). Our method makes
+            both failure modes impossible to pass off as fact:
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 text-xs text-muted-foreground mb-3">
+            <li>the established reading (<em>Kalmarsund</em>) is stored as an <strong>interpretation</strong>,
+              not an unquestioned truth — and carries a noted uncertainty, because the carver Eskil’s
+              transposed and omitted runes make some name-forms genuinely unstable (Wessén);</li>
+            <li>the 1680 reading is preserved as <strong>history of scholarship</strong>, clearly labelled as
+              a rejected, source-critically discredited interpretation — visible, not deleted;</li>
+            <li>the etymology (<em>kalm</em> "an underwater stone shoal" + <em>mar</em> "shallow bay") is
+              tagged as the standard reading with its source (Ludvig Papmehl-Dufay, Kalmar County Museum), not
+              asserted as settled fact;</li>
+            <li>and because homonyms are disambiguated (Ärja parish, where the stone stands, is not Ärla
+              parish, first attested 1278), the claim is anchored to the right place.</li>
+          </ul>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            A destructive model swallows all of this — the correct reading, the 1680 fantasy and the
+            uncertainty — and averages them into one smooth answer with no way back to the stone. We keep the
+            stone, the sources and the disagreement in plain sight. <em>Honest caveat: we use a generative
+            model too (Claude, server-side). The difference is its role — it reasons over cited,
+            human-verified data and always points back to the source; it is never the authority, and no model
+            output enters the database on its own.</em>
+          </p>
+        </div>
       </section>
 
       {/* Oberoende, icke fackgranskade läsningar */}
