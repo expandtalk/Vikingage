@@ -43,9 +43,11 @@ const Fornvannen: React.FC = () => {
   // ?cat=<slug> deep-länk (t.ex. från en kategori-sökning) → öppna redan filtrerad.
   const [params] = useSearchParams();
   const initialCat = params.get('cat');
+  // ?q=<term> deep-länk (t.ex. "Se alla i Fornvännen" från svarspanelen) → öppna förfiltrerad.
+  const initialQ = params.get('q') ?? '';
   const [cat, setCat] = useState<string | null>(initialCat && CAT_LABEL[initialCat] ? initialCat : null);
-  const [q, setQ] = useState('');
-  const [dq, setDq] = useState('');
+  const [q, setQ] = useState(initialQ);
+  const [dq, setDq] = useState(initialQ);
   const [page, setPage] = useState(0);
   React.useEffect(() => { const t = setTimeout(() => { setDq(q); setPage(0); }, 300); return () => clearTimeout(t); }, [q]);
   React.useEffect(() => { setPage(0); }, [cat]);

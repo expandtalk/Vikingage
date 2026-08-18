@@ -283,7 +283,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     enabled: query.trim().length >= 2,
     staleTime: 30 * 60 * 1000,
     queryFn: async (): Promise<{ id: string; title: string; year: number | null; url: string }[]> => {
-      const { data } = await (supabase as any).rpc('fornvannen_for_query', { q: query.trim(), lim: 6 });
+      const { data } = await (supabase as any).rpc('fornvannen_for_query', { q: query.trim(), lim: 20 });
       return ((data ?? []) as any[]).map((r) => ({ id: r.id, title: r.title, year: r.written_year, url: r.url }));
     },
   });
@@ -1245,7 +1245,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300">
               <Library className="h-3.5 w-3.5" /> {sv ? 'Läs mer i Fornvännen' : 'Read more in Fornvännen'}
             </h3>
-            <ul className="space-y-1.5">
+            {/* max-höjd + scroll matchar podd-kolumnens längd (Daniel) i st.f. en lång spalt. */}
+            <ul className="max-h-72 space-y-1.5 overflow-y-auto pr-1">
               {fornvannen.map((a) => (
                 <li key={a.id}>
                   <a href={a.url} target="_blank" rel="noopener noreferrer"
@@ -1256,6 +1257,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 </li>
               ))}
             </ul>
+            {/* Alla titelträffar visas ovan (upp till 20); länk vidare till hela beståndet (3 600+). */}
+            <button type="button"
+              onClick={() => onGo(`${sv ? '/sv/fornvannen' : '/en/fornvannen'}?q=${encodeURIComponent(query.trim())}`)}
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-sky-300 hover:text-sky-200">
+              {sv ? `Se alla i Fornvännen (${fornvannen.length}${fornvannen.length >= 20 ? '+' : ''}) →` : `See all in Fornvännen (${fornvannen.length}${fornvannen.length >= 20 ? '+' : ''}) →`}
+            </button>
             <p className="mt-2 text-[11px] text-slate-500">
               {sv ? 'Fornvännen (KVHAA/RAÄ), CC BY 4.0 — öppnas som PDF hos utgivaren.' : 'Fornvännen (KVHAA), CC BY 4.0 — opens as publisher PDF.'}
             </p>

@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Headphones, Youtube, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMediaForTopic, type MediaHit } from '@/hooks/useMediaForTopic';
 
 // Ämnesmatchad media i söksvaret, GRUPPERAD per podd/kanal (namnet står som underrubrik EN gång),
-// sorterad nyast först, 6 per sida med paginering. Länkarna bär UTM (RPC) + CortIQ data-wfa-track.
-// Länk-out, aldrig hostat. Vänsterställd text.
-const PAGE = 6;
+// sorterad nyast först, 10 per sida med paginering (matchar Fornvännen-kolumnens längd). Länkarna
+// bär UTM (RPC) + CortIQ data-wfa-track. Länk-out, aldrig hostat. Vänsterställd text.
+const PAGE = 10;
 
 const MediaCard: React.FC<{ m: MediaHit }> = ({ m }) => (
   <a
@@ -83,7 +84,7 @@ const MediumBlock: React.FC<{ icon: React.ReactNode; label: string; items: Media
 export const TopicMedia: React.FC<{ query: string }> = ({ query }) => {
   const { language } = useLanguage();
   const en = language === 'en';
-  const { data } = useMediaForTopic(query, 30);
+  const { data } = useMediaForTopic(query, 40);
   const pods = data?.podcasts ?? [];
   const vids = data?.videos ?? [];
   if (!pods.length && !vids.length) return null;
@@ -100,6 +101,10 @@ export const TopicMedia: React.FC<{ query: string }> = ({ query }) => {
       </p>
       <MediumBlock icon={<Headphones className="h-4 w-4 text-gold" />} label={en ? 'Podcasts' : 'Poddar'} items={pods} sortBy="date" en={en} />
       <MediumBlock icon={<Youtube className="h-4 w-4 text-gold" />} label="Video" items={vids} sortBy="views" en={en} />
+      {/* Vidare till hela poddkatalogen (alla kanaler, sökbar) — upptäckt. */}
+      <Link to="/podcast" className="inline-flex items-center gap-1 text-xs font-medium text-gold hover:underline">
+        {en ? 'See all podcasts & channels →' : 'Se alla poddar & kanaler →'}
+      </Link>
     </section>
   );
 };
