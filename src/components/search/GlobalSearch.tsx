@@ -75,6 +75,13 @@ interface DbTheme {
 const enc = encodeURIComponent;
 const stripTags = (s: string | null) => (s ? s.replace(/<\/?b>/g, '') : undefined);
 
+// Utvecklarflagga: skriv "-dev" (eller "--dev") någonstans i söket → dev-panel med
+// söksökdiagnostik (path hybrid/fallback, tid, träffar + scores). Flaggan strippas ur
+// själva frågetexten innan sökning så den inte förorenar träffarna.
+const DEV_RE = /(?:^|\s)--?dev\b/i;
+const stripDev = (s: string) => s.replace(/(?:^|\s)--?dev\b/gi, '').trim();
+interface DevInfo { q: string; path: string; ms: number; count: number; hits: Hit[]; }
+
 // Presentationsmeta per entitetstyp i search_document.
 const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon; route: (h: Hit) => string }> = {
   // Region överst: exakt landskapsträff hamnar i topp-tier och länken visar HELA regionen på kartan.
@@ -443,6 +450,10 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   const [aiQuestion, setAiQuestion] = useState<string | null>(null);
   // Starkaste träffen — driver "Gå vidare"-sektionen (dess graf-grannar).
   const [topEntity, setTopEntity] = useState<Hit | null>(null);
+  // Utvecklar-diagnostik (aktiveras med "-dev" i söket).
+  const devMode = DEV_RE.test(query);
+  const cleanQuery = stripDev(query);
+  const [devInfo, setDevInfo] = useState<DevInfo | null>(null);
   // Typeahead: ortnamn + personer + namn direkt medan man skriver (search_typeahead, ~15ms).
   // Visas överst i listan innan/medan den fulla rankade sökningen laddar (Daniel: "ortnamnen ska
   // snabbt dyka upp"). Kort debounce (80ms) så det känns omedelbart.
@@ -535,10 +546,13 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   useEffect(() => {
     setAiAnswer(null); setAiSources([]); setTopEntity(null); // nytt frågeord → släng gammalt AI-svar
     if (theme) return;
-    const q = query.trim();
-    if (q.length < 2) { setGroups([]); return; }
+    const q = stripDev(query);
+    if (q.length < 2) { setGroups([]); setDevInfo(null); return; }
+    const dev = DEV_RE.test(query);
     const t = setTimeout(async () => {
       setLoading(true);
+      const t0 = performance.now();
+      let path = 'hybrid (search-hybrid)';
       try {
         // Hybrid (lexikalt search_v1 + semantiskt) via edge-funktionen search-hybrid.
         // Fallback till rena search_v1 om edge:n fallerar → sök går aldrig sönder.
@@ -556,15 +570,18 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
           }
         } catch { /* faller igenom till lexikalt */ }
         if (!hits) {
+          path = 'fallback (search_v1)';
           const res = await sb.rpc('search_v1', { p_q: q, p_limit: 120 });
           hits = res.data ?? [];
         }
         setGroups(groupHits(hits));
         setTopEntity(hits[0] ?? null);
+        if (dev) setDevInfo({ q, path, ms: performance.now() - t0, count: hits.length, hits: hits.slice(0, 25) });
         // Logga sökningen (aggregat, GDPR-säkert) → vi ser vad folk söker + om det gav träff.
         logSearchTerm(q, (hits?.length ?? 0) > 0);
       } catch {
         setGroups([]);
+        if (dev) setDevInfo({ q, path: `${path} — FEL`, ms: performance.now() - t0, count: 0, hits: [] });
       } finally {
         setLoading(false);
       }
@@ -574,7 +591,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
 
   // Snabb typeahead (80ms debounce) — oberoende av den tyngre rankade sökningen.
   useEffect(() => {
-    const q = query.trim();
+    const q = stripDev(query);
     if (q.length < 2 || theme) { setTypeahead([]); return; }
     const t = setTimeout(async () => {
       try {
@@ -597,7 +614,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
 
   // Grounded RAG-svar via edge-funktionen search-answer (källfört, inga påhitt).
   const askAI = useCallback(async () => {
-    const q = query.trim();
+    const q = stripDev(query);
     if (q.length < 3) return;
     setAiLoading(true); setAiAnswer(null); setAiSources([]);
     try {
@@ -635,6 +652,35 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     const showPanel = wide && !!topEntity && !theme;
     const list = (
     <div className={`${scrollClass} overflow-y-auto text-left`}>
+      {/* DEV-panel: aktiveras med "-dev" i söket. Visar path, tid och råträffar med scores. */}
+      {devMode && (
+        <div className="border-b border-amber-500/30 bg-black/50 px-4 py-2 font-mono text-[11px] text-amber-200">
+          <div className="mb-1 flex items-center gap-1.5 text-amber-300">
+            <Info className="h-3 w-3" /> DEV — sökdiagnostik
+          </div>
+          {devInfo ? (
+            <>
+              <div className="text-slate-300">
+                q: "<span className="text-amber-200">{devInfo.q}</span>" · path: <span className="text-sky-300">{devInfo.path}</span>
+                {' · '}<span className="text-emerald-300">{Math.round(devInfo.ms)} ms</span> · {devInfo.count} träffar
+              </div>
+              <div className="mt-1 max-h-44 overflow-y-auto">
+                {devInfo.hits.map((h, i) => (
+                  <div key={`${h.entity_type}-${h.entity_id}-${i}`} className="flex items-baseline gap-2 leading-relaxed">
+                    <span className="w-5 shrink-0 text-right text-slate-600">{i + 1}</span>
+                    <span className="w-28 shrink-0 truncate text-sky-300">{h.entity_type}</span>
+                    <span className="w-14 shrink-0 text-emerald-300">{typeof h.score === 'number' ? h.score.toFixed(3) : String(h.score)}</span>
+                    <span className="truncate text-slate-200">{h.signum && h.signum !== h.label ? `${h.signum} · ` : ''}{h.label}</span>
+                  </div>
+                ))}
+                {devInfo.hits.length === 0 && <div className="text-slate-500">inga träffar</div>}
+              </div>
+            </>
+          ) : (
+            <div className="text-slate-500">kör sökning…</div>
+          )}
+        </div>
+      )}
       {/* TYPEAHEAD: ortnamn + personer + namn direkt (search_typeahead). Visas medan den rankade
           sökningen laddar (eller om den inte gav grupper) → namnen "snabbt dyker upp" (Daniel). */}
       {typeahead.length > 0 && (loading || total === 0) && (
@@ -947,7 +993,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                 {renderResults('', false, true)}
               </div>
               <div className="min-h-0 overflow-y-auto">
-                <AnswerContext query={query} onGo={go} onQuery={(q) => { setQuery(q); setTheme(null); }} />
+                <AnswerContext query={cleanQuery} onGo={go} onQuery={(q) => { setQuery(q); setTheme(null); }} />
               </div>
               <aside className="hidden min-h-0 flex-col overflow-y-auto border-l border-slate-800 lg:flex">
                 {/* Kunskapspanelen (träffens egen destination) äger toppen. */}
