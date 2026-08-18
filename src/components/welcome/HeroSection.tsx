@@ -45,12 +45,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       }`}
     >
       <div className="absolute inset-0">
-        <img
-          src="/excursion-photos/karlevistenen/karlevistenen-oland.jpg"
-          alt="Runsten med rödmålade runor i öländskt landskap"
-          className="w-full h-full object-cover"
-          style={{ objectPosition: 'center 58%' }}
-        />
+        {/* LCP-bild: WebP (mobil 800px ~137 KB, desktop 1400px) med jpg-fallback; fetchPriority högt
+            + eager så webbläsaren prioriterar den framför sid-datan. Mörkas av overlayn nedan. */}
+        <picture className="block h-full w-full">
+          <source
+            type="image/webp"
+            srcSet="/excursion-photos/karlevistenen/karlevistenen-oland-800.webp 800w, /excursion-photos/karlevistenen/karlevistenen-oland-1400.webp 1400w"
+            sizes="100vw"
+          />
+          <img
+            src="/excursion-photos/karlevistenen/karlevistenen-oland.jpg"
+            alt="Runsten med rödmålade runor i öländskt landskap"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: 'center 58%' }}
+            fetchPriority="high"
+            decoding="async"
+            width={1500}
+            height={2000}
+          />
+        </picture>
         <div className="absolute inset-0 bg-black/60"></div>
       </div>
 

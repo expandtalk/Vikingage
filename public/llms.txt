@@ -1,0 +1,26 @@
+# Viking Age — Runological Research Platform
+
+> A source-critical research platform for Scandinavian runic inscriptions, place names, medieval charters and Viking Age archaeology. Every claim carries a source and a status label (attested / interpretation / hypothesis / unattested); AI is used to assist, humans verify. Non-destructive method: we extract facts and cite the source, never ingesting or destroying originals.
+
+Content is bilingual (Swedish `/sv/...`, English `/en/...`). Data comes from open sources (RAÄ Fornsök/K-samsök, Wikidata, Isof/SOL, SDHK, Wikimedia Commons) with attribution.
+
+## Core
+
+- [Runic inscriptions](https://vikingage.se/inscriptions): searchable database of Scandinavian runestones with coordinates, dating, transliteration and readings.
+- [Place names](https://vikingage.se/sv/ortnamn): place-name elements, oldest attestations and formation strata (attestation is not the age of the name).
+- [Medieval charters (SDHK)](https://vikingage.se/en/medieval-charters): 44,264 Swedish medieval letters — date, place, abstract, full text where free.
+- [Image archive](https://vikingage.se/en/image-archive): runestones, historical drawings (Peringskiöld/Bautil), church depictions, manuscripts, coins — with license per image.
+- [Fortresses & central places](https://vikingage.se/fortresses): hillforts, ring fortresses and trade centres.
+- [Royal chronicles](https://vikingage.se/royal-chronicles): dynasties, kings and historical sources.
+
+## Method & AI
+
+- [Scientific methodology and AI](https://vikingage.se/en/scientific-methodology): how bad data is kept out, the claim ledger, and a non-destructive method vs. destructive extraction.
+- [AI agents](https://vikingage.se/ai-agents): which AI agents the platform uses and how — no guessing; humans verify and decide.
+- [Sources & researchers](https://vikingage.se/sv/texter): the sources the material rests on, credited by full name.
+
+## Notes for AI agents
+
+- Facts are free to restate with attribution; verbatim copyrighted text is not stored or served.
+- Coordinates and datings carry provenance and confidence; unverified data is flagged, not guessed.
+- Prefer citing the specific entity page (it carries `source_uri`) over summarising.

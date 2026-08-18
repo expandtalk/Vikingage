@@ -21,6 +21,11 @@
          Google Fonts (undviker att besökarens IP skickas till Google). -->
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>ᚱ</text></svg>" />
+
+    <!-- Prestanda: föranslut till Supabase (all sid-data hämtas därifrån) så TLS/DNS är klart
+         innan första begäran → ~300 ms snabbare LCP på mobil (Lighthouse-rekommendation). -->
+    <link rel="preconnect" href="https://mnuifmcjspeaauzehasj.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://mnuifmcjspeaauzehasj.supabase.co" />
   </head>
 
   <body>
