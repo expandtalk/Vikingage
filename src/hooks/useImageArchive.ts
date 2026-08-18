@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 // strukturerad licens (mynt) märks tydligt "Licens ej fastställd — se källa" och får aldrig
 // en grön fri-licens-badge.
 
-export type ImageCategory = 'runestone' | 'historical_drawing' | 'church_art' | 'model3d' | 'coin' | 'history_painting';
+export type ImageCategory = 'runestone' | 'historical_drawing' | 'historical_depiction' | 'church_art' | 'model3d' | 'coin' | 'history_painting';
 
 // Normaliserad licensstatus. `free` = fri/öppen licens som får visas med grön badge.
 // `unverified` = licens saknas/okänd → amber-varning, kräver källa. `blocked` visas aldrig.
@@ -151,6 +151,49 @@ async function fetchHistoricalDrawings(): Promise<ArchiveImage[]> {
     .limit(400);
   if (error) throw error;
   return mapInscriptionMedia((data ?? []) as InscMediaRow[], 'historical_drawing');
+}
+
+// Historiska avbildningar av icke-runsten-objekt (kyrkor före ombyggnad, klosterruiner,
+// offerlundar/källor, gravhögar, kungar) — Peringskiöld m.fl. Egen tabell historical_depictions.
+const DEPICTION_SUBJECT: Record<string, { sv: string; en: string }> = {
+  church:    { sv: 'Kyrka',            en: 'Church' },
+  cult_site: { sv: 'Offerlund/källa',  en: 'Cult site' },
+  mound:     { sv: 'Gravhög',          en: 'Burial mound' },
+  king:      { sv: 'Kung/dynasti',     en: 'King/dynasty' },
+  monument:  { sv: 'Monument',         en: 'Monument' },
+  other:     { sv: 'Objekt',           en: 'Object' },
+};
+async function fetchHistoricalDepictions(): Promise<ArchiveImage[]> {
+  const { data, error } = await sb
+    .from('historical_depictions')
+    .select('id, subject_type, title, place_name, province, image_url, artist, work_ref, year, license_code, source_url')
+    .not('image_url', 'is', null)
+    .limit(400);
+  if (error) throw error;
+  const rows = (data ?? []) as Array<{
+    id: string; subject_type: string; title: string; place_name: string | null; province: string | null;
+    image_url: string; artist: string | null; work_ref: string | null; year: string | null;
+    license_code: string | null; source_url: string | null;
+  }>;
+  return rows.flatMap((r) => {
+    if (!r.image_url) return [];
+    const license = licenseFromCode(r.license_code) ?? { label: 'Public domain', url: LICENSE_URLS['PD'], status: 'free' as const };
+    const subj = DEPICTION_SUBJECT[r.subject_type] ?? DEPICTION_SUBJECT.other;
+    const credit = [r.artist, r.work_ref, r.year].filter(Boolean).join(' · ') || null;
+    return [{
+      id: r.id,
+      category: 'historical_depiction' as const,
+      kind: 'image' as const,
+      src: r.image_url,
+      href: r.source_url,
+      title: r.place_name ?? r.title,
+      caption: `${subj.sv} — ${r.title}`,
+      credit,
+      license,
+      sourceUrl: r.source_url,
+      region: normalizeRegion(r.province),
+    }];
+  });
 }
 
 async function fetchChurchArt(): Promise<ArchiveImage[]> {
@@ -296,6 +339,7 @@ export const useImageArchive = () =>
       const results = await Promise.allSettled([
         fetchRunestones(),
         fetchHistoricalDrawings(),
+        fetchHistoricalDepictions(),
         fetchChurchArt(),
         fetchModels3D(),
         fetchCoins(),
@@ -303,7 +347,7 @@ export const useImageArchive = () =>
       ]);
       const items = results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
       const counts: Record<ImageCategory, number> = {
-        runestone: 0, historical_drawing: 0, church_art: 0, model3d: 0, coin: 0, history_painting: 0,
+        runestone: 0, historical_drawing: 0, historical_depiction: 0, church_art: 0, model3d: 0, coin: 0, history_painting: 0,
       };
       for (const it of items) counts[it.category] += 1;
       return { items, counts };

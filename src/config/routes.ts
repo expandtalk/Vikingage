@@ -132,6 +132,33 @@ export const routes: RouteConfig[] = [
     titleEn: 'Coins',
     descriptionSv: 'Mynt från nordisk historia: vikingatidens första svenska mynt, runmynt och romerska solidusskatter, kopplade till härskare och fyndplatser.',
     descriptionEn: 'Coins from Nordic history: the first Swedish Viking-Age coins, rune coins and Roman solidus hoards, linked to rulers and find sites.'
+  },
+  {
+    pathEn: '/en/medieval-charters',
+    pathSv: '/sv/medeltidsbrev',
+    component: 'MedievalCharters',
+    titleSv: 'Medeltidsbrev',
+    titleEn: 'Medieval charters',
+    descriptionSv: 'Utforska medeltida brev (SDHK): aktyper, formler, sigill och platser — källkritiskt kopplade till kunskapsgrafen.',
+    descriptionEn: 'Explore medieval charters (SDHK): document types, formulae, seals and places — source-critically linked to the knowledge graph.'
+  },
+  {
+    pathEn: '/en/scientific-methodology',
+    pathSv: '/sv/vetenskapsmetodik',
+    component: 'Vetenskapsmetodik',
+    titleSv: 'Vetenskapsmetodik',
+    titleEn: 'Scientific methodology',
+    descriptionSv: 'Hur plattformen håller dålig data ute och använder AI källkritiskt — en icke-destruktiv, källbevarande metod.',
+    descriptionEn: 'How the platform keeps bad data out and uses AI critically — a non-destructive, source-preserving method.'
+  },
+  {
+    pathEn: '/ai-agents',
+    pathSv: '/ai-agenter',
+    component: 'AiAgents',
+    titleSv: 'AI-agenter',
+    titleEn: 'AI agents',
+    descriptionSv: 'Vilka AI-agenter plattformen använder och hur — produkt-AI och källkritiska specialistagenter. Ingen gissning; människan verifierar.',
+    descriptionEn: 'Which AI agents the platform uses and how — product AI and source-critical specialist agents. No guessing; humans verify.'
   }
 ];
 

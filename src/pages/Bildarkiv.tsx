@@ -20,7 +20,8 @@ type Facet = 'all' | ImageCategory;
 const FACETS: { key: Facet; sv: string; en: string }[] = [
   { key: 'all',              sv: 'Alla',          en: 'All' },
   { key: 'runestone',        sv: 'Runstenar',     en: 'Runestones' },
-  { key: 'historical_drawing', sv: 'Historiska avbildningar', en: 'Historical drawings' },
+  { key: 'historical_drawing', sv: 'Runstensteckningar', en: 'Runestone drawings' },
+  { key: 'historical_depiction', sv: 'Kyrkor & objekt', en: 'Churches & objects' },
   { key: 'church_art',       sv: 'Kyrkokonst',    en: 'Church art' },
   { key: 'history_painting', sv: 'Historiemåleri', en: 'History paintings' },
   { key: 'coin',             sv: 'Mynt',          en: 'Coins' },
@@ -30,6 +31,7 @@ const FACETS: { key: Facet; sv: string; en: string }[] = [
 const CAT_LABEL: Record<ImageCategory, { sv: string; en: string }> = {
   runestone:        { sv: 'Runsten',      en: 'Runestone' },
   historical_drawing: { sv: 'Teckning',   en: 'Drawing' },
+  historical_depiction: { sv: 'Avbildning', en: 'Depiction' },
   church_art:       { sv: 'Kyrkokonst',   en: 'Church art' },
   history_painting: { sv: 'Historiemåleri', en: 'History painting' },
   coin:             { sv: 'Mynt',         en: 'Coin' },

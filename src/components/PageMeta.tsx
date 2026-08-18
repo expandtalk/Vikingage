@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getRouteByPath } from '@/config/routes';
 
 // Delnings-/SEO-metadata per sida. OG + Twitter + canonical + hreflang.
 // Byggtids-prerender (Fas B) bakar in dessa taggar i statiska HTML:er för högvärdessidor
@@ -44,6 +45,9 @@ export const PageMeta: React.FC<PageMetaProps> = ({
   const pathname = path ?? (typeof window !== 'undefined' ? window.location.pathname : '/');
   const canonical = abs(pathname);
   const imageUrl = abs(ogImage);
+  // hreflang-alternat för registrerade tvåspråkiga sidor (routes.ts) — så Google vet
+  // att /sv/... och /en/... är samma sida på olika språk. x-default = engelska.
+  const routePair = getRouteByPath(pathname);
   const locale = language === 'en' ? 'en_GB' : 'sv_SE';
   const localeAlt = language === 'en' ? 'sv_SE' : 'en_GB';
 
@@ -53,6 +57,9 @@ export const PageMeta: React.FC<PageMetaProps> = ({
       <meta name="description" content={displayDescription} />
       {keywords && <meta name="keywords" content={keywords} />}
       <link rel="canonical" href={canonical} />
+      {routePair && <link rel="alternate" hrefLang="sv" href={abs(routePair.pathSv)} />}
+      {routePair && <link rel="alternate" hrefLang="en" href={abs(routePair.pathEn)} />}
+      {routePair && <link rel="alternate" hrefLang="x-default" href={abs(routePair.pathEn)} />}
 
       {/* Open Graph / Facebook / LinkedIn / Slack */}
       <meta property="og:site_name" content={SITE_NAME} />
