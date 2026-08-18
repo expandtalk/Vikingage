@@ -408,7 +408,11 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   // kopiera URL till urklipp + kort "Länk kopierad"-bekräftelse. Övriga bidra-knappar = fas 2.
   const [shareCopied, setShareCopied] = useState(false);
   const doShare = async () => {
-    const url = typeof window !== 'undefined' ? window.location.href : '';
+    // Dela länken till DEN HÄR sökningen, inte roten: hero-söket är inline (frågan ligger inte i
+    // URL:en), så vi bygger /?q=<fråga> som öppnar samma sök när mottagaren klickar.
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const q = (query || '').trim();
+    const url = q ? `${origin}/?q=${encodeURIComponent(q)}` : (typeof window !== 'undefined' ? window.location.href : '');
     if (!url) return;
     const title = (data as any)?.page?.title || (data as any)?.theme?.name || query || 'Viking Age';
     const nav = typeof navigator !== 'undefined' ? (navigator as any) : undefined;

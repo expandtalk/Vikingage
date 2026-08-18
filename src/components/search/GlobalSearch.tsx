@@ -487,6 +487,15 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     return () => document.removeEventListener('keydown', onKey);
   }, [variant]);
 
+  // Delad länk: /?q=<fråga> öppnar hero-söket med frågan (doShare i AnswerContext bygger dessa).
+  useEffect(() => {
+    if (variant !== 'hero') return;
+    try {
+      const urlQ = new URLSearchParams(window.location.search).get('q');
+      if (urlQ && urlQ.trim().length >= 2) { setTheme(null); setQuery(urlQ.trim()); setHeroActive(true); }
+    } catch { /* ignorera trasig query-sträng */ }
+  }, [variant]);
+
   // Stäng hero-dropdownen vid klick utanför.
   useEffect(() => {
     if (!heroActive) return;
