@@ -113,9 +113,12 @@ const EventsMap: React.FC<{ items: TItem[]; focus: { lat: number; lng: number } 
   return (
     <div className="relative w-full mb-6">
       <div ref={ref} className="w-full rounded-lg border border-border" style={{ height: '55vh', minHeight: 380 }} />
-      <div className="absolute bottom-3 left-3 z-[1000] rounded-md border border-slate-600/70 bg-slate-900/85 px-3 py-2 backdrop-blur-sm">
-        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gold/80">{sv ? 'Läge' : 'Location'}</div>
-        <ul className="space-y-1">
+      {/* Legend STÄNGD som default (ren karta), öppnas vid klick — <details> = ingen state, tillgängligt. */}
+      <details className="absolute bottom-3 left-3 z-[1000] rounded-md border border-slate-600/70 bg-slate-900/85 px-3 py-2 backdrop-blur-sm">
+        <summary className="cursor-pointer list-none text-[10px] font-semibold uppercase tracking-wide text-gold/80 marker:content-none">
+          {sv ? 'Teckenförklaring ▸' : 'Legend ▸'}
+        </summary>
+        <ul className="mt-1.5 space-y-1">
           {legend.map((l) => (
             <li key={l.label} className="flex items-center gap-2 text-[11px] text-slate-200">
               <span className="inline-block h-3 w-3 shrink-0 rounded-full"
@@ -124,7 +127,7 @@ const EventsMap: React.FC<{ items: TItem[]; focus: { lat: number; lng: number } 
             </li>
           ))}
         </ul>
-      </div>
+      </details>
     </div>
   );
 };

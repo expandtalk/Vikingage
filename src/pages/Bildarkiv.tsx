@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
@@ -201,6 +202,12 @@ const Bildarkiv: React.FC = () => {
             ? 'Bilder ur plattformen samlade över flera kategorier. Varje bild redovisas med bildtext, licens och källa — originalen hotlänkas (rehostas aldrig). Bilder utan känd fri licens visas antingen inte eller märks tydligt.'
             : 'Images from the platform gathered across several categories. Each image is shown with caption, license and source — originals are hotlinked (never rehosted). Images without a known free license are either omitted or clearly flagged.'}
         </p>
+
+        {/* Upptäckts-ingång: spåret "De försvunna stenarna" (retention). */}
+        <Link to={sv ? '/sv/forsvunna-runstenar' : '/en/lost-runestones'}
+          className="mb-6 inline-flex items-center gap-2 rounded-lg border border-gold/40 bg-gold/10 px-4 py-2 text-sm font-medium text-amber-100 hover:bg-gold/20">
+          👻 {sv ? 'Spår: De försvunna stenarna — stenar som bara finns som 1600-talsteckning →' : 'Trail: The Lost Stones — stones surviving only as 17th-century drawings →'}
+        </Link>
 
         {/* Kategori-facett — grupp av toggle-knappar (aria-pressed, tangentbordsnåbara) */}
         <div
