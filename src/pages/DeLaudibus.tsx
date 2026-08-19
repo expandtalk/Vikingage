@@ -7,6 +7,7 @@ import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
+import { IiifViewer } from '../components/IiifViewer';
 
 // Bläddringsbar utgåva av Hrabanus Maurus "Liber de laudibus Sanctae Crucis" (814) — de 94 PD-bladen
 // ur Bern, Burgerbibliothek Cod. 9 (historical_depictions, subject_type='manuscript'). Klicka fram/
@@ -154,6 +155,36 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             </div>
           </>
         )}
+
+        {/* Det äldsta helvittnet — Reg. lat. 124 (Vatikanbiblioteket), inbäddad LIVE via IIIF (© BAV,
+            ej kopierad hit). Provenienshypotesen märks som obelagd. */}
+        <section className="mx-auto mt-12 max-w-3xl border-t border-slate-800 pt-8">
+          <h2 className="mb-2 text-2xl font-bold text-foreground">
+            {sv ? 'Det äldsta helvittnet — Reg. lat. 124' : 'The oldest complete witness — Reg. lat. 124'}
+          </h2>
+          <p className="mb-4 text-muted-foreground leading-relaxed">
+            {sv ? (
+              <>Reg. lat. 124, skrivet i Fulda ca 825 (troligen under Hrabanus överinseende), är det äldsta
+              bevarade helvittnet till hela cykeln och bär porträtten av Hrabanus och Alcuin samt dedikationen
+              till påven Gregorius IV. Handskriften ingick i drottning Kristinas samling (Reginenses) och kom
+              till Vatikanbiblioteket 1690. <em>Obelagt/hypotes:</em> en forskningslinje menar att det är
+              Fulda-exemplaret som via Prag blev svenskt krigsbyte 1648 — andra Reginenses kom istället via
+              Petau-samlingen. Bilderna nedan visas <strong>live ur Vatikanbibliotekets IIIF-tjänst</strong>.</>
+            ) : (
+              <>Reg. lat. 124, written at Fulda c. 825 (likely under Hrabanus's supervision), is the oldest
+              surviving complete witness to the cycle and carries the portraits of Hrabanus and Alcuin and the
+              dedication to Pope Gregory IV. It was part of Queen Christina's collection (Reginenses) and entered
+              the Vatican Library in 1690. <em>Unattested/hypothesis:</em> one line of research holds it is the
+              Fulda copy that became Swedish war booty in 1648 via Prague. Images shown <strong>live from the
+              Vatican Library's IIIF service</strong>.</>
+            )}
+          </p>
+          <IiifViewer
+            manifestUrl="https://digi.vatlib.it/iiif/MSS_Reg.lat.124/manifest.json"
+            viewerUrl="https://digi.vatlib.it/view/MSS_Reg.lat.124"
+            attribution="© Biblioteca Apostolica Vaticana"
+          />
+        </section>
       </main>
 
       {/* Zoom-lightbox — läs detaljerna */}
