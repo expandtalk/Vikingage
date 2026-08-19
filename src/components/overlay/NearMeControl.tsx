@@ -113,7 +113,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   const { open, pos, radiusKm, locating, error } = useNearMe();
   // Fältnavigeringens live-position (GPS-fart) — driver hastighetsgrindningen i korridorlistan.
   // `active` = fältläge på → dölj Near me-pillen (FieldModeHud äger då nedre zonen; en framdörr).
-  const { pos: fieldPos, active: fieldActive } = useFieldNav();
+  const { pos: fieldPos, active: fieldActive, target: navTarget } = useFieldNav();
   const [debouncedR, setDebouncedR] = useState(radiusKm);
   useEffect(() => { const t = setTimeout(() => setDebouncedR(radiusKm), 300); return () => clearTimeout(t); }, [radiusKm]);
   // Grupperad lista: en kollapsbar sektion per typ (Runstenar, Gravar, Kyrkor…).
@@ -485,7 +485,13 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
                 Läges-knapparna ovan är räckvidds-FILTER; "starta färden" = ETT separat steg. */}
             <button
               type="button"
-              onClick={async () => { await requestCompassPermission(); startFieldNav(); closeNearMe(); navigate('/3D-drive'); }}
+              onClick={async () => {
+                await requestCompassPermission();
+                const keep = navTarget;               // mål satt i Explore ("Led mig hit") ska överleva
+                startFieldNav();                        // (startFieldNav nollar target)
+                if (keep) setFieldNavTarget(keep);      // → drive-läget auto-ruttar dit (steg 3)
+                closeNearMe(); navigate('/3D-drive');
+              }}
               className="w-full mb-2 flex items-center justify-center gap-2 py-2 rounded-lg border border-gold/50 bg-gold/15 text-amber-100 text-sm font-medium hover:bg-gold/25"
               style={{ minHeight: 42 }}
             >

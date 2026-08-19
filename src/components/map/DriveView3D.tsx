@@ -87,8 +87,8 @@ const FT_SV: Record<string, string> = {
 };
 
 export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: number; lng: number } }> = ({ className, demoCenter }) => {
-  const { pos, following } = useFieldNav();
-  const { route } = useRoadtrip();
+  const { pos, following, target } = useFieldNav();
+  const { route, dest } = useRoadtrip();
   const travelMode = useTravelMode();
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -291,6 +291,29 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
     const src = map.getSource('route') as maplibregl.GeoJSONSource | undefined;
     src?.setData(routeGeoJSON(route?.coords) as any);
   }, [route]);
+
+  // STEG 3 — auto-rutt: sattes ett mål REDAN i Explore ("Led mig hit") och man sedan startar
+  // körläget, beräkna OSRM-rutten från min position till målet på plats (annars visades bara en
+  // ledlinje). Kör en gång per nytt mål / när GPS blir tillgänglig; hoppar om rutten redan går dit.
+  const posReady = !!pos;
+  useEffect(() => {
+    if (!target) return;
+    if (dest && Math.abs(dest.lat - target.lat) < 1e-6 && Math.abs(dest.lng - target.lng) < 1e-6 && route) return;
+    const from = posRef.current;
+    if (!from) return;
+    let cancelled = false;
+    (async () => {
+      setRoadtripSearching();
+      try {
+        const r = await computeRoute(from, { lat: target.lat, lng: target.lng });
+        if (cancelled) return;
+        if (r) setRoadtripResult({ lat: target.lat, lng: target.lng, label: target.label }, r);
+        else setRoadtripError('Kunde inte beräkna en rutt dit.');
+      } catch { if (!cancelled) setRoadtripError('Fel vid ruttberäkningen.'); }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target?.lat, target?.lng, posReady]);
 
   // Båt-läge: tänd OpenSeaMap-sjömärken + farleder; hämta farledsgeometrin en gång. Andra lägen → dölj.
   useEffect(() => {
