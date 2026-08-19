@@ -47,13 +47,28 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
       const { data } = await (supabase as any).from('historical_depictions')
         .select('id, title, image_url, thumb_url')
         .eq('subject_type', 'manuscript').ilike('work_ref', '%laudibus%').not('image_url', 'is', null);
-      // exkludera rent tekniska blad (färgkarta) ur bläddringen; behåll pärmar
+      // exkludera rent tekniska blad (färgkarta) ur bläddringen; behåll pärmar. Läderpärmen ("binding")
+      // först som omslag (Daniel), sen folierna i ordning.
+      const bind = (t: string) => (/binding/i.test(t) ? 0 : 1);
       return ((data ?? []) as Leaf[])
         .filter((l) => !/colorchecker/i.test(l.title))
-        .sort((a, b) => folioKey(a.title) - folioKey(b.title));
+        .sort((a, b) => bind(a.title) - bind(b.title) || folioKey(a.title) - folioKey(b.title));
     },
   });
 
+  // IIIF-omslag (Reg.lat.124, canvas 0 = piatto anteriore) till bok-2-kortet — beskuret (object-cover)
+  // så bara boken syns, inte den vita bakgrunden.
+  const { data: iiifCover } = useQuery({
+    queryKey: ['reglat124-cover'], staleTime: 24 * 60 * 60 * 1000,
+    queryFn: async (): Promise<string | null> => {
+      try {
+        const m = await (await fetch('https://digi.vatlib.it/iiif/MSS_Reg.lat.124/manifest.json')).json();
+        const res = m?.sequences?.[0]?.canvases?.[0]?.images?.[0]?.resource;
+        const svc = res?.service?.['@id'];
+        return svc ? `${svc}/full/600,/0/native.jpg` : (res?.['@id'] || null);
+      } catch { return null; }
+    },
+  });
   const total = leaves.length;
   const cur = leaves[idx];
   const go = useMemo(() => (d: number) => setIdx((i) => Math.max(0, Math.min(total - 1, i + d))), [total]);
@@ -108,10 +123,10 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
 
         {/* Bok-väljare (2 böcker): 2-spaltiga kort → klick fyller sidan med vald boks visare (Daniel). */}
         {book === null && (
-          <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+          <div className="ml-auto grid max-w-3xl gap-4 sm:grid-cols-2">
             <button type="button" onClick={() => setBook('bern')}
               className="group overflow-hidden rounded-xl border border-slate-700 bg-slate-900/40 text-left transition hover:border-gold/60">
-              {leaves[0] && <img src={leaves[0].thumb_url || leaves[0].image_url} alt="" loading="lazy" className="h-48 w-full object-cover" />}
+              {leaves[0] && <img src={leaves[0].thumb_url || leaves[0].image_url} alt="" loading="lazy" className={`h-48 w-full object-cover${/binding/i.test(leaves[0].title) ? ' rotate-180' : ''}`} />}
               <div className="p-4">
                 <h2 className="text-lg font-semibold text-foreground">{sv ? 'De laudibus — bläddra (94 blad)' : 'De laudibus — browse (94 leaves)'}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{sv ? 'Carmina figurata ur Bern (Cod. 9) & BnF (lat. 2422). Public domain — klicka och zooma.' : 'Carmina figurata from Bern (Cod. 9) & BnF (lat. 2422). Public domain — click and zoom.'}</p>
@@ -120,7 +135,9 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             </button>
             <button type="button" onClick={() => setBook('reglat124')}
               className="group overflow-hidden rounded-xl border border-slate-700 bg-slate-900/40 text-left transition hover:border-gold/60">
-              <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950"><BookOpen className="h-16 w-16 text-gold/70" /></div>
+              {iiifCover
+                ? <img src={iiifCover} alt="" loading="lazy" className="h-48 w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                : <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950"><BookOpen className="h-16 w-16 text-gold/70" /></div>}
               <div className="p-4">
                 <h2 className="text-lg font-semibold text-foreground">Reg. lat. 124 — {sv ? 'Vatikanbiblioteket' : 'Vatican Library'}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{sv ? 'Äldsta helvittnet (Fulda ~825), Kristinas samling. Visas live ur Vatikanens IIIF-tjänst (© BAV).' : 'Oldest complete witness (Fulda c. 825), Queen Christina’s collection. Shown live from the Vatican IIIF service (© BAV).'}</p>
@@ -145,7 +162,7 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
                 className="group relative block w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-900"
                 title={sv ? 'Förstora' : 'Enlarge'}>
                 <img src={cur.image_url} alt={cur.title} loading="eager"
-                  className="mx-auto max-h-[72vh] w-auto object-contain" />
+                  className={`mx-auto max-h-[72vh] w-auto object-contain${/binding/i.test(cur.title) ? ' rotate-180' : ''}`} />
                 <span className="absolute right-3 top-3 rounded-lg bg-slate-900/80 p-2 text-slate-200 opacity-0 transition group-hover:opacity-100">
                   <ZoomIn className="h-5 w-5" />
                 </span>
