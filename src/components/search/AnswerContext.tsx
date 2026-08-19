@@ -894,6 +894,27 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           </section>
         );
       })()}
+      {/* STENEN SJÄLV — för runstenssvar (leadUrl → /inscription/) visas stenens EGET foto direkt
+          efter läsningen, FÖRE landmärken (Daniel: "Läs hela inskriften … borde komma innan bilder
+          från platsen … så borde alla runstenar vara strukturerade"). Väljer direkt bildfil (ej RAÄ-
+          visningssida) ur images_for_query, category='runestone'. */}
+      {(() => {
+        const lu = String((data as any).leadUrl || '');
+        if (!lu.startsWith('/inscription/')) return null;
+        const stone = (archiveImages as any[]).find((im) => im.category === 'runestone' && /\.(jpe?g|png|webp)(\?|$)/i.test(im.image_url || ''));
+        if (!stone) return null;
+        return (
+          <div className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4">
+            <button type="button" onClick={() => setLightbox({ url: stone.image_url, desc: stone.title, license: stone.license_code, credit: stone.credit })}
+              className="block w-full overflow-hidden rounded-lg border border-slate-700">
+              <img src={stone.image_url} alt={stone.title || heroTitle} loading="lazy" className="max-h-[46vh] w-full object-contain bg-slate-950" />
+            </button>
+            <p className="mt-1 text-[11px] text-slate-500">
+              {stone.title || heroTitle}{stone.credit ? ` · ${stone.credit}` : ''}{stone.source_institution ? ` · ${stone.source_institution}` : ''}
+            </p>
+          </div>
+        );
+      })()}
       {faq && <FaqAnswer faq={faq} sv={sv} onQuery={(qq) => onQuery?.(qq)} />}
       {/* LANDMÄRKEN — byggnads-/monumentbilder högt upp (mest platsrelevanta bilden, Daniel). */}
       {landmarkImages.length > 0 && (

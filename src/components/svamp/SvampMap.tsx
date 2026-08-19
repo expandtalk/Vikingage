@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
 import { MapPin, Search, Loader2, CloudRain, Compass } from 'lucide-react';
@@ -57,6 +58,8 @@ export const SvampMap: React.FC<Props> = ({ sv }) => {
   const [rain, setRain] = useState<Rain | null>(null);
   const [place, setPlace] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+  const [params] = useSearchParams();
 
   useEffect(() => {
     if (mapRef.current || !mapEl.current) return;
@@ -73,9 +76,20 @@ export const SvampMap: React.FC<Props> = ({ sv }) => {
     ).addTo(m);
     rainLayerRef.current = L.layerGroup().addTo(m);
     mapRef.current = m;
+    setReady(true);
     setTimeout(() => { try { m.invalidateSize(); } catch { /* noop */ } }, 120);
-    return () => { try { m.remove(); } catch { /* noop */ } mapRef.current = null; };
+    return () => { try { m.remove(); } catch { /* noop */ } mapRef.current = null; setReady(false); };
   }, [sv]);
+
+  // Djuplänk från en plats (svarspanelens rail: /sv/svamp?lat=&lng=&plats=) → centrera + hämta
+  // förhållanden där direkt, så "svampguide från Karlevistenen" visar den platsens omgivning.
+  useEffect(() => {
+    if (!ready) return;
+    const lat = parseFloat(params.get('lat') || ''); const lng = parseFloat(params.get('lng') || '');
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    go(lat, lng, params.get('plats') || (sv ? 'Vald plats' : 'Selected location'), 11);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
 
   // Regional nederbörds-sondering: sampla ett 3×3-rutnät (~±0,35° ≈ 40 km) runt vald plats via SMHI
   // och rita färgade prickar → man SER åt vilket håll regnet fallit (Daniel: "kartan visar inte vart

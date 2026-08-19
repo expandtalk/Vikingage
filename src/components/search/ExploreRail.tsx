@@ -41,6 +41,17 @@ export const ExploreRail: React.FC<{ query: string; onGo: (route: string) => voi
     },
   });
 
+  // Utflykter i NÄRHETEN (Daniel: railen visade alla utflykter utan närhet). excursions_near → ≤80 km.
+  const { data: nearbyExc = [] } = useQuery({
+    queryKey: ['rail-exc-near', center?.lat, center?.lng],
+    enabled: !!(center && center.lat != null && center.lng != null),
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ id: string; name: string; region: string; dist_km: number }[]> => {
+      const { data } = await (supabase as any).rpc('excursions_near', { p_lat: center!.lat, p_lng: center!.lng, p_radius_km: 80, p_limit: 6 });
+      return (data ?? []) as { id: string; name: string; region: string; dist_km: number }[];
+    },
+  });
+
   const { data: adventures = [] } = useQuery({
     queryKey: ['rail-adventures', center?.lat, center?.lng],
     enabled: !!(center && center.lat != null && center.lng != null),
@@ -88,22 +99,39 @@ export const ExploreRail: React.FC<{ query: string; onGo: (route: string) => voi
           <Compass className="h-3.5 w-3.5" /> {sv ? 'Utforska & upplev' : 'Explore & experience'}
         </h3>
         <div className="flex flex-col gap-1.5 text-sm">
-          <button onClick={() => onGo(sv ? '/sv/utflykter' : '/excursions')}
-            className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-left font-medium text-slate-100 hover:border-emerald-500/50 hover:text-emerald-100">
-            {sv ? 'Utflykter i trakten' : 'Excursions nearby'} →
-          </button>
-          <button onClick={() => onGo('/sv/svamp')}
+          {nearbyExc.length > 0 ? (
+            <>
+              {nearbyExc.map((e) => (
+                <button key={e.id} onClick={() => onGo(`/excursions/${e.id}`)}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-left font-medium text-slate-100 hover:border-emerald-500/50 hover:text-emerald-100">
+                  <span className="min-w-0 truncate">{e.name}</span>
+                  <span className="shrink-0 text-[11px] text-emerald-300/80">{e.dist_km} km</span>
+                </button>
+              ))}
+              <button onClick={() => onGo(sv ? '/sv/utflykter' : '/excursions')}
+                className="text-left text-xs font-medium text-emerald-300/80 hover:text-emerald-100">
+                {sv ? 'Se alla utflykter' : 'See all excursions'} →
+              </button>
+            </>
+          ) : (
+            <button onClick={() => onGo(sv ? '/sv/utflykter' : '/excursions')}
+              className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-left font-medium text-slate-100 hover:border-emerald-500/50 hover:text-emerald-100">
+              {sv ? 'Utflykter' : 'Excursions'} →
+            </button>
+          )}
+          <button onClick={() => onGo(center ? `/sv/svamp?lat=${center.lat}&lng=${center.lng}&plats=${encodeURIComponent(query)}` : '/sv/svamp')}
             className={`rounded-lg border px-3 py-1.5 text-left font-medium ${inSeason ? 'border-amber-500/50 bg-amber-500/10 text-amber-100 hover:bg-amber-500/20' : 'border-slate-700 bg-slate-800/60 text-slate-300 hover:border-amber-500/40'}`}>
-            🍄 {sv ? 'Svampkarta' : 'Mushroom map'} {inSeason ? (sv ? '· i säsong nu' : '· in season now') : (sv ? '· säsong aug–nov' : '· season Aug–Nov')} →
+            🍄 {sv ? 'Svampkarta' : 'Mushroom map'}{center ? (sv ? ' · härnära' : ' · near here') : ''} {inSeason ? (sv ? '· i säsong' : '· in season') : ''} →
           </button>
         </div>
       </section>
       {adventures.length > 0 && (
-        <section>
-          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300">
+        <details className="group">
+          <summary className="mb-2 flex cursor-pointer list-none items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300 [&::-webkit-details-marker]:hidden">
             <Footprints className="h-3.5 w-3.5" /> {sv ? 'Äventyr & motion' : 'Adventure & recreation'}
-            <span className="ml-auto rounded-full bg-sky-500/15 px-1.5 py-0.5 text-[11px] font-medium text-sky-200">{adventures.length}</span>
-          </h3>
+            <span className="rounded-full bg-sky-500/15 px-1.5 py-0.5 text-[11px] font-medium text-sky-200">{adventures.length}</span>
+            <span className="ml-auto text-[11px] font-normal text-slate-500 transition group-open:rotate-180">▾</span>
+          </summary>
           {/* Typräknare (fiske/bad/grotta) med färgprick — speglar kartlagrets legend. */}
           <div className="mb-2 flex flex-wrap gap-1.5">
             {advKinds.map((k) => (
@@ -131,7 +159,7 @@ export const ExploreRail: React.FC<{ query: string; onGo: (route: string) => voi
               {sv ? `+ ${adventures.length - 14} till — se kartlagret` : `+ ${adventures.length - 14} more — see the map layer`}
             </p>
           )}
-        </section>
+        </details>
       )}
     </div>
   );
