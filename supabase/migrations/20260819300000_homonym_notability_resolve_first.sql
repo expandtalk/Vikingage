@@ -1,0 +1,7 @@
+-- Homonym-notabilitet (Daniel: "Årsta" blandade Stockholm/Uppland/Närke). Applicerat via script.
+-- 1) place_names.wikidata_sitelinks backfylls från Wikidata (scripts/data/backfill-placename-sitelinks.mjs)
+--    → resolve_place tiebreakar redan 'order by prio, pop desc' (pop=coalesce(wikidata_sitelinks,0)).
+--    Årsta: Stockholm sl=7 > Uppsala sl=2 > Närke null → resolve_place → Stockholm.
+-- 2) entity_answer_context ctr: resolve_place används nu FÖRE avg(ins) — så center följer den notabla
+--    resolverade platsen i st.f. medelvärdet av inskrifter i en likanämnd socken (Uppland). Ett konsekvent
+--    center → rail/nearby/lead handlar om SAMMA plats.
