@@ -16,10 +16,10 @@ const clip = (s, n = 155) => { const t = String(s ?? '').replace(/\s+/g, ' ').tr
 
 const env = (() => { try { return Object.fromEntries(fs.readFileSync(path.join(__dirname, '../.env'), 'utf8').split('\n').filter(l => l.includes('=')).map(l => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; })); } catch { return {}; } })();
 
-const emit = (tpl, { route, title, desc, lang = 'sv' }) => {
-  if (!route || !/^\/[\w\-/åäöÅÄÖ.]+$/.test(route)) return false; // hoppa oväntade slugs
+const emit = (tpl, { dir, canonical, title, desc, lang = 'sv' }) => {
+  // hoppa ogiltiga filvägar: query/fragment-URL:er (/explore?focus=…), Windows-otillåtna tecken.
+  if (!dir || dir.includes('..') || /[?#*:<>"|]/.test(dir) || !title) return false;
   const fullTitle = `${title} | ${SITE}`;
-  const canonical = ORIGIN + route;
   const locale = lang === 'en' ? 'en_GB' : 'sv_SE';
   let html = tpl
     // strippa shell-mallens (startsidans) canonical/og:url så vi inte får DUBBLA canonical
@@ -33,7 +33,7 @@ const emit = (tpl, { route, title, desc, lang = 'sv' }) => {
     .replace('</head>', `  <link rel="canonical" href="${canonical}" />\n  <meta property="og:url" content="${canonical}" />\n  <meta property="og:locale" content="${locale}" />\n  <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebPage', name: title, description: desc, url: canonical, inLanguage: lang, isPartOf: { '@id': 'https://vikingage.se/#website' } })}</script>\n  </head>`);
   const noscript = `<noscript><main><h1>${esc(title)}</h1><p>${esc(desc)}</p><p><a href="/">${SITE}</a> · <a href="/sitemap.xml">Sitemap</a></p></main></noscript>`;
   html = html.replace('<div id="root"></div>', `<div id="root"></div>\n    ${noscript}`);
-  const outDir = path.join(distPath, route);
+  const outDir = path.join(distPath, dir);
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'index.html'), html);
   return true;
@@ -51,13 +51,20 @@ const main = async () => {
     const exc = await c.query(`select id, name, region, description_sv from excursions where id is not null`);
     for (const e of exc.rows) {
       const desc = clip(e.description_sv) || `Utflykt i ${e.region || 'Sverige'} — vikingatida och medeltida lämningar med källbelagd kontext.`;
-      if (emit(tpl, { route: `/excursions/${e.id}`, title: `${e.name} — Utflykt`, desc, lang: 'sv' })) n++;
+      if (emit(tpl, { dir: `excursions/${e.id}`, canonical: `${ORIGIN}/excursions/${encodeURIComponent(e.id)}`, title: `${e.name} — Utflykt`, desc, lang: 'sv' })) n++;
     }
     // Content-pages (Birka m.fl.) — url + teaser_sv.
     const cp = await c.query(`select url, title_sv, teaser_sv from content_pages where url like '/%'`);
     for (const p of cp.rows) {
       const desc = clip(p.teaser_sv) || `${p.title_sv} — källbelagd kunskapssida på Viking Age.`;
-      if (emit(tpl, { route: p.url, title: p.title_sv, desc, lang: p.url.startsWith('/en/') ? 'en' : 'sv' })) n++;
+      if (emit(tpl, { dir: p.url.replace(/^\//, ''), canonical: ORIGIN + p.url, title: p.title_sv, desc, lang: p.url.startsWith('/en/') ? 'en' : 'sv' })) n++;
+    }
+    // Namngivna runinskrifter (Rökstenen, Karlevistenen…) — SEO-värdefulla. signum har mellanslag/Ö
+    // → filväg med rå signum, canonical med encodeURIComponent (matchar appens /inscription/<enc(signum)>).
+    const ins = await c.query(`select signum, name, historical_context, translation_sv from runic_inscriptions where name is not null and name<>'' and signum is not null`);
+    for (const r of ins.rows) {
+      const desc = clip(r.historical_context) || clip(r.translation_sv) || `Runinskrift ${r.signum}${r.name ? ` (${r.name})` : ''} — läsning, datering och tolkning i runregistret.`;
+      if (emit(tpl, { dir: `inscription/${r.signum}`, canonical: `${ORIGIN}/inscription/${encodeURIComponent(r.signum)}`, title: `${r.name} — Runinskrift ${r.signum}`, desc, lang: 'sv' })) n++;
     }
   } catch (e) { console.log('prerender-entities: DB-fel — hoppar:', e.message); }
   finally { try { await c.end(); } catch { /* noop */ } }
