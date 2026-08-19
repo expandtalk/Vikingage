@@ -13,6 +13,25 @@ import { useLanguage } from '@/contexts/LanguageContext';
 // /sv/helgon — hubb för de nordiska/svenska helgonen. DATA-DRIVEN ur saints-tabellen (show_on_hub),
 // inte hårdkodat (Daniel: "undvik hårdkodat material"). Kurerade noter + kart-länkar bor i tabellen.
 // Källkritik: legenduppgifter är märkta i noterna; St Olof har egen fördjupning via map_href.
+// Helgonbild ur bildarkivet (images_for_query) — visas bara när en bild finns (annars inget kort-brus).
+// Källkritik: kyrkokonst/landmärken som avbildar helgonet; glest för många helgon → självdöljande.
+const SaintImage: React.FC<{ name: string }> = ({ name }) => {
+  const { data: imgs = [] } = useQuery({
+    queryKey: ['saint-img', name], staleTime: 60 * 60 * 1000,
+    queryFn: async (): Promise<any[]> => {
+      const { data } = await (supabase as any).rpc('images_for_query', { p_q: name, p_limit: 3 });
+      return (data ?? []) as any[];
+    },
+  });
+  const img = imgs[0];
+  if (!img) return null;
+  return (
+    <img src={img.thumb_url || img.image_url} alt={name} loading="lazy"
+      className="h-40 w-full rounded-t-lg border-b border-border object-cover"
+      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+  );
+};
+
 interface HubSaint {
   code: string;
   name: string;
@@ -67,7 +86,8 @@ const Helgon = () => {
 
         <div className="grid gap-4 sm:grid-cols-2">
           {saints.map((s) => (
-            <Card key={s.code} className="viking-card">
+            <Card key={s.code} className="viking-card overflow-hidden">
+              <SaintImage name={sv ? s.name : (s.name_en || s.name)} />
               <CardHeader className="pb-2">
                 <CardTitle className="text-base text-gold">{sv ? s.name : (s.name_en || s.name)}</CardTitle>
                 {s.life_line && <p className="text-xs text-muted-foreground">{s.life_line}</p>}
