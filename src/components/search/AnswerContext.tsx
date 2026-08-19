@@ -295,6 +295,18 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     },
   });
 
+  // "Senaste forskningen" — färska artiklar (30–60 dgr) ur öppna register (OpenAlex/Crossref/Europe PMC),
+  // relevans-triagerade i lit_intake (nordiskt förankrade). Utlänk till DOI, OA-märkta. Tips, ej kanon.
+  const { data: litRecent = [] } = useQuery({
+    queryKey: ['answer-lit', query],
+    enabled: query.trim().length >= 3,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ title: string; authors: string; journal: string; doi: string; url: string; is_oa: boolean; publication_date: string; discipline: string }[]> => {
+      const { data } = await (supabase as any).rpc('lit_for_query', { p_q: query.trim(), p_limit: 6 });
+      return (data ?? []) as any[];
+    },
+  });
+
   // HISTORIEMÅLNINGAR (PD, 1800-tal — Cederström/Hellqvist m.fl.) knutna till kungar/händelser.
   // KÄLLKRITISKT: konstnärlig tolkning, ej historisk källa → caveat visas tydligt (Daniel).
   // FAQ/PAA: fler-perspektiv-svar (disciplin-linser + bias-ruta) för frågor. get_faq normaliserar.
@@ -1391,6 +1403,34 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           tvåspaltigt under. Allt är KORT som länkar ut (rättighetssäkert — ingen återgiven artikeltext/
           PDF; CC BY-nyansen: DiVA-backlisten är fritt läsbar, öppnas hos utgivaren). */}
       <div className="px-5 pb-4 space-y-6">
+        {litRecent.length > 0 && (
+          <section className="text-left">
+            <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-emerald-300">
+              <Library className="h-3.5 w-3.5" /> {sv ? 'Senaste forskningen' : 'Latest research'}
+            </h3>
+            <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+              {litRecent.map((a) => (
+                <li key={a.doi || a.title}>
+                  <a href={a.url} target="_blank" rel="noopener noreferrer"
+                    className="block rounded-lg border border-slate-700/70 bg-slate-800/40 px-3 py-2 hover:border-emerald-500/60 hover:bg-slate-800/70">
+                    <span className="text-sm font-medium text-white leading-snug line-clamp-2">{a.title}</span>
+                    <span className="mt-0.5 block text-xs text-slate-400">
+                      {[a.journal, a.publication_date?.slice(0, 4)].filter(Boolean).join(' · ')}
+                      {a.is_oa && <span className="ml-1 text-emerald-400">· open access</span>}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-2 flex items-center justify-between">
+              <button type="button" onClick={() => onGo(sv ? '/sv/nyheter' : '/en/news')}
+                className="inline-flex items-center gap-1 text-xs font-medium text-emerald-300 hover:text-emerald-200">
+                {sv ? 'Se all senaste forskning →' : 'See all latest research →'}
+              </button>
+              <span className="text-[11px] text-slate-400">{sv ? 'Färska artiklar ur öppna register — tips, ej granskade' : 'Fresh open-register articles — tips, not vetted'}</span>
+            </div>
+          </section>
+        )}
         {fornvannen.length > 0 && (
           <section className="text-left">
             <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300">

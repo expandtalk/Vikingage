@@ -47,6 +47,7 @@ const RoadPage = lazy(() => import("./pages/RoadPage"));
 const Vendelhjalmar = lazy(() => import("./pages/Vendelhjalmar"));
 const Models3D = lazy(() => import("./pages/Models3D"));
 const Bildarkiv = lazy(() => import("./pages/Bildarkiv"));
+const Nyheter = lazy(() => import("./pages/Nyheter"));
 const Ontology = lazy(() => import("./pages/Ontology"));
 const AiAgents = lazy(() => import("./pages/AiAgents"));
 const DeLaudibus = lazy(() => import("./pages/DeLaudibus"));
@@ -205,6 +206,9 @@ const App = () => (
                   <Route path="/ai-agenter" element={<AiAgents forceLang="sv" />} />
                   <Route path="/sv/de-laudibus" element={<DeLaudibus forceLang="sv" />} />
                   <Route path="/en/de-laudibus" element={<DeLaudibus forceLang="en" />} />
+                  <Route path="/sv/nyheter" element={<Nyheter forceLang="sv" />} />
+                  <Route path="/en/news" element={<Nyheter forceLang="en" />} />
+                  <Route path="/nyheter" element={<Nyheter forceLang="sv" />} />
                   <Route path="/verktyg" element={<Tools />} />
                   <Route path="/sv/verktyg" element={<Tools />} />
                   <Route path="/tools" element={<Tools />} />

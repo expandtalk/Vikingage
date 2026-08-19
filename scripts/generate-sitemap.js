@@ -59,6 +59,9 @@ const routes = [
   { path: '/en/de-laudibus', priority: 0.6 },
   { path: '/ai-agenter', priority: 0.7 },
   { path: '/ai-agents', priority: 0.6 },
+  { path: '/sv/nyheter', priority: 0.8 },
+  { path: '/en/news', priority: 0.7 },
+  { path: '/sv/svamp', priority: 0.7 },
 ];
 
 const baseUrl = 'https://vikingage.se';
