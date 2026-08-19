@@ -1,0 +1,31 @@
+name: Litteratur-skörd (Last 30 days)
+
+# Veckovis skörd av färsk forskning (OpenAlex + Crossref + Europe PMC) → lit_intake, + triage.
+# Nyckelfritt (öppna register). Kräver repo-secret SUPABASE_DB_PASSWORD (Settings → Secrets → Actions).
+# Kör även manuellt via "Run workflow".
+on:
+  schedule:
+    - cron: '0 6 * * 1'      # måndagar 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Installera beroenden (pg)
+        run: npm ci || npm install pg
+      - name: Skriv .env från secret
+        run: echo "SUPABASE_DB_PASSWORD=${{ secrets.SUPABASE_DB_PASSWORD }}" > .env
+      - name: Skörda OpenAlex
+        run: node scripts/data/ingest-lit-openalex.mjs 30
+      - name: Skörda Crossref + Europe PMC
+        run: node scripts/data/ingest-lit-sources.mjs 30
+      - name: Triage (relevans + disciplin)
+        run: node scripts/data/triage-lit-intake.mjs
+      - name: Städa
+        if: always()
+        run: rm -f .env
