@@ -50,6 +50,51 @@ export const FaqAnswer: React.FC<{ faq: FaqData; sv: boolean; onQuery?: (q: stri
             : 'Answers per research discipline — with evidence, status and source. Different methods see different things.'}
       </p>
 
+      {/* TROVÄRDIGHET & METOD (Lennart Rolandssons metodkrav): visa HUR källorna använts + ett ärligt
+          trovärdighetsmått + disciplinär konvergens. AI predikerar → transparensen är motgiftet.
+          Beräknat ur linsernas status/källor — inget fejkat exakt tal. */}
+      {(() => {
+        const lenses = faq.lenses ?? [];
+        const n = lenses.length;
+        if (!n) return null;
+        const sc: Record<string, number> = { belagt: 3, tolkning: 2, omstridt: 1, obelagt: 0 };
+        const avg = lenses.reduce((a, l) => a + (sc[l.status] ?? 1), 0) / n;
+        const withSrc = lenses.filter((l) => l.sources?.length).length;
+        const srcSet = new Set<string>(); lenses.forEach((l) => (l.sources ?? []).forEach((s) => srcSet.add(s)));
+        const nBel = lenses.filter((l) => l.status === 'belagt').length;
+        const nTol = lenses.filter((l) => l.status === 'tolkning').length;
+        const nDisp = lenses.filter((l) => l.status === 'omstridt' || l.status === 'obelagt').length;
+        const dominant = Math.max(nBel, nTol);
+        const converge = n >= 2 && dominant >= Math.ceil(n * 0.6) && nDisp === 0;
+        const divergent = n >= 2 && nDisp > 0 && (nBel > 0 || nTol > 0);
+        const band = (avg >= 2.3 && withSrc >= Math.ceil(n / 2) && n >= 2) ? 'stark'
+                   : (avg >= 1.5 && withSrc >= 1) ? 'medel' : 'svag';
+        const BAND: Record<string, { sv: string; en: string; cls: string }> = {
+          stark: { sv: 'Stark källgrund', en: 'Strong source basis', cls: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200' },
+          medel: { sv: 'Medelstark grund', en: 'Moderate basis', cls: 'border-amber-500/40 bg-amber-500/10 text-amber-200' },
+          svag: { sv: 'Svag/omstridd grund', en: 'Weak/contested basis', cls: 'border-rose-500/40 bg-rose-500/10 text-rose-200' },
+        };
+        const b = BAND[band];
+        return (
+          <div className="mb-3 rounded-lg border border-slate-700 bg-slate-800/50 p-2.5">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className={`rounded-full border px-2 py-0.5 font-semibold ${b.cls}`}>
+                {sv ? 'Trovärdighet: ' : 'Credibility: '}{sv ? b.sv : b.en}
+              </span>
+              <span className="text-slate-300">
+                {converge ? (sv ? `Disciplinär konvergens — ${dominant}/${n} linser samstämmiga` : `Disciplinary convergence — ${dominant}/${n} lenses agree`)
+                 : divergent ? (sv ? 'Delad bild — disciplinerna skiljer sig' : 'Divided — the disciplines differ')
+                 : (sv ? `${n} disciplinlins${n > 1 ? 'er' : ''}` : `${n} discipline lens${n > 1 ? 'es' : ''}`)}
+              </span>
+            </div>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">
+              {sv ? `Så använde vi källorna: ${srcSet.size} källor över ${n} discipliner — ${nBel} belagt, ${nTol} tolkning${nDisp ? `, ${nDisp} omstritt/obelagt` : ''}. AI sammanfattar och tolkar ur källorna (predikterar alltså inte fritt) — verifiera via beläggen nedan.`
+                  : `How we used the sources: ${srcSet.size} sources across ${n} disciplines — ${nBel} attested, ${nTol} interpretation${nDisp ? `, ${nDisp} contested` : ''}. AI summarises and interprets from the sources (not free prediction) — verify via the evidence below.`}
+            </p>
+          </div>
+        );
+      })()}
+
       <div className="space-y-3">
         {(faq.lenses ?? []).map((l, i) => {
           const st = STATUS_STYLE[l.status] ?? STATUS_STYLE.tolkning;
