@@ -1011,7 +1011,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           default — svaret räcker — men en "Visa karta"-knapp om det ändå finns en plats att visa
           (Daniel: svara på frågan, hämta hem kartan om man är intresserad). */}
       {hasCenter && !showLandscape && !overviewLoading && !!faq && (theophoric?.total ?? 0) === 0 && !showMapOptIn
-        && ((data.count ?? 0) > 0 || matchingPlaces.length > 0 || (siteRaa?.length ?? 0) > 0 || (forts?.length ?? 0) > 0) && (
+        && ((Number(data.count) || 0) > 0 || matchingPlaces.length > 0 || (siteRaa ? Object.keys(siteRaa).length : 0) > 0 || (forts?.length ?? 0) > 0) && (
         <div className="px-5 pb-4">
           <button type="button" onClick={() => setShowMapOptIn(true)}
             className="inline-flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-800/60 px-3 py-2 text-sm text-slate-200 hover:border-amber-500/50 hover:text-amber-100">
@@ -1021,7 +1021,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       )}
       {mapHasCenter && !showLandscape && !overviewLoading
         && ((theophoric?.total ?? 0) > 0
-            || ((!faq || showMapOptIn) && ((data.count ?? 0) > 0 || matchingPlaces.length > 0 || (siteRaa?.length ?? 0) > 0 || (forts?.length ?? 0) > 0))) && (
+            || ((!faq || showMapOptIn) && ((Number(data.count) || 0) > 0 || matchingPlaces.length > 0 || (siteRaa ? Object.keys(siteRaa).length : 0) > 0 || (forts?.length ?? 0) > 0))) && (
         <div className="px-5 pb-4">
           <div
             className={mapExpanded
