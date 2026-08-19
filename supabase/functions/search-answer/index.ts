@@ -7,6 +7,7 @@
 // Svarar ENDAST utifrån hämtade källor; hittar aldrig på (Verify-principen).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { retrieve } from "../_shared/retrieve.ts";
 
 const ALLOWED_ORIGINS = [
   'https://vikingage.se', 'https://www.vikingage.se',
@@ -67,15 +68,9 @@ Deno.serve(async (req) => {
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     if (!OPENROUTER_API_KEY) return json({ error: 'API configuration error' }, 500);
 
-    // 1. Embedda frågan + hybrid-retrieval.
-    // deno-lint-ignore no-explicit-any
-    const emb: any = await session.run(query.slice(0, 500), { mean_pool: true, normalize: true });
-    const { data: hits, error } = await supabase.rpc('search_v2', {
-      p_q: query, p_embedding: JSON.stringify(Array.from(emb)), p_limit: 12,
-    });
-    if (error) throw error;
-    // deno-lint-ignore no-explicit-any
-    const rows = (hits ?? []) as any[];
+    // 1. Retrieval — SAMMA väg som träfflistan (search-hybrid), via _shared/retrieve.ts:
+    //    embed → search_v2 → lexikal fallback. Fröet till svaret är alltså prefix av listan.
+    const { hits: rows } = await retrieve(supabase, session, query, { limit: 12 });
     if (!rows.length) {
       return json({ answer: language === 'en' ? 'No sources found for that question.' : 'Inga källor hittades för den frågan.', sources: [] });
     }
