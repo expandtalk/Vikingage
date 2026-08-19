@@ -17,9 +17,12 @@ const DISC={
  runolog:['rune','runic','runestone','runinskrift','futhark'],
  osteolog:['skeleton','osteolog','dental','cremation','perimortem',' mni ','palaeopatholog'],
  marinarkeolog:['shipwreck','maritime','harbour','harbor','seafaring','boat grave','ship burial'],
- historiker:['charter','chronicle','manuscript','diplomat','medieval document'],
+ historiker:['charter','chronicle','manuscript','diplomatarium','sdhk','medieval document','annal'],
  arkeolog:['settlement','excavation','burial','grave','hillfort','artefact','pottery','archaeolog'],
 };
+// Off-topic-uteslutning: modern politik/samtid som råkar nämna "Scandinavia" (t.ex. Georgien 1918,
+// diplomati, EU/NATO, världskrig, covid) → aldrig relevant för en vikingatida/arkeologisk plattform.
+const EXCLUDE=/\b(diplomatic|independence|soviet|geopolit|election|parliament|world war|wwi|wwii|cold war|covid|pandemic|refugee|foreign polic|nato|eu accession|1917|1918|19[2-9]\d|20[0-2]\d s |neutral scandinavia|blue sea, black gold)\b/i;
 const rows=(await c.query(`select id,title,abstract,concepts,journal,matched_query from lit_intake`)).rows;
 const cnt=(t,arr)=>arr.reduce((n,k)=>n+(t.includes(k)?1:0),0);
 let rel=0, per=0; const byDisc={};
@@ -30,7 +33,10 @@ for (const r of rows) {
   for (const [d,ks] of Object.entries(DISC)) { const s=cnt(t,ks); if (s>best){best=s;disc=d;} }
   const jb = r.journal && journals.has(r.journal.toLowerCase()) ? 40 : 0;
   const score = Math.min(geo,3)*10 + Math.min(period,3)*6 + Math.min(best,3)*5 + jb;
-  const status = (geo>=1 || jb>0) && (period>=1 || best>0) ? 'relevant' : (geo>=1?'peripheral':'off_topic');
+  const offtopic = EXCLUDE.test(t);
+  const status = offtopic ? 'off_topic'
+    : (geo>=1 || jb>0) && (period>=1 || best>0) ? 'relevant'
+    : (geo>=1 ? 'peripheral' : 'off_topic');
   await c.query(`update lit_intake set relevance=$1, discipline=$2, status=$3 where id=$4`,[score, disc, status, r.id]);
   if (status==='relevant'){rel++; byDisc[disc||'?']=(byDisc[disc||'?']||0)+1;} else if(status==='peripheral') per++;
 }

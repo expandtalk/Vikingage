@@ -1416,7 +1416,9 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                     <span className="text-sm font-medium text-white leading-snug line-clamp-2">{sv && a.title_sv ? a.title_sv : a.title}</span>
                     <span className="mt-0.5 block text-xs text-slate-400">
                       {[a.journal, a.publication_date?.slice(0, 4)].filter(Boolean).join(' · ')}
-                      {a.is_oa && <span className="ml-1 text-emerald-400">· open access</span>}
+                      {a.is_oa
+                        ? <span className="ml-1 text-emerald-400">· open access</span>
+                        : <span className="ml-1 text-amber-400/90">· 🔒 {sv ? 'prenumeration' : 'subscription'}</span>}
                       {sv && a.title_sv && <span className="ml-1 text-sky-400">· AI-översatt</span>}
                     </span>
                   </a>

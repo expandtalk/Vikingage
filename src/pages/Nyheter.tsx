@@ -94,7 +94,9 @@ const Nyheter: React.FC<{ forceLang?: 'sv' | 'en' }> = ({ forceLang }) => {
                 <span className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
                   {a.journal && <span className="italic">{a.journal}</span>}
                   {a.publication_date && <span className="tabular-nums">{a.publication_date.slice(0, 10)}</span>}
-                  {a.is_oa && <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 font-medium text-emerald-300">Open access</span>}
+                  {a.is_oa
+                    ? <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 font-medium text-emerald-300">Open access</span>
+                    : <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-amber-300/90" title="Kan ligga bakom betalvägg">🔒 {sv ? 'prenumeration' : 'subscription'}</span>}
                   {a.discipline && <span className="rounded bg-white/5 px-1.5 py-0.5">{(sv ? DISC_SV[a.discipline] : null) ?? a.discipline}</span>}
                   {showSv && <span className="rounded bg-sky-500/15 px-1.5 py-0.5 text-sky-300" title="Maskinöversatt från engelska">AI-översatt</span>}
                 </span>
