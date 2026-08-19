@@ -38,6 +38,7 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
   const sv = (forceLang ?? language) === 'sv';
   const [idx, setIdx] = useState(0);
   const [zoom, setZoom] = useState(false);
+  const [book, setBook] = useState<'bern' | 'reglat124' | null>(null); // vald bok fyller sidan; null = välj
 
   const { data: leaves = [], isLoading } = useQuery({
     queryKey: ['de-laudibus-leaves'],
@@ -105,7 +106,34 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
           </p>
         </div>
 
-        {isLoading ? (
+        {/* Bok-väljare (2 böcker): 2-spaltiga kort → klick fyller sidan med vald boks visare (Daniel). */}
+        {book === null && (
+          <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+            <button type="button" onClick={() => setBook('bern')}
+              className="group overflow-hidden rounded-xl border border-slate-700 bg-slate-900/40 text-left transition hover:border-gold/60">
+              {leaves[0] && <img src={leaves[0].thumb_url || leaves[0].image_url} alt="" loading="lazy" className="h-48 w-full object-cover" />}
+              <div className="p-4">
+                <h2 className="text-lg font-semibold text-foreground">{sv ? 'De laudibus — bläddra (94 blad)' : 'De laudibus — browse (94 leaves)'}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{sv ? 'Carmina figurata ur Bern (Cod. 9) & BnF (lat. 2422). Public domain — klicka och zooma.' : 'Carmina figurata from Bern (Cod. 9) & BnF (lat. 2422). Public domain — click and zoom.'}</p>
+                <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-gold">{sv ? 'Öppna boken' : 'Open the book'} <ChevronRight className="h-4 w-4" /></span>
+              </div>
+            </button>
+            <button type="button" onClick={() => setBook('reglat124')}
+              className="group overflow-hidden rounded-xl border border-slate-700 bg-slate-900/40 text-left transition hover:border-gold/60">
+              <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950"><BookOpen className="h-16 w-16 text-gold/70" /></div>
+              <div className="p-4">
+                <h2 className="text-lg font-semibold text-foreground">Reg. lat. 124 — {sv ? 'Vatikanbiblioteket' : 'Vatican Library'}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{sv ? 'Äldsta helvittnet (Fulda ~825), Kristinas samling. Visas live ur Vatikanens IIIF-tjänst (© BAV).' : 'Oldest complete witness (Fulda c. 825), Queen Christina’s collection. Shown live from the Vatican IIIF service (© BAV).'}</p>
+                <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-gold">{sv ? 'Öppna boken' : 'Open the book'} <ChevronRight className="h-4 w-4" /></span>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {book === 'bern' && (
+          <>
+          <button type="button" onClick={() => setBook(null)} className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-gold hover:underline"><ChevronLeft className="h-4 w-4" />{sv ? 'Alla böcker' : 'All books'}</button>
+          {isLoading ? (
           <div className="py-20 text-center text-muted-foreground">{sv ? 'Laddar bladen…' : 'Loading leaves…'}</div>
         ) : !cur ? (
           <div className="py-20 text-center text-muted-foreground">{sv ? 'Inga blad hittades.' : 'No leaves found.'}</div>
@@ -155,10 +183,13 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             </div>
           </>
         )}
+          </>
+        )}
 
-        {/* Det äldsta helvittnet — Reg. lat. 124 (Vatikanbiblioteket), inbäddad LIVE via IIIF (© BAV,
-            ej kopierad hit). Provenienshypotesen märks som obelagd. */}
-        <section className="mx-auto mt-12 max-w-3xl border-t border-slate-800 pt-8">
+        {/* Reg. lat. 124 (Vatikanbiblioteket), inbäddad LIVE via IIIF (© BAV, ej kopierad hit). */}
+        {book === 'reglat124' && (
+        <section className="mx-auto max-w-3xl">
+          <button type="button" onClick={() => setBook(null)} className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-gold hover:underline"><ChevronLeft className="h-4 w-4" />{sv ? 'Alla böcker' : 'All books'}</button>
           <h2 className="mb-2 text-2xl font-bold text-foreground">
             {sv ? 'Det äldsta helvittnet — Reg. lat. 124' : 'The oldest complete witness — Reg. lat. 124'}
           </h2>
@@ -185,6 +216,7 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             attribution="© Biblioteca Apostolica Vaticana"
           />
         </section>
+        )}
       </main>
 
       {/* Zoom-lightbox — läs detaljerna */}
