@@ -4,11 +4,12 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 
-// /podcast — egen sida för podcasten (flyttad från startsidan). Ljudberättelser om vikingatiden.
-const PodcastPromotion = lazy(() =>
-  import('../components/welcome/PodcastPromotion').then((m) => ({ default: m.PodcastPromotion })));
+// /podcast — historiepoddar (kanaler ur media_sources) + riktiga avsnitt ur media_items (~2900).
+// De gamla hårdkodade egna avsnitten (audio_files, trasiga "--:--"-spelare) borttagna (Daniel).
 const RecommendedPodcasts = lazy(() =>
   import('../components/podcast/RecommendedPodcasts').then((m) => ({ default: m.RecommendedPodcasts })));
+const PodcastEpisodes = lazy(() =>
+  import('../components/podcast/PodcastEpisodes').then((m) => ({ default: m.PodcastEpisodes })));
 
 const Podcast = () => (
   <div className="min-h-screen viking-bg">
@@ -22,12 +23,12 @@ const Podcast = () => (
     <Header />
     <Breadcrumbs />
     <main className="container mx-auto px-4 py-8">
-      {/* Rekommenderade poddar FÖRE de egna (Daniel). */}
+      {/* Historiepoddar (kanaler) + riktiga avsnitt ur katalogen. */}
       <Suspense fallback={<div className="h-32 animate-pulse bg-white/10 rounded-lg" />}>
         <RecommendedPodcasts />
       </Suspense>
       <Suspense fallback={null}>
-        <PodcastPromotion />
+        <PodcastEpisodes />
       </Suspense>
     </main>
     <Footer />
