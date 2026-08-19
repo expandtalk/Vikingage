@@ -10,6 +10,15 @@ const UA = 'VikingAgeResearch/1.0 (https://vikingage.se; forskningsplattform) no
 const API = 'https://commons.wikimedia.org/w/api.php';
 
 const stripHtml = (s) => String(s ?? '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+// Fotografkredit: strippa HTML + Commons-mallar ({{{2}}}) + Mushroom-Observer-boilerplate → bara namnet.
+const cleanCredit = (s) => {
+  let t = stripHtml(s).replace(/\{\{\{[^}]*\}\}\}/g, '').replace(/this image was created by user\s*/i, '');
+  t = t.split(/Mushroom Observer|You can contact|a source for mycological/i)[0];
+  t = t.replace(/\s+/g, ' ').trim().replace(/[,.;]\s*$/, '').replace(/\s+at$/i, '').trim();
+  // Tomt eller bara "at" (namnet var {{{2}}} → okänt) → ärlig fallback.
+  if (!t || /^at\b/i.test(t) || t.length < 2) return 'Wikimedia Commons';
+  return t;
+};
 // Icke-habitus-filter: hoppa sporavtryck, mikroskopi, teckningar, kartor, frimärken osv.
 const BAD = /(spore|micro|section|drawing|illustration|zeichnung|map|distribution|chart|diagram|stamp|briefmarke|label|etikett|book|plate|tafel|dried|herbarium|modell|\bmodel\b|wax|wachs|replica|sculpt|painting|gemälde|\.svg$)/i;
 
@@ -43,7 +52,7 @@ async function commonsBest(sciName) {
       if (ii.mime && !/jpeg|png/.test(ii.mime)) continue;
       const lic = normLicense(ii.extmetadata);
       if (!lic) continue;
-      const artist = stripHtml(ii.extmetadata?.Artist?.value) || 'Wikimedia Commons';
+      const artist = cleanCredit(ii.extmetadata?.Artist?.value);
       // poäng: större bild + jpeg + namnet i titeln (extra artsäkerhet)
       let score = Math.min(ii.width || 0, 4000) / 1000;
       if (/jpeg/.test(ii.mime || '')) score += 1;

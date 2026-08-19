@@ -828,7 +828,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
               className="rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-sm font-medium text-amber-100 hover:bg-gold/20">
               {sv ? 'Bläddra bland föremål' : 'Browse objects'} →
             </button>
-            <button type="button" onClick={() => onGo(sv ? '/sv/bildarkiv' : '/en/bildarkiv')}
+            <button type="button" onClick={() => onGo(sv ? '/sv/bildarkiv' : '/en/image-archive')}
               className="rounded-lg border border-slate-600 bg-slate-800/60 px-3 py-1.5 text-sm text-slate-100 hover:border-gold/50 hover:text-amber-100">
               {sv ? 'Bildarkiv' : 'Image archive'} →
             </button>
