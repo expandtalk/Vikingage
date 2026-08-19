@@ -274,6 +274,18 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       return (data ?? [])[0] ?? null;
     },
   });
+  // JORDEBÖCKER: katalog per socken (utlänkat, aldrig rehostat). Tidigmoderna jordregister — EJ SDHK.
+  const { data: jordebocker = [] } = useQuery({
+    queryKey: ['answer-jordebok', query],
+    enabled: query.trim().length >= 3,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ id: string; title: string; record_type: string; year_from: number | null; year_to: number | null; archive: string | null; archive_ref: string | null; url: string | null; source_org: string | null }[]> => {
+      const { data } = await (supabase as any).from('jordebok_records')
+        .select('id,title,record_type,year_from,year_to,archive,archive_ref,url,source_org')
+        .ilike('socken', query.trim()).order('year_from', { ascending: true });
+      return (data ?? []) as any[];
+    },
+  });
   // Giltig center = både lat OCH lng är tal (t.ex. Gotland gav {null,null} → rita ingen trasig karta).
   const hasCenter = !!(data?.center && data.center.lat != null && data.center.lng != null);
   const mapEl = useRef<HTMLDivElement>(null);
@@ -1098,6 +1110,24 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             {sockenInfo.earliest_year && <span>{sv ? 'äldsta belägg' : 'first attested'} <b className="text-white">{sockenInfo.earliest_year}</b></span>}
           </div>
           <p className="mt-1 text-[10px] text-slate-500">{sv ? 'Räknat inom sockengränsen (Lantmäteri) — endast georefererade poster.' : 'Counted within the parish boundary — georeferenced records only.'}</p>
+        </div>
+      )}
+      {/* JORDEBÖCKER — katalog per socken, utlänkad (aldrig rehostat innehåll). */}
+      {jordebocker.length > 0 && (
+        <div className="border-b border-slate-800 bg-slate-900/60 px-5 py-3">
+          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+            <BookOpen className="h-3.5 w-3.5" /> {sv ? 'Jordeböcker & jordrevningar' : 'Land registers'} <span className="text-slate-500">{jordebocker.length}</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {jordebocker.map((j) => (
+              <a key={j.id} href={j.url || undefined} target="_blank" rel="noopener noreferrer"
+                title={[j.title, j.archive_ref, j.source_org].filter(Boolean).join(' · ')}
+                className="rounded border border-slate-700 bg-slate-800/50 px-2 py-1 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100">
+                {j.year_from}{j.year_to ? `–${j.year_to}` : ''}{j.record_type === 'jordrevning' ? ' (jordrevn.)' : j.record_type === 'decimantjordebok' ? ' (decimant)' : ''}
+              </a>
+            ))}
+          </div>
+          <p className="mt-1.5 text-[10px] text-slate-500">{sv ? 'Tidigmoderna jordregister (ägare, mantal, jordenatur) — ej medeltidsbrev. Vi länkar ut till arkivet; innehållet rehostas aldrig.' : 'Early-modern land registers — not medieval charters. We link out to the archive; content is never rehosted.'}</p>
         </div>
       )}
       {/* HERO: full-bleed historiemålning (ramen CSS-beskuren via object-cover + scale). */}
