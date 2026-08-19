@@ -245,6 +245,19 @@ const Bildarkiv: React.FC = () => {
           })}
         </div>
 
+        {/* Manuskript-facett → länk till det bläddringsbara helmanuskriptet De laudibus. */}
+        {facet === 'manuscript' && (
+          <div className="mb-4 rounded-lg border border-gold/30 bg-gold/5 p-3">
+            <Link to={sv ? '/sv/de-laudibus' : '/en/de-laudibus'}
+              className="inline-flex items-center gap-2 text-sm font-medium text-gold hover:underline">
+              📖 {sv ? 'Bläddra hela manuskriptet: De laudibus de sancta cruce' : 'Browse the full manuscript: De laudibus de sancta cruce'} →
+            </Link>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {sv ? 'Hrabanus Maurus carmina figurata (814) — 94 blad, blad för blad.' : 'Hrabanus Maurus’ carmina figurata (814) — 94 leaves, page by page.'}
+            </p>
+          </div>
+        )}
+
         {/* Plats-facetter — landskap, stad (kommun) och socken. Runstensbilder bär dessa (via
             inscription.province/municipality/socken); övriga kategorier plats-taggas ännu ej.
             Källkritik: inget läge gissas — saknas det, ingen etikett. Stad/socken beror på valt
