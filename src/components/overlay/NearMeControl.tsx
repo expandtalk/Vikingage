@@ -141,7 +141,12 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   const [remember, setRemember] = useState(true);
   // Minimera-läge: fäll ihop panelen till bara rubrikraden (behåll position/träffar) — Daniel
   // ville kunna få undan Near me på desktop utan att stänga och tappa sin lokalisering.
-  const [minimized, setMinimized] = useState(() => { try { return localStorage.getItem('vikingage_nearme_min_v1') === '1'; } catch { return false; } });
+  // Near me är främst till nytta på MOBIL. Sparad preferens vinner; annars: condensed på desktop,
+  // expanderad på mobil (Daniel). window.innerWidth synkront → ingen flimmer/hydrerings-glapp.
+  const [minimized, setMinimized] = useState(() => {
+    try { const v = localStorage.getItem('vikingage_nearme_min_v1'); if (v === '1') return true; if (v === '0') return false; } catch { /* privat läge */ }
+    try { return typeof window !== 'undefined' && window.innerWidth >= 768; } catch { return false; }
+  });
   useEffect(() => { try { localStorage.setItem('vikingage_nearme_min_v1', minimized ? '1' : '0'); } catch { /* privat läge */ } }, [minimized]);
   // Roadtrip (bil-läge): skriv ett mål → geokoda → rita bilrutt. Store ⇄ useMapRoadtrip.
   const { dest, route, status: rtStatus, error: rtError } = useRoadtrip();
