@@ -326,7 +326,9 @@ const KnowledgePanel: React.FC<{ hit: Hit; thumb?: string; onGo: (route: string)
 
   return (
     <div className="text-left">
-      {thumb ? (
+      {/* Utan bild: INGEN stor platshållar-ruta (den "tryckte bara ned innehållet och tog onödig
+          plats", Daniel) — panelen går direkt till typ-etikett + titel; ikonen finns ändå i headern. */}
+      {thumb && (
         <img
           src={thumb}
           alt={title}
@@ -334,10 +336,6 @@ const KnowledgePanel: React.FC<{ hit: Hit; thumb?: string; onGo: (route: string)
           className="h-44 w-full object-cover"
           onError={(e) => { e.currentTarget.style.display = 'none'; }}
         />
-      ) : (
-        <div className="flex h-28 w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
-          <Icon className="h-10 w-10 text-slate-600" />
-        </div>
       )}
       <div className="px-4 py-3">
         <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
