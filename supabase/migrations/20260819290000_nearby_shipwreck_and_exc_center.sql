@@ -1,0 +1,8 @@
+-- Applicerat via scripts (pg_get_functiondef + string-replace, repo-konvention). Dokumentation:
+-- 1) nearby_features: shipwreck-gren tillagd i src-UNION (båtläget visade inga vrak — 2902 vrak fanns
+--    bara i shipwrecks, ej i nearby_features). Nu: SELECT 'shipwreck', s.id, name, ST_Y/ST_X(geom)…
+--    FROM shipwrecks WHERE geom IS NOT NULL.
+-- 2) entity_answer_context: ctr-center följer nu en NAMNEXAKT utflykt (inline-subquery mot excursions,
+--    coordinates[1]/[0]) före ins-medelvärdet — så center hamnar på den kurerade platsen. OBS: hjälper
+--    bara när utflyktens NAMN = sökordet exakt; homonym-notabilitet (t.ex. "Årsta" → Stockholm vs
+--    Uppland-socken vs Närke) kräver separat notabilitets-tiebreak i resolve_place/ins (TODO).

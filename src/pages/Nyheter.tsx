@@ -50,7 +50,7 @@ const Nyheter: React.FC<{ forceLang?: 'sv' | 'en' }> = ({ forceLang }) => {
         keywords="senaste forskning, arkeologi, aDNA, vikingatid, runor, open access, nyheter" />
       <Header />
       <Breadcrumbs />
-      <main className="container mx-auto max-w-4xl px-4 py-8">
+      <main className="container mx-auto max-w-6xl px-4 py-8">
         <h1 className="mb-2 flex items-center gap-3 text-4xl font-bold text-foreground">
           <Newspaper className="h-8 w-8 text-emerald-400" />{sv ? 'Senaste forskningen' : 'Latest research'}
         </h1>
@@ -77,7 +77,7 @@ const Nyheter: React.FC<{ forceLang?: 'sv' | 'en' }> = ({ forceLang }) => {
         {isLoading ? (
           <p className="text-muted-foreground">{sv ? 'Laddar…' : 'Loading…'}</p>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map((a) => (
               <a key={a.doi || a.title} href={a.url} target="_blank" rel="noopener noreferrer"
                 className="group flex flex-col rounded-lg border border-border bg-card/40 p-3 hover:border-emerald-500/50 hover:bg-card/70">

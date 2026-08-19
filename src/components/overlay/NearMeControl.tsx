@@ -83,7 +83,7 @@ const TRAVEL_MODES: TravelMode[] = [
   // Gå: upp till ~5 km (~5000 steg). Cykla: 500 m – 5 mil (50 km). Kör: 100 m – 500 km (log-lika steg).
   // Båt: 500 m – 30 km (3 mil — man åker sällan längre; Daniel). "Vad finns här"-sonden (meter) är
   // golvet under detta. Stegen snäpper via stops[].
-  { key: 'foot', label: 'Gå',    min: 0.1, def: 0.5, max: 5,   step: 0.1, stops: [0.1, 0.25, 0.5, 1, 2, 3, 5] },
+  { key: 'foot', label: 'Gå',    min: 0.1, def: 2,   max: 5,   step: 0.1, stops: [0.1, 0.25, 0.5, 1, 2, 3, 5] },
   { key: 'bike', label: 'Cykla', min: 0.5, def: 3,   max: 50,  step: 0.5, stops: [0.5, 1, 2, 5, 10, 20, 30, 50] },
   { key: 'car',  label: 'Kör',   min: 0.1, def: 5,   max: 500, step: 0.1, stops: [0.1, 0.5, 1, 5, 10, 25, 50, 100, 200, 300, 500] },
   { key: 'boat', label: 'Båt',   min: 0.5, def: 5,   max: 30,  step: 0.5, stops: [0.5, 1, 2, 5, 10, 15, 20, 30] },
@@ -225,7 +225,12 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
   // "besök Sandby borg", "se Kalmar". Fast 40 km-radie (region matchar på innehållande bbox).
   const { data: nearbyPages = [] } = useNearbyPages(open ? pos?.lat : null, open ? pos?.lng : null, 40);
   // Filtrera på intresseprofilen (dölj typer vars lager är avslaget).
-  const showByInterest = (t: string) => { const k = LAYER_FOR[t]; return k == null ? true : enabledLayers?.[k] !== false; };
+  // I BÅTLÄGE: alla marina lager alltid på (Daniel) — vrak/noder/farled/överfart visas oavsett legend.
+  const MARINE = new Set(['shipwreck', 'maritime_node', 'fairway', 'crossing_point', 'harbor', 'harbour']);
+  const showByInterest = (t: string) => {
+    if (mode === 'boat' && MARINE.has(t)) return true;
+    const k = LAYER_FOR[t]; return k == null ? true : enabledLayers?.[k] !== false;
+  };
   const rows = [...(data ?? []), ...(exp ?? [])].filter((f: any) => showByInterest(f.feature_type))
     .sort((a, b) => a.distance_km - b.distance_km) as NearMeFeature[];
   // "Mest sevärt nära dig" — topp ur rank-RPC:n. Bil-läget leder med fler (översikten).
