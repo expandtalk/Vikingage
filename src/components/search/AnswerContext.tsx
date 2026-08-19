@@ -301,7 +301,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     queryKey: ['answer-lit', query],
     enabled: query.trim().length >= 3,
     staleTime: 30 * 60 * 1000,
-    queryFn: async (): Promise<{ title: string; authors: string; journal: string; doi: string; url: string; is_oa: boolean; publication_date: string; discipline: string }[]> => {
+    queryFn: async (): Promise<{ title: string; title_sv: string | null; authors: string; journal: string; doi: string; url: string; is_oa: boolean; publication_date: string; discipline: string }[]> => {
       const { data } = await (supabase as any).rpc('lit_for_query', { p_q: query.trim(), p_limit: 6 });
       return (data ?? []) as any[];
     },
@@ -1413,10 +1413,11 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 <li key={a.doi || a.title}>
                   <a href={a.url} target="_blank" rel="noopener noreferrer"
                     className="block rounded-lg border border-slate-700/70 bg-slate-800/40 px-3 py-2 hover:border-emerald-500/60 hover:bg-slate-800/70">
-                    <span className="text-sm font-medium text-white leading-snug line-clamp-2">{a.title}</span>
+                    <span className="text-sm font-medium text-white leading-snug line-clamp-2">{sv && a.title_sv ? a.title_sv : a.title}</span>
                     <span className="mt-0.5 block text-xs text-slate-400">
                       {[a.journal, a.publication_date?.slice(0, 4)].filter(Boolean).join(' · ')}
                       {a.is_oa && <span className="ml-1 text-emerald-400">· open access</span>}
+                      {sv && a.title_sv && <span className="ml-1 text-sky-400">· AI-översatt</span>}
                     </span>
                   </a>
                 </li>

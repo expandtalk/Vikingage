@@ -178,6 +178,9 @@ const GROUP_CAP: Record<string, number> = { fortress: 16, parish: 12, inscriptio
 const SUBLABEL_MAP: Record<string, string> = {
   osm_hamlet: 'ort', osm_city: 'stad', osm_town: 'ort', osm_village: 'by', osm_suburb: 'stadsdel',
   osm_locality: 'plats', osm_isolated_dwelling: 'gård', other: '', okänd: '', okänt: '', unknown: '', 'övrig': '', 'övrigt': '',
+  // Lantmäteriets ortnamns-typkoder → läsbara ord (annars läcker "BEBTX" m.fl. till subtiteln).
+  bebtx: 'bebyggelse', bebtättx: 'tätort', trakttx: 'trakt', kulturtx: 'kulturlämning', terrtx: 'terräng',
+  vatttx: 'vatten', vattdrtx: 'vattendrag', vattdeltx: 'vattenområde', sanktx: 'våtmark', anltx: 'anläggning', kyrkatx: 'kyrka',
 };
 const humanSub = (title: string, sub?: string | null): string | null => {
   if (!sub) return null;
@@ -753,7 +756,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                       onClick={() => { logSearchClick(query, s.entity_type, s.entity_id); go(route); }}
                       className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-amber-500/10">
                       <span className="truncate text-slate-100">{s.signum && s.signum !== s.label ? `${s.signum} · ${s.label}` : s.label}</span>
-                      {s.sublabel && <span className="ml-auto shrink-0 truncate text-[11px] text-slate-400">{s.sublabel}</span>}
+                      {humanSub(s.label, s.sublabel) && <span className="ml-auto shrink-0 truncate text-[11px] text-slate-400">{humanSub(s.label, s.sublabel)}</span>}
                     </button>
                   );
                 })}

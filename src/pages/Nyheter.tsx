@@ -12,7 +12,7 @@ import { Newspaper, ExternalLink } from 'lucide-react';
 // (OpenAlex/Crossref/Europe PMC), relevans-triagerade. Utlänk till DOI, OA-märkta. TIPS, ej granskade
 // av oss / ej kanon — färsk forskning man kan följa och vi kan välja att skriva om.
 
-interface Lit { title: string; authors: string; journal: string; doi: string; url: string; is_oa: boolean; publication_date: string; discipline: string; abstract: string; source: string }
+interface Lit { title: string; title_sv: string | null; authors: string; journal: string; doi: string; url: string; is_oa: boolean; publication_date: string; discipline: string; abstract: string; abstract_sv: string | null; source: string }
 
 const DISC_SV: Record<string, string> = {
   arkeolog: 'Arkeologi', arkeogenetiker: 'aDNA & arkeogenetik', arkeometri: 'Arkeometri',
@@ -78,11 +78,16 @@ const Nyheter: React.FC<{ forceLang?: 'sv' | 'en' }> = ({ forceLang }) => {
           <p className="text-muted-foreground">{sv ? 'Laddar…' : 'Loading…'}</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {shown.map((a) => (
+            {shown.map((a) => {
+              // Svenska visas BARA när det finns (= OA-poster vi fått översätta); annars engelska huvudspåret.
+              const showSv = sv && !!a.title_sv;
+              const title = showSv ? a.title_sv : a.title;
+              const abstract = showSv && a.abstract_sv ? a.abstract_sv : a.abstract;
+              return (
               <a key={a.doi || a.title} href={a.url} target="_blank" rel="noopener noreferrer"
                 className="group flex flex-col rounded-lg border border-border bg-card/40 p-3 hover:border-emerald-500/50 hover:bg-card/70">
                 <span className="flex items-start justify-between gap-2">
-                  <span className="text-sm font-semibold leading-snug text-foreground">{a.title}</span>
+                  <span className="text-sm font-semibold leading-snug text-foreground">{title}</span>
                   <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground group-hover:text-emerald-400" />
                 </span>
                 {a.authors && <span className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{a.authors}</span>}
@@ -91,10 +96,12 @@ const Nyheter: React.FC<{ forceLang?: 'sv' | 'en' }> = ({ forceLang }) => {
                   {a.publication_date && <span className="tabular-nums">{a.publication_date.slice(0, 10)}</span>}
                   {a.is_oa && <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 font-medium text-emerald-300">Open access</span>}
                   {a.discipline && <span className="rounded bg-white/5 px-1.5 py-0.5">{(sv ? DISC_SV[a.discipline] : null) ?? a.discipline}</span>}
+                  {showSv && <span className="rounded bg-sky-500/15 px-1.5 py-0.5 text-sky-300" title="Maskinöversatt från engelska">AI-översatt</span>}
                 </span>
-                {a.abstract && <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground/85 line-clamp-3">{a.abstract}</p>}
+                {abstract && <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground/85 line-clamp-3">{abstract}</p>}
               </a>
-            ))}
+              );
+            })}
           </div>
         )}
         <p className="mt-6 text-[11px] text-muted-foreground/70">
