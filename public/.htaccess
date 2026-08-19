@@ -22,6 +22,14 @@ RewriteRule ^ index.html [QSA,L]
 
 # Hashade assets (index-ABC123.js) får cachas hårt — filnamnet ändras vid ny build
 <IfModule mod_headers.c>
+  # Säkerhets-headers (Screaming Frog: saknade X-Frame-Options/CSP m.fl.). Headers loopar aldrig.
+  # geolocation=(self) MÅSTE tillåtas — fältläge/svampkarta använder GPS. img-src/connect-src hålls
+  # tillåtande så kartlager (OSM/Esri/OpenTopo), Wikimedia-bilder, Supabase, SMHI och CortIQ funkar.
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=()"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cortiq.se; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
   <FilesMatch "\.(js|css|woff2?|png|jpg|jpeg|gif|svg|ico)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>

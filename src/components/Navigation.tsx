@@ -35,6 +35,8 @@ import {
   Mountain,
   Wrench,
   Ship,
+  Images,
+  Newspaper,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -216,6 +218,18 @@ const EXTRA_LINKS: NavLink[] = [
     labelSv: '3D-modeller', labelEn: '3D models',
     descSv: 'Föremål ur forntiden i 3D.', descEn: 'Ancient objects in 3D.',
     icon: Boxes, category: 'places',
+  },
+  {
+    pathEn: '/en/image-archive', pathSv: '/sv/bildarkiv',
+    labelSv: 'Bildarkiv', labelEn: 'Image archive',
+    descSv: 'Bilder per landskap och kategori.', descEn: 'Images by province and category.',
+    icon: Images, category: 'inscriptions',
+  },
+  {
+    pathEn: '/en/news', pathSv: '/sv/nyheter',
+    labelSv: 'Senaste forskningen', labelEn: 'Latest research',
+    descSv: 'Färska artiklar om nordisk arkeologi, aDNA och runor.', descEn: 'Fresh Nordic archaeology, aDNA & rune research.',
+    icon: Newspaper, category: 'science',
   },
   {
     pathEn: '/en/place', pathSv: '/sv/plats',
