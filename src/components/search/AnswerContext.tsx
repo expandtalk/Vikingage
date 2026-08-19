@@ -12,6 +12,7 @@ import { SearchFallback } from './SearchFallback';
 import { LandscapeNode, type LandscapeOverview } from './LandscapeNode';
 import { CharterAnswerSection } from './CharterAnswerSection';
 import { FaqAnswer } from './FaqAnswer';
+import { EXCURSIONS } from '@/data/excursions';
 
 // De 25 svenska landskapen (etablerade, ej gissade) → routas till HELA-landskaps-vyn i stället för
 // den radie-justerbara ort-vyn. Gemener + trim jämförs. Gotland är både landskap OCH kommun → hit.
@@ -329,6 +330,29 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     queryFn: async (): Promise<{ image_url: string; thumb_url: string | null; title: string | null; credit: string | null; license_code: string | null; source_institution: string | null; category: string }[]> => {
       const { data } = await (supabase as any).rpc('images_for_query', { p_q: query.trim(), p_limit: 12 });
       return (data ?? []) as any[];
+    },
+  });
+
+  // UTFLYKTSFOTON: Daniels EGNA foton ligger som statiska filer på webbhotellet under
+  // /excursion-photos/<photoDir>/ (listade i manifest.json) och visas på utflyktssidan — men lästes
+  // ALDRIG in i söksvaret, så en sökning på "Mora stenar" såg bildlös ut trots 8 foton (Daniel).
+  // Matcha frågan mot en utflykt (exakt namn/slug) och dra in dess foton. Egen licens → ingen badge.
+  const { data: excursionPhotos = [] } = useQuery({
+    queryKey: ['answer-excursion-photos', query],
+    enabled: query.trim().length >= 3,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<GalleryImage[]> => {
+      const ql = query.trim().toLowerCase();
+      const ex = EXCURSIONS.find((e) => e.name.trim().toLowerCase() === ql || e.id.toLowerCase() === ql.replace(/\s+/g, ''));
+      if (!ex?.photoDir) return [];
+      try {
+        const r = await fetch('/excursion-photos/manifest.json');
+        if (!r.ok) return [];
+        const manifest = (await r.json()) as Record<string, string[]>;
+        const files = (manifest[ex.photoDir] ?? []).filter((f) => !/^thumb\./i.test(f));
+        // desc=null → dedupas per URL (unika), så alla foton visas (annars kollapsar samma bildtext).
+        return files.map((f) => ({ url: `/excursion-photos/${ex.photoDir}/${f}`, desc: null, type: 'foto' as const }));
+      } catch { return []; }
     },
   });
 
@@ -1477,7 +1501,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           ...landmarkImages.map((lm) => lm.image_url),
           ...(heroPainting ? [heroPainting.image_url] : []),
         ]);
-        const galleryImages = (data.images ?? []).filter((im: any) => !topShown.has(im.url));
+        // Utflyktsfoton (Daniels egna) FÖRST → de blir hero + toppkort för platsen.
+        const galleryImages = [...excursionPhotos, ...(data.images ?? [])].filter((im: any) => !topShown.has(im.url));
         if (galleryImages.length === 0 && ((data.missing?.length ?? 0) === 0)) return null;
         return (
           <TieredGallery images={galleryImages} missing={data.missing ?? []} sv={sv}

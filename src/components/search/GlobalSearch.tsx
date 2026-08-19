@@ -691,9 +691,13 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   useEffect(() => {
     if (!heroActive || theme) return;
     const q = query.trim();
-    // Auto-fyra BARA för frågelika sökningar (flerord eller frågetecken) — breda enordslookups
-    // ("runestone", "Birka") ska INTE trigga en RAG-runda (kostar latens); klicka "Fråga AI" då.
-    const looksLikeQuestion = q.includes(' ') || q.endsWith('?');
+    // Auto-fyra BARA för ÄKTA frågor — inte varje flerords-lookup. "mora stenar", "gustav vasa",
+    // "birka handel" är ENTITETSSÖK och har redan ett kurerat svar i svarspanelen (AnswerContext);
+    // en RAG-summa ovanpå blir en dubblett (Daniel: "AI-svar på engelska låg över hela området,
+    // och en till på svenska där texten ska ligga"). Kräv frågetecken ELLER inledande frågeord.
+    const ql = q.toLowerCase();
+    const QWORD = /^(vad|var|vem|när|nar|hur|varför|varfor|vilk\w*|finns|kan man|hur många|hur manga|berätta|beratta|what|where|who|when|why|how|which|is there|are there|tell me)\b/;
+    const looksLikeQuestion = q.endsWith('?') || QWORD.test(ql);
     if (q.length < 6 || !looksLikeQuestion || q === lastAskedRef.current) return;
     const id = setTimeout(() => { lastAskedRef.current = q; askAI(); }, 900);
     return () => clearTimeout(id);
