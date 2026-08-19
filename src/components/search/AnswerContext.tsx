@@ -866,6 +866,34 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       )}
       {showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}
       {!data.page && !showLandscape && !heroPainting && nodeBlock}
+      {/* NORMALISERAD INGRESS — populärvetenskaplig beskrivning ur den källa entiteten HAR (content-
+          page-teaser / utflykt / inskrifts-översättning) så inget svar blir "tomt" (Daniel). Dedikerad
+          sida länkas som "läs hela sidan". */}
+      {(() => {
+        const p: any = (data as any).page;
+        const intro: string | null = (p && (sv ? p.teaser : (p.teaser_en || p.teaser)))
+          || (data as any).lead || null;
+        const moreUrl: string | null = p?.url || (data as any).leadUrl || null;
+        const moreTitle: string = p?.title || heroTitle;
+        if (!intro) return null;
+        return (
+          <section className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4 text-left">
+            <p className="text-[15px] leading-relaxed text-slate-200">{intro}</p>
+            {moreUrl && (() => {
+              const isInscr = moreUrl.startsWith('/inscription/');
+              const label = isInscr
+                ? (sv ? 'Läs hela inskriften i runregistret' : 'Read the full inscription in the rune register')
+                : (sv ? `Läs hela sidan om ${moreTitle}` : `Read the full page on ${moreTitle}`);
+              return (
+                <button type="button" onClick={() => onGo(encodeURI(moreUrl))}
+                  className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-gold hover:text-amber-200">
+                  {label}<ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              );
+            })()}
+          </section>
+        );
+      })()}
       {faq && <FaqAnswer faq={faq} sv={sv} onQuery={(qq) => onQuery?.(qq)} />}
       {/* LANDMÄRKEN — byggnads-/monumentbilder högt upp (mest platsrelevanta bilden, Daniel). */}
       {landmarkImages.length > 0 && (
