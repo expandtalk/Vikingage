@@ -14,6 +14,7 @@ import { CharterAnswerSection } from './CharterAnswerSection';
 import { FaqAnswer } from './FaqAnswer';
 import { EXCURSIONS } from '@/data/excursions';
 import { GENERAL_IMAGES, GENERAL_IMAGE_DIR } from '@/data/generalImages';
+import { matchElements, getElement, type PlaceNameElement } from '@/utils/placeNameElements';
 
 // De 25 svenska landskapen (etablerade, ej gissade) → routas till HELA-landskaps-vyn i stället för
 // den radie-justerbara ort-vyn. Gemener + trim jämförs. Gotland är både landskap OCH kommun → hit.
@@ -179,6 +180,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const { data, isLoading } = useAnswerContext(query);
   const { language } = useLanguage();
   const sv = language === 'sv';
+  // SNABBFAKTA (tier 0): namnled härleds DIREKT ur namnet (ingen DB-runda) → syns omedelbart medan
+  // kartan/bilderna/AI-svaret laddar. Tolkning, ej fastställt (etymology = "bästa gissning").
+  const nameElements = useMemo<PlaceNameElement[]>(
+    () => matchElements(query).map((k) => getElement(k)).filter(Boolean) as PlaceNameElement[],
+    [query],
+  );
   const placesLayerRef = useRef<L.LayerGroup | null>(null); // alla platser som matchar sökningen (multi-plats)
 
   // Multi-plats: alla ortnamn som matchar frågan (exakt + prefix) med koordinat → plottas ALLA på
@@ -875,13 +882,36 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   // på giltiga frågor (t.ex. "röksten") medan huvudsöket eller något berikningslager fortfarande
   // laddade. Medan något fortfarande laddar OCH vi inte har något ännu → lätt laddningsläge,
   // ALDRIG fallbacken. (Frågor MED träff renderas direkt nedan — de väntar inte på berikningen.)
+  // SNABBFAKTA-strip (tier 0) — visas BÅDE under laddning och i det färdiga svaret, så namnets
+  // betydelse syns omedelbart medan resten strömmar in. Härledd ur namnet, ingen DB-runda.
+  const snabbfakta = nameElements.length > 0 ? (
+    <div className="border-b border-slate-800 bg-slate-900/60 px-5 py-3">
+      <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+        <BookOpen className="h-3.5 w-3.5" /> {sv ? 'Namnets betydelse' : 'What the name means'}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {nameElements.map((el) => (
+          <span key={el.key} className="rounded-md border border-slate-700 bg-slate-800/50 px-2 py-1 text-xs text-slate-200">
+            <span className="font-semibold text-amber-100">-{el.label}</span>
+            {el.etymology && <span className="text-slate-400"> · {el.etymology}</span>}
+            {el.contested && <span className="ml-1 text-amber-400/80">({sv ? 'omtvistat' : 'contested'})</span>}
+          </span>
+        ))}
+      </div>
+      <p className="mt-1.5 text-[10px] text-slate-500">{sv ? 'Tolkning av namnled — inte ett fastställt påstående.' : 'Interpretation of name elements — not an established claim.'}</p>
+    </div>
+  ) : null;
+
   const answerLoading = isLoading || overviewLoading || faqLoading || attLoading
     || chartersLoading || theophoricLoading || fornvannenLoading || paintingsLoading;
   if (query.trim().length >= 2 && coreEmpty && !somethingMatched && (answerLoading || data === undefined)) {
     return (
-      <div className="flex items-center justify-center gap-2 px-5 py-14 text-sm text-slate-400">
-        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-600 border-t-amber-400" />
-        {sv ? 'Söker…' : 'Searching…'}
+      <div>
+        {snabbfakta}
+        <div className="flex items-center justify-center gap-2 px-5 py-14 text-sm text-slate-400">
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-600 border-t-amber-400" />
+          {sv ? 'Söker…' : 'Searching…'}
+        </div>
       </div>
     );
   }
@@ -918,6 +948,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
   return (
     <div className="border-b border-slate-800 bg-slate-900">
+      {/* SNABBFAKTA (tier 0) — namnled/betydelse, syns omedelbart medan karta/bilder/AI laddar. */}
+      {snabbfakta}
       {/* HERO: full-bleed historiemålning (ramen CSS-beskuren via object-cover + scale). */}
       {heroPainting && (
         <figure className="relative m-0 w-full overflow-hidden">
