@@ -566,6 +566,72 @@ const Vetenskapsmetodik = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
         </Link>
       </section>
 
+      {/* Bias & motåtgärder */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+          <Scale className="h-6 w-6 text-gold" />
+          {sv ? 'Bias och motåtgärder' : 'Bias and countermeasures'}
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+          {sv ? (
+            <>En sammanhängande AI-berättelse kan vara helt fel <em>just för att</em> den är sammanhängande.
+            Karl Poppers regel gäller därför även maskinen: lägg mer kraft på att försöka <strong>motbevisa</strong>
+            {' '}ett påstående än på att bekräfta det. Wasons 2-4-6-experiment visade hur lätt vi bara prövar
+            det som stödjer vår hypotes och aldrig det som skulle bryta den. Här är de bias som mest hotar
+            vårt material — och vad systemet gör åt dem.</>
+          ) : (
+            <>A coherent AI narrative can be completely wrong <em>precisely because</em> it is coherent. Karl
+            Popper's rule therefore applies to the machine too: spend more effort trying to <strong>refute</strong>
+            {' '}a claim than to confirm it. Wason's 2-4-6 experiment showed how readily we only test what
+            supports our hypothesis and never what would break it. Here are the biases that most threaten our
+            material — and what the system does about them.</>
+          )}
+        </p>
+        <div className="overflow-x-auto mb-4">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left text-foreground border-b border-border">
+                <th className="py-2 pr-3 font-semibold">{sv ? 'Bias' : 'Bias'}</th>
+                <th className="py-2 pr-3 font-semibold">{sv ? 'Så slår den i vårt material' : 'How it hits our material'}</th>
+                <th className="py-2 font-semibold">{sv ? 'Motåtgärd i systemet' : 'Countermeasure in the system'}</th>
+              </tr>
+            </thead>
+            <tbody className="text-muted-foreground align-top">
+              <tr className="border-b border-border/50">
+                <td className="py-2 pr-3 text-foreground/90">{sv ? 'Överlevnads-/bevaringsbias' : 'Survivorship / preservation bias'}</td>
+                <td className="py-2 pr-3">{sv ? 'Vi ser bara det som bevarats och återfunnits — runstenar återanvända i kyrkor överrepresenteras, medan organiskt, plundrat och vittrat försvinner. Utbredningen på kartan är inte den ursprungliga.' : 'We only see what survived and was recovered — runestones reused in churches are over-represented, while organic, looted and weathered material vanishes. The distribution on the map is not the original one.'}</td>
+                <td className="py-2">{sv ? 'Skilj belagd förekomst från uppskattad utbredning; densitetspåståenden märks med ett bevaringsfilter.' : 'Separate attested occurrence from estimated distribution; density claims are flagged with a preservation filter.'}</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 pr-3 text-foreground/90">{sv ? 'Konfirmeringsbias' : 'Confirmation bias'}</td>
+                <td className="py-2 pr-3">{sv ? 'Man letar bara efter platser som passar mönstret man redan tror på (Wason 2-4-6).' : 'One only looks for places that fit the pattern already believed (Wason 2-4-6).'}</td>
+                <td className="py-2">{sv ? 'Agenten måste redovisa vilken sökning som skulle MOTBEVISA hypotesen — och söka motexempel och en nollhypotes innan ett claim får konfidens.' : 'The agent must state which search would REFUTE the hypothesis — and look for counter-examples and a null hypothesis before a claim gains confidence.'}</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 pr-3 text-foreground/90">{sv ? 'Delat rot-antagande' : 'Shared root assumption'}</td>
+                <td className="py-2 pr-3">{sv ? 'Tre discipliner "bekräftar" varandra fast de ärvt samma äldre antagande — då är det inte tre belägg utan ett, upprepat.' : 'Three disciplines "confirm" each other though they inherited the same older assumption — then it is not three pieces of evidence but one, repeated.'}</td>
+                <td className="py-2">{sv ? 'Oberoendegrad: konvergens räknas bara mellan fristående beviskedjor — vi kallar det oberoende evidenskonvergens, inte disciplinär konvergens.' : 'Independence grade: convergence counts only between free-standing chains of evidence — we call it independent evidence convergence, not disciplinary convergence.'}</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-3 text-foreground/90">{sv ? 'Publikationsbias' : 'Publication bias'}</td>
+                <td className="py-2 pr-3">{sv ? 'Publicerade tolkningar överlever; motbevis och negativa resultat publiceras sällan, så en etablerad tolkning ser starkare ut än den är.' : 'Published interpretations survive; refutations and negative results are rarely published, so an established interpretation looks stronger than it is.'}</td>
+                <td className="py-2">{sv ? 'En etablerad tolkning bär hur många oberoende belägg den vilar på — inte bara att den är etablerad.' : 'An established interpretation carries how many independent attestations it rests on — not merely that it is established.'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg border border-border bg-card/40 p-4 text-sm">
+            <h3 className="font-semibold text-foreground mb-1">{sv ? 'Exempel: negativ evidens (Njord)' : 'Example: negative evidence (Njord)'}</h3>
+            <p className="text-muted-foreground leading-relaxed">{sv ? 'Att inte hitta teofora Njord-spår i Sverige (utom Närtuna) betyder inte att kulten var svag — teofora orter bevaras och identifieras ojämnt. Frånvaro av fynd är negativ evidens med lågt bevisvärde, inte ett motbevis. I claim-liggaren märks påståendet därför som negativ evidens.' : 'Failing to find theophoric Njord traces in Sweden (except Närtuna) does not mean the cult was weak — theophoric places are preserved and identified unevenly. Absence of finds is negative evidence with low weight, not a refutation. In the claim ledger the statement is therefore marked as negative evidence.'}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-card/40 p-4 text-sm">
+            <h3 className="font-semibold text-foreground mb-1">{sv ? 'Exempel: delat rot-antagande (metod)' : 'Example: shared root assumption (method)'}</h3>
+            <p className="text-muted-foreground leading-relaxed">{sv ? 'Om en könsbestämning bara vilar på gravgods (vapen) och sedan upprepas litteratur → populärvetenskap → museinamn, är det ett antagande reproducerat tre gånger — inte tre oberoende belägg. Oberoende linjer vore osteologi, aDNA och gravinventarium bedömda var för sig. (Exemplet illustrerar mönstret att vakta mot; det påstår inget om en enskild grav.)' : 'If a sex determination rests only on grave goods (weapons) and is then repeated literature → popular science → museum name, that is one assumption reproduced three times — not three independent attestations. Independent lines would be osteology, aDNA and grave inventory assessed separately. (The example illustrates the pattern to guard against; it asserts nothing about any single grave.)'}</p>
+          </div>
+        </div>
+      </section>
+
       {/* Icke-destruktiv metod vs. destruktiv extraktion */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">

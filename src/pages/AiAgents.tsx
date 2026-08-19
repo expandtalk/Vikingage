@@ -156,6 +156,15 @@ const HOW_CARDS: { title: string; titleEn: string; body: string; bodyEn: string 
       + 'published research) and given its provenance. If something is unattested it is stated, not guessed.',
   },
   {
+    title: 'Falsifierar, inte bekräftar', titleEn: 'Refutes, not confirms',
+    body: 'en agents uppgift är att försöka MOTBEVISA en hypotes, inte bekräfta den (Popper; Wasons '
+      + '2-4-6). Den redovisar vilken sökning som skulle kullkasta påståendet och letar efter motexempel '
+      + 'och en nollhypotes. Överlever hypotesen blir den starkare.',
+    bodyEn: 'an agent’s job is to try to REFUTE a hypothesis, not confirm it (Popper; Wason’s 2-4-6). It '
+      + 'states which search would overturn the claim and looks for counter-examples and a null hypothesis. '
+      + 'If the hypothesis survives, it is the stronger for it.',
+  },
+  {
     title: 'Föreslår, inte publicerar', titleEn: 'Propose, not publish',
     body: 'agenterna utreder och lämnar förslag (ofta med färdig kod eller koordinater). En människa '
       + 'granskar och applicerar. All ändring är spårbar i migrationer.',
