@@ -124,31 +124,41 @@ Deno.serve(async (req) => {
     const sys = `Du är en källkritisk historiker vid en runologisk forskningsplattform. Svara ENDAST utifrån KÄLLORNA nedan. Citera varje påstående med [n] som pekar på källans nummer. Källor märkta [relaterad: ...] är hämtade via kunskapsgrafen — använd dem för att koppla samman entiteter (ristare, kungar, teman, platser). Hitta ALDRIG på fakta utöver källorna. Räcker inte källorna — säg det rakt ut. Redovisa osäkerhet. Svara på ${lang}, koncist (max ~150 ord), i löpande text med [n]-citat.`;
     const prompt = `FRÅGA: ${query}\n\n=== KÄLLOR ===\n${ctx}\n=== SLUT KÄLLOR ===\n\nSkriv ett källfört svar med [n]-citat.`;
 
-    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://vikingage.se',
-        'X-Title': 'Viking Age Search',
-      },
-      body: JSON.stringify({
-        // Modell: env SEARCH_ANSWER_MODEL, annars Kimi K3 (stark; ~samma pris som Sonnet).
-        model: Deno.env.get('SEARCH_ANSWER_MODEL') || 'moonshotai/kimi-k3',
-        messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
-        temperature: 0.1, max_tokens: 900,
-      }),
-    });
-    if (!resp.ok) { console.error('OpenRouter', resp.status, await resp.text()); return json({ error: 'AI-tjänsten tillfälligt otillgänglig' }, 503); }
-    const result = await resp.json();
-    const answer = result.choices?.[0]?.message?.content;
-    if (!answer) return json({ error: 'Svaret kunde inte tolkas — försök igen' }, 502);
+    // Primär modell: SEARCH_ANSWER_MODEL (default Kimi K3). Fallback: SEARCH_ANSWER_MODEL2 (t.ex.
+    // qwen/qwen3.8-max) används om den primära fallerar/timeoutar — robusthet utan att byta helt.
+    const PRIMARY = Deno.env.get('SEARCH_ANSWER_MODEL') || 'moonshotai/kimi-k3';
+    const FALLBACK = Deno.env.get('SEARCH_ANSWER_MODEL2') || '';
+    const callModel = async (model: string): Promise<string | null> => {
+      try {
+        const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://vikingage.se',
+            'X-Title': 'Viking Age Search',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
+            temperature: 0.1, max_tokens: 900,
+          }),
+        });
+        if (!r.ok) { console.error('OpenRouter', model, r.status, await r.text()); return null; }
+        const j = await r.json();
+        return j.choices?.[0]?.message?.content || null;
+      } catch (err) { console.error('OpenRouter fetch-fel', model, String(err)); return null; }
+    };
+    let usedModel = PRIMARY;
+    let answer = await callModel(PRIMARY);
+    if (!answer && FALLBACK && FALLBACK !== PRIMARY) { usedModel = FALLBACK; answer = await callModel(FALLBACK); }
+    if (!answer) return json({ error: 'AI-tjänsten tillfälligt otillgänglig' }, 503);
 
     // Spara i cachen så framtida identiska frågor blir gratis + direkta (best-effort).
     try {
       await supabase.from('qa_cache').upsert(
         { question_norm: qnorm, language, answer, sources,
-          model: Deno.env.get('SEARCH_ANSWER_MODEL') || 'moonshotai/kimi-k3', updated_at: new Date().toISOString() },
+          model: usedModel, updated_at: new Date().toISOString() },
         { onConflict: 'question_norm,language' });
     } catch { /* cache-skrivning best-effort */ }
 
