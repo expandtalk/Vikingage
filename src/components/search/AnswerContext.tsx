@@ -252,6 +252,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const hasCenter = !!(data?.center && data.center.lat != null && data.center.lng != null);
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const boundaryLayerRef = useRef<L.LayerGroup | null>(null); // kommun-/socken-gränser (overlay)
+  const [showBoundaries, setShowBoundaries] = useState(false); // gränser av som default (av-röjer kartan)
   const layerRef = useRef<L.LayerGroup | null>(null);      // runstenar
   const siteLayerRef = useRef<L.LayerGroup | null>(null);  // sevärda platser (eget lager)
   const churchLayerRef = useRef<L.LayerGroup | null>(null); // kyrkor
@@ -802,6 +804,31 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     placesLayerRef.current = null;
   }, []);
 
+  // KART-GRÄNSER: kommun-/socken-linjer nära center (boundaries_near) som overlay, togglas i legenden.
+  const { data: boundaries } = useQuery({
+    queryKey: ['answer-boundaries', data?.center?.lat, data?.center?.lng],
+    enabled: !!(showBoundaries && data?.center && data.center.lat != null && data.center.lng != null),
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ level: string; name: string; geojson: string }[]> => {
+      const { data: rows } = await (supabase as any).rpc('boundaries_near', { p_lat: data!.center!.lat, p_lng: data!.center!.lng, p_radius_m: 15000 });
+      return (rows ?? []) as any[];
+    },
+  });
+  useEffect(() => {
+    const m = mapRef.current; if (!m) return;
+    if (!boundaryLayerRef.current) boundaryLayerRef.current = L.layerGroup();
+    const bl = boundaryLayerRef.current; bl.clearLayers();
+    if (showBoundaries && boundaries?.length) {
+      for (const b of boundaries) {
+        let gj: any; try { gj = JSON.parse(b.geojson); } catch { continue; }
+        const komm = b.level === 'kommun';
+        L.geoJSON(gj, { style: { color: komm ? '#f59e0b' : '#38bdf8', weight: komm ? 2 : 1, opacity: komm ? 0.85 : 0.55, dashArray: komm ? undefined : '4,4', fill: false } as any })
+          .bindTooltip(`${b.name}${komm ? ' (kommun)' : ' (socken)'}`, { sticky: true }).addTo(bl);
+      }
+      bl.addTo(m);
+    } else { try { m.removeLayer(bl); } catch { /* noop */ } }
+  }, [boundaries, showBoundaries]);
+
   // Kurerad "relaterat/se även" (t.ex. Göteborg → Nya Lödöse/Kungahälla/Älvsborgs lösen) — FAKTA i vår
   // formulering, chips söker vidare in-skope. Visas i både fallback- och huvudsvaret.
   const { data: related } = useQuery({
@@ -1335,6 +1362,13 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 <button onClick={() => setShowCrossings((v) => !v)} aria-pressed={showCrossings} className="flex w-full items-center gap-2 py-1.5 text-left text-xs">
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showCrossings ? '#2dd4bf' : 'transparent', border: '1.5px solid #2dd4bf' }} />
                   <span className={showCrossings ? 'text-slate-100' : 'text-slate-400'}>{sv ? 'Sjösidan · överfart/grund' : 'Sea side · crossings/shoals'} · {(data as any).crossings.length}</span>
+                </button>
+              )}
+              {/* Kommun-/socken-gränser (av som default) — kräver center. */}
+              {mapHasCenter && (
+                <button onClick={() => setShowBoundaries((v) => !v)} aria-pressed={showBoundaries} className="flex w-full items-center gap-2 py-1.5 text-left text-xs">
+                  <span className="h-2.5 w-2.5 shrink-0" style={{ borderLeft: '2px solid #f59e0b', borderTop: showBoundaries ? '1.5px dashed #38bdf8' : '1.5px dashed transparent' }} />
+                  <span className={showBoundaries ? 'text-slate-100' : 'text-slate-400'}>{sv ? 'Gränser · kommun & socken' : 'Boundaries · municipality & parish'}</span>
                 </button>
               )}
             </div>

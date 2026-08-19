@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Search, Loader2, CornerDownLeft, BookOpen, Hammer, MapPin, Church,
   Castle, Crown, Users2, Coins as CoinsIcon, Users, Sparkles, X, Cross, Skull,
@@ -119,7 +119,7 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   folk_group:     { labelSv: 'Folkgrupper', labelEn: 'Peoples', icon: Users2, route: () => '/explore?focus=folkGroups' },
   city:           { labelSv: 'Städer', labelEn: 'Cities', icon: Castle, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   king:           { labelSv: 'Kungar', labelEn: 'Kings', icon: Crown, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
-  person:         { labelSv: 'Personer', labelEn: 'People', icon: Users, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  person:         { labelSv: 'Personer', labelEn: 'People', icon: Users, route: (h) => `/?q=${enc(h.label)}` },
   dynasty:        { labelSv: 'Släkter', labelEn: 'Dynasties', icon: Users2, route: () => '/royal-chronicles' },
   coin:           { labelSv: 'Mynt', labelEn: 'Coins', icon: CoinsIcon, route: () => '/coins' },
   god:            { labelSv: 'Gudar', labelEn: 'Gods', icon: Sparkles, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
@@ -462,6 +462,7 @@ const SUGGESTIONS_EN = ['runestone', 'Rök stone', 'guld', 'Öland', 'Birka', 'O
 // (ingen modal — man skriver direkt i rutan). Samma sök-logik för båda.
 export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?: (active: boolean) => void }> = ({ variant = 'icon', onActiveChange }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { language } = useLanguage();
   const sv = language === 'sv';
   const [open, setOpen] = useState(false);
@@ -509,10 +510,10 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   useEffect(() => {
     if (variant !== 'hero') return;
     try {
-      const urlQ = new URLSearchParams(window.location.search).get('q');
+      const urlQ = new URLSearchParams(location.search).get('q');
       if (urlQ && urlQ.trim().length >= 2) { setTheme(null); setQuery(urlQ.trim()); setHeroActive(true); }
     } catch { /* ignorera trasig query-sträng */ }
-  }, [variant]);
+  }, [variant, location.search]);
 
   // Stäng hero-dropdownen vid klick utanför.
   useEffect(() => {
