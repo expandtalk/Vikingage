@@ -4,7 +4,7 @@ import {
   Search, Loader2, CornerDownLeft, BookOpen, Hammer, MapPin, Church,
   Castle, Crown, Users2, Coins as CoinsIcon, Users, Sparkles, X, Cross, Skull,
   Compass, Swords, Shield, Heart, Ship, PawPrint, Dog, Network, ScrollText,
-  AlertTriangle, ExternalLink, Info,
+  AlertTriangle, ExternalLink, Info, Sprout,
   type LucideIcon,
 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -122,6 +122,7 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   dynasty:        { labelSv: 'Släkter', labelEn: 'Dynasties', icon: Users2, route: () => '/royal-chronicles' },
   coin:           { labelSv: 'Mynt', labelEn: 'Coins', icon: CoinsIcon, route: () => '/coins' },
   god:            { labelSv: 'Gudar', labelEn: 'Gods', icon: Sparkles, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  mushroom:       { labelSv: 'Svampar', labelEn: 'Mushrooms', icon: Sprout, route: () => '/sv/svamp' },
   viking_name:    { labelSv: 'Namn', labelEn: 'Names', icon: Users, route: () => '/explore?focus=names' },
   source:         { labelSv: 'Källor', labelEn: 'Sources', icon: ScrollText, route: (h) => `/sources/${h.entity_id}` },
   source_text:    { labelSv: 'Källtexter', labelEn: 'Source texts', icon: ScrollText, route: (h) => `/sources/text/${h.entity_id}` },
@@ -646,9 +647,10 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   const go = useCallback((route: string) => { setOpen(false); setHeroActive(false); navigate(route); }, [navigate]);
   const total = groups.reduce((n, g) => n + g.rows.length, 0);
 
-  // Tumnaglar: batcha alla synliga inskriftsträffar i EN RPC (search_thumbs).
+  // Tumnaglar: batcha alla synliga inskrifts- OCH svampträffar i EN RPC (search_thumbs).
+  // Svamp visas med bild (även giftsvamp — Daniel: "visa även bilderna på de giftiga").
   const inscriptionIds = useMemo(
-    () => groups.filter((g) => g.type === 'inscription').flatMap((g) => g.rows.map((r) => r.id)),
+    () => groups.filter((g) => g.type === 'inscription' || g.type === 'mushroom').flatMap((g) => g.rows.map((r) => r.id)),
     [groups],
   );
   const { data: thumbs = {} } = useSearchThumbs(inscriptionIds);
@@ -899,8 +901,8 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                 onClick={() => { logSearchClick(query, g.type, row.id); go(row.route); }}
                 className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-amber-500/10"
               >
-                {/* Tumnagel för runinskrifter (övriga typer saknar bild → ingen tom ruta) */}
-                {g.type === 'inscription' && (
+                {/* Tumnagel för runinskrifter + svampar (övriga typer saknar bild → ingen tom ruta) */}
+                {(g.type === 'inscription' || g.type === 'mushroom') && (
                   thumbs[row.id] ? (
                     <img
                       src={thumbs[row.id]}
