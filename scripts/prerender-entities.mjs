@@ -16,6 +16,7 @@ const clip = (s, n = 155) => { const t = String(s ?? '').replace(/\s+/g, ' ').tr
 
 const env = (() => { try { return Object.fromEntries(fs.readFileSync(path.join(__dirname, '../.env'), 'utf8').split('\n').filter(l => l.includes('=')).map(l => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; })); } catch { return {}; } })();
 
+const sitemapUrls = []; // samlas för att KOMPLETTERA sitemap.xml (annars bara 49 statiska routes av 1485)
 const emit = (tpl, { dir, canonical, title, desc, lang = 'sv' }) => {
   // hoppa ogiltiga filvägar: query/fragment-URL:er (/explore?focus=…), Windows-otillåtna tecken.
   if (!dir || dir.includes('..') || /[?#*:<>"|]/.test(dir) || !title) return false;
@@ -36,6 +37,7 @@ const emit = (tpl, { dir, canonical, title, desc, lang = 'sv' }) => {
   const outDir = path.join(distPath, dir);
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'index.html'), html);
+  sitemapUrls.push(canonical);
   return true;
 };
 
@@ -68,6 +70,18 @@ const main = async () => {
     }
   } catch (e) { console.log('prerender-entities: DB-fel — hoppar:', e.message); }
   finally { try { await c.end(); } catch { /* noop */ } }
+  // KOMPLETTERA sitemap.xml med alla prerendrade entitetssidor (crawlbarhet: annars bara 49 av 1485).
+  try {
+    const smPath = path.join(distPath, 'sitemap.xml');
+    if (fs.existsSync(smPath) && sitemapUrls.length) {
+      let sm = fs.readFileSync(smPath, 'utf8');
+      const have = new Set([...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]));
+      const add = sitemapUrls.filter((u) => !have.has(u))
+        .map((u) => `  <url>\n    <loc>${esc(u)}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>`).join('\n');
+      if (add) { sm = sm.replace('</urlset>', add + '\n</urlset>'); fs.writeFileSync(smPath, sm); }
+      console.log(`✅ sitemap.xml kompletterad: +${sitemapUrls.filter((u) => !have.has(u)).length} entitets-URL:er (totalt ${have.size + sitemapUrls.filter((u) => !have.has(u)).length}).`);
+    }
+  } catch (e) { console.log('sitemap-komplettering hoppad:', e.message); }
   console.log(`✅ Per-entitet-prerender: ${n} entitetssidor (utflykter + content-pages).`);
 };
 main();
