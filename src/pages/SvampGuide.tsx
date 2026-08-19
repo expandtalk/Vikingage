@@ -6,7 +6,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, ShieldAlert, Sprout, Skull, Eye, EyeOff } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Sprout, Skull, ZoomIn } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SvampMap } from '@/components/svamp/SvampMap';
 
@@ -41,24 +41,38 @@ interface Gift {
 // Ett giftsvamps-kort: bilden är DOLD (suddad) tills man klickar — man avslöjar medvetet hur den
 // farliga svampen ser ut (Daniel: "klicka fram de giftiga så man ser hur de ser ut"). Toxin + symtom
 // + skiljande drag alltid synliga (källbelagda).
-const GiftCard: React.FC<{ g: Gift; sv: boolean }> = ({ g, sv }) => {
-  const [shown, setShown] = useState(false);
+// Klick-för-större-bild (lightbox) — delas av ätliga och giftiga korten.
+type Zoom = { url: string; title: string; credit?: string | null; licens?: string | null; kalla?: string | null };
+const SvampLightbox: React.FC<{ z: Zoom | null; onClose: () => void; sv: boolean }> = ({ z, onClose, sv }) => {
+  if (!z) return null;
+  return (
+    <div role="dialog" aria-modal="true" aria-label={z.title} onClick={onClose}
+      className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/85 p-4">
+      <div className="max-w-4xl" onClick={(e) => e.stopPropagation()}>
+        <img src={z.url} alt={z.title} className="mx-auto max-h-[82vh] w-auto rounded-lg object-contain" />
+        <div className="mt-2 flex items-center justify-between gap-3 text-xs text-slate-300">
+          <span className="font-medium text-white">{z.title}{z.credit ? <span className="font-normal text-slate-400"> · {z.credit}{z.licens ? ` · ${z.licens}` : ''}</span> : null}</span>
+          <button type="button" onClick={onClose} className="rounded border border-slate-600 px-2 py-1 hover:border-gold/60">{sv ? 'Stäng' : 'Close'}</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Giftsvamp: bilden visas nu ÖPPET (Daniel: "visa alla svampar även de giftiga") med tydlig GIFTIG-
+// märkning; klick → större bild.
+const GiftCard: React.FC<{ g: Gift; sv: boolean; onZoom: (z: Zoom) => void }> = ({ g, sv, onZoom }) => {
   const deadly = g.allvarlighet >= 4;
   return (
     <article className={`rounded-lg border p-4 ${deadly ? 'border-red-500/60 bg-red-950/30' : 'border-orange-500/40 bg-orange-950/20'}`}>
       <div className="flex items-start gap-4">
         {g.bild_url && (
-          <button type="button" onClick={() => setShown((s) => !s)}
-            aria-label={shown ? (sv ? 'Dölj bild' : 'Hide image') : (sv ? 'Visa bild av giftsvampen' : 'Reveal image')}
-            className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md border border-border">
-            <img src={g.bild_url} alt={shown ? g.svenskt_namn : ''} loading="lazy"
-              className={`h-full w-full object-cover transition ${shown ? '' : 'blur-lg scale-110'}`} />
-            {!shown && (
-              <span className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/45 text-[10px] font-medium text-white">
-                <Eye className="h-4 w-4" />{sv ? 'Visa' : 'Reveal'}
-              </span>
-            )}
-            {shown && <span className="absolute bottom-0 right-0 bg-black/60 p-0.5 text-white"><EyeOff className="h-3 w-3" /></span>}
+          <button type="button" onClick={() => onZoom({ url: g.bild_url!, title: g.svenskt_namn, credit: g.bild_kredit, licens: g.bild_licens, kalla: g.bild_kalla })}
+            aria-label={sv ? 'Visa större bild' : 'View larger image'}
+            className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-md border border-border">
+            <img src={g.bild_url} alt={g.svenskt_namn} loading="lazy" className="h-full w-full object-cover" />
+            <span className={`absolute left-0 top-0 px-1 py-0.5 text-[9px] font-bold text-white ${deadly ? 'bg-red-600' : 'bg-orange-600'}`}>{sv ? 'GIFTIG' : 'TOXIC'}</span>
+            <span className="absolute bottom-0 right-0 bg-black/55 p-0.5 text-white opacity-0 group-hover:opacity-100"><ZoomIn className="h-3 w-3" /></span>
           </button>
         )}
         <div className="min-w-0 flex-1">
@@ -89,7 +103,7 @@ const GiftCard: React.FC<{ g: Gift; sv: boolean }> = ({ g, sv }) => {
   );
 };
 
-const GiftSvampSection: React.FC<{ sv: boolean }> = ({ sv }) => {
+const GiftSvampSection: React.FC<{ sv: boolean; onZoom: (z: Zoom) => void }> = ({ sv, onZoom }) => {
   const { data: gift = [] } = useQuery({
     queryKey: ['svamp-giftsvamp'], staleTime: 10 * 60 * 1000,
     queryFn: async (): Promise<Gift[]> => {
@@ -106,11 +120,11 @@ const GiftSvampSection: React.FC<{ sv: boolean }> = ({ sv }) => {
       </h2>
       <p className="mb-4 text-sm text-muted-foreground">
         {sv
-          ? 'Bilderna är dolda — klicka för att se hur de farligaste förväxlingssvamparna ser ut. Lär dig dem lika väl som matsvamparna.'
-          : 'Images are hidden — click to reveal how the most dangerous look-alikes appear. Learn them as well as the edible ones.'}
+          ? 'De farligaste förväxlingssvamparna — lär dig dem lika väl som matsvamparna. Klicka på en bild för större format.'
+          : 'The most dangerous look-alikes — learn them as well as the edible ones. Click an image to enlarge.'}
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
-        {gift.map((g) => <GiftCard key={g.id} g={g} sv={sv} />)}
+        {gift.map((g) => <GiftCard key={g.id} g={g} sv={sv} onZoom={onZoom} />)}
       </div>
     </section>
   );
@@ -118,6 +132,7 @@ const GiftSvampSection: React.FC<{ sv: boolean }> = ({ sv }) => {
 
 const SvampGuide: React.FC = () => {
   const sv = useLanguage().language === 'sv';
+  const [zoom, setZoom] = useState<Zoom | null>(null);
   const { data: arter = [], isLoading } = useQuery({
     queryKey: ['svamp-artlista'], staleTime: 10 * 60 * 1000,
     queryFn: async (): Promise<Art[]> => {
@@ -165,8 +180,12 @@ const SvampGuide: React.FC = () => {
               <article key={a.id} className="viking-card rounded-lg border border-border bg-card/40 p-4">
                 <div className="flex items-start gap-4">
                   {a.bild_url && (
-                    <img src={a.bild_url} alt={a.svenskt_namn} loading="lazy"
-                      className="h-24 w-24 shrink-0 rounded-md object-cover border border-border" />
+                    <button type="button" aria-label={sv ? 'Visa större bild' : 'View larger image'}
+                      onClick={() => setZoom({ url: a.bild_url!, title: a.svenskt_namn, credit: a.bild_kredit, licens: a.bild_licens, kalla: a.bild_kalla })}
+                      className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-md border border-border">
+                      <img src={a.bild_url} alt={a.svenskt_namn} loading="lazy" className="h-full w-full object-cover" />
+                      <span className="absolute bottom-0 right-0 bg-black/55 p-0.5 text-white opacity-0 group-hover:opacity-100"><ZoomIn className="h-3 w-3" /></span>
+                    </button>
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -204,7 +223,7 @@ const SvampGuide: React.FC = () => {
           </div>
         )}
 
-        <GiftSvampSection sv={sv} />
+        <GiftSvampSection sv={sv} onZoom={setZoom} />
 
         <p className="mt-6 text-[11px] text-muted-foreground/70">
           {sv
@@ -212,6 +231,7 @@ const SvampGuide: React.FC = () => {
             : 'Data: the platform mushroom model. Images: free (Wikimedia CC/PD) where available. This guide does not replace authoritative expertise.'}
         </p>
       </main>
+      <SvampLightbox z={zoom} onClose={() => setZoom(null)} sv={sv} />
       <Footer />
     </div>
   );
