@@ -372,6 +372,13 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       return { total: typeof count === 'number' ? count : rows.length, rows };
     },
   });
+  // KART-CENTER: en gud (t.ex. Njord) saknar platscentrum (entity_answer_context.center = null) men
+  // KAN ha teofora orter (Närtuna). Låt då teoforterna vara kartans center så gudakartan visas ändå
+  // (Daniel: "visa Njord-kartan — bara Närtuna"). Övriga fall använder det upplösta platscentrumet.
+  const theoCenter = ((theophoric?.rows?.length ?? 0) > 0 && Number.isFinite(Number(theophoric!.rows[0].lat)))
+    ? { lat: Number(theophoric!.rows[0].lat), lng: Number(theophoric!.rows[0].lng) } : null;
+  const mapCenter = (data?.center && data.center.lat != null && data.center.lng != null) ? data.center : theoCenter;
+  const mapHasCenter = !!(mapCenter && Number.isFinite(Number(mapCenter.lat)) && Number.isFinite(Number(mapCenter.lng)));
   // Befästningsgeometri (linjer/polygoner) nära svarets center — riktig fort_element- + RAÄ-lämningsgeometri.
   // Källkritik: varje feature bär evidence_class → tolkat/hypotetiskt ritas streckat, bevarat heldraget.
   const { data: forts } = useQuery({
@@ -472,7 +479,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const afterYmax = (v: unknown) => { const n = Number(v); return Number.isFinite(n) && n > ymax; }; // dolt av tidsreglaget
 
   useEffect(() => {
-    if (!hasCenter || !data?.center || !mapEl.current) return;
+    if (!mapHasCenter || !mapCenter || !mapEl.current) return;
     try {
       if (!mapRef.current) {
         // Zoom aktiverat (Daniel: "vill kunna zooma in och ut"): knappar + hjul + dubbelklick.
@@ -664,7 +671,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       if (showAdv) advLayerRef.current.addTo(m); else m.removeLayer(advLayerRef.current);
       // fitBounds bara vid NYTT center (ny fråga) — inte vid tids-scrub (annars zoomar kartan om hela tiden).
       // fitKey inkluderar antal matchande platser → kartan ramar om när multi-plats-lagret laddat.
-      const fitKey = `${data.center.lat},${data.center.lng}|mp${matchingPlaces.length}|th${theophoric?.rows.length ?? 0}`;
+      const fitKey = `${mapCenter.lat},${mapCenter.lng}|mp${matchingPlaces.length}|th${theophoric?.rows.length ?? 0}`;
       if (fitKeyRef.current !== fitKey) {
         // Flera platser med samma namn → rama in dem. Annars: enskild upplöst plats (t.ex. Kalmar)
         // → zooma IN på platsen (stadsnivå), inte utzoomat över alla spridda närliggande features
@@ -672,7 +679,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         if (matchingPlaces.length >= 2 && pts.length >= 2) {
           m.fitBounds(L.latLngBounds(pts), { padding: [24, 24], maxZoom: 12 });
         } else {
-          m.setView([data.center.lat, data.center.lng], 12);
+          m.setView([mapCenter.lat, mapCenter.lng], 12);
         }
         fitKeyRef.current = fitKey;
       }
@@ -984,7 +991,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           </button>
         </div>
       )}
-      {hasCenter && !showLandscape && !overviewLoading
+      {mapHasCenter && !showLandscape && !overviewLoading
         && ((theophoric?.total ?? 0) > 0
             || ((!faq || showMapOptIn) && ((data.count ?? 0) > 0 || matchingPlaces.length > 0 || (siteRaa?.length ?? 0) > 0 || (forts?.length ?? 0) > 0))) && (
         <div className="px-5 pb-4">
