@@ -17,15 +17,21 @@ import { Bot, ShieldCheck, Search, ScrollText, Landmark, Map, Bug, Database, Use
 
 interface AgentCard {
   icon: React.ComponentType<{ className?: string }>;
+  name?: string;               // personnamn som komplement till rollen (t.ex. "Diplomatiker Hemming")
   title: string; titleEn: string;
   role: string; roleEn: string;
   how: string; howEn: string;
 }
 
+// Namnbricka — rollen + ett personnamn (Daniel). Tidstypiska nordiska namn, jämn köns­fördelning.
+const AgentName: React.FC<{ name?: string }> = ({ name }) =>
+  name ? <span className="ml-1 font-normal text-gold/70">· {name}</span> : null;
+
 // Produkt-AI — det användaren möter i plattformen.
 const PRODUCT_AI: AgentCard[] = [
   {
     icon: ScrollText,
+    name: 'Ragna',
     title: 'Runinskrifts-analys', titleEn: 'Runic inscription analysis',
     role: 'Föreslår datering, språklig analys, historisk kontext och tolkning av en runinskrift.',
     roleEn: 'Proposes dating, linguistic analysis, historical context and interpretation of a runic inscription.',
@@ -38,6 +44,7 @@ const PRODUCT_AI: AgentCard[] = [
   },
   {
     icon: Search,
+    name: 'Liv',
     title: 'Sök & Lotsen (kunskapsgraf)', titleEn: 'Search & the Pilot (knowledge graph)',
     role: 'Hjälper dig hitta rätt entitet och navigera sambanden mellan runstenar, platser, personer och källor.',
     roleEn: 'Helps you find the right entity and navigate the connections between runestones, places, people and sources.',
@@ -54,6 +61,7 @@ const PRODUCT_AI: AgentCard[] = [
 const BUILDING_AI: (AgentCard & { status: string; statusEn: string })[] = [
   {
     icon: Ship,
+    name: 'Sölve',
     title: 'Segel-AI (ruttmotor)', titleEn: 'Sailing AI (routing engine)',
     role: 'Planerar historiska sjörutter — seglar vatten-bara mellan waypoints med tre skrovlägen '
       + '(forntidsbåt/rodd, vikingaskepp med köl+råsegel, Hansakogg), vind ur SMHI-klimatologin och '
@@ -70,6 +78,7 @@ const BUILDING_AI: (AgentCard & { status: string; statusEn: string })[] = [
   },
   {
     icon: BookOpen,
+    name: 'Saga',
     title: 'AI-författare (släktplats)', titleEn: 'AI author (ancestral place)',
     role: 'Skriver en källgrundad berättelse om din släktplats i valbar stilarketyp (isländsk sagastil, '
       + 'släktkrönika, populärvetenskaplig reporter) — beskriven som hantverk, aldrig en kopia av en '
@@ -91,6 +100,7 @@ const BUILDING_AI: (AgentCard & { status: string; statusEn: string })[] = [
 const WORK_AGENTS: AgentCard[] = [
   {
     icon: Landmark,
+    name: 'Alva',
     title: 'Arkeolog- & kulturmiljöagent', titleEn: 'Archaeology & heritage agent',
     role: 'Skydda, bevara, inventera, undersöka och förmedla kunskap om kultur- och fornlämningar. '
       + 'Tar fram kunskapsunderlag, kulturmiljöutredningar och kulturmiljöavsnitt i MKB, beskriver '
@@ -109,6 +119,7 @@ const WORK_AGENTS: AgentCard[] = [
   },
   {
     icon: Database,
+    name: 'Kåre',
     title: 'Koordinat- & datakvalitetsagent', titleEn: 'Coordinate & data-quality agent',
     role: 'Skannar hela datat efter poster som saknar koordinat eller proveniens och föreslår hur de fylls.',
     roleEn: 'Scans all data for records lacking a coordinate or provenance and proposes how to fill them.',
@@ -121,6 +132,7 @@ const WORK_AGENTS: AgentCard[] = [
   },
   {
     icon: Map,
+    name: 'Gerd',
     title: 'GIS-arkitekturagent', titleEn: 'GIS architecture agent',
     role: 'Granskar den geografiska datamodellen och kommer med förbättringsförslag.',
     roleEn: 'Reviews the geographic data model and proposes improvements.',
@@ -133,6 +145,7 @@ const WORK_AGENTS: AgentCard[] = [
   },
   {
     icon: Bug,
+    name: 'Birger',
     title: 'Buggtest- & QA-agent', titleEn: 'Bug-test & QA agent',
     role: 'Reproducerar rapporterade fel, hittar rotorsaken och letar efter liknande fel som redan publicerats.',
     roleEn: 'Reproduces reported errors, finds the root cause and looks for similar errors already shipped.',
@@ -148,21 +161,22 @@ const WORK_AGENTS: AgentCard[] = [
 // Under förberedelse — specialister vi bygger nu; enklare testfall körs under hösten 2026.
 const PLANNED_AGENTS: {
   icon: React.ComponentType<{ className?: string }>;
+  name?: string;
   title: string; titleEn: string; focus: string; focusEn: string;
 }[] = [
-  { icon: ScrollText, title: 'Runolog', titleEn: 'Runologist', focus: 'Läsning, datering (stiltypologi) och ristarattribution av runinskrifter.', focusEn: 'Reading, dating (style typology) and carver attribution of runic inscriptions.' },
-  { icon: Ship, title: 'Marinarkeolog', titleEn: 'Marine archaeologist', focus: 'Vrak, farleder och överfarter — med segelkronologin (rodd före segel, ~700).', focusEn: 'Wrecks, fairways and crossings — with the sail chronology (rowing before sail, ~700).' },
-  { icon: Bone, title: 'Osteolog', titleEn: 'Osteologist', focus: 'Ben: ålder, kön, patologi och trauma — redovisat som skattningar med osäkerhet.', focusEn: 'Bones: age, sex, pathology and trauma — reported as estimates with uncertainty.' },
-  { icon: Dna, title: 'Arkeogenetiker (aDNA)', titleEn: 'Archaeogeneticist (aDNA)', focus: 'Släktskap och härkomst ur DNA — härkomst är inte etnicitet.', focusEn: 'Kinship and ancestry from DNA — ancestry is not ethnicity.' },
-  { icon: Gavel, title: 'Forntida forensiker', titleEn: 'Ancient forensics', focus: 'Våld och "brott" i forntiden: trauma- och händelserekonstruktion, källkritiskt.', focusEn: 'Violence and "crime" in antiquity: trauma and event reconstruction, source-critical.' },
-  { icon: BookOpen, title: 'Historiker', titleEn: 'Historian', focus: 'Skriftliga källor och kronologi med klassisk källkritik; saga skiljs från historia.', focusEn: 'Written sources and chronology with classical source criticism; saga separated from history.' },
-  { icon: Stamp, title: 'Diplomatiker', titleEn: 'Diplomatics scholar', focus: 'Medeltidsbrev, stadsböcker och tänkeböcker: aktyp, diplomatikens formler, sigill och prosopografi. Läser latin, medellågtyska och fornsvenska; skiljer namn-som-skrivet från identifierad person.', focusEn: 'Medieval charters, town books and court books: document type, the formulae of diplomatics, seals and prosopography. Reads Latin, Middle Low German and Old Swedish; separates name-as-written from identified person.' },
-  { icon: Compass, title: 'Kulturgeograf', titleEn: 'Human geographer', focus: 'Landskap, ortnamn och centralplatser; mönster prövas mot slumpbakgrund.', focusEn: 'Landscape, place names and central places; patterns tested against a random background.' },
-  { icon: Languages, title: 'Filolog & ortnamnsforskare (språkvetare)', titleEn: 'Philologist & onomastician (linguist)', focus: 'Språkhistoria, etymologi och namnled per landskap; latin, tyska, nordiska, finska, baltiska, samiska. Skiljer äldsta belägg från namnets ålder — slår upp och citerar, gissar aldrig.', focusEn: 'Language history, etymology and name elements by province; Latin, German, Nordic, Finnic, Baltic, Sámi. Separates earliest attestation from the age of the name — looks up and cites, never guesses.' },
-  { icon: Accessibility, title: 'UX- & tillgänglighetsdesigner (WCAG)', titleEn: 'UX & accessibility designer (WCAG)', focus: 'Tillgänglig och tydlig design (WCAG 2.2 AA) + maskinläsbar markup — samma medel tjänar både människor och AI-sök. Kartsymboler, kontrast, tangentbord och skärmläsare. Mäter tillgänglighet, gissar inte.', focusEn: 'Accessible, clear design (WCAG 2.2 AA) + machine-readable markup — the same means serve both people and AI search. Map symbols, contrast, keyboard and screen reader. Measures accessibility, does not guess.' },
-  { icon: Route, title: 'Kommunikationsarkeolog (vägar)', titleEn: 'Communications archaeologist (roads)', focus: 'Fornvägar, hålvägar, broar, vadställen, knutpunkter och nätverk — least-cost-path-modellering av troliga rutter (RAÄ färdväg).', focusEn: 'Ancient roads, hollow ways, bridges, fords, junctions and networks — least-cost-path modelling of likely routes (RAÄ travel routes).' },
-  { icon: Bike, title: 'Gravel-cyklist (fältväg)', titleEn: 'Gravel cyclist (field roads)', focus: 'Fornvägar sett från sadeln — framkomlighet, least-cost-rutter, samt väg- och gatunamns betydelse. Kombinerar väg-arkeologi, geologi, biologi och kulturgeografi.', focusEn: 'Ancient roads seen from the saddle — passability, least-cost routes, and the meaning of road and street names. Combines road archaeology, geology, biology and human geography.' },
-  { icon: ShieldCheck, title: 'Verifierare (drift-vakt)', titleEn: 'Verifier (drift guard)', focus: 'Prövar claims mot källa, befordrar staging → kanon och rekoncilierar kanon mot källorna. Maskinellt verifierbart (koordinat, DB-count) kan auto-befordras; tolkning kräver människa.', focusEn: 'Tests claims against sources, promotes staging → canon and reconciles canon against the sources. Machine-verifiable items (coordinate, DB count) can auto-promote; interpretation requires a human.' },
+  { icon: ScrollText, name: 'Rune', title: 'Runolog', titleEn: 'Runologist', focus: 'Läsning, datering (stiltypologi) och ristarattribution av runinskrifter.', focusEn: 'Reading, dating (style typology) and carver attribution of runic inscriptions.' },
+  { icon: Ship, name: 'Sigrid', title: 'Marinarkeolog', titleEn: 'Marine archaeologist', focus: 'Vrak, farleder och överfarter — med segelkronologin (rodd före segel, ~700).', focusEn: 'Wrecks, fairways and crossings — with the sail chronology (rowing before sail, ~700).' },
+  { icon: Bone, name: 'Beata', title: 'Osteolog', titleEn: 'Osteologist', focus: 'Ben: ålder, kön, patologi och trauma — redovisat som skattningar med osäkerhet.', focusEn: 'Bones: age, sex, pathology and trauma — reported as estimates with uncertainty.' },
+  { icon: Dna, name: 'Dag', title: 'Arkeogenetiker (aDNA)', titleEn: 'Archaeogeneticist (aDNA)', focus: 'Släktskap och härkomst ur DNA — härkomst är inte etnicitet.', focusEn: 'Kinship and ancestry from DNA — ancestry is not ethnicity.' },
+  { icon: Gavel, name: 'Frode', title: 'Forntida forensiker', titleEn: 'Ancient forensics', focus: 'Våld och "brott" i forntiden: trauma- och händelserekonstruktion, källkritiskt.', focusEn: 'Violence and "crime" in antiquity: trauma and event reconstruction, source-critical.' },
+  { icon: BookOpen, name: 'Hedvig', title: 'Historiker', titleEn: 'Historian', focus: 'Skriftliga källor och kronologi med klassisk källkritik; saga skiljs från historia.', focusEn: 'Written sources and chronology with classical source criticism; saga separated from history.' },
+  { icon: Stamp, name: 'Hemming', title: 'Diplomatiker', titleEn: 'Diplomatics scholar', focus: 'Medeltidsbrev, stadsböcker och tänkeböcker: aktyp, diplomatikens formler, sigill och prosopografi. Läser latin, medellågtyska och fornsvenska; skiljer namn-som-skrivet från identifierad person.', focusEn: 'Medieval charters, town books and court books: document type, the formulae of diplomatics, seals and prosopography. Reads Latin, Middle Low German and Old Swedish; separates name-as-written from identified person.' },
+  { icon: Compass, name: 'Gudrun', title: 'Kulturgeograf', titleEn: 'Human geographer', focus: 'Landskap, ortnamn och centralplatser; mönster prövas mot slumpbakgrund.', focusEn: 'Landscape, place names and central places; patterns tested against a random background.' },
+  { icon: Languages, name: 'Folke', title: 'Filolog & ortnamnsforskare (språkvetare)', titleEn: 'Philologist & onomastician (linguist)', focus: 'Språkhistoria, etymologi och namnled per landskap; latin, tyska, nordiska, finska, baltiska, samiska. Skiljer äldsta belägg från namnets ålder — slår upp och citerar, gissar aldrig.', focusEn: 'Language history, etymology and name elements by province; Latin, German, Nordic, Finnic, Baltic, Sámi. Separates earliest attestation from the age of the name — looks up and cites, never guesses.' },
+  { icon: Accessibility, name: 'Unn', title: 'UX- & tillgänglighetsdesigner (WCAG)', titleEn: 'UX & accessibility designer (WCAG)', focus: 'Tillgänglig och tydlig design (WCAG 2.2 AA) + maskinläsbar markup — samma medel tjänar både människor och AI-sök. Kartsymboler, kontrast, tangentbord och skärmläsare. Mäter tillgänglighet, gissar inte.', focusEn: 'Accessible, clear design (WCAG 2.2 AA) + machine-readable markup — the same means serve both people and AI search. Map symbols, contrast, keyboard and screen reader. Measures accessibility, does not guess.' },
+  { icon: Route, name: 'Vagn', title: 'Kommunikationsarkeolog (vägar)', titleEn: 'Communications archaeologist (roads)', focus: 'Fornvägar, hålvägar, broar, vadställen, knutpunkter och nätverk — least-cost-path-modellering av troliga rutter (RAÄ färdväg).', focusEn: 'Ancient roads, hollow ways, bridges, fords, junctions and networks — least-cost-path modelling of likely routes (RAÄ travel routes).' },
+  { icon: Bike, name: 'Gösta', title: 'Gravel-cyklist (fältväg)', titleEn: 'Gravel cyclist (field roads)', focus: 'Fornvägar sett från sadeln — framkomlighet, least-cost-rutter, samt väg- och gatunamns betydelse. Kombinerar väg-arkeologi, geologi, biologi och kulturgeografi.', focusEn: 'Ancient roads seen from the saddle — passability, least-cost routes, and the meaning of road and street names. Combines road archaeology, geology, biology and human geography.' },
+  { icon: ShieldCheck, name: 'Vera', title: 'Verifierare (drift-vakt)', titleEn: 'Verifier (drift guard)', focus: 'Prövar claims mot källa, befordrar staging → kanon och rekoncilierar kanon mot källorna. Maskinellt verifierbart (koordinat, DB-count) kan auto-befordras; tolkning kräver människa.', focusEn: 'Tests claims against sources, promotes staging → canon and reconciles canon against the sources. Machine-verifiable items (coordinate, DB count) can auto-promote; interpretation requires a human.' },
 ];
 
 // "Så arbetar agenterna" — fyra principkort.
@@ -263,7 +277,7 @@ const AiAgents = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             <Card key={a.title} className="viking-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2 text-gold">
-                  <a.icon className="h-5 w-5" /> {sv ? a.title : a.titleEn}
+                  <a.icon className="h-5 w-5" /> {sv ? a.title : a.titleEn}<AgentName name={a.name} />
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
@@ -291,7 +305,7 @@ const AiAgents = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             <Card key={a.title} className="viking-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2 text-gold">
-                  <a.icon className="h-5 w-5" /> {sv ? a.title : a.titleEn}
+                  <a.icon className="h-5 w-5" /> {sv ? a.title : a.titleEn}<AgentName name={a.name} />
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
@@ -322,7 +336,7 @@ const AiAgents = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             <Card key={a.title} className="viking-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2 text-gold">
-                  <a.icon className="h-5 w-5" /> {sv ? a.title : a.titleEn}
+                  <a.icon className="h-5 w-5" /> {sv ? a.title : a.titleEn}<AgentName name={a.name} />
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
@@ -365,7 +379,7 @@ const AiAgents = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
           {PLANNED_AGENTS.map((a) => (
             <div key={a.title} className="viking-card rounded-lg border border-border p-4 text-sm">
               <div className="flex items-center gap-2 text-foreground font-medium mb-1">
-                <a.icon className="h-4 w-4 text-gold" /> {sv ? a.title : a.titleEn}
+                <a.icon className="h-4 w-4 text-gold" /> {sv ? a.title : a.titleEn}<AgentName name={a.name} />
               </div>
               <p className="text-muted-foreground">{sv ? a.focus : a.focusEn}</p>
             </div>
