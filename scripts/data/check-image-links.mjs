@@ -21,15 +21,23 @@ for (const [dir, files] of Object.entries(manifest)) {
 }
 
 console.log(`Kontrollerar ${urls.length} bild-URL:er mot ${BASE} …\n`);
-const head = async (u) => { try { const r = await fetch(u, { method: 'HEAD' }); return r.status; } catch { return 0; } };
+// VIKTIGT: servern SOFT-404:ar — saknade filer ger 200 + text/html (SPA-fallbackens index.html), inte
+// 404. Status räcker alltså INTE; vi hämtar bara första byten (Range) och kräver content-type image/*.
+const check = async (u) => {
+  try {
+    const r = await fetch(u, { headers: { Range: 'bytes=0-0' } });
+    const ct = (r.headers.get('content-type') || '').toLowerCase();
+    return { ok: (r.status === 200 || r.status === 206) && ct.startsWith('image/'), status: r.status, ct };
+  } catch { return { ok: false, status: 0, ct: 'nätfel' }; }
+};
 
 // Kör i småbatcher så vi inte spammar servern.
 const missing = [];
 const BATCH = 12;
 for (let i = 0; i < urls.length; i += BATCH) {
   const chunk = urls.slice(i, i + BATCH);
-  const codes = await Promise.all(chunk.map((c) => head(c.url)));
-  chunk.forEach((c, j) => { if (codes[j] !== 200) missing.push({ ...c, status: codes[j] }); });
+  const res = await Promise.all(chunk.map((c) => check(c.url)));
+  chunk.forEach((c, j) => { if (!res[j].ok) missing.push({ ...c, status: `${res[j].status} ${res[j].ct}` }); });
   process.stdout.write(`\r  ${Math.min(i + BATCH, urls.length)}/${urls.length}`);
 }
 console.log('\n');

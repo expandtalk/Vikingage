@@ -353,7 +353,13 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     staleTime: 30 * 60 * 1000,
     queryFn: async (): Promise<GalleryImage[]> => {
       const ql = query.trim().toLowerCase();
-      const ex = EXCURSIONS.find((e) => e.name.trim().toLowerCase() === ql || e.id.toLowerCase() === ql.replace(/\s+/g, ''));
+      // Exakt namn/slug, ELLER namnet BÖRJAR med frågan (≥4 tecken) → "Boglösa" träffar "Boglösa
+      // hällristningar", "Anundshög"/"Uppsala" träffar sina utflykter. startsWith (ej substring) så
+      // "kyrka" inte råkar matcha "…(domkyrkan)".
+      const ex = EXCURSIONS.find((e) => {
+        const n = e.name.trim().toLowerCase();
+        return n === ql || e.id.toLowerCase() === ql.replace(/\s+/g, '') || (ql.length >= 4 && n.startsWith(ql));
+      });
       if (!ex?.photoDir) return [];
       try {
         const r = await fetch('/excursion-photos/manifest.json');
