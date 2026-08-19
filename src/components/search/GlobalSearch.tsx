@@ -119,6 +119,7 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   folk_group:     { labelSv: 'Folkgrupper', labelEn: 'Peoples', icon: Users2, route: () => '/explore?focus=folkGroups' },
   city:           { labelSv: 'Städer', labelEn: 'Cities', icon: Castle, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   king:           { labelSv: 'Kungar', labelEn: 'Kings', icon: Crown, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  person:         { labelSv: 'Personer', labelEn: 'People', icon: Users, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   dynasty:        { labelSv: 'Släkter', labelEn: 'Dynasties', icon: Users2, route: () => '/royal-chronicles' },
   coin:           { labelSv: 'Mynt', labelEn: 'Coins', icon: CoinsIcon, route: () => '/coins' },
   god:            { labelSv: 'Gudar', labelEn: 'Gods', icon: Sparkles, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
