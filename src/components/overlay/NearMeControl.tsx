@@ -490,7 +490,7 @@ export const NearMeControl: React.FC<{ enabledLayers?: Record<string, boolean> }
               style={{ minHeight: 42 }}
             >
               <span aria-hidden="true">{TRAVEL_MODE_LABELS[mode].icon}</span>
-              {mode === 'foot' ? 'Starta gångläge' : mode === 'bike' ? 'Starta cykelläge' : mode === 'boat' ? 'Starta båtläge' : 'Starta körläge'}
+              {mode === 'foot' ? 'Gå' : mode === 'bike' ? 'Cykla' : mode === 'boat' ? 'Kör båt' : 'Kör bil'}
             </button>
             {/* Snabbstopp för valt färdsätt (regelbunden skala) */}
             <div className="flex flex-wrap gap-1 mb-2">
