@@ -194,7 +194,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
   // ÄLDSTA BELÄGG: sökt ortnamn → tidigaste skriftbelägg + belagd form + källa (Isof/SDHK). Tidigast
   // över källor (place_names.earliest_attestation_year). Källkritiskt kärnvärde — visas prominent.
-  const { data: attestation } = useQuery({
+  const { data: attestation, isLoading: attLoading } = useQuery({
     queryKey: ['answer-attestation', query],
     enabled: query.trim().length >= 2,
     staleTime: 30 * 60 * 1000,
@@ -245,7 +245,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   // (medieval_charters_browse, ilike på regest/plats/utfärdare) — "40 brev nämner Brännkyrka" — och
   // vägpunkter (road_waypoints) där platsen ligger på en historisk väg. Gör medeltidsdiariet + vägnätet
   // till ett tvärgående lager över hela plattformen (Daniel).
-  const { data: charters } = useQuery({
+  const { data: charters, isLoading: chartersLoading } = useQuery({
     queryKey: ['answer-charters', query],
     enabled: query.trim().length >= 2,
     staleTime: 10 * 60 * 1000,
@@ -284,7 +284,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
   // FORNVÄNNEN: relevanta artiklar (3605 st, direkt-PDF) som "läs mer". Matchar titel+ämnesord via
   // fornvannen_for_query (case-insensitivt server-side). Daniel: "Den är mer om man vill läsa mer."
-  const { data: fornvannen = [] } = useQuery({
+  const { data: fornvannen = [], isLoading: fornvannenLoading } = useQuery({
     queryKey: ['answer-fornvannen', query],
     enabled: query.trim().length >= 2,
     staleTime: 30 * 60 * 1000,
@@ -297,7 +297,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   // HISTORIEMÅLNINGAR (PD, 1800-tal — Cederström/Hellqvist m.fl.) knutna till kungar/händelser.
   // KÄLLKRITISKT: konstnärlig tolkning, ej historisk källa → caveat visas tydligt (Daniel).
   // FAQ/PAA: fler-perspektiv-svar (disciplin-linser + bias-ruta) för frågor. get_faq normaliserar.
-  const { data: faq } = useQuery<import('./FaqAnswer').FaqData | null>({
+  const { data: faq, isLoading: faqLoading } = useQuery<import('./FaqAnswer').FaqData | null>({
     queryKey: ['answer-faq', query],
     enabled: query.trim().length >= 2,
     staleTime: 30 * 60 * 1000,
@@ -319,7 +319,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     },
   });
 
-  const { data: paintings = [] } = useQuery({
+  const { data: paintings = [], isLoading: paintingsLoading } = useQuery({
     queryKey: ['answer-paintings', query],
     enabled: query.trim().length >= 2,
     staleTime: 30 * 60 * 1000,
@@ -355,7 +355,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     };
     return map[q] ?? null;
   }, [query]);
-  const { data: theophoric } = useQuery({
+  const { data: theophoric, isLoading: theophoricLoading } = useQuery({
     queryKey: ['answer-theophoric', deity?.key],
     enabled: !!deity,
     staleTime: 30 * 60 * 1000,
@@ -770,13 +770,30 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     </div>
   ) : null;
 
-  if (!data || (data.count === 0 && (data.images?.length ?? 0) === 0 && !data.page
-      && (data.research?.length ?? 0) === 0 && (data.literature?.length ?? 0) === 0
-      && (theophoric?.total ?? 0) === 0 && (charters?.total ?? 0) === 0 && fornvannen.length === 0 && paintings.length === 0 && !attestation)) {
-    // Ingen plats/entitet i kärnskopet (t.ex. "Hitler", "nazism", 1900-talsbegrepp). Sök-kaskadens
-    // sista lager: media (poddar/video) + externa sök-URL:er + bidra — och sökordet loggas.
-    // + relaterat-block överst (för t.ex. Göteborg som saknar egen entitet men har föregångare).
-    return <>{showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}{nodeBlock}{relatedBlock}<SearchFallback query={query} /></>;
+  // Har vi INGET i kärnskopet? (räknar även faq/node/landscape/related som "något").
+  const coreEmpty = !data || (data.count === 0 && (data.images?.length ?? 0) === 0 && !data.page
+      && (data.research?.length ?? 0) === 0 && (data.literature?.length ?? 0) === 0 && !faq
+      && (theophoric?.total ?? 0) === 0 && (charters?.total ?? 0) === 0 && fornvannen.length === 0 && paintings.length === 0 && !attestation);
+  const somethingMatched = !!(node || showLandscape || related);
+
+  // "Ingen träff"-fallbacken ska vara ABSOLUT SISTA UTVÄG (Daniel). Den blinkade fram "vi vet inte"
+  // på giltiga frågor (t.ex. "röksten") medan huvudsöket eller något berikningslager fortfarande
+  // laddade. Medan något fortfarande laddar OCH vi inte har något ännu → lätt laddningsläge,
+  // ALDRIG fallbacken. (Frågor MED träff renderas direkt nedan — de väntar inte på berikningen.)
+  const answerLoading = isLoading || overviewLoading || faqLoading || attLoading
+    || chartersLoading || theophoricLoading || fornvannenLoading || paintingsLoading;
+  if (query.trim().length >= 2 && coreEmpty && !somethingMatched && (answerLoading || data === undefined)) {
+    return (
+      <div className="flex items-center justify-center gap-2 px-5 py-14 text-sm text-slate-400">
+        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-600 border-t-amber-400" />
+        {sv ? 'Söker…' : 'Searching…'}
+      </div>
+    );
+  }
+  if (coreEmpty) {
+    // Allt har settlat och kärnskopet är tomt. Visa node/landskap/relaterat om något ändå matchade;
+    // annars sök-kaskadens sista lager (media + externa sök-URL:er + bidra) — sökordet loggas.
+    return <>{showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}{nodeBlock}{relatedBlock}{!somethingMatched && <SearchFallback query={query} />}</>;
   }
 
   return (
