@@ -49,6 +49,7 @@ const Models3D = lazy(() => import("./pages/Models3D"));
 const Bildarkiv = lazy(() => import("./pages/Bildarkiv"));
 const Ontology = lazy(() => import("./pages/Ontology"));
 const AiAgents = lazy(() => import("./pages/AiAgents"));
+const DeLaudibus = lazy(() => import("./pages/DeLaudibus"));
 const Tools = lazy(() => import("./pages/Tools"));
 const Fingerprint = lazy(() => import("./pages/Fingerprint"));
 const Bildforbattring = lazy(() => import("./pages/Bildforbattring"));
@@ -202,6 +203,8 @@ const App = () => (
                   <Route path="/ontologi" element={<Ontology />} />
                   <Route path="/ai-agents" element={<AiAgents forceLang="en" />} />
                   <Route path="/ai-agenter" element={<AiAgents forceLang="sv" />} />
+                  <Route path="/sv/de-laudibus" element={<DeLaudibus forceLang="sv" />} />
+                  <Route path="/en/de-laudibus" element={<DeLaudibus forceLang="en" />} />
                   <Route path="/verktyg" element={<Tools />} />
                   <Route path="/sv/verktyg" element={<Tools />} />
                   <Route path="/tools" element={<Tools />} />

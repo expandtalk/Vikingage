@@ -353,6 +353,9 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       frej: { key: 'frö', god: 'Frej' }, freyr: { key: 'frö', god: 'Frej' }, frö: { key: 'frö', god: 'Frej/Freja' },
       freja: { key: 'frö', god: 'Freja' }, freyja: { key: 'frö', god: 'Freja' }, freya: { key: 'frö', god: 'Freja' },
       härn: { key: 'härn', god: 'Härn' }, skade: { key: 'skade', god: 'Skade' }, inge: { key: 'inge', god: 'Inge/Yngve' },
+      // Njord: endast Närtuna (SOL 2003) håller källkritiskt i Sverige → teofor-linsen visar den enda
+      // starkt belagda orten. Njord-kulten lämnade annars få spår här (starkare i Norge/på Island).
+      njord: { key: 'njärd', god: 'Njord' }, njärd: { key: 'njärd', god: 'Njord' }, 'njörðr': { key: 'njärd', god: 'Njord' },
     };
     return map[q] ?? null;
   }, [query]);
