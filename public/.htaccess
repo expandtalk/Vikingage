@@ -1,9 +1,9 @@
 Options -MultiViews
 RewriteEngine On
 
-# Tvinga HTTPS (säkerhet + kanonisk URL; Screaming Frog flaggade http://-varianter). Först av allt.
-RewriteCond %{HTTPS} off
-RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+# HTTPS tvingas INTE här: webbhotellet termineras TLS av en proxy → %{HTTPS} är alltid "off" även för
+# https-anrop, så en villkorslös https-redirect blev en oändlig loop (ERR_TOO_MANY_REDIRECTS, 2026-08-19).
+# HTTPS hanteras av hotellets proxy/cert. (Ev. framtida: redirect via %{HTTP:X-Forwarded-Proto}=http.)
 
 # Kanonisk värd: tvinga icke-www. Annars ligger inloggnings-sessionen i localStorage på
 # fel origin (www.vikingage.se ≠ vikingage.se) och man ser utloggad ut. En origin = en session.
