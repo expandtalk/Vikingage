@@ -29,6 +29,8 @@ const FACETS: { key: Facet; sv: string; en: string }[] = [
   { key: 'history_painting', sv: 'Historiemåleri', en: 'History paintings' },
   { key: 'coin',             sv: 'Mynt',          en: 'Coins' },
   { key: 'model3d',          sv: '3D-modeller',   en: '3D models' },
+  { key: 'mushroom_edible',  sv: 'Svampar · ätliga', en: 'Mushrooms · edible' },
+  { key: 'mushroom_toxic',   sv: 'Svampar · giftiga', en: 'Mushrooms · toxic' },
 ];
 
 const CAT_LABEL: Record<ImageCategory, { sv: string; en: string }> = {
@@ -41,6 +43,8 @@ const CAT_LABEL: Record<ImageCategory, { sv: string; en: string }> = {
   history_painting: { sv: 'Historiemåleri', en: 'History painting' },
   coin:             { sv: 'Mynt',         en: 'Coin' },
   model3d:          { sv: '3D-modell',    en: '3D model' },
+  mushroom_edible:  { sv: 'Ätlig svamp',  en: 'Edible mushroom' },
+  mushroom_toxic:   { sv: 'Giftsvamp',    en: 'Toxic mushroom' },
 };
 
 const LicenseBadge: React.FC<{ license: NormalizedLicense; sv: boolean }> = ({ license, sv }) => {

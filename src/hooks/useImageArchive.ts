@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 // strukturerad licens (mynt) märks tydligt "Licens ej fastställd — se källa" och får aldrig
 // en grön fri-licens-badge.
 
-export type ImageCategory = 'runestone' | 'historical_drawing' | 'historical_depiction' | 'manuscript' | 'royal_dynasty' | 'church_art' | 'model3d' | 'coin' | 'history_painting';
+export type ImageCategory = 'runestone' | 'historical_drawing' | 'historical_depiction' | 'manuscript' | 'royal_dynasty' | 'church_art' | 'model3d' | 'coin' | 'history_painting' | 'mushroom_edible' | 'mushroom_toxic';
 
 // Normaliserad licensstatus. `free` = fri/öppen licens som får visas med grön badge.
 // `unverified` = licens saknas/okänd → amber-varning, kräver källa. `blocked` visas aldrig.
@@ -340,6 +340,43 @@ async function fetchHistoryPaintings(): Promise<ArchiveImage[]> {
   });
 }
 
+// Natur · Svampar — ätliga (svamp.art) + oätliga/giftiga (svamp.giftsvamp). Bilderna är fria
+// (Wikimedia Commons, PD/CC BY/CC BY-SA) och hotlänkas; licens + fotograf + källa följer med per art.
+const sbRpc = supabase as unknown as { rpc: (fn: string) => Promise<{ data: any; error: any }> };
+function mushroomLicense(raw: string | null): NormalizedLicense {
+  const t = (raw ?? '').toLowerCase();
+  if (t.includes('cc0')) return { label: 'CC0', url: LICENSE_URLS['CC0'], status: 'free' };
+  if (t.includes('public') || t === 'pd') return { label: 'Public domain', url: LICENSE_URLS['PD'], status: 'free' };
+  if (t.includes('by-sa') || t.includes('by sa')) return { label: raw || 'CC BY-SA', url: LICENSE_URLS['CC-BY-SA'], status: 'free' };
+  if (t.includes('by')) return { label: raw || 'CC BY', url: LICENSE_URLS['CC-BY'], status: 'free' };
+  return { label: 'Licens ej fastställd', url: null, status: 'unverified' };
+}
+async function fetchMushrooms(): Promise<ArchiveImage[]> {
+  const [edibleRes, toxicRes] = await Promise.allSettled([sbRpc.rpc('svamp_artlista'), sbRpc.rpc('svamp_giftsvamplista')]);
+  const out: ArchiveImage[] = [];
+  if (edibleRes.status === 'fulfilled') {
+    for (const a of (edibleRes.value.data ?? []) as any[]) {
+      if (!a.bild_url) continue;
+      out.push({
+        id: `svamp-${a.id}`, category: 'mushroom_edible', kind: 'image', src: a.bild_url, thumb: a.bild_url,
+        href: '/sv/svamp', title: a.svenskt_namn, caption: a.vetenskapligt_namn,
+        credit: a.bild_kredit, license: mushroomLicense(a.bild_licens), sourceUrl: a.bild_kalla ?? a.bild_url, region: null,
+      });
+    }
+  }
+  if (toxicRes.status === 'fulfilled') {
+    for (const g of (toxicRes.value.data ?? []) as any[]) {
+      if (!g.bild_url) continue;
+      out.push({
+        id: `gift-${g.id}`, category: 'mushroom_toxic', kind: 'image', src: g.bild_url, thumb: g.bild_url,
+        href: '/sv/svamp', title: g.svenskt_namn, caption: `${g.vetenskapligt_namn} — ⚠ ${g.toxin ?? 'giftig'}`,
+        credit: g.bild_kredit, license: mushroomLicense(g.bild_licens), sourceUrl: g.bild_kalla ?? g.bild_url, region: null,
+      });
+    }
+  }
+  return out;
+}
+
 export interface ImageArchiveData {
   items: ArchiveImage[];
   counts: Record<ImageCategory, number>;
@@ -358,10 +395,11 @@ export const useImageArchive = () =>
         fetchModels3D(),
         fetchCoins(),
         fetchHistoryPaintings(),
+        fetchMushrooms(),
       ]);
       const items = results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
       const counts: Record<ImageCategory, number> = {
-        runestone: 0, historical_drawing: 0, historical_depiction: 0, manuscript: 0, royal_dynasty: 0, church_art: 0, model3d: 0, coin: 0, history_painting: 0,
+        runestone: 0, historical_drawing: 0, historical_depiction: 0, manuscript: 0, royal_dynasty: 0, church_art: 0, model3d: 0, coin: 0, history_painting: 0, mushroom_edible: 0, mushroom_toxic: 0,
       };
       for (const it of items) counts[it.category] += 1;
       return { items, counts };

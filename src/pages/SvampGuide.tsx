@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '../components/Header';
@@ -6,8 +6,9 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, ShieldAlert, Sprout } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Sprout, Skull, Eye, EyeOff } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { SvampMap } from '@/components/svamp/SvampMap';
 
 // /sv/svamp — svampguide. SÄKERHETSKRITISK: verktyget är planerings-/utbildningsstöd, ALDRIG en
 // ätlighetsdom. Data ur svamp.art + svamp.forvaxlingsrisk via RPC svamp_artlista(). Kännetecken +
@@ -30,6 +31,90 @@ const KLASS: Record<string, string> = {
 const sevColor = (n: number) => n >= 4 ? 'border-red-500/60 bg-red-950/40 text-red-200'
   : n === 3 ? 'border-orange-500/50 bg-orange-950/30 text-orange-200'
   : 'border-slate-600 bg-slate-800/40 text-slate-300';
+
+interface Gift {
+  id: string; svenskt_namn: string; vetenskapligt_namn: string; allvarlighet: number;
+  toxin: string | null; symtom: string | null; kanne_pa: string | null; forvaxlas_med: string | null;
+  bild_url: string | null; bild_licens: string | null; bild_kredit: string | null; bild_kalla: string | null;
+}
+
+// Ett giftsvamps-kort: bilden är DOLD (suddad) tills man klickar — man avslöjar medvetet hur den
+// farliga svampen ser ut (Daniel: "klicka fram de giftiga så man ser hur de ser ut"). Toxin + symtom
+// + skiljande drag alltid synliga (källbelagda).
+const GiftCard: React.FC<{ g: Gift; sv: boolean }> = ({ g, sv }) => {
+  const [shown, setShown] = useState(false);
+  const deadly = g.allvarlighet >= 4;
+  return (
+    <article className={`rounded-lg border p-4 ${deadly ? 'border-red-500/60 bg-red-950/30' : 'border-orange-500/40 bg-orange-950/20'}`}>
+      <div className="flex items-start gap-4">
+        {g.bild_url && (
+          <button type="button" onClick={() => setShown((s) => !s)}
+            aria-label={shown ? (sv ? 'Dölj bild' : 'Hide image') : (sv ? 'Visa bild av giftsvampen' : 'Reveal image')}
+            className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md border border-border">
+            <img src={g.bild_url} alt={shown ? g.svenskt_namn : ''} loading="lazy"
+              className={`h-full w-full object-cover transition ${shown ? '' : 'blur-lg scale-110'}`} />
+            {!shown && (
+              <span className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/45 text-[10px] font-medium text-white">
+                <Eye className="h-4 w-4" />{sv ? 'Visa' : 'Reveal'}
+              </span>
+            )}
+            {shown && <span className="absolute bottom-0 right-0 bg-black/60 p-0.5 text-white"><EyeOff className="h-3 w-3" /></span>}
+          </button>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <h3 className="text-base font-semibold text-foreground">{g.svenskt_namn}</h3>
+            <span className="text-sm italic text-muted-foreground">{g.vetenskapligt_namn}</span>
+            <Badge variant="outline" className={`text-[10px] ${deadly ? 'border-red-500/60 text-red-200' : 'border-orange-500/50 text-orange-200'}`}>
+              {sv ? 'allvarlighet' : 'severity'} {g.allvarlighet}/5
+            </Badge>
+          </div>
+          {g.toxin && <p className="mt-1 text-xs text-foreground/70"><span className="font-medium">{sv ? 'Gift:' : 'Toxin:'}</span> {g.toxin}</p>}
+          {g.symtom && <p className="mt-1 text-sm text-red-100/90 leading-relaxed">{g.symtom}</p>}
+          {g.kanne_pa && (
+            <p className="mt-1.5 text-sm text-foreground/85 leading-relaxed">
+              <span className="font-medium text-amber-200">{sv ? 'Så skiljer du:' : 'Tell it apart:'}</span> {g.kanne_pa}
+              {g.forvaxlas_med && <span className="text-muted-foreground"> ({sv ? 'förväxlas med' : 'confused with'} {g.forvaxlas_med})</span>}
+            </p>
+          )}
+          {g.bild_url && g.bild_kredit && (
+            <p className="mt-1 text-[10px] text-muted-foreground/70">
+              {sv ? 'Bild:' : 'Image:'} {g.bild_kredit}{g.bild_licens ? ` · ${g.bild_licens}` : ''}
+              {g.bild_kalla ? <> · <a href={g.bild_kalla} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">Wikimedia</a></> : null}
+            </p>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const GiftSvampSection: React.FC<{ sv: boolean }> = ({ sv }) => {
+  const { data: gift = [] } = useQuery({
+    queryKey: ['svamp-giftsvamp'], staleTime: 10 * 60 * 1000,
+    queryFn: async (): Promise<Gift[]> => {
+      const { data, error } = await (supabase as any).rpc('svamp_giftsvamplista');
+      if (error) throw error;
+      return (data ?? []) as Gift[];
+    },
+  });
+  if (!gift.length) return null;
+  return (
+    <section className="mt-8">
+      <h2 className="mb-1 flex items-center gap-2 text-2xl font-bold text-foreground">
+        <Skull className="h-6 w-6 text-red-400" />{sv ? 'Giftiga förväxlingssvampar' : 'Poisonous look-alikes'}
+      </h2>
+      <p className="mb-4 text-sm text-muted-foreground">
+        {sv
+          ? 'Bilderna är dolda — klicka för att se hur de farligaste förväxlingssvamparna ser ut. Lär dig dem lika väl som matsvamparna.'
+          : 'Images are hidden — click to reveal how the most dangerous look-alikes appear. Learn them as well as the edible ones.'}
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {gift.map((g) => <GiftCard key={g.id} g={g} sv={sv} />)}
+      </div>
+    </section>
+  );
+};
 
 const SvampGuide: React.FC = () => {
   const sv = useLanguage().language === 'sv';
@@ -68,6 +153,9 @@ const SvampGuide: React.FC = () => {
               : 'This is a planning and educational aid, NOT a verdict on edibility. Never eat a mushroom you are not 100 % sure of. An app can never replace secure species knowledge — always verify against an expert or an authoritative key before eating. Bluing flesh tells you nothing about toxicity. Suspected poisoning: call emergency services.'}
           </p>
         </div>
+
+        {/* Platsmedveten karta + SMHI-nederbörd (svampens främsta signal). Efter säkerhetsrutan. */}
+        <SvampMap sv={sv} />
 
         {isLoading ? (
           <p className="text-muted-foreground">{sv ? 'Laddar…' : 'Loading…'}</p>
@@ -115,6 +203,8 @@ const SvampGuide: React.FC = () => {
             ))}
           </div>
         )}
+
+        <GiftSvampSection sv={sv} />
 
         <p className="mt-6 text-[11px] text-muted-foreground/70">
           {sv
