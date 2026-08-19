@@ -248,6 +248,16 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       return r ? { name: r.name, year: r.earliest_attestation_year, form: r.attested_form, source: r.attestation_source } : null;
     },
   });
+  // SOCKEN-DOSSIER: nyckeltal om frågan är en socken (yta/runstenar/kyrkor/fornlämningar/äldsta belägg).
+  const { data: sockenInfo } = useQuery({
+    queryKey: ['answer-socken', query],
+    enabled: query.trim().length >= 3,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ name: string; area_km2: number; runestones: number; churches: number; heritage: number; earliest_year: number | null } | null> => {
+      const { data } = await (supabase as any).rpc('socken_dossier', { p_name: query.trim() });
+      return (data ?? [])[0] ?? null;
+    },
+  });
   // Giltig center = både lat OCH lng är tal (t.ex. Gotland gav {null,null} → rita ingen trasig karta).
   const hasCenter = !!(data?.center && data.center.lat != null && data.center.lng != null);
   const mapEl = useRef<HTMLDivElement>(null);
@@ -1051,6 +1061,22 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     <div className="border-b border-slate-800 bg-slate-900">
       {/* SNABBFAKTA (tier 0) — namnled/betydelse, syns omedelbart medan karta/bilder/AI laddar. */}
       {snabbfakta}
+      {/* OM SOCKNEN — nyckeltal när frågan är en socken (yta/runstenar/kyrkor/fornlämningar/belägg). */}
+      {sockenInfo && (
+        <div className="border-b border-slate-800 bg-slate-900/60 px-5 py-3">
+          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+            <MapPin className="h-3.5 w-3.5" /> {sv ? 'Om socknen' : 'About the parish'}
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-200">
+            <span><b className="text-white">{sockenInfo.area_km2}</b> km²</span>
+            {sockenInfo.runestones > 0 && <span><b className="text-white">{sockenInfo.runestones}</b> {sv ? 'runstenar' : 'runestones'}</span>}
+            {sockenInfo.churches > 0 && <span><b className="text-white">{sockenInfo.churches}</b> {sv ? 'kyrka' : 'church'}</span>}
+            {sockenInfo.heritage > 0 && <span><b className="text-white">{sockenInfo.heritage}</b> {sv ? 'fornlämningar' : 'ancient remains'}</span>}
+            {sockenInfo.earliest_year && <span>{sv ? 'äldsta belägg' : 'first attested'} <b className="text-white">{sockenInfo.earliest_year}</b></span>}
+          </div>
+          <p className="mt-1 text-[10px] text-slate-500">{sv ? 'Räknat inom sockengränsen (Lantmäteri) — endast georefererade poster.' : 'Counted within the parish boundary — georeferenced records only.'}</p>
+        </div>
+      )}
       {/* HERO: full-bleed historiemålning (ramen CSS-beskuren via object-cover + scale). */}
       {heroPainting && (
         <figure className="relative m-0 w-full overflow-hidden">
