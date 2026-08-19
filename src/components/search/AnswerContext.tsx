@@ -798,9 +798,34 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     );
   }
   if (coreEmpty) {
+    // Generiska kategoriord (fornfynd/föremål/fynd/artefakt) matchar inga objektNAMN i sökindexet,
+    // men samlingen har 1200+ föremål → visa ett koncept-kort som leder dit i st.f. "inga träffar".
+    const isObjectQuery = /^(fornfynd|f[öo]rem[åa]l|fynd|artefakter?|artefacts?|arkeologiska fynd)$/i.test(query.trim());
     // Allt har settlat och kärnskopet är tomt. Visa node/landskap/relaterat om något ändå matchade;
     // annars sök-kaskadens sista lager (media + externa sök-URL:er + bidra) — sökordet loggas.
-    return <>{showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}{nodeBlock}{relatedBlock}{!somethingMatched && <SearchFallback query={query} />}</>;
+    return <>{showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}{nodeBlock}{relatedBlock}
+      {isObjectQuery && (
+        <section className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4 text-left">
+          <h2 className="mb-1 flex items-center gap-2 text-lg font-bold text-white">
+            <ImageIcon className="h-5 w-5 text-gold" />{sv ? 'Föremål & fynd' : 'Objects & finds'}
+          </h2>
+          <p className="mb-3 text-sm text-slate-300">
+            {sv ? 'Sök på ett specifikt föremål, en fyndplats eller en typ (t.ex. "spännbuckla", "Birka", "Rällinge") — eller bläddra bland samlingens föremål och arkivbilder.'
+                : 'Search a specific object, find-spot or type (e.g. "brooch", "Birka") — or browse the collection and archive images.'}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => onGo(sv ? '/sv/artefakter' : '/artefacts')}
+              className="rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-sm font-medium text-amber-100 hover:bg-gold/20">
+              {sv ? 'Bläddra bland föremål' : 'Browse objects'} →
+            </button>
+            <button type="button" onClick={() => onGo(sv ? '/sv/bildarkiv' : '/en/bildarkiv')}
+              className="rounded-lg border border-slate-600 bg-slate-800/60 px-3 py-1.5 text-sm text-slate-100 hover:border-gold/50 hover:text-amber-100">
+              {sv ? 'Bildarkiv' : 'Image archive'} →
+            </button>
+          </div>
+        </section>
+      )}
+      {!somethingMatched && !isObjectQuery && <SearchFallback query={query} />}</>;
   }
 
   return (
