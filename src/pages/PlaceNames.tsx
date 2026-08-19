@@ -14,6 +14,7 @@ import { usePlaceNamesData } from '@/hooks/usePlaceNamesData';
 import { usePlaceNameAttestations, attestationFormType } from '@/hooks/usePlaceNameAttestations';
 import { useRunicTheophoricSummary } from '@/hooks/useRunicTheophoricSummary';
 import { useNameDatings, eraSortYear } from '@/hooks/useNameDatings';
+import { OldestAttestations } from '@/components/placenames/OldestAttestations';
 import { DistanceStatsCard } from '@/components/placenames/DistanceStatsCard';
 import { FreeDistanceStatsCard } from '@/components/placenames/FreeDistanceStatsCard';
 import { ChurchDistanceCard } from '@/components/placenames/ChurchDistanceCard';
@@ -110,7 +111,9 @@ const PlaceNames = () => {
   const [category, setCategory] = useState<string>('all');
   const [elementKey, setElementKey] = useState<string>('all');
   const [query, setQuery] = useState<string>('');
-  const [tab, setTab] = useState<string>('hypotes'); // kontrollerad så prova-exempel kan byta flik
+  // Landningsvy = "Äldsta belägg" (tvåaxel): det man vill se när man kommer till ortnamnssidan
+  // (Daniel). Screening-verktygen (hypotes/kluster/filolog) nås via arbetsgångs-korten.
+  const [tab, setTab] = useState<string>('belagg'); // kontrollerad så prova-exempel kan byta flik
 
   // Klickbart prova-exempel: fyll i verktyget + scrolla dit (ev. byt flik först).
   const scrollTo = (id: string) => setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
@@ -190,8 +193,8 @@ const PlaceNames = () => {
   return (
     <div className="min-h-screen viking-bg">
       <PageMeta
-        title="Ortnamn"
-        titleEn="Place names"
+        title="Ortnamn – ta reda på åldern"
+        titleEn="Place names – find the age"
         description="Ortnamnslagret: reproducerbar metod för att klassificera fornnordiska ortnamnsled (sakrala, makt, natur), med källor (Wikidata CC0) och redovisade osäkerheter."
         descriptionEn="The place-name layer: a reproducible method for classifying Old Norse place-name elements (sacral, power, nature), with sources (Wikidata CC0) and documented uncertainties."
         keywords="ortnamn, ortnamnsled, sakrala ortnamn, teofora namn, efterled, vikingatid, fornnordiska, toponymi"
@@ -233,6 +236,7 @@ const PlaceNames = () => {
             {([
               { n: null, Icon: BookOpen, key: 'metod', title: sv ? 'Metoden' : 'The method', d: sv ? 'Varför testet är falsifierbart, inte cirkulärt — evidensskikt, kontroller, källor.' : 'Why the test is falsifiable, not circular — evidence layers, controls, sources.' },
               { n: null, Icon: Tag, key: 'led', title: sv ? 'Ortnamnsled' : 'Name elements', d: sv ? 'Välj ett led att testa — etymologi, evidensskikt, antal orter.' : 'Pick an element to test — etymology, evidence layer, counts.' },
+              { n: null, Icon: CalendarClock, key: 'belagg', title: sv ? 'Äldsta belägg' : 'Earliest attestation', d: sv ? 'Tvåaxel: när namnet först skrevs (runsten/brev/Isof) + ledens skikt. Belägg ≠ namnålder.' : 'Two axes: first written (runestone/charter/Isof) + element stratum. Attestation ≠ name-age.' },
               { n: 1, Icon: null, key: 'hypotes', title: sv ? 'Hypotestestaren' : 'Hypothesis tester', d: sv ? 'Screena: korrelerar ledet med något, mot baslinjen?' : 'Screen: does the element correlate, vs the baseline?' },
               { n: 2, Icon: null, key: 'kluster', title: sv ? 'Ortnamnskluster' : 'Name clustering', d: sv ? 'Lokalisera: klumpar det kring ett epicentrum? Skarp kant.' : 'Localise: does it clump around an epicentre? Sharp edge.' },
               { n: 3, Icon: null, key: 'filolog', title: sv ? 'AI Filolog-agent' : 'AI philologist', d: sv ? 'Djupdyk: etymologi bara på det som klarade testen.' : 'Deep dive: etymology only on what survived.' },
@@ -264,6 +268,11 @@ const PlaceNames = () => {
             state) — den separata TabsList-raden togs bort (Daniel: "vi har 2 fliksystem, det räcker
             med det översta"). <Tabs> behålls som innehållsväxlare; korten ovan är enda flikraden. */}
         <Tabs value={tab} onValueChange={setTab} className="mb-10">
+
+          {/* ---- FLIK: ÄLDSTA BELÄGG (tvåaxel: belägg-kedja + skikt/motiv) ---- */}
+          <TabsContent value="belagg">
+            <OldestAttestations sv={sv} />
+          </TabsContent>
 
           {/* ---- FLIK 0: METODEN (ortnamnsmetoden, ej allmän vetenskapsmetodik) ---- */}
           <TabsContent value="metod">

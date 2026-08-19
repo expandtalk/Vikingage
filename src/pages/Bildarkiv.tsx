@@ -188,8 +188,8 @@ const Bildarkiv: React.FC = () => {
   return (
     <div className="min-h-screen viking-bg">
       <PageMeta
-        title="Bildarkiv"
-        titleEn="Image archive"
+        title="Bildarkiv – vikingatid och medeltid"
+        titleEn="Image archive – Viking Age & medieval"
         description="Sök bilder ur Viking Age-plattformen över flera kategorier — runstenar, kyrkokonst, mynt och 3D-modeller. Varje bild visas med bildtext, licens och källa; originalen hotlänkas."
         descriptionEn="Search images across the Viking Age platform — runestones, church art, coins and 3D models. Each image is shown with caption, license and source; originals are hotlinked."
         keywords="bildarkiv, bildsök, runstenar, kyrkokonst, mynt, 3D, RAÄ, Wikimedia, CC-BY, licens"
