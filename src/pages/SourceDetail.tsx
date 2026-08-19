@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, BookOpen, ScrollText, Loader2, Download, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { IiifViewer } from '../components/IiifViewer';
 
 // Källsida: hela källtexten (source_texts, strof för strof) för en historisk källa.
 // Nås från globalsöket (källa → /sources/:id, källtext → /sources/text/:textId).
@@ -36,6 +37,9 @@ interface SourceRow {
   repository: string | null;
   subjects: string[] | null;
   category: string | null;
+  iiif_manifest: string | null;
+  iiif_viewer_url: string | null;
+  iiif_attribution: string | null;
 }
 
 interface TextRow {
@@ -215,6 +219,19 @@ const SourceDetail = () => {
                 </p>
               )}
             </div>
+
+            {/* IIIF — bläddra i den digitaliserade handskriften LIVE ur bibliotekets IIIF-tjänst
+                (BAV/Gallica/e-codices/KB), spegling sker ej; attribution + länk tillbaka. */}
+            {source.iiif_manifest && (
+              <section>
+                <h2 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-gold" />
+                  {sv ? 'Bläddra i handskriften' : 'Browse the manuscript'}
+                </h2>
+                <IiifViewer manifestUrl={source.iiif_manifest} viewerUrl={source.iiif_viewer_url || source.iiif_manifest}
+                  attribution={source.iiif_attribution || 'IIIF'} />
+              </section>
+            )}
 
             {texts && texts.length > 0 ? (
               <section>
