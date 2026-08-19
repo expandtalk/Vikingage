@@ -31,6 +31,10 @@ const PAGES = [
   { p: '/sv/ristare', pair: '/carvers', lang: 'sv', title: 'Ristare', desc: 'Runristare och mästare från vikingatiden. Se deras inskrifter, verkstäder och geografiska spridning.' },
   { p: '/sv/forsvunna-runstenar', pair: '/en/lost-runestones', lang: 'sv', title: 'De försvunna stenarna', desc: 'Runstenar som överlever som 1600- och 1700-talsteckningar (Peringskiöld, Hadorph, Bautil) — ibland allt som finns kvar.' },
   { p: '/en/lost-runestones', pair: '/sv/forsvunna-runstenar', lang: 'en', title: 'The Lost Stones', desc: 'Runestones that survive as 17th- and 18th-century drawings (Peringskiöld, Hadorph, Bautil) — sometimes all that remains.' },
+  { p: '/sv/bildarkiv', pair: '/en/image-archive', lang: 'sv', title: 'Bildarkiv', desc: 'Sökbart bildarkiv: runstensteckningar, kyrkor, landmärken, historiemålningar och manuskript — varje bild med källa och licens.' },
+  { p: '/en/image-archive', pair: '/sv/bildarkiv', lang: 'en', title: 'Image archive', desc: 'Searchable image archive: runestone drawings, churches, landmarks, history paintings and manuscripts — each with source and licence.' },
+  { p: '/sv/de-laudibus', pair: '/en/de-laudibus', lang: 'sv', title: 'Liber de laudibus Sanctae Crucis', desc: 'Bläddringsbar utgåva av Hrabanus Maurus carmina figurata (De laudibus sanctae crucis) — public domain-blad ur Wikimedia Commons.' },
+  { p: '/en/de-laudibus', pair: '/sv/de-laudibus', lang: 'en', title: 'Liber de laudibus Sanctae Crucis', desc: 'A page-turning edition of Hrabanus Maurus carmina figurata (De laudibus sanctae crucis) — public-domain leaves from Wikimedia Commons.' },
 ];
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

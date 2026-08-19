@@ -53,6 +53,12 @@ const routes = [
   { path: '/en/danish-runestones', priority: 0.7 },
   { path: '/sv/forsvunna-runstenar', priority: 0.8 },
   { path: '/en/lost-runestones', priority: 0.7 },
+  { path: '/sv/bildarkiv', priority: 0.8 },
+  { path: '/en/image-archive', priority: 0.7 },
+  { path: '/sv/de-laudibus', priority: 0.7 },
+  { path: '/en/de-laudibus', priority: 0.6 },
+  { path: '/ai-agenter', priority: 0.7 },
+  { path: '/ai-agents', priority: 0.6 },
 ];
 
 const baseUrl = 'https://vikingage.se';
