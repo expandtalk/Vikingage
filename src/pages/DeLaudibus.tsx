@@ -85,13 +85,21 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
           </h1>
           <p className="text-muted-foreground leading-relaxed">
             {sv ? (
-              <>Hrabanus Maurus (ca 814). 94 blad ur <em>Bern, Burgerbibliothek, Cod. 9</em> (public domain).
-              Karolingiska bildkrucifix-dikter (<em>carmina figurata</em>). Bläddra med pilarna eller ←/→;
-              klicka på bladet för att läsa detaljerna.</>
+              <>Hrabanus Maurus, <em>De laudibus sanctae crucis</em>. Verket i sin första form ~810–814,
+              slutversionen (två böcker) efter 831; de bevarade praktexemplaren är från 800-talet. Bladen här
+              kommer från <strong>Wikimedia Commons (public domain)</strong> och härrör från olika handskrifter
+              (bl.a. Paris, BnF, Latin 2422 via Gallica, och Bern, Burgerbibliothek, Cod. 9) — <em>proveniensen
+              varierar per blad</em>. Sidorna är <em>carmina figurata</em>: bokstäverna ligger i ett kvadratiskt
+              raster där de röda fälten bildar egna, självständiga verser (<em>versus intexti</em>) — formen är
+              nyckeln. Bläddra med pilarna eller ←/→; klicka på bladet för detaljerna.</>
             ) : (
-              <>Hrabanus Maurus (c. 814). 94 leaves from <em>Bern, Burgerbibliothek, Cod. 9</em> (public domain).
-              Carolingian figure poems (<em>carmina figurata</em>). Turn pages with the arrows or ←/→; click the
-              leaf to read the detail.</>
+              <>Hrabanus Maurus, <em>De laudibus sanctae crucis</em>. First version c. 810–814, final version
+              (two books) after 831; the surviving presentation copies are 9th-century. The leaves here come from
+              <strong> Wikimedia Commons (public domain)</strong> and derive from several manuscripts (incl.
+              Paris, BnF, Latin 2422 via Gallica, and Bern, Burgerbibliothek, Cod. 9) — <em>provenance varies per
+              leaf</em>. The pages are <em>carmina figurata</em>: letters set in a square grid where the red fields
+              form independent verses (<em>versus intexti</em>) — the form is the key. Turn pages with the arrows
+              or ←/→; click a leaf for the detail.</>
             )}
           </p>
         </div>
@@ -130,7 +138,7 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             <div className="mx-auto mt-3 max-w-3xl text-center text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{shortLabel(cur.title)}</span>
               <span className="mx-2">·</span>{idx + 1} / {total}
-              <span className="mx-2">·</span>Bern, Burgerbibliothek, Cod. 9 · public domain
+              <span className="mx-2">·</span>Wikimedia Commons · public domain
             </div>
 
             {/* Miniatyr-remsa (hoppa direkt) */}
@@ -166,7 +174,7 @@ const DeLaudibus = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             <ChevronRight className="h-7 w-7" />
           </button>
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-lg bg-slate-900/80 px-3 py-1.5 text-xs text-slate-200">
-            {shortLabel(cur.title)} · {idx + 1}/{total} · Bern, Burgerbibliothek, Cod. 9 (PD)
+            {shortLabel(cur.title)} · {idx + 1}/{total} · Wikimedia Commons (PD)
           </div>
         </div>
       )}
