@@ -942,7 +942,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
       {/* FAQ-svar (koncept/gud/period) är INTE en plats → dölj kartan. En fråga som "Vilka var
           vikingarna?" ska inte resolve:a till en orelaterad ort och centrera kartan där. */}
-      {hasCenter && !faq && !showLandscape && !overviewLoading && (
+      {/* Ingen karta om det inte finns något att VISA (Daniel: "har vi inget att visa ska vi inte ha
+          någon karta"). Gudar MED teofora orter (Oden/Tor/Frö…) visar dem på kartan; en gud UTAN
+          (Njord — ingen 'njärd'-taggning i datan) och rena FAQ-frågor får ingen tom/plottrig karta. */}
+      {hasCenter && !showLandscape && !overviewLoading
+        && ((theophoric?.total ?? 0) > 0
+            || (!faq && ((data.count ?? 0) > 0 || matchingPlaces.length > 0 || (siteRaa?.length ?? 0) > 0 || (forts?.length ?? 0) > 0))) && (
         <div className="px-5 pb-4">
           <div
             className={mapExpanded
