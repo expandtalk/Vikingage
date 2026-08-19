@@ -12,7 +12,7 @@ const env=Object.fromEntries(fs.readFileSync('.env','utf8').split('\n').filter(l
 const c=new pg.Client({host:'aws-0-eu-north-1.pooler.supabase.com',port:5432,user:'postgres.mnuifmcjspeaauzehasj',password:env.SUPABASE_DB_PASSWORD,database:'postgres',ssl:{rejectUnauthorized:false}});
 await c.connect();
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const wd=async q=>{for(let a=0;a<5;a++){const r=await fetch('https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(q),{headers:{'User-Agent':'VikingAge-research/1.0 (daniel@expandtalk.se)','Accept':'application/sparql-results+json'}});if(r.status===200)return (await r.json()).results.bindings;console.log('  WDQS '+r.status+' – retry '+(a+1));await sleep(7000);}throw new Error('WDQS gav upp');};
+const wd=async q=>{for(let a=0;a<6;a++){try{const r=await fetch('https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(q),{headers:{'User-Agent':'VikingAge-research/1.0 (daniel@expandtalk.se)','Accept':'application/sparql-results+json'}});if(r.status===200)return (await r.json()).results.bindings;console.log('  WDQS '+r.status+' – retry '+(a+1));}catch(e){console.log('  WDQS nätfel – retry '+(a+1)+': '+((e&&e.message)||e));}await sleep(7000);}throw new Error('WDQS gav upp');};
 
 // Läns-QID: från argv, annars resolva alla "county of Sweden" (Q200547).
 let counties=process.argv.slice(2).filter(x=>/^Q\d+$/.test(x)).map(x=>'wd:'+x);
@@ -50,13 +50,15 @@ async function upsert(list){
 
 let total=0;
 for(const county of counties){
-  const raw=(await wd(qFor(`?p wdt:P31 wd:Q5; wdt:P19 ?pob; wikibase:sitelinks ?sl. ?pob wdt:P131* ${county}.`))).map(parse);
-  // Dedup per QID (flera P18-bilder → flera rader; behåll första).
-  const seenQ=new Set(); const rows=raw.filter(r=>{ if(seenQ.has(r.qid))return false; seenQ.add(r.qid); return true; });
-  // dedup mot redan hämtade i denna körning
-  await c.query(`delete from external_ids where entity_table='persons' and entity_id in (select id::text from persons where wikidata_qid = any($1))`,[rows.map(r=>r.qid)]);
-  const n=await upsert(rows);
-  total+=rows.length;console.log(`${county}: ${rows.length} personer`);await sleep(1200);
+  try{
+    const raw=(await wd(qFor(`?p wdt:P31 wd:Q5; wdt:P19 ?pob; wikibase:sitelinks ?sl. ?pob wdt:P131* ${county}.`))).map(parse);
+    // Dedup per QID (flera P18-bilder → flera rader; behåll första).
+    const seenQ=new Set(); const rows=raw.filter(r=>{ if(seenQ.has(r.qid))return false; seenQ.add(r.qid); return true; });
+    await c.query(`delete from external_ids where entity_table='persons' and entity_id in (select id::text from persons where wikidata_qid = any($1))`,[rows.map(r=>r.qid)]);
+    await upsert(rows);
+    total+=rows.length;console.log(`${county}: ${rows.length} personer${rows.length>=4000?' (KAPAT vid 4000 — kräver andra pass)':''}`);
+  }catch(e){console.log(`${county}: FEL – hoppar över. ${(e&&e.message)||e}`);}
+  await sleep(1200);
 }
 console.log('KLART. Behandlade '+total+' (kan överlappa mellan län).');
 const st=(await c.query(`select count(*) tot, count(*) filter(where is_living) living from persons`)).rows[0];
