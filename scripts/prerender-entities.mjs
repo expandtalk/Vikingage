@@ -20,6 +20,8 @@ const sitemapUrls = []; // samlas för att KOMPLETTERA sitemap.xml (annars bara 
 const emit = (tpl, { dir, canonical, title, desc, lang = 'sv' }) => {
   // hoppa ogiltiga filvägar: query/fragment-URL:er (/explore?focus=…), Windows-otillåtna tecken.
   if (!dir || dir.includes('..') || /[?#*:<>"|]/.test(dir) || !title) return false;
+  // katalog-route → canonical MED slut-snedstreck (matchar Apaches DirectorySlash, undviker 301/canonicalised).
+  if (!canonical.endsWith('/')) canonical += '/';
   const fullTitle = `${title} | ${SITE}`;
   const locale = lang === 'en' ? 'en_GB' : 'sv_SE';
   let html = tpl

@@ -15,6 +15,8 @@ const SITE = 'Viking Age';
 // Kurerade högvärdessidor. sv/en-par → hreflang. desc = kort SEO-copy.
 const PAGES = [
   { p: '/', pair: null, lang: 'sv', title: 'Utforska det nordiska arvet', desc: 'Tusentals runstenar, vikingatida platser och fornnordisk historia — källkritisk forskningsplattform med interaktiv karta och databas.' },
+  { p: '/explore', pair: null, lang: 'sv', title: 'Utforska kartan', desc: 'Interaktiv karta över runstenar, fornlämningar, kyrkor, fornborgar, vägar och vikingatida platser i Skandinavien — filtrera och sök i landskapet.' },
+  { p: '/sv/svamp', pair: null, lang: 'sv', title: 'Svampguide & svampkarta', desc: 'Svampguide med kännetecken, förväxlingsrisk och säkerhet — plus platsmedveten karta med nederbörd (SMHI) och marktyper. Planerings- och utbildningsstöd, aldrig en ätlighetsdom.' },
   { p: '/inscriptions', pair: '/sv/runinskrifter', lang: 'en', title: 'Runic Inscriptions', desc: 'Explore thousands of Scandinavian runic inscriptions — search, filter and analyse runestones with interactive maps.' },
   { p: '/sv/runinskrifter', pair: '/inscriptions', lang: 'sv', title: 'Runinskrifter', desc: 'Utforska tusentals runinskrifter från vikingatiden. Sök, filtrera och analysera runstenar med interaktiva kartor.' },
   { p: '/en/medieval-charters', pair: '/sv/medeltidsbrev', lang: 'en', title: 'Medieval charters (SDHK)', desc: 'Browse 44,264 Swedish medieval charters up to 1540 — date, place, abstract and full text where available.' },
@@ -39,18 +41,21 @@ const PAGES = [
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const abs = (u) => ORIGIN + u;
+// Kanonisk URL med SLUT-SNEDSTRECK för katalog-routes (Apache serverar /sv/ristare/ och 301:ar
+// no-slash→slash → canonical/hreflang MÅSTE ha slash annars "canonicalised"/hreflang-non-200).
+const canon = (u) => (u === '/' ? `${ORIGIN}/` : `${ORIGIN}${u}/`);
 
 const tpl = fs.readFileSync(path.join(distPath, 'index.html'), 'utf8');
 let written = 0;
 
 for (const page of PAGES) {
   const fullTitle = `${page.title} | ${SITE}`;
-  const canonical = abs(page.p);
+  const canonical = canon(page.p);
   const locale = page.lang === 'en' ? 'en_GB' : 'sv_SE';
   const alt = page.pair
     ? (page.lang === 'en'
-        ? `  <link rel="alternate" hreflang="sv" href="${abs(page.pair)}" />\n  <link rel="alternate" hreflang="en" href="${canonical}" />\n  <link rel="alternate" hreflang="x-default" href="${canonical}" />\n`
-        : `  <link rel="alternate" hreflang="sv" href="${canonical}" />\n  <link rel="alternate" hreflang="en" href="${abs(page.pair)}" />\n  <link rel="alternate" hreflang="x-default" href="${abs(page.pair)}" />\n`)
+        ? `  <link rel="alternate" hreflang="sv" href="${canon(page.pair)}" />\n  <link rel="alternate" hreflang="en" href="${canonical}" />\n  <link rel="alternate" hreflang="x-default" href="${canonical}" />\n`
+        : `  <link rel="alternate" hreflang="sv" href="${canonical}" />\n  <link rel="alternate" hreflang="en" href="${canon(page.pair)}" />\n  <link rel="alternate" hreflang="x-default" href="${canon(page.pair)}" />\n`)
     : '';
 
   let html = tpl

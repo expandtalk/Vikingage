@@ -1,6 +1,10 @@
 Options -MultiViews
 RewriteEngine On
 
+# Tvinga HTTPS (säkerhet + kanonisk URL; Screaming Frog flaggade http://-varianter). Först av allt.
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
 # Kanonisk värd: tvinga icke-www. Annars ligger inloggnings-sessionen i localStorage på
 # fel origin (www.vikingage.se ≠ vikingage.se) och man ser utloggad ut. En origin = en session.
 RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
