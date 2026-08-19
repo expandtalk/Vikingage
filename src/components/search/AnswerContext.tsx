@@ -186,6 +186,29 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     () => matchElements(query).map((k) => getElement(k)).filter(Boolean) as PlaceNameElement[],
     [query],
   );
+  // PERSON-TRÄFF: exakt namn i persons (Wikidata CC0-domänen). Ger ett snabbt personkort i st.f. att
+  // spinna på plats-berikning (Daniel: "det står söker … vi ville se knowledge graphen"). hasCenter
+  // (plats) vinner om namnet också är en ort.
+  const { data: personHit } = useQuery({
+    queryKey: ['answer-person', query],
+    enabled: query.trim().length >= 3,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<any | null> => {
+      const { data } = await (supabase as any).from('persons')
+        .select('id,name,birth_year,death_year,occupations,description_sv,image_url,image_license,image_credit,birthplace_label,sbl,wikidata_qid,viaf')
+        .ilike('name', query.trim()).order('sitelinks', { ascending: false }).limit(1);
+      return (data ?? [])[0] ?? null;
+    },
+  });
+  const { data: personKg = [] } = useQuery({
+    queryKey: ['answer-person-kg', personHit?.id],
+    enabled: !!personHit?.id,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ predicate: string; other_type: string; other_label: string }[]> => {
+      const { data } = await (supabase as any).rpc('graph_neighborhood', { p_id: personHit.id });
+      return (data ?? []) as any[];
+    },
+  });
   const placesLayerRef = useRef<L.LayerGroup | null>(null); // alla platser som matchar sökningen (multi-plats)
 
   // Multi-plats: alla ortnamn som matchar frågan (exakt + prefix) med koordinat → plottas ALLA på
@@ -901,6 +924,57 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       <p className="mt-1.5 text-[10px] text-slate-500">{sv ? 'Tolkning av namnled — inte ett fastställt påstående.' : 'Interpretation of name elements — not an established claim.'}</p>
     </div>
   ) : null;
+
+  // PERSONKORT (snabbt) — när frågan är en person och INTE en plats: rendera direkt, ingen spinner.
+  if (personHit && !hasCenter) {
+    const yr = personHit.birth_year ? `${personHit.birth_year}${personHit.death_year ? '–' + personHit.death_year : '–'}` : null;
+    const occ = Array.isArray(personHit.occupations) ? personHit.occupations.join(', ') : null;
+    const PRED: Record<string, string> = { originates_from: sv ? 'kommer från' : 'from', born_in: sv ? 'född i' : 'born in', married_to: sv ? 'gift med' : 'married to', child_of: sv ? 'barn till' : 'child of', mentioned_in: sv ? 'nämns i' : 'mentioned in' };
+    return (
+      <div className="border-b border-slate-800 bg-slate-900">
+        <div className="flex gap-4 p-5">
+          {personHit.image_url && (
+            <img src={personHit.image_url} alt={personHit.name} loading="lazy"
+              className="h-28 w-24 shrink-0 rounded-lg border border-slate-700 object-cover" onError={hideCard} />
+          )}
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-white">{personHit.name}</h1>
+            <p className="mt-0.5 text-sm text-amber-200/90">{[yr, occ].filter(Boolean).join(' · ')}</p>
+            {personHit.birthplace_label && (
+              <button type="button" onClick={() => onQuery?.(personHit.birthplace_label)}
+                className="mt-1 inline-flex items-center gap-1 text-sm text-gold hover:underline">
+                <MapPin className="h-3.5 w-3.5" />{sv ? 'Kommer från' : 'From'} {personHit.birthplace_label}
+              </button>
+            )}
+          </div>
+        </div>
+        {personHit.description_sv && (
+          <p className="px-5 pb-3 text-[15px] leading-relaxed text-slate-200">{personHit.description_sv}</p>
+        )}
+        {personKg.length > 0 && (
+          <div className="px-5 pb-3">
+            <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+              <Users className="h-3.5 w-3.5" /> {sv ? 'Kopplingar i kunskapsgrafen' : 'Knowledge-graph links'}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {personKg.slice(0, 12).map((e, i) => (
+                <button key={i} type="button" onClick={() => onQuery?.(e.other_label)}
+                  className="rounded-full border border-slate-600 bg-slate-800/60 px-2.5 py-1 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100">
+                  <span className="text-slate-400">{PRED[e.predicate] || e.predicate} · </span>{e.other_label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="flex flex-wrap gap-3 border-t border-slate-800 px-5 py-3 text-xs">
+          {personHit.sbl && <a href={`https://sok.riksarkivet.se/sbl/Presentation.aspx?id=${personHit.sbl}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-gold hover:underline"><ExternalLink className="h-3.5 w-3.5" />Svenskt biografiskt lexikon</a>}
+          {personHit.wikidata_qid && <a href={`https://www.wikidata.org/wiki/${personHit.wikidata_qid}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-slate-400 hover:text-amber-200"><ExternalLink className="h-3.5 w-3.5" />Wikidata</a>}
+          {personHit.image_credit && <span className="text-slate-500">{sv ? 'Bild' : 'Image'}: {personHit.image_credit}{personHit.image_license ? ` (${personHit.image_license})` : ''}</span>}
+        </div>
+        <p className="px-5 pb-4 text-[11px] text-slate-500">{sv ? 'Uppgifter ur Wikidata (CC0) — verifiera mot Svenskt biografiskt lexikon. Länkar för fördjupning.' : 'Data from Wikidata (CC0) — verify against the national biographical dictionary.'}</p>
+      </div>
+    );
+  }
 
   const answerLoading = isLoading || overviewLoading || faqLoading || attLoading
     || chartersLoading || theophoricLoading || fornvannenLoading || paintingsLoading;

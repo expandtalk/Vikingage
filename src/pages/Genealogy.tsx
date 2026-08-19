@@ -193,6 +193,8 @@ const Genealogy = () => {
   const sv = language === 'sv';
   const [persons, setPersons] = useState<GPerson[]>([]);
   const [parishes, setParishes] = useState<Parish[]>([]);
+  // Djupsök: medeltidsbrev (SDHK) som NÄMNER den valda orten — samma RPC som svarspanelen.
+  const [charters, setCharters] = useState<{ total: number; rows: { sdhk_id: number; year: number | null; date_display: string | null; regest: string | null }[] }>({ total: 0, rows: [] });
   const [shoreYear, setShoreYear] = useState<number | null>(null);
   const [selected, setSelected] = useState<Parish | null>(null);
   const [footRadius, setFootRadius] = useState(4000);   // daglig värld till fots
@@ -277,6 +279,16 @@ const Genealogy = () => {
       .then(({ data }: { data: NearbyFeature[] | null }) => setNearby(data ?? []));
   }, [selected, footRadius]);
 
+  // Djupsök i medeltidsbreven: hämta brev som nämner ortens namn (medieval_charters_browse).
+  useEffect(() => {
+    if (!selected) { setCharters({ total: 0, rows: [] }); return; }
+    (supabase.rpc as any)('medieval_charters_browse', { q: selected.name, page_size: 6 })
+      .then(({ data }: { data: any[] | null }) => {
+        const rows = (data ?? []) as any[];
+        setCharters({ total: Number(rows[0]?.total_count ?? 0), rows });
+      }).catch(() => setCharters({ total: 0, rows: [] }));
+  }, [selected]);
+
   // Nollställ målet när man byter socken.
   useEffect(() => { setRouteTarget(null); }, [selected]);
 
@@ -357,6 +369,13 @@ const Genealogy = () => {
                 <button onClick={lookupPlace} className="bg-gold/90 hover:bg-gold text-slate-900 font-medium rounded px-3 py-1.5 text-sm shrink-0">{sv ? 'Slå upp' : 'Look up'}</button>
               </div>
               {lookupErr && <p className="text-xs text-red-300 mt-1.5">{lookupErr}</p>}
+              {/* Saga — AI-författaren (under utveckling): berätta bygdens historia källgrundat. */}
+              <div className="mt-3 rounded-lg border border-gold/30 bg-gold/5 p-3 text-xs text-muted-foreground">
+                <div className="font-medium text-amber-100 mb-1">✍️ {sv ? 'Snart: låt Saga berätta bygdens historia' : 'Coming: let Saga tell the district’s story'}</div>
+                {sv
+                  ? <>Saga är vår <Link to="/ai-agenter" className="text-gold hover:underline">AI-författare</Link> som väver en <b>källgrundad berättelse</b> om din släktplats i valbar stil (sagastil, släktkrönika, popvet-reporter). Varje faktapåstående är spårbart till en källa; prosan hålls skild från fakta och texten märks tydligt som <b>AI-tolkning</b>. Under utveckling.</>
+                  : <>Saga is our <Link to="/ai-agents" className="text-gold hover:underline">AI author</Link> that weaves a <b>source-grounded story</b> about your ancestral place in a chosen style (saga, family chronicle, popular-science). Every claim traces to a source; prose is kept separate from fact and the text is clearly labelled <b>AI interpretation</b>. Under development.</>}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -366,8 +385,9 @@ const Genealogy = () => {
             <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2 text-gold"><MapPin className="h-5 w-5" /> {sv ? 'Anfäderna på kartan' : 'Ancestors on the map'}</CardTitle></CardHeader>
             <CardContent>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} noData={shoreStatus === 'no-data'} /></div>
-                <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" noData={shoreStatus === 'no-data'} /></div>
+                {/* noData-hinten satt i GenMap (där shoreStatus finns); föräldern saknar mapRef → utelämna (odefinierad shoreStatus kraschade sidan). */}
+                <div className="hidden sm:block"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} /></div>
+                <div className="sm:hidden"><ShorelinePeriodControl value={shoreYear} onChange={setShoreYear} variant="floating" /></div>
                 <label className="flex items-center gap-1.5 text-xs cursor-pointer text-muted-foreground hover:text-foreground" title={sv ? 'Visa SGU:s jordarter (morän, lera, sand…) — vilken mark gården låg på.' : 'Show SGU Quaternary deposits — the ground the farm sat on.'}>
                   <input type="checkbox" checked={showSoil} onChange={(e) => setShowSoil(e.target.checked)} className="accent-amber-600" />
                   🌾 {sv ? 'Jordarter (SGU)' : 'Soil (SGU)'}
@@ -407,6 +427,23 @@ const Genealogy = () => {
                     ))}
                   </div>
                   <p className="text-[11px] opacity-60 mt-0.5">{sv ? 'Foton av runstenarna i bygden (Wikimedia/RAÄ). Ort-foton generellt saknas i databasen.' : 'Photos of the district’s runestones (Wikimedia/RAÄ).'}</p>
+                </div>
+              )}
+
+              {/* Djupsök: medeltidsbrev (SDHK) som nämner orten. */}
+              {charters.total > 0 && (
+                <div>
+                  <div className="text-foreground font-medium mb-1">📜 {sv ? 'I medeltidsbreven' : 'In the medieval charters'} ({charters.total})</div>
+                  <div className="space-y-1.5">
+                    {charters.rows.map((ch) => (
+                      <a key={ch.sdhk_id} href={`https://sok.riksarkivet.se/sdhk?SDHK=${ch.sdhk_id}`} target="_blank" rel="noopener noreferrer"
+                        className="block rounded border border-slate-700 bg-slate-800/40 px-2 py-1.5 hover:border-gold/50">
+                        <span className="text-amber-100 text-xs font-medium">{ch.date_display || ch.year || '—'}</span>
+                        {ch.regest && <span className="block text-[11px] text-muted-foreground line-clamp-2">{ch.regest}</span>}
+                      </a>
+                    ))}
+                  </div>
+                  <p className="text-[11px] opacity-60 mt-0.5">{sv ? 'Brev i Svenskt Diplomatariums huvudkartotek (SDHK) som nämner ortnamnet — länk till Riksarkivet. Namnträff kan vara homonym; verifiera i brevet.' : 'Charters in the SDHK mentioning the place name — link to the National Archives. May be a homonym; verify in the letter.'}</p>
                 </div>
               )}
 
