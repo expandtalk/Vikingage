@@ -235,6 +235,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const [hiddenAdvKinds, setHiddenAdvKinds] = useState<Set<string>>(new Set()); // tom = alla badtyper/fiske synliga
   const [advExpanded, setAdvExpanded] = useState(false); // underkategorierna hopfällda som default (Daniel)
   const [mapExpanded, setMapExpanded] = useState(false); // söksvarets karta i helskärm (Daniel)
+  const [showMapOptIn, setShowMapOptIn] = useState(false); // FAQ-svar: karta på begäran ("Visa karta")
   const [lmExpanded, setLmExpanded] = useState(false);   // Landmärken: visa hela rader (6/12) → "visa fler"
   const [archExpanded, setArchExpanded] = useState(false); // Arkivbilder: visa hela rader (6/12) → "visa fler"
   // Bildrutnätet är 6 kol på desktop → visa HELA rader (6 eller 12), aldrig en trasig sista rad
@@ -942,12 +943,22 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
       {/* FAQ-svar (koncept/gud/period) är INTE en plats → dölj kartan. En fråga som "Vilka var
           vikingarna?" ska inte resolve:a till en orelaterad ort och centrera kartan där. */}
-      {/* Ingen karta om det inte finns något att VISA (Daniel: "har vi inget att visa ska vi inte ha
-          någon karta"). Gudar MED teofora orter (Oden/Tor/Frö…) visar dem på kartan; en gud UTAN
-          (Njord — ingen 'njärd'-taggning i datan) och rena FAQ-frågor får ingen tom/plottrig karta. */}
+      {/* Karta bara när det finns något att visa. Gudar MED teofora orter (Oden/Tor/Frö) + platser med
+          innehåll visas direkt. Rena FAQ-svar (Njord, "Vilka var vikingarna?") får INGEN karta by
+          default — svaret räcker — men en "Visa karta"-knapp om det ändå finns en plats att visa
+          (Daniel: svara på frågan, hämta hem kartan om man är intresserad). */}
+      {hasCenter && !showLandscape && !overviewLoading && !!faq && (theophoric?.total ?? 0) === 0 && !showMapOptIn
+        && ((data.count ?? 0) > 0 || matchingPlaces.length > 0 || (siteRaa?.length ?? 0) > 0 || (forts?.length ?? 0) > 0) && (
+        <div className="px-5 pb-4">
+          <button type="button" onClick={() => setShowMapOptIn(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-800/60 px-3 py-2 text-sm text-slate-200 hover:border-amber-500/50 hover:text-amber-100">
+            🗺 {sv ? 'Visa karta' : 'Show map'}
+          </button>
+        </div>
+      )}
       {hasCenter && !showLandscape && !overviewLoading
         && ((theophoric?.total ?? 0) > 0
-            || (!faq && ((data.count ?? 0) > 0 || matchingPlaces.length > 0 || (siteRaa?.length ?? 0) > 0 || (forts?.length ?? 0) > 0))) && (
+            || ((!faq || showMapOptIn) && ((data.count ?? 0) > 0 || matchingPlaces.length > 0 || (siteRaa?.length ?? 0) > 0 || (forts?.length ?? 0) > 0))) && (
         <div className="px-5 pb-4">
           <div
             className={mapExpanded
