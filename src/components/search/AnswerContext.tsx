@@ -662,8 +662,14 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       // fitKey inkluderar antal matchande platser → kartan ramar om när multi-plats-lagret laddat.
       const fitKey = `${data.center.lat},${data.center.lng}|mp${matchingPlaces.length}|th${theophoric?.rows.length ?? 0}`;
       if (fitKeyRef.current !== fitKey) {
-        if (pts.length >= 2) m.fitBounds(L.latLngBounds(pts), { padding: [24, 24], maxZoom: 11 });
-        else m.setView([data.center.lat, data.center.lng], pts.length ? 11 : 9);
+        // Flera platser med samma namn → rama in dem. Annars: enskild upplöst plats (t.ex. Kalmar)
+        // → zooma IN på platsen (stadsnivå), inte utzoomat över alla spridda närliggande features
+        // (Daniel: "bör ha zoomat in på Kalmar, nu känns den utzoomad").
+        if (matchingPlaces.length >= 2 && pts.length >= 2) {
+          m.fitBounds(L.latLngBounds(pts), { padding: [24, 24], maxZoom: 12 });
+        } else {
+          m.setView([data.center.lat, data.center.lng], 12);
+        }
         fitKeyRef.current = fitKey;
       }
       // Flera omritningar över några frames tills layouten satt sig (belt-and-suspenders utöver RO).
@@ -1059,23 +1065,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       <div className="px-5 pb-4 lg:flex lg:gap-5">
         <div className="min-w-0 lg:flex-[2] grid gap-4 sm:grid-cols-2 content-start">
         <div className="contents">
-          {data.research?.length > 0 && (
-            <section className="order-last">
-              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
-                <GraduationCap className="h-3.5 w-3.5" /> {sv ? 'Relaterad forskning' : 'Related research'}
-              </h3>
-              <ul className="space-y-2">
-                {data.research.map((r) => (
-                  <li key={r.id} className="border-l-2 border-slate-700 pl-2.5">
-                    <span className="text-sm font-medium text-white">{r.name}</span>
-                    {(r.role || r.affiliation) && (
-                      <span className="block text-xs text-slate-400">{[r.role, r.affiliation].filter(Boolean).join(' · ')}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
+          {/* "Relaterad forskning" flyttad till sidans SLUT (Daniel) — se researchBlock nära botten. */}
 
           {/* Utforska regionen flyttad till höger-railen (aside nedan). */}
 
@@ -1331,20 +1321,20 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
       )}
 
-      {/* FÖRDJUPNING — 50/50: poddar/video (lyssna) till vänster, Fornvännen-artiklar (läs) till höger,
-          så ytan täcks 100% i st.f. tom halva. Utan Fornvännen-träffar håller podden ~52% (korta rader
-          ska inte spänna hela bredden). */}
-      <div className={`px-5 pb-4 ${fornvannen.length > 0 ? 'grid gap-4 lg:grid-cols-2 lg:items-start' : 'lg:max-w-[52%]'}`}>
-        <div><TopicMedia query={query} lat={data.center?.lat} lng={data.center?.lng} /></div>
+      {/* FÖRDJUPNING — poddar/video (lyssna) till vänster, Fornvännen-artiklar (läs) till höger.
+          Poddkolumnen löper långt → Fornvännen ges MER bredd (2:3) och en 2-kolumnslista så den
+          tar mer utrymme och alignar med fler poddar (Daniel), i st.f. en tunn strimla. */}
+      <div className={`px-5 pb-4 ${fornvannen.length > 0 ? 'grid gap-5 lg:grid-cols-5 lg:items-start' : 'lg:max-w-[52%]'}`}>
+        <div className="lg:col-span-2"><TopicMedia query={query} lat={data.center?.lat} lng={data.center?.lng} /></div>
         {fornvannen.length > 0 && (
-          <section className="text-left">
+          <section className="text-left lg:col-span-3">
             <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300">
               <Library className="h-3.5 w-3.5" /> {sv ? 'Läs mer i Fornvännen' : 'Read more in Fornvännen'}
             </h3>
             {/* Ingen inre scroll (gav scrollruta med tom yta under) och ingen hård kap till några få
                 (podd-kolumnen bredvid löper långt → Fornvännen ska inte se stympad ut, Daniel). Listan
                 växer till sin naturliga längd (frågan hämtar upp till 20); "Se alla" tar resten. */}
-            <ul className="space-y-1.5">
+            <ul className="grid gap-x-5 gap-y-1.5 sm:grid-cols-2">
               {fornvannen.map((a) => (
                 <li key={a.id}>
                   <a href={a.url} target="_blank" rel="noopener noreferrer"
@@ -1436,6 +1426,25 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           </section>
         );
       })()}
+
+      {/* RELATERAD FORSKNING — sist på sidan (Daniel: sekundärt, ska inte konkurrera med innehållet). */}
+      {data.research?.length > 0 && (
+        <section className="border-t border-slate-800 px-5 pt-4 pb-5 text-left">
+          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
+            <GraduationCap className="h-3.5 w-3.5" /> {sv ? 'Relaterad forskning' : 'Related research'}
+          </h3>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {data.research.map((r) => (
+              <li key={r.id} className="border-l-2 border-slate-700 pl-2.5">
+                <span className="text-sm font-medium text-white">{r.name}</span>
+                {(r.role || r.affiliation) && (
+                  <span className="block text-xs text-slate-400">{[r.role, r.affiliation].filter(Boolean).join(' · ')}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* Lightbox: större bild + bildtext + "öppna källan"-länk (för den som VILL lämna). */}
       {lightbox && (
