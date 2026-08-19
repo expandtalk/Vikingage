@@ -235,6 +235,11 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const [hiddenAdvKinds, setHiddenAdvKinds] = useState<Set<string>>(new Set()); // tom = alla badtyper/fiske synliga
   const [advExpanded, setAdvExpanded] = useState(false); // underkategorierna hopfällda som default (Daniel)
   const [mapExpanded, setMapExpanded] = useState(false); // söksvarets karta i helskärm (Daniel)
+  const [lmExpanded, setLmExpanded] = useState(false);   // Landmärken: visa hela rader (6/12) → "visa fler"
+  const [archExpanded, setArchExpanded] = useState(false); // Arkivbilder: visa hela rader (6/12) → "visa fler"
+  // Bildrutnätet är 6 kol på desktop → visa HELA rader (6 eller 12), aldrig en trasig sista rad
+  // (Daniel: "6 på en rad eller 12", inte 7/9). expanded → visa alla.
+  const rowCap = (n: number, expanded: boolean): number => expanded ? n : (n <= 6 ? n : n < 12 ? 6 : 12);
 
   // PLATS-NAV (nivå 2): dra ihop tvärgående fasetter för en plats. Medeltidsbrev som NÄMNER platsen
   // (medieval_charters_browse, ilike på regest/plats/utfärdare) — "40 brev nämner Brännkyrka" — och
@@ -810,7 +815,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             <ImageIcon className="h-3.5 w-3.5" /> {sv ? 'Landmärken' : 'Landmarks'}
           </h3>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-            {landmarkImages.map((lm) => (
+            {landmarkImages.slice(0, rowCap(landmarkImages.length, lmExpanded)).map((lm) => (
               <button key={lm.image_url} type="button" title={lm.landmark_name}
                 onClick={() => setLightbox({ url: lm.image_url, desc: lm.landmark_name, license: lm.license_code, credit: lm.photographer })}
                 className="group relative overflow-hidden rounded-lg border border-slate-700 bg-slate-800 text-left">
@@ -822,6 +827,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
               </button>
             ))}
           </div>
+          {landmarkImages.length > rowCap(landmarkImages.length, false) && (
+            <button type="button" onClick={() => setLmExpanded((v) => !v)}
+              className="mt-1.5 text-[11px] text-amber-300/80 underline decoration-dotted underline-offset-2 hover:text-amber-200">
+              {lmExpanded ? (sv ? 'visa färre' : 'show fewer') : `${sv ? 'visa fler' : 'show more'} (${landmarkImages.length - rowCap(landmarkImages.length, false)}) →`}
+            </button>
+          )}
           <p className="mt-1.5 text-[11px] text-slate-500">
             {sv ? 'Byggnader & monument · Wikimedia Commons (fri licens), hotlänkade — klicka för källa.' : 'Buildings & monuments · Wikimedia Commons (free license), hotlinked — click for source.'}
           </p>
@@ -1354,9 +1365,11 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         const shown = new Set<string>([
           ...((data.images ?? []) as any[]).map((im) => im.url),
           ...(heroPainting ? [heroPainting.image_url] : []),
+          ...landmarkImages.map((lm) => lm.image_url), // dedup mot Landmärken ovan (samma byggnadsbilder)
         ]);
         const arch = archiveImages.filter((a) => !shown.has(a.image_url));
         if (!arch.length) return null;
+        const archShown = arch.slice(0, rowCap(arch.length, archExpanded));
         const CAT: Record<string, { sv: string; en: string }> = {
           runestone_drawing: { sv: 'Runstensteckning', en: 'Runestone drawing' },
           runestone: { sv: 'Runsten', en: 'Runestone' },
@@ -1370,7 +1383,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
               <ImageIcon className="h-3.5 w-3.5" /> {sv ? 'Arkivbilder' : 'Archive images'}
             </h3>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-              {arch.map((a, i) => (
+              {archShown.map((a, i) => (
                 <button key={a.image_url + i} type="button" title={a.title ?? undefined}
                   onClick={() => setLightbox({ url: a.image_url, desc: a.title ?? undefined, license: a.license_code ?? undefined, credit: a.credit ?? a.source_institution ?? undefined })}
                   className="group relative overflow-hidden rounded-lg border border-slate-700 bg-slate-800 text-left">
@@ -1382,6 +1395,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 </button>
               ))}
             </div>
+            {arch.length > rowCap(arch.length, false) && (
+              <button type="button" onClick={() => setArchExpanded((v) => !v)}
+                className="mt-2 text-[11px] text-amber-300/80 underline decoration-dotted underline-offset-2 hover:text-amber-200">
+                {archExpanded ? (sv ? 'visa färre' : 'show fewer') : `${sv ? 'visa fler' : 'show more'} (${arch.length - rowCap(arch.length, false)}) →`}
+              </button>
+            )}
             <p className="mt-2 text-[11px] text-slate-500">
               {sv ? 'Ur bildarkivet — varje bild med källa/licens (öppnas i visaren).' : 'From the image archive — each with source/licence.'}
             </p>

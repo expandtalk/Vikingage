@@ -22,7 +22,19 @@ interface Props {
 export const MapLegend: React.FC<Props> = ({ defs, enabled, onToggle, title = 'Lager', className = '', mapRef, placement = 'overlay' }) => {
   const [open, setOpen] = useState(true);
   const [fs, setFs] = useState(false);
-  const layers = defs.filter((d) => d.group !== 'basemap');
+  // Sortera lagren efter antal (fallande) — labeln bär "· N" (t.ex. "Runstenar · 63"). Annars
+  // hamnade "Avrättningsplatser · 1" före "Badplatser · 40" i godtycklig def-ordning (Daniel).
+  // Stabil: lager utan siffra behåller sin relativa ordning och sjunker sist. Rör INTE `defs`
+  // (toggle-cap för baskartor bygger på def-ordningen) — bara visningsordningen.
+  const legendCount = (label: string): number => {
+    const m = label.match(/·\s*(\d[\d\s]*)\s*$/);
+    return m ? parseInt(m[1].replace(/\s/g, ''), 10) : -1;
+  };
+  const layers = defs
+    .filter((d) => d.group !== 'basemap')
+    .map((d, i) => ({ d, i, c: legendCount(d.label) }))
+    .sort((a, b) => (b.c - a.c) || (a.i - b.i))
+    .map((x) => x.d);
   const base = defs.filter((d) => d.group === 'basemap');
 
   // (1) Klick på kartan (när legenden är hopfälld) → öppna legenden. Gäller alla kartor.

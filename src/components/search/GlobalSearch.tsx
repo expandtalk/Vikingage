@@ -232,17 +232,27 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
   const insc = byType.get('inscription');
   insc?.rows.sort((a, b) =>
     (a.signum ?? a.title).localeCompare(b.signum ?? b.title, 'sv', { numeric: true, sensitivity: 'base' }));
+  // Slå ihop grupper som delar samma svenska etikett — entitetstyperna `place` och `place_name`
+  // heter BÅDA "Ortnamn", vilket gav "Ortnamn" två gånger i listan (Daniel). En rubrik, rader
+  // konkatenerade i första förekomstens ordning. Behåller första gruppens type för prioritet.
+  const merged: Group[] = [];
+  const byLabel = new Map<string, Group>();
+  for (const g of groups) {
+    const ex = byLabel.get(g.labelSv);
+    if (ex) ex.rows.push(...g.rows);
+    else { byLabel.set(g.labelSv, g); merged.push(g); }
+  }
   // Gruppordning: ORTNAMN före SOCKEN (Daniel) — fast prioritet för geo-grupperna, övriga typer
   // behåller sin relevansordning (originalindex) efter dem.
   const GROUP_PRIORITY: Record<string, number> = {
     landscape: 0, city: 1, place: 2, place_name: 3, excursion: 4, heritage_site: 5,
     fortress: 6, hillfort: 6, parish: 7, hundred: 8, inscription: 9,
   };
-  const origIdx = new Map(groups.map((g, i) => [g.type, i]));
-  groups.sort((a, b) =>
+  const origIdx = new Map(merged.map((g, i) => [g.type, i]));
+  merged.sort((a, b) =>
     (GROUP_PRIORITY[a.type] ?? 100 + (origIdx.get(a.type) ?? 0)) -
     (GROUP_PRIORITY[b.type] ?? 100 + (origIdx.get(b.type) ?? 0)));
-  return groups;
+  return merged;
 };
 
 // "Gå vidare"-sektion: visar en entitets kunskapsgraf-grannar som klickbara
