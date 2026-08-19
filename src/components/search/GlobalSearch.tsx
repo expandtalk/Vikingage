@@ -225,10 +225,14 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
     if (g.rows.length >= (GROUP_CAP[h.entity_type] ?? defaultCap)) continue;
     // Inskrifter: signum först, populärnamnet efter ("Öl 1 — Karlevistenen").
     const isNamedInscription = h.entity_type === 'inscription' && h.signum && h.signum !== h.label;
+    const rowTitle = isNamedInscription ? `${h.signum} — ${h.label}` : h.label;
+    // Dedup ÄKTA dubbletter inom gruppen: samma titel + samma undertext (t.ex. två "Gotland ·
+    // bebyggelse" ur OSM) klutta annars listan (Daniel). Behåll den först rankade.
+    if (g.rows.some((r) => r.title.toLowerCase() === rowTitle.toLowerCase() && (r.subtitle ?? '') === (h.sublabel ?? ''))) continue;
     g.rows.push({
       key: `${h.entity_type}-${h.entity_id}`,
       id: h.entity_id,
-      title: isNamedInscription ? `${h.signum} — ${h.label}` : h.label,
+      title: rowTitle,
       subtitle: h.sublabel ?? undefined,
       signum: h.signum ?? undefined,
       snippet: stripTags(h.snippet),

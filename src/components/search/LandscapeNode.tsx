@@ -258,7 +258,7 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
       </div>
 
       {overview.local_sources?.length > 0 && (
-        <div className="mt-3 rounded-lg border border-slate-700 bg-slate-800/40 p-3">
+        <div className="mt-3 max-w-md rounded-lg border border-slate-700 bg-slate-800/40 p-3">
           <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300/80">
             <ScrollText className="h-3.5 w-3.5" />{sv ? 'Lokala källor & lagar' : 'Local sources & laws'}
           </div>
