@@ -6,7 +6,7 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, ShieldCheck, Search, ScrollText, Landmark, Map, Bug, Database, Users, Cpu, Ship, Bone, Dna, Gavel, BookOpen, Compass, Languages, Accessibility, Stamp, Bike, Route } from 'lucide-react';
+import { Bot, ShieldCheck, Search, ScrollText, Landmark, Map, Bug, Database, Users, Cpu, Ship, Bone, Dna, Gavel, BookOpen, Compass, Languages, Accessibility, Stamp, Bike, Route, Coins } from 'lucide-react';
 
 // /ai-agenter (svenska) + /ai-agents (engelska) — transparenssida under Vetenskap: vilka typer av
 // AI-agenter plattformen använder och HUR. Ärlig beskrivning — produkt-AI (live) skiljs från de
@@ -54,44 +54,6 @@ const PRODUCT_AI: AgentCard[] = [
     howEn: 'Hybrid search — lexical (full text) + semantic (vector embeddings) — against a knowledge graph '
       + 'of entity types and relations. Candidates are ranked by relevance, proximity and prominence; the '
       + 'answer links onward through the graph so you can follow and check the chain yourself.',
-  },
-];
-
-// Produkt-AI UNDER UTVECKLING — modeller vi bygger nu. Ärligt märkta (datamodell vs körbar).
-const BUILDING_AI: (AgentCard & { status: string; statusEn: string })[] = [
-  {
-    icon: Ship,
-    name: 'Lars-Erik',
-    title: 'Segel-AI (ruttmotor)', titleEn: 'Sailing AI (routing engine)',
-    role: 'Planerar historiska sjörutter — seglar vatten-bara mellan waypoints med tre skrovlägen '
-      + '(forntidsbåt/rodd, vikingaskepp med köl+råsegel, Hansakogg), vind ur SMHI-klimatologin och '
-      + 'drag över ed. Rättar t.ex. Valdemars segelled där den råkar gå över land.',
-    roleEn: 'Plans historical sea routes — sails water-only between waypoints with three hull modes '
-      + '(pre-keel rowing, keeled Viking ship with square sail, Hanseatic cog), wind from SMHI '
-      + 'climatology and portage across necks. Corrects e.g. King Valdemar’s itinerary where it crosses land.',
-    how: 'Kostnadsbaserad A* över ett sjörutnät. Skrov-polarerna är MODELLERADE intervall ur experimentell '
-      + 'arkeologi (Roskilde/Oseberg) — inga påhittade tal. Rutten är en hypotes, inte den historiska leden.',
-    howEn: 'Cost-based A* over a sea grid. Hull polars are MODELLED ranges from experimental archaeology '
-      + '(Roskilde/Oseberg) — no invented figures. The route is a hypothesis, not the historical itinerary.',
-    status: 'Fas 1 — motorn byggd (skrovprofiler + vind + A*); kräver högupplöst kustlinje för skarpa rutter.',
-    statusEn: 'Phase 1 — engine built (hull profiles + wind + A*); needs a high-resolution coastline for sharp routes.',
-  },
-  {
-    icon: BookOpen,
-    name: 'Saga',
-    title: 'AI-författare (släktplats)', titleEn: 'AI author (ancestral place)',
-    role: 'Skriver en källgrundad berättelse om din släktplats i valbar stilarketyp (isländsk sagastil, '
-      + 'släktkrönika, populärvetenskaplig reporter) — beskriven som hantverk, aldrig en kopia av en '
-      + 'levande författares röst.',
-    roleEn: 'Writes a source-grounded story about your ancestral place in a chosen style archetype (saga '
-      + 'style, family chronicle, popular-science reporter) — described as craft, never a copy of a living '
-      + 'author’s voice.',
-    how: 'Fakta hålls SKILT från prosan: varje faktapåstående är spårbart till en källa och får status '
-      + '(belagt/tolkning/obelagt) som en verifierare prövar. Texten är alltid märkt som AI-tolkning.',
-    howEn: 'Facts are kept SEPARATE from the prose: every factual claim is traceable to a source and given '
-      + 'a status (attested/interpretation/unattested) a verifier checks. The text is always labelled AI interpretation.',
-    status: 'Datamodell live (stilarketyper + narrativ + källbelagda påståenden); generatorn under utveckling.',
-    statusEn: 'Data model live (style archetypes + narratives + sourced claims); the generator is under development.',
   },
 ];
 
@@ -158,12 +120,15 @@ const WORK_AGENTS: AgentCard[] = [
   },
 ];
 
-// Under förberedelse — specialister vi bygger nu; enklare testfall körs under hösten 2026.
+// Specialistagenter som körs på begäran. `status` (valfri) = ärlig märkning för dem som ännu är
+// under utveckling (t.ex. produkt-AI:t Segel-AI och AI-författaren, flyttade hit från egen sektion).
 const PLANNED_AGENTS: {
   icon: React.ComponentType<{ className?: string }>;
   name?: string;
   title: string; titleEn: string; focus: string; focusEn: string;
+  status?: string; statusEn?: string;
 }[] = [
+  { icon: Coins, name: 'Kent', title: 'Ekonomisk historiker', titleEn: 'Economic historian', focus: 'Monetarisering och silverekonomi (mynt, hacksilver, viktsystem), handel och emporier, jordägande och gods, urbanisering (stadsprivilegier, Hansan), kyrklig ekonomi samt diplom som ekonomiska transaktioner (köp, pant, gåva). Svarar gärna som diagram.', focusEn: 'Monetisation and the silver economy (coins, hacksilver, weight systems), trade and emporia, landholding and estates, urbanisation (town privileges, the Hansa), church economy and charters as economic transactions (sale, pledge, gift). Answers preferably as a diagram.' },
   { icon: ScrollText, name: 'Rune', title: 'Runolog', titleEn: 'Runologist', focus: 'Läsning, datering (stiltypologi) och ristarattribution av runinskrifter.', focusEn: 'Reading, dating (style typology) and carver attribution of runic inscriptions.' },
   { icon: Ship, name: 'Sigrid', title: 'Marinarkeolog', titleEn: 'Marine archaeologist', focus: 'Vrak, farleder och överfarter — med segelkronologin (rodd före segel, ~700).', focusEn: 'Wrecks, fairways and crossings — with the sail chronology (rowing before sail, ~700).' },
   { icon: Bone, name: 'Beata', title: 'Osteolog', titleEn: 'Osteologist', focus: 'Ben: ålder, kön, patologi och trauma — redovisat som skattningar med osäkerhet.', focusEn: 'Bones: age, sex, pathology and trauma — reported as estimates with uncertainty.' },
@@ -177,6 +142,8 @@ const PLANNED_AGENTS: {
   { icon: Route, name: 'Vera', title: 'Kommunikationsarkeolog (vägar)', titleEn: 'Communications archaeologist (roads)', focus: 'Fornvägar, hålvägar, broar, vadställen, knutpunkter och nätverk — least-cost-path-modellering av troliga rutter (RAÄ färdväg).', focusEn: 'Ancient roads, hollow ways, bridges, fords, junctions and networks — least-cost-path modelling of likely routes (RAÄ travel routes).' },
   { icon: Bike, name: 'Gösta', title: 'Gravel-cyklist (fältväg)', titleEn: 'Gravel cyclist (field roads)', focus: 'Fornvägar sett från sadeln — framkomlighet, least-cost-rutter, samt väg- och gatunamns betydelse. Kombinerar väg-arkeologi, geologi, biologi och kulturgeografi.', focusEn: 'Ancient roads seen from the saddle — passability, least-cost routes, and the meaning of road and street names. Combines road archaeology, geology, biology and human geography.' },
   { icon: ShieldCheck, name: 'Vidar', title: 'Verifierare (drift-vakt)', titleEn: 'Verifier (drift guard)', focus: 'Prövar claims mot källa, befordrar staging → kanon och rekoncilierar kanon mot källorna. Maskinellt verifierbart (koordinat, DB-count) kan auto-befordras; tolkning kräver människa.', focusEn: 'Tests claims against sources, promotes staging → canon and reconciles canon against the sources. Machine-verifiable items (coordinate, DB count) can auto-promote; interpretation requires a human.' },
+  { icon: Ship, name: 'Lars-Erik', title: 'Segel-AI (ruttmotor)', titleEn: 'Sailing AI (routing engine)', focus: 'Historiska sjörutter — vatten-bara mellan waypoints, tre skrovlägen (rodd/vikingaskepp/kogg), vind ur SMHI-klimatologin och drag över ed. Rutten är en hypotes, inte den historiska leden.', focusEn: 'Historical sea routes — water-only between waypoints, three hull modes (rowing/Viking ship/cog), wind from SMHI climatology and portage across necks. The route is a hypothesis, not the historical itinerary.', status: 'Fas 1 — motorn byggd; kräver högupplöst kustlinje för skarpa rutter.', statusEn: 'Phase 1 — engine built; needs a high-resolution coastline for sharp routes.' },
+  { icon: BookOpen, name: 'Saga', title: 'AI-författare (släktplats)', titleEn: 'AI author (ancestral place)', focus: 'Källgrundad berättelse om din släktplats i valbar stilarketyp (sagastil, släktkrönika, popvet-reporter). Fakta hålls skilt från prosan; texten är märkt som AI-tolkning.', focusEn: 'A source-grounded story about your ancestral place in a chosen style archetype (saga style, family chronicle, popular-science reporter). Facts kept separate from the prose; the text is labelled AI interpretation.', status: 'Datamodell live; generatorn under utveckling.', statusEn: 'Data model live; generator under development.' },
 ];
 
 // "Så arbetar agenterna" — fyra principkort.
@@ -289,37 +256,6 @@ const AiAgents = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
         </div>
       </section>
 
-      {/* Produkt-AI under utveckling */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
-          <Cpu className="h-6 w-6 text-gold" />
-          {sv ? 'Under utveckling' : 'Under development'}
-        </h2>
-        <p className="text-sm text-muted-foreground mb-5 leading-relaxed max-w-3xl">
-          {sv
-            ? 'Modeller vi bygger nu — ärligt märkta med hur långt de kommit. Samma grundregel: ingen gissning, allt källgrundat och märkt.'
-            : 'Models we are building now — honestly labelled with how far they have come. Same ground rule: no guessing, everything source-grounded and labelled.'}
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {BUILDING_AI.map((a) => (
-            <Card key={a.title} className="viking-card">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2 text-gold">
-                  <a.icon className="h-5 w-5" /> {sv ? a.title : a.titleEn}<AgentName name={a.name} />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-2">
-                <p><strong className="text-foreground">{sv ? 'Uppgift:' : 'Task:'}</strong> {sv ? a.role : a.roleEn}</p>
-                <p><strong className="text-foreground">{sv ? 'Hur:' : 'How:'}</strong> {sv ? a.how : a.howEn}</p>
-                <p className="text-xs rounded-md border border-gold/30 bg-gold/5 px-2 py-1 text-foreground/90">
-                  <strong>{sv ? 'Status:' : 'Status:'}</strong> {sv ? a.status : a.statusEn}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
       {/* Forsknings- och utvecklingsagenter */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
@@ -382,6 +318,11 @@ const AiAgents = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
                 <a.icon className="h-4 w-4 text-gold" /> {sv ? a.title : a.titleEn}<AgentName name={a.name} />
               </div>
               <p className="text-muted-foreground">{sv ? a.focus : a.focusEn}</p>
+              {a.status && (
+                <p className="mt-2 text-xs rounded-md border border-gold/30 bg-gold/5 px-2 py-1 text-foreground/90">
+                  <strong>{sv ? 'Status:' : 'Status:'}</strong> {sv ? a.status : a.statusEn}
+                </p>
+              )}
             </div>
           ))}
         </div>
