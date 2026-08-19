@@ -195,6 +195,13 @@
   border: 1px solid rgba(148, 163, 184, 0.2);
   backdrop-filter: blur(8px);
 }
+/* WCAG: .viking-card hårdkodar en MÖRK bakgrund som råa CSS-regler — kompatibilitetslagret för
+   ljust tema fångar bara Tailwind-klasser, så i ljust läge blev det mörkt kort + mörk text
+   (oläsbart). Ljus-tema-override → ljust kort, mörk text = korrekt kontrast (Daniel). */
+:root[data-theme="light"] .viking-card {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(15, 23, 42, 0.14);
+}
 
 /* Standardized feature card styling */
 .feature-card {
