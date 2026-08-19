@@ -47,7 +47,16 @@ const dedupImages = <T extends { url: string; desc: string | null }>(imgs: T[]):
   return out;
 };
 
-type GalleryImage = { url: string; desc: string | null; type?: string | null; source?: string | null; license?: string | null; credit?: string | null };
+type GalleryImage = { url: string; desc: string | null; type?: string | null; source?: string | null; license?: string | null; credit?: string | null; thumb?: string | null };
+// Rutnätet laddar en KOMPRIMERAD thumb (thumb ?? url); lightboxen laddar full upplösning (url).
+// Saknas thumb-filen (404) → fall tillbaka till full-bilden i st.f. att dölja kortet.
+const gridSrc = (im: GalleryImage) => im.thumb || im.url;
+const thumbFallback = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const el = e.currentTarget as HTMLImageElement & { dataset: DOMStringMap };
+  const full = el.dataset.full;
+  if (full && el.src !== full) { el.src = full; return; } // thumb saknas → visa full
+  hideCard(e); // även full trasig → dölj kortet (Pinterest-läxan)
+};
 const isDrawing = (t?: string | null) => { const x = (t || '').toLowerCase(); return x === 'teckning' || x === 'etsning'; };
 // Licens → visningsetikett + länk till licenstexten. Attribuering krävs för CC BY/BY-SA (fotograf),
 // därför visas credit + licens i lightboxen. Okända licenser filtreras redan bort i RPC:n (visas ej).
@@ -108,8 +117,8 @@ const TieredGallery: React.FC<{
         {hero && (
           <button type="button" onClick={() => onOpen(hero)} title={hero.desc ?? undefined}
             className="group relative col-span-2 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 text-left">
-            <img src={hero.url} alt={hero.desc ?? ''} loading="lazy"
-              className="aspect-[3/2] w-full object-cover transition group-hover:opacity-90" onError={hideCard} />
+            <img src={gridSrc(hero)} data-full={hero.url} alt={hero.desc ?? ''} loading="lazy" decoding="async"
+              className="aspect-[3/2] w-full object-cover transition group-hover:opacity-90" onError={thumbFallback} />
             {hero.desc && (
               <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 pb-2 pt-8 text-xs font-medium text-white line-clamp-2">
                 {shortCaption(hero.desc)}
@@ -134,9 +143,9 @@ const TieredGallery: React.FC<{
           // TIER 2/3: foto → stående 2:3-kort
           <button key={`p-${i}`} type="button" onClick={() => onOpen(img)} title={img.desc ?? undefined}
             className={`group relative overflow-hidden rounded-xl border border-slate-700 bg-slate-800 text-left${wide[img.url] ? ' col-span-2' : ''}`}>
-            <img src={img.url} alt={img.desc ?? ''} loading="lazy"
+            <img src={gridSrc(img)} data-full={img.url} alt={img.desc ?? ''} loading="lazy" decoding="async"
               onLoad={(e) => { const t = e.currentTarget; if (t.naturalWidth > t.naturalHeight * 1.2 && !wide[img.url]) setWide((w) => ({ ...w, [img.url]: true })); }}
-              className={`w-full object-cover transition group-hover:opacity-90 ${wide[img.url] ? 'aspect-[3/2]' : 'aspect-[2/3]'}`} onError={hideCard} />
+              className={`w-full object-cover transition group-hover:opacity-90 ${wide[img.url] ? 'aspect-[3/2]' : 'aspect-[2/3]'}`} onError={thumbFallback} />
             {img.desc && (
               <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-2 pb-1.5 pt-6 text-[10px] leading-tight text-white line-clamp-2">
                 {shortCaption(img.desc)}
@@ -351,7 +360,13 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         const manifest = (await r.json()) as Record<string, string[]>;
         const files = (manifest[ex.photoDir] ?? []).filter((f) => !/^thumb\./i.test(f));
         // desc=null → dedupas per URL (unika), så alla foton visas (annars kollapsar samma bildtext).
-        return files.map((f) => ({ url: `/excursion-photos/${ex.photoDir}/${f}`, desc: null, type: 'foto' as const }));
+        // thumb → komprimerad /thumbs/-kopia i rutnätet (faller tillbaka till full om den saknas),
+        // url → full upplösning i lightboxen. Kör scripts/data/make-image-thumbs.mjs för att generera.
+        return files.map((f) => ({
+          url: `/excursion-photos/${ex.photoDir}/${f}`,
+          thumb: `/excursion-photos/${ex.photoDir}/thumbs/${f}`,
+          desc: null, type: 'foto' as const,
+        }));
       } catch { return []; }
     },
   });
