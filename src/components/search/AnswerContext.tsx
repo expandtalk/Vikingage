@@ -1324,8 +1324,10 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300">
               <Library className="h-3.5 w-3.5" /> {sv ? 'Läs mer i Fornvännen' : 'Read more in Fornvännen'}
             </h3>
-            {/* max-höjd + scroll matchar podd-kolumnens längd (Daniel) i st.f. en lång spalt. */}
-            <ul className="max-h-72 space-y-1.5 overflow-y-auto pr-1">
+            {/* Ingen inre scroll (gav scrollruta med tom yta under) och ingen hård kap till några få
+                (podd-kolumnen bredvid löper långt → Fornvännen ska inte se stympad ut, Daniel). Listan
+                växer till sin naturliga längd (frågan hämtar upp till 20); "Se alla" tar resten. */}
+            <ul className="space-y-1.5">
               {fornvannen.map((a) => (
                 <li key={a.id}>
                   <a href={a.url} target="_blank" rel="noopener noreferrer"
@@ -1354,10 +1356,20 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
       {/* SEKTION 3: tierat bildgalleri — hero + 2:3-kort + pappersmatta + Tier-5 typkort.
           Öppnas i LIGHTBOX (håll kvar användaren i plattformen, Daniel), inte i ny flik. */}
-      {(((data.images?.length ?? 0) > 0) || ((data.missing?.length ?? 0) > 0)) && (
-        <TieredGallery images={data.images ?? []} missing={data.missing ?? []} sv={sv}
-          onOpen={(img) => setLightbox({ url: img.url, desc: img.desc, license: img.license, credit: img.credit })} />
-      )}
+      {(() => {
+        // Dedup mot bilder som redan visats högre upp (Landmärken + målnings-hero) så samma
+        // bild inte dyker upp två gånger (Daniel: "6 stora bilder men samma som högst upp").
+        const topShown = new Set<string>([
+          ...landmarkImages.map((lm) => lm.image_url),
+          ...(heroPainting ? [heroPainting.image_url] : []),
+        ]);
+        const galleryImages = (data.images ?? []).filter((im: any) => !topShown.has(im.url));
+        if (galleryImages.length === 0 && ((data.missing?.length ?? 0) === 0)) return null;
+        return (
+          <TieredGallery images={galleryImages} missing={data.missing ?? []} sv={sv}
+            onOpen={(img) => setLightbox({ url: img.url, desc: img.desc, license: img.license, credit: img.credit })} />
+        );
+      })()}
 
       {/* ARKIVBILDER: bild-på-sök (images_for_query) — fyller topiska sökningar (runstenar, kyrkor,
           runestone drawings). Dedupas mot redan visade bilder + heron. */}
