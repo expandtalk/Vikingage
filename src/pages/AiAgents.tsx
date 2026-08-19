@@ -50,6 +50,42 @@ const PRODUCT_AI: AgentCard[] = [
   },
 ];
 
+// Produkt-AI UNDER UTVECKLING — modeller vi bygger nu. Ärligt märkta (datamodell vs körbar).
+const BUILDING_AI: (AgentCard & { status: string; statusEn: string })[] = [
+  {
+    icon: Ship,
+    title: 'Segel-AI (ruttmotor)', titleEn: 'Sailing AI (routing engine)',
+    role: 'Planerar historiska sjörutter — seglar vatten-bara mellan waypoints med tre skrovlägen '
+      + '(forntidsbåt/rodd, vikingaskepp med köl+råsegel, Hansakogg), vind ur SMHI-klimatologin och '
+      + 'drag över ed. Rättar t.ex. Valdemars segelled där den råkar gå över land.',
+    roleEn: 'Plans historical sea routes — sails water-only between waypoints with three hull modes '
+      + '(pre-keel rowing, keeled Viking ship with square sail, Hanseatic cog), wind from SMHI '
+      + 'climatology and portage across necks. Corrects e.g. King Valdemar’s itinerary where it crosses land.',
+    how: 'Kostnadsbaserad A* över ett sjörutnät. Skrov-polarerna är MODELLERADE intervall ur experimentell '
+      + 'arkeologi (Roskilde/Oseberg) — inga påhittade tal. Rutten är en hypotes, inte den historiska leden.',
+    howEn: 'Cost-based A* over a sea grid. Hull polars are MODELLED ranges from experimental archaeology '
+      + '(Roskilde/Oseberg) — no invented figures. The route is a hypothesis, not the historical itinerary.',
+    status: 'Fas 1 — motorn byggd (skrovprofiler + vind + A*); kräver högupplöst kustlinje för skarpa rutter.',
+    statusEn: 'Phase 1 — engine built (hull profiles + wind + A*); needs a high-resolution coastline for sharp routes.',
+  },
+  {
+    icon: BookOpen,
+    title: 'AI-författare (släktplats)', titleEn: 'AI author (ancestral place)',
+    role: 'Skriver en källgrundad berättelse om din släktplats i valbar stilarketyp (isländsk sagastil, '
+      + 'släktkrönika, populärvetenskaplig reporter) — beskriven som hantverk, aldrig en kopia av en '
+      + 'levande författares röst.',
+    roleEn: 'Writes a source-grounded story about your ancestral place in a chosen style archetype (saga '
+      + 'style, family chronicle, popular-science reporter) — described as craft, never a copy of a living '
+      + 'author’s voice.',
+    how: 'Fakta hålls SKILT från prosan: varje faktapåstående är spårbart till en källa och får status '
+      + '(belagt/tolkning/obelagt) som en verifierare prövar. Texten är alltid märkt som AI-tolkning.',
+    howEn: 'Facts are kept SEPARATE from the prose: every factual claim is traceable to a source and given '
+      + 'a status (attested/interpretation/unattested) a verifier checks. The text is always labelled AI interpretation.',
+    status: 'Datamodell live (stilarketyper + narrativ + källbelagda påståenden); generatorn under utveckling.',
+    statusEn: 'Data model live (style archetypes + narratives + sourced claims); the generator is under development.',
+  },
+];
+
 // Forsknings- och utvecklingsagenter — specialister som bygger, verifierar och underhåller
 // plattformen. De UTREDER och FÖRESLÅR; en människa granskar och beslutar innan något publiceras.
 const WORK_AGENTS: AgentCard[] = [
@@ -233,6 +269,37 @@ const AiAgents = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
               <CardContent className="text-sm text-muted-foreground space-y-2">
                 <p><strong className="text-foreground">{sv ? 'Uppgift:' : 'Task:'}</strong> {sv ? a.role : a.roleEn}</p>
                 <p><strong className="text-foreground">{sv ? 'Hur:' : 'How:'}</strong> {sv ? a.how : a.howEn}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Produkt-AI under utveckling */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+          <Cpu className="h-6 w-6 text-gold" />
+          {sv ? 'Under utveckling' : 'Under development'}
+        </h2>
+        <p className="text-sm text-muted-foreground mb-5 leading-relaxed max-w-3xl">
+          {sv
+            ? 'Modeller vi bygger nu — ärligt märkta med hur långt de kommit. Samma grundregel: ingen gissning, allt källgrundat och märkt.'
+            : 'Models we are building now — honestly labelled with how far they have come. Same ground rule: no guessing, everything source-grounded and labelled.'}
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {BUILDING_AI.map((a) => (
+            <Card key={a.title} className="viking-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2 text-gold">
+                  <a.icon className="h-5 w-5" /> {sv ? a.title : a.titleEn}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground space-y-2">
+                <p><strong className="text-foreground">{sv ? 'Uppgift:' : 'Task:'}</strong> {sv ? a.role : a.roleEn}</p>
+                <p><strong className="text-foreground">{sv ? 'Hur:' : 'How:'}</strong> {sv ? a.how : a.howEn}</p>
+                <p className="text-xs rounded-md border border-gold/30 bg-gold/5 px-2 py-1 text-foreground/90">
+                  <strong>{sv ? 'Status:' : 'Status:'}</strong> {sv ? a.status : a.statusEn}
+                </p>
               </CardContent>
             </Card>
           ))}
