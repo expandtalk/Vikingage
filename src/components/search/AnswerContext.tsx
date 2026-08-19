@@ -1451,6 +1451,27 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </section>
       )}
 
+      {/* FORSKARNAS VERK om ämnet — ur source_entity_links (KG-kant: källa --studerar--> entitet).
+          Libris-verk kopplade till entiteten (t.ex. Birka, runstenar) via forskarnas bibliografier. */}
+      {(((data as any).works?.length ?? 0) > 0) && (
+        <section className="border-t border-slate-800 px-5 pt-4 pb-5 text-left">
+          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
+            <Library className="h-3.5 w-3.5" /> {sv ? 'Forskning & verk om ämnet' : 'Research & works on the topic'}
+          </h3>
+          <ul className="grid gap-1.5 sm:grid-cols-2">
+            {((data as any).works as Array<{ title: string; author: string; year: number | null; isbn: string | null; scholar: string | null }>).map((w, i) => (
+              <li key={i} className="border-l-2 border-slate-700 pl-2.5">
+                <span className="text-sm font-medium text-white leading-snug">{w.title}</span>
+                <span className="block text-xs text-slate-400">{[w.scholar || w.author, w.year].filter(Boolean).join(' · ')}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[11px] text-slate-500">
+            {sv ? 'Verk som behandlar ämnet — ur forskarnas bibliografier (Libris/KB).' : "Works on the topic — from the scholars' bibliographies (Libris/KB)."}
+          </p>
+        </section>
+      )}
+
       {/* Lightbox: större bild + bildtext + "öppna källan"-länk (för den som VILL lämna). */}
       {lightbox && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 p-4" onClick={() => setLightbox(null)}>
