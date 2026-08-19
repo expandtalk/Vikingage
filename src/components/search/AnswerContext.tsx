@@ -13,6 +13,7 @@ import { LandscapeNode, type LandscapeOverview } from './LandscapeNode';
 import { CharterAnswerSection } from './CharterAnswerSection';
 import { FaqAnswer } from './FaqAnswer';
 import { EXCURSIONS } from '@/data/excursions';
+import { GENERAL_IMAGES, GENERAL_IMAGE_DIR } from '@/data/generalImages';
 
 // De 25 svenska landskapen (etablerade, ej gissade) → routas till HELA-landskaps-vyn i stället för
 // den radie-justerbara ort-vyn. Gemener + trim jämförs. Gotland är både landskap OCH kommun → hit.
@@ -370,6 +371,21 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       } catch { return []; }
     },
   });
+
+  // ALLMÄNNA BILDER: Daniels egna foton av äkta sigill/mynt, kopplade till sökord (Magnus Ladulås
+  // → hans sigill, Kalmar → stadssigillet…). Statiskt → useMemo, ingen nätrunda. Egen licens.
+  const generalImages = useMemo((): GalleryImage[] => {
+    const ql = query.trim().toLowerCase();
+    if (ql.length < 3) return [];
+    return GENERAL_IMAGES
+      .filter((g) => g.match.some((m) => ql === m || ql.includes(m)))
+      .map((g) => ({
+        url: `${GENERAL_IMAGE_DIR}/${g.file}`,
+        thumb: `${GENERAL_IMAGE_DIR}/thumbs/${g.file}`,
+        desc: sv ? g.caption_sv : g.caption_en,
+        type: 'foto' as const,
+      }));
+  }, [query, sv]);
 
   const { data: paintings = [], isLoading: paintingsLoading } = useQuery({
     queryKey: ['answer-paintings', query],
@@ -1516,8 +1532,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           ...landmarkImages.map((lm) => lm.image_url),
           ...(heroPainting ? [heroPainting.image_url] : []),
         ]);
-        // Utflyktsfoton (Daniels egna) FÖRST → de blir hero + toppkort för platsen.
-        const galleryImages = [...excursionPhotos, ...(data.images ?? [])].filter((im: any) => !topShown.has(im.url));
+        // Daniels egna foton FÖRST → utflyktsfoton + allmänna föremålsfoton (sigill/mynt) blir hero.
+        const galleryImages = [...excursionPhotos, ...generalImages, ...(data.images ?? [])].filter((im: any) => !topShown.has(im.url));
         if (galleryImages.length === 0 && ((data.missing?.length ?? 0) === 0)) return null;
         return (
           <TieredGallery images={galleryImages} missing={data.missing ?? []} sv={sv}
