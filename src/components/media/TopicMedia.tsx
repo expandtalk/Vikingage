@@ -34,8 +34,8 @@ const MediaCard: React.FC<{ m: MediaHit }> = ({ m }) => (
 
 // Ett medium (poddar el. video): gruppera per källa (ordnat på relevans = första förekomst),
 // sortera avsnitt inom grupp (nyast/mest sedda först), platta ut och paginera 6/sida.
-const MediumBlock: React.FC<{ icon: React.ReactNode; label: string; items: MediaHit[]; sortBy: 'date' | 'views'; en: boolean }>
-  = ({ icon, label, items, sortBy, en }) => {
+const MediumBlock: React.FC<{ icon: React.ReactNode; label: string; items: MediaHit[]; sortBy: 'date' | 'views'; en: boolean; twoCol?: boolean }>
+  = ({ icon, label, items, sortBy, en, twoCol }) => {
   const [page, setPage] = useState(0);
   const flat = useMemo(() => {
     const order: string[] = [];
@@ -60,7 +60,7 @@ const MediumBlock: React.FC<{ icon: React.ReactNode; label: string; items: Media
     if (m.source_name !== lastSrc) {
       lastSrc = m.source_name;
       rows.push(
-        <h4 key={`h-${m.item_id}`} className="text-sm font-semibold text-foreground mt-3 first:mt-0">
+        <h4 key={`h-${m.item_id}`} className={`text-sm font-semibold text-foreground mt-3 first:mt-0${twoCol ? ' sm:col-span-2' : ''}`}>
           {m.source_name}{m.creator ? <span className="font-normal text-muted-foreground"> · {m.creator}</span> : null}
         </h4>,
       );
@@ -71,7 +71,7 @@ const MediumBlock: React.FC<{ icon: React.ReactNode; label: string; items: Media
   return (
     <div className="mb-5 text-left">
       <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">{icon}{label}</h3>
-      <div className="space-y-2">{rows}</div>
+      <div className={twoCol ? 'grid gap-2 sm:grid-cols-2 items-start' : 'space-y-2'}>{rows}</div>
       {pages > 1 && (
         <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
           <button disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}
@@ -85,7 +85,7 @@ const MediumBlock: React.FC<{ icon: React.ReactNode; label: string; items: Media
   );
 };
 
-export const TopicMedia: React.FC<{ query: string; lat?: number | null; lng?: number | null }> = ({ query, lat, lng }) => {
+export const TopicMedia: React.FC<{ query: string; lat?: number | null; lng?: number | null; twoCol?: boolean }> = ({ query, lat, lng, twoCol }) => {
   const { language } = useLanguage();
   const en = language === 'en';
   const { data } = useMediaForTopic(query, 40);
@@ -143,8 +143,8 @@ export const TopicMedia: React.FC<{ query: string; lat?: number | null; lng?: nu
         {en ? 'Third-party episodes and films we recommend — we link out to the respective creators.'
             : 'Externa avsnitt och filmer vi tipsar om — vi länkar ut till respektive skapare.'}
       </p>
-      <MediumBlock icon={<Headphones className="h-4 w-4 text-gold" />} label={en ? 'Podcasts' : 'Poddar'} items={pods} sortBy="date" en={en} />
-      <MediumBlock icon={<Youtube className="h-4 w-4 text-gold" />} label="Video" items={vids} sortBy="views" en={en} />
+      <MediumBlock icon={<Headphones className="h-4 w-4 text-gold" />} label={en ? 'Podcasts' : 'Poddar'} items={pods} sortBy="date" en={en} twoCol={twoCol} />
+      <MediumBlock icon={<Youtube className="h-4 w-4 text-gold" />} label="Video" items={vids} sortBy="views" en={en} twoCol={twoCol} />
       {/* Vidare till hela poddkatalogen (alla kanaler, sökbar) — upptäckt. */}
       <Link to="/podcast" className="inline-flex items-center gap-1 text-xs font-medium text-gold hover:underline">
         {en ? 'See all podcasts & channels →' : 'Se alla poddar & kanaler →'}

@@ -1387,41 +1387,39 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
       )}
 
-      {/* FÖRDJUPNING — poddar/video (lyssna) till vänster, Fornvännen-artiklar (läs) till höger.
-          Poddkolumnen löper långt → Fornvännen ges MER bredd (2:3) och en 2-kolumnslista så den
-          tar mer utrymme och alignar med fler poddar (Daniel), i st.f. en tunn strimla. */}
-      <div className={`px-5 pb-4 ${fornvannen.length > 0 ? 'grid gap-5 lg:grid-cols-5 lg:items-start' : 'lg:max-w-[52%]'}`}>
-        <div className="lg:col-span-2"><TopicMedia query={query} lat={data.center?.lat} lng={data.center?.lng} /></div>
+      {/* FÖRDJUPNING (Daniel): Fornvännen tvåspaltigt över HELA main-bredden överst, poddar/video
+          tvåspaltigt under. Allt är KORT som länkar ut (rättighetssäkert — ingen återgiven artikeltext/
+          PDF; CC BY-nyansen: DiVA-backlisten är fritt läsbar, öppnas hos utgivaren). */}
+      <div className="px-5 pb-4 space-y-6">
         {fornvannen.length > 0 && (
-          <section className="text-left lg:col-span-3">
+          <section className="text-left">
             <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300">
               <Library className="h-3.5 w-3.5" /> {sv ? 'Läs mer i Fornvännen' : 'Read more in Fornvännen'}
             </h3>
-            {/* Ingen inre scroll (gav scrollruta med tom yta under) och ingen hård kap till några få
-                (podd-kolumnen bredvid löper långt → Fornvännen ska inte se stympad ut, Daniel). Listan
-                växer till sin naturliga längd (frågan hämtar upp till 20); "Se alla" tar resten. */}
-            <ul className="grid gap-x-5 gap-y-1.5 sm:grid-cols-2">
+            {/* Tvåspaltigt kortgalleri över full bredd; listan växer till naturlig längd (upp till 20),
+                "Se alla" tar resten (3 600+). */}
+            <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
               {fornvannen.map((a) => (
                 <li key={a.id}>
                   <a href={a.url} target="_blank" rel="noopener noreferrer"
-                    className="block border-l-2 border-slate-700 pl-2.5 hover:border-sky-500/60">
+                    className="block rounded-lg border border-slate-700/70 bg-slate-800/40 px-3 py-2 hover:border-sky-500/60 hover:bg-slate-800/70">
                     <span className="text-sm font-medium text-white leading-snug line-clamp-2">{a.title}</span>
-                    {a.year && <span className="block text-xs text-slate-400">Fornvännen · {a.year}</span>}
+                    {a.year && <span className="mt-0.5 block text-xs text-slate-400">Fornvännen · {a.year}</span>}
                   </a>
                 </li>
               ))}
             </ul>
-            {/* Alla titelträffar visas ovan (upp till 20); länk vidare till hela beståndet (3 600+). */}
             <button type="button"
               onClick={() => onGo(`${sv ? '/sv/fornvannen' : '/en/fornvannen'}?q=${encodeURIComponent(query.trim())}`)}
               className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-sky-300 hover:text-sky-200">
               {sv ? `Se alla i Fornvännen (${fornvannen.length}${fornvannen.length >= 20 ? '+' : ''}) →` : `See all in Fornvännen (${fornvannen.length}${fornvannen.length >= 20 ? '+' : ''}) →`}
             </button>
             <p className="mt-2 text-[11px] text-slate-400">
-              {sv ? 'Fornvännen (KVHAA/RAÄ), CC BY 4.0 — öppnas som PDF hos utgivaren.' : 'Fornvännen (KVHAA), CC BY 4.0 — opens as publisher PDF.'}
+              {sv ? 'Fornvännen (KVHAA/RAÄ) — öppnas som PDF hos utgivaren (fri tillgång; ny OA-utgivning CC BY 4.0).' : 'Fornvännen (KVHAA/RAÄ) — opens as publisher PDF (open access; new OA issues CC BY 4.0).'}
             </p>
           </section>
         )}
+        <TopicMedia query={query} lat={data.center?.lat} lng={data.center?.lng} twoCol />
       </div>
 
       {/* Medeltidsbrev (SDHK) utfärdade i orten — efter podden. Visas bara för länkade KG-orter. */}
