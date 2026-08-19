@@ -17,6 +17,7 @@ import { useOffTopicSenses, useCanonicalSense } from '@/hooks/useOffTopicSenses'
 import { useSearchThumbs } from '@/hooks/useSearchThumbs';
 import { RelationMindmap } from './RelationMindmap';
 import { AnswerContext } from './AnswerContext';
+import { ExploreRail } from './ExploreRail';
 import { SearchHelp } from './SearchHelp';
 import { GodQuestions } from './GodQuestions';
 import { SuggestPlaceForm } from './SuggestPlaceForm';
@@ -661,10 +662,12 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
       const { data, error } = await supabase.functions.invoke('search-answer', { body: { q, language: sv ? 'sv' : 'en' } });
       if (error) throw error;
       const d = data as { answer?: string; sources?: Hit[]; error?: string };
-      setAiAnswer(d.answer ?? d.error ?? (sv ? 'Inget svar.' : 'No answer.'));
+      // Inget svar/fel → dölj AI-sektionen (null) i st.f. en skrämmande fel-banner. FAQ/träffarna
+      // bär svaret ändå (Daniel: "AI-svaret kunde inte hämtas" ser ut som att vi inte vet).
+      setAiAnswer(d.answer && d.answer.trim() ? d.answer : null);
       setAiSources(d.sources ?? []);
     } catch {
-      setAiAnswer(sv ? 'AI-svaret kunde inte hämtas just nu.' : 'Could not fetch the AI answer right now.');
+      setAiAnswer(null);
     } finally {
       setAiLoading(false);
     }
@@ -1062,6 +1065,8 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
               <aside className="hidden min-h-0 flex-col overflow-y-auto border-l border-slate-800 lg:flex">
                 {/* Kunskapspanelen (träffens egen destination) äger toppen. */}
                 {topEntity && !theme && <KnowledgePanel hit={topEntity} thumb={thumbs[topEntity.entity_id]} onGo={go} sv={sv} />}
+                {/* Utforska & upplev + Svampkarta — flyttad hit från svarspanelens main (Daniel). */}
+                {!theme && <ExploreRail query={cleanQuery} onGo={go} />}
                 {/* Runverktyget är ett fördjupningsverktyg, inte kopplat till träffen → sekundärt,
                     längst ner (Daniel: "ägde primärpositionen utan att förtjäna den"). */}
                 <div className="mt-auto border-t border-slate-800 p-3">
