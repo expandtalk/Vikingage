@@ -471,6 +471,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   const [loading, setLoading] = useState(false);
   // AI-svar (grounded RAG via edge-funktionen search-answer).
   const [aiAnswer, setAiAnswer] = useState<string | null>(null);
+  const [aiModel, setAiModel] = useState<string | null>(null);
   const [aiSources, setAiSources] = useState<Hit[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiQuestion, setAiQuestion] = useState<string | null>(null);
@@ -664,15 +665,18 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   const askAI = useCallback(async () => {
     const q = stripDev(query);
     if (q.length < 3) return;
-    setAiLoading(true); setAiAnswer(null); setAiSources([]);
+    setAiLoading(true); setAiAnswer(null); setAiSources([]); setAiModel(null);
+    // Enkel A/B-test: ?aimodel=qwen/qwen3.8-max i URL:en tvingar en specifik modell för frågan.
+    const aimodel = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('aimodel') : null;
     try {
-      const { data, error } = await supabase.functions.invoke('search-answer', { body: { q, language: sv ? 'sv' : 'en' } });
+      const { data, error } = await supabase.functions.invoke('search-answer', { body: { q, language: sv ? 'sv' : 'en', ...(aimodel ? { model: aimodel } : {}) } });
       if (error) throw error;
-      const d = data as { answer?: string; sources?: Hit[]; error?: string };
+      const d = data as { answer?: string; sources?: Hit[]; error?: string; model?: string };
       // Inget svar/fel → dölj AI-sektionen (null) i st.f. en skrämmande fel-banner. FAQ/träffarna
       // bär svaret ändå (Daniel: "AI-svaret kunde inte hämtas" ser ut som att vi inte vet).
       setAiAnswer(d.answer && d.answer.trim() ? d.answer : null);
       setAiSources(d.sources ?? []);
+      setAiModel(d.model ?? null);
     } catch {
       setAiAnswer(null);
     } finally {
@@ -1056,7 +1060,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                       <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
                     </div>
                     <p className="whitespace-pre-wrap leading-relaxed text-[15px] text-slate-100">{aiAnswer}</p>
-                    <p className="mt-1 text-[10px] text-slate-400">{sv ? 'AI-genererat ur källorna — verifiera via träffarna.' : 'AI-generated from the sources — verify via the results.'}</p>
+                    <p className="mt-1 text-[10px] text-slate-400">{sv ? 'AI-genererat ur källorna — verifiera via träffarna.' : 'AI-generated from the sources — verify via the results.'}{aiModel ? ` · ${aiModel}` : ''}</p>
                   </div>
                 )}
               </div>

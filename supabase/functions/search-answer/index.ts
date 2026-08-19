@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
   if (isRateLimited(clientId)) return json({ error: 'Rate limit exceeded — vänta en stund.' }, 429);
 
   try {
-    const { q, language = 'sv' } = await req.json().catch(() => ({}));
+    const { q, language = 'sv', model: modelOverride } = await req.json().catch(() => ({}));
     const query = String(q ?? '').trim();
     if (query.length < 3) return json({ error: 'Skriv en fråga (minst 3 tecken).' }, 400);
 
@@ -57,10 +57,11 @@ Deno.serve(async (req) => {
     // 0. CACHE: normalisera frågan; finns svaret cachat returnera direkt (noll tokens, ingen
     //    embed/sök/graf/LLM). Delad cache mellan alla besökare → vanliga frågor blir gratis+snabba.
     const qnorm = query.toLowerCase().replace(/\s+/g, ' ').replace(/[?.!]+$/, '').trim();
-    try {
+    // Hoppa cachen vid modelOverride (A/B-test ska alltid köra den valda modellen färskt).
+    if (!modelOverride) try {
       const { data: cached } = await supabase.from('qa_cache')
-        .select('answer,sources').eq('question_norm', qnorm).eq('language', language).maybeSingle();
-      if (cached?.answer) return json({ answer: cached.answer, sources: cached.sources ?? [], cached: true });
+        .select('answer,sources,model').eq('question_norm', qnorm).eq('language', language).maybeSingle();
+      if (cached?.answer) return json({ answer: cached.answer, sources: cached.sources ?? [], model: cached.model, cached: true });
     } catch { /* cache best-effort — miss faller igenom till generering */ }
 
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
@@ -126,8 +127,10 @@ Deno.serve(async (req) => {
 
     // Primär modell: SEARCH_ANSWER_MODEL (default Kimi K3). Fallback: SEARCH_ANSWER_MODEL2 (t.ex.
     // qwen/qwen3.8-max) används om den primära fallerar/timeoutar — robusthet utan att byta helt.
-    const PRIMARY = Deno.env.get('SEARCH_ANSWER_MODEL') || 'moonshotai/kimi-k3';
-    const FALLBACK = Deno.env.get('SEARCH_ANSWER_MODEL2') || '';
+    // modelOverride (body.model) = enkel A/B-test: tvinga en specifik modell för denna fråga, ingen
+    // fallback (så du ser exakt den modellens svar). Annars primär + MODEL2-fallback.
+    const PRIMARY = modelOverride || Deno.env.get('SEARCH_ANSWER_MODEL') || 'moonshotai/kimi-k3';
+    const FALLBACK = modelOverride ? '' : (Deno.env.get('SEARCH_ANSWER_MODEL2') || '');
     const callModel = async (model: string): Promise<string | null> => {
       try {
         const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -162,7 +165,7 @@ Deno.serve(async (req) => {
         { onConflict: 'question_norm,language' });
     } catch { /* cache-skrivning best-effort */ }
 
-    return json({ answer, sources });
+    return json({ answer, sources, model: usedModel });
   } catch (e) {
     console.error('search-answer error:', e);
     return json({ error: String(e) }, 500);
