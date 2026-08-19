@@ -19,24 +19,25 @@ let counties=process.argv.slice(2).filter(x=>/^Q\d+$/.test(x)).map(x=>'wd:'+x);
 if(!counties.length){counties=(await wd(`SELECT ?c WHERE { ?c wdt:P31 wd:Q200547. }`)).map(b=>'wd:'+b.c.value.split('/').pop());}
 console.log('Län att hämta:',counties.length);
 
-const qFor=vals=>`SELECT ?p ?pLabel ?birth ?death ?genderLabel ?pob ?pobLabel ?coord ?viaf ?libris ?sbl ?desc ?sl (GROUP_CONCAT(DISTINCT ?occL;separator="; ") AS ?occs) WHERE {
+const qFor=vals=>`SELECT ?p ?pLabel ?birth ?death ?genderLabel ?pob ?pobLabel ?coord ?viaf ?libris ?sbl ?desc ?sl ?img (GROUP_CONCAT(DISTINCT ?occL;separator="; ") AS ?occs) WHERE {
  ${vals}
  ?p rdfs:label ?pLabel FILTER(lang(?pLabel)="sv"). ?pob rdfs:label ?pobLabel FILTER(lang(?pobLabel)="sv").
  OPTIONAL{?pob wdt:P625 ?coord} OPTIONAL{?p wdt:P569 ?birth} OPTIONAL{?p wdt:P570 ?death}
  OPTIONAL{?p wdt:P21 ?g. ?g rdfs:label ?genderLabel FILTER(lang(?genderLabel)="sv")}
  OPTIONAL{?p wdt:P214 ?viaf} OPTIONAL{?p wdt:P906 ?libris} OPTIONAL{?p wdt:P3217 ?sbl}
+ OPTIONAL{?p wdt:P18 ?img}
  OPTIONAL{?p wdt:P106 ?occ. ?occ rdfs:label ?occL FILTER(lang(?occL)="sv")}
  OPTIONAL{?p schema:description ?desc FILTER(lang(?desc)="sv")}
-} GROUP BY ?p ?pLabel ?birth ?death ?genderLabel ?pob ?pobLabel ?coord ?viaf ?libris ?sbl ?desc ?sl ORDER BY DESC(?sl) LIMIT 4000`;
+} GROUP BY ?p ?pLabel ?birth ?death ?genderLabel ?pob ?pobLabel ?coord ?viaf ?libris ?sbl ?desc ?sl ?img ORDER BY DESC(?sl) LIMIT 4000`;
 const yr=s=>{if(!s)return null;const m=s.match(/^-?\d{1,4}/);return m?+m[0].replace(/^-/,''):null;};
-const parse=r=>{const g=k=>r[k]?.value??null;let lat=null,lng=null;const co=g('coord');if(co){const m=co.match(/Point\(([-\d.]+) ([-\d.]+)\)/);if(m){lng=+m[1];lat=+m[2];}}const by=yr(g('birth')),dy=yr(g('death'));return{qid:g('p').split('/').pop(),name:g('pLabel'),gender:g('genderLabel'),by,dy,living:dy==null&&by!=null&&by>1916,occ:g('occs')?g('occs').split('; ').filter(Boolean):null,desc:g('desc'),sl:+g('sl')||0,pobq:g('pob')?.split('/').pop(),pob:g('pobLabel'),lat,lng,viaf:g('viaf'),libris:g('libris'),sbl:g('sbl')};};
+const parse=r=>{const g=k=>r[k]?.value??null;let lat=null,lng=null;const co=g('coord');if(co){const m=co.match(/Point\(([-\d.]+) ([-\d.]+)\)/);if(m){lng=+m[1];lat=+m[2];}}const by=yr(g('birth')),dy=yr(g('death'));const iu=g('img');const imgfile=iu?decodeURIComponent((iu.split('/').pop()||'')):null;return{qid:g('p').split('/').pop(),name:g('pLabel'),gender:g('genderLabel'),by,dy,living:dy==null&&by!=null&&by>1916,occ:g('occs')?g('occs').split('; ').filter(Boolean):null,desc:g('desc'),sl:+g('sl')||0,pobq:g('pob')?.split('/').pop(),pob:g('pobLabel'),lat,lng,viaf:g('viaf'),libris:g('libris'),sbl:g('sbl'),imgfile};};
 
-const cols=['wikidata_qid','name','name_sort','gender','birth_year','death_year','is_living','occupations','description_sv','sitelinks','birthplace_qid','birthplace_label','birthplace_lat','birthplace_lng','viaf','libris','sbl'];
-const rv=p=>[p.qid,p.name,p.name,p.gender,p.by,p.dy,p.living,p.occ,p.desc,p.sl,p.pobq,p.pob,p.lat,p.lng,p.viaf,p.libris,p.sbl];
+const cols=['wikidata_qid','name','name_sort','gender','birth_year','death_year','is_living','occupations','description_sv','sitelinks','birthplace_qid','birthplace_label','birthplace_lat','birthplace_lng','viaf','libris','sbl','image_commons_file'];
+const rv=p=>[p.qid,p.name,p.name,p.gender,p.by,p.dy,p.living,p.occ,p.desc,p.sl,p.pobq,p.pob,p.lat,p.lng,p.viaf,p.libris,p.sbl,p.imgfile];
 async function upsert(list){
   const idByQid={};
   for(let i=0;i<list.length;i+=300){const ch=list.slice(i,i+300);const ph=ch.map((_,r)=>'('+cols.map((__,ci)=>'$'+(r*cols.length+ci+1)).join(',')+')').join(',');
-    const r=await c.query(`insert into persons (${cols.join(',')}) values ${ph} on conflict (wikidata_qid) do update set name=excluded.name,sitelinks=excluded.sitelinks,birth_year=excluded.birth_year,death_year=excluded.death_year,occupations=excluded.occupations,description_sv=excluded.description_sv,birthplace_lat=excluded.birthplace_lat,birthplace_lng=excluded.birthplace_lng,updated_at=now() returning id,wikidata_qid`,ch.flatMap(rv));
+    const r=await c.query(`insert into persons (${cols.join(',')}) values ${ph} on conflict (wikidata_qid) do update set name=excluded.name,sitelinks=excluded.sitelinks,birth_year=excluded.birth_year,death_year=excluded.death_year,occupations=excluded.occupations,description_sv=excluded.description_sv,birthplace_lat=excluded.birthplace_lat,birthplace_lng=excluded.birthplace_lng,image_commons_file=excluded.image_commons_file,updated_at=now() returning id,wikidata_qid`,ch.flatMap(rv));
     for(const x of r.rows)idByQid[x.wikidata_qid]=x.id;}
   for(let i=0;i<list.length;i+=300){const ch=list.slice(i,i+300);const ph=ch.map((_,r)=>`($${r*2+1},'person',$${r*2+2})`).join(',');
     await c.query(`insert into entity_registry (id,entity_type,label) values ${ph} on conflict (id) do update set label=excluded.label,entity_type='person'`,ch.flatMap(p=>[idByQid[p.qid],p.name]));}
@@ -49,9 +50,11 @@ async function upsert(list){
 
 let total=0;
 for(const county of counties){
-  const rows=(await wd(qFor(`?p wdt:P31 wd:Q5; wdt:P19 ?pob; wikibase:sitelinks ?sl. ?pob wdt:P131* ${county}.`))).map(parse);
+  const raw=(await wd(qFor(`?p wdt:P31 wd:Q5; wdt:P19 ?pob; wikibase:sitelinks ?sl. ?pob wdt:P131* ${county}.`))).map(parse);
+  // Dedup per QID (flera P18-bilder → flera rader; behåll första).
+  const seenQ=new Set(); const rows=raw.filter(r=>{ if(seenQ.has(r.qid))return false; seenQ.add(r.qid); return true; });
   // dedup mot redan hämtade i denna körning
-  await c.query(`delete from external_ids where entity_table='persons' and entity_id in (select id from persons where wikidata_qid = any($1))`,[rows.map(r=>r.qid)]);
+  await c.query(`delete from external_ids where entity_table='persons' and entity_id in (select id::text from persons where wikidata_qid = any($1))`,[rows.map(r=>r.qid)]);
   const n=await upsert(rows);
   total+=rows.length;console.log(`${county}: ${rows.length} personer`);await sleep(1200);
 }
