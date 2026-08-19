@@ -130,6 +130,8 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   shipwreck:      { labelSv: 'Skeppsvrak', labelEn: 'Shipwrecks', icon: Ship, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   scholar:        { labelSv: 'Forskning', labelEn: 'Research', icon: Users, route: () => '/forskare' },
   place_name:     { labelSv: 'Ortnamn', labelEn: 'Place names', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  municipality:   { labelSv: 'Kommuner', labelEn: 'Municipalities', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
+  county:         { labelSv: 'Län & regioner', labelEn: 'Counties & regions', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   heritage_site:  { labelSv: 'Fornlämningar', labelEn: 'Ancient remains', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   excursion:      { labelSv: 'Utflykter', labelEn: 'Excursions', icon: Compass, route: (h) => {
                       // search_document har UUID + null signum för utflykter, men ExcursionDetail
@@ -247,7 +249,7 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
   // Gruppordning: ORTNAMN före SOCKEN (Daniel) — fast prioritet för geo-grupperna, övriga typer
   // behåller sin relevansordning (originalindex) efter dem.
   const GROUP_PRIORITY: Record<string, number> = {
-    landscape: 0, city: 1, place: 2, place_name: 3, excursion: 4, heritage_site: 5,
+    landscape: 0, county: 0, municipality: 1, city: 1, place: 2, place_name: 3, excursion: 4, heritage_site: 5,
     fortress: 6, hillfort: 6, parish: 7, hundred: 8, inscription: 9,
   };
   const origIdx = new Map(merged.map((g, i) => [g.type, i]));

@@ -793,7 +793,10 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const coreEmpty = !data || (data.count === 0 && (data.images?.length ?? 0) === 0 && !data.page
       && (data.research?.length ?? 0) === 0 && (data.literature?.length ?? 0) === 0 && !faq
       && (theophoric?.total ?? 0) === 0 && (charters?.total ?? 0) === 0 && fornvannen.length === 0 && paintings.length === 0 && !attestation);
-  const somethingMatched = !!(node || showLandscape || related);
+  // hasCenter = vi resolvade frågan till en verklig plats (t.ex. kommun/ort som Oskarshamn) → då är det
+  // en TRÄFF, inte "ingen exakt träff". Utan detta tändes Förfina-panelen samtidigt som kunskapsnoden
+  // renderade (Daniel: motsägelsen på "oskarshamn").
+  const somethingMatched = !!(node || showLandscape || related || hasCenter);
 
   // "Ingen träff"-fallbacken ska vara ABSOLUT SISTA UTVÄG (Daniel). Den blinkade fram "vi vet inte"
   // på giltiga frågor (t.ex. "röksten") medan huvudsöket eller något berikningslager fortfarande
