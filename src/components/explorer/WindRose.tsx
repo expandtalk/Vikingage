@@ -70,21 +70,38 @@ export const WindRose: React.FC<{ location?: string; defaultOpen?: boolean }> = 
   );
 };
 
-// Alla farvattens vindrosor sida vid sida — visar att förhärskande vind SKILJER sig per sund/hav
-// (Kalmarsund N pga kanalisering, öppet hav V/SV). Varje ros bär sin station + period (källkritik).
+// Vind per farvatten (SMHI) — men EN i taget, valbar via chips (Daniel: visa inte alla på en gång,
+// t.ex. Ålands hav, utan bara det vatten man är intresserad av). Default = ett kärnfarvatten.
+// (Ideal nästa steg: följ kartans viewport automatiskt — kräver att kartcentrum plumbas hit.)
+const CORE_ORDER = ['Kalmarsund', 'Öland–Gotland', 'Öresund', 'Hanöbukten (Bornholm)'];
 export const WindRoses: React.FC = () => {
   const { data: locations = [] } = useWindLocations();
   const { language } = useLanguage();
   const sv = language === 'sv';
+  // Sortera kärnfarvattnen först; övriga (t.ex. Ålands hav) efter.
+  const ordered = [...locations].sort((a, b) => {
+    const ia = CORE_ORDER.indexOf(a), ib = CORE_ORDER.indexOf(b);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+  const [active, setActive] = useState<string>(ordered[0] ?? '');
   if (!locations.length) return null;
+  const current = ordered.includes(active) ? active : (ordered[0] ?? '');
   return (
     <div>
       <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
         {sv ? 'Vind per farvatten (SMHI)' : 'Wind by sea area (SMHI)'}
       </div>
-      <div className="flex flex-wrap gap-3">
-        {locations.map((loc) => <WindRose key={loc} location={loc} />)}
+      <div className="mb-2 flex flex-wrap gap-1.5">
+        {ordered.map((loc) => (
+          <button key={loc} onClick={() => setActive(loc)}
+            className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
+              loc === current ? 'border-amber-500/60 bg-amber-500/15 text-amber-100'
+                              : 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500'}`}>
+            {loc}
+          </button>
+        ))}
       </div>
+      <WindRose key={current} location={current} />
     </div>
   );
 };

@@ -538,7 +538,9 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
       Object.assign(o, {
         maritime: true, maritime_nodes: true, ship_losses: true, shipwrecks: true,
         fairways_modern: true, fairways_historical: true, hanseatic_cities: true,
-        stake_barriers: true, water_routes: true, valdemar_route: true,
+        // heritage_marine = "Vrak & spärranläggningar (RAÄ)" (parent för RAÄ-vrak + pålspärrar) —
+        // MÅSTE sättas explicit; default false. Vrak OCH spärr ska vara på i marinvyn (Daniel).
+        heritage_marine: true, stake_barriers: true, water_routes: true, valdemar_route: true,
         paleo_shoreline: true, viking_cities: true, beacon_sites: true,
         river_routes: false, trade_routes: false, eriksgatan: false, viking_roads: false,
         runic_inscriptions: false, foreign_inscriptions: false, viking_fortresses: false,
@@ -596,6 +598,27 @@ const applyFocusOverrides = (preset: LegendPreset, focus: string | null): Legend
         fairways_historical: false,
         hanseatic_cities: false,
         coins: false,
+      });
+      break;
+    case "baths":
+      // Badplatser (startsidans kort): BARA upplevelselagret (experiences: badplatser m.fl.),
+      // inget annat. Uttömmande släck-lista (samma princip som marine/rivers) så profilens
+      // tunga default-lager (runstenar, kyrkor, farleder, kulturlager) inte läcker in —
+      // Daniel: "bara badplatser, inga andra lager".
+      Object.assign(o, {
+        experiences: true,
+        runic_inscriptions: false, foreign_inscriptions: false, viking_fortresses: false,
+        religious_places: false, ecclesiastical_churches: false, early_christian_sites: false,
+        medieval_monasteries: false, late_medieval_sites: false, heritage_sites: false,
+        viking_cities: false, viking_regions: false, hundreds: false, parishes: false,
+        folk_groups: false, germanic_groups: false, germanic_timeline: false,
+        carvers: false, gods: false, place_names: false, battle_sites: false,
+        archaeological_sites: false, archaeological_finds: false, historical_events: false,
+        trade_routes: false, river_routes: false, water_routes: false, valdemar_route: false,
+        eriksgatan: false, viking_roads: false, stake_barriers: false, beacon_sites: false,
+        maritime: false, maritime_nodes: false, ship_losses: false, shipwrecks: false,
+        fairways_modern: false, fairways_historical: false, hanseatic_cities: false,
+        paleo_shoreline: false, coins: false,
       });
       break;
     case "carvers":
