@@ -72,7 +72,7 @@ export const SvampMap: React.FC<Props> = ({ sv }) => {
     osm.addTo(m);
     L.control.layers(
       { [sv ? 'Karta' : 'Map']: osm, [sv ? 'Terräng' : 'Terrain']: topo, [sv ? 'Satellit' : 'Satellite']: sat },
-      undefined, { collapsed: false, position: 'topright' },
+      undefined, { collapsed: typeof window !== 'undefined' && window.innerWidth < 640, position: 'topright' },
     ).addTo(m);
     rainLayerRef.current = L.layerGroup().addTo(m);
     mapRef.current = m;
@@ -172,7 +172,7 @@ export const SvampMap: React.FC<Props> = ({ sv }) => {
         </button>
       </div>
 
-      <div ref={mapEl} className="h-[340px] w-full overflow-hidden rounded-lg border border-border" role="application"
+      <div ref={mapEl} className="h-[340px] w-full overflow-hidden rounded-lg border border-border" role="region"
         aria-label={sv ? 'Svampkarta' : 'Foraging map'} />
 
       {/* Legend för nederbörds-rutnätet — visas när en plats valts. */}

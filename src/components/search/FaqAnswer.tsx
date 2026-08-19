@@ -103,11 +103,11 @@ export const FaqAnswer: React.FC<{ faq: FaqData; sv: boolean; onQuery?: (q: stri
               <div className="flex flex-wrap items-baseline gap-2">
                 <span className="text-sm font-semibold text-gold">{l.discipline_label}</span>
                 <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide ${st.cls}`}>{sv ? st.sv : st.en}</span>
-                {l.confidence != null && <span className="text-[10px] text-slate-500">{sv ? 'konfidens' : 'confidence'} {Math.round(l.confidence * 100)}%</span>}
+                {l.confidence != null && <span className="text-[10px] text-slate-400">{sv ? 'konfidens' : 'confidence'} {Math.round(l.confidence * 100)}%</span>}
               </div>
               <p className="mt-1 text-sm leading-relaxed text-slate-200">{sv ? l.answer_sv : (l.answer_en || l.answer_sv)}</p>
-              {l.evidence_sv && sv && <p className="mt-0.5 text-xs text-slate-400"><span className="text-slate-500">Belägg: </span>{l.evidence_sv}</p>}
-              {l.sources?.length ? <p className="mt-0.5 text-[11px] text-slate-500">{l.sources.join(' · ')}</p> : null}
+              {l.evidence_sv && sv && <p className="mt-0.5 text-xs text-slate-400"><span className="text-slate-400">Belägg: </span>{l.evidence_sv}</p>}
+              {l.sources?.length ? <p className="mt-0.5 text-[11px] text-slate-400">{l.sources.join(' · ')}</p> : null}
             </div>
           );
         })}
@@ -131,7 +131,7 @@ export const FaqAnswer: React.FC<{ faq: FaqData; sv: boolean; onQuery?: (q: stri
 
       {faq.related?.length ? (
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] text-slate-500">{sv ? 'Andra frågar också:' : 'People also ask:'}</span>
+          <span className="text-[11px] text-slate-400">{sv ? 'Andra frågar också:' : 'People also ask:'}</span>
           {faq.related.map((r, i) => (
             <button key={i} type="button" onClick={() => onQuery?.(r.question_sv)}
               className="inline-flex items-center gap-1 rounded-full border border-slate-600 bg-slate-800/70 px-2.5 py-1 text-xs text-slate-200 hover:border-gold/50 hover:text-gold">

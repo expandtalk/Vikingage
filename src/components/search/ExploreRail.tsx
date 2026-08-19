@@ -130,7 +130,7 @@ export const ExploreRail: React.FC<{ query: string; onGo: (route: string) => voi
           <summary className="mb-2 flex cursor-pointer list-none items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sky-300 [&::-webkit-details-marker]:hidden">
             <Footprints className="h-3.5 w-3.5" /> {sv ? 'Äventyr & motion' : 'Adventure & recreation'}
             <span className="rounded-full bg-sky-500/15 px-1.5 py-0.5 text-[11px] font-medium text-sky-200">{adventures.length}</span>
-            <span className="ml-auto text-[11px] font-normal text-slate-500 transition group-open:rotate-180">▾</span>
+            <span className="ml-auto text-[11px] font-normal text-slate-400 transition group-open:rotate-180">▾</span>
           </summary>
           {/* Typräknare (fiske/bad/grotta) med färgprick — speglar kartlagrets legend. */}
           <div className="mb-2 flex flex-wrap gap-1.5">
@@ -148,14 +148,14 @@ export const ExploreRail: React.FC<{ query: string; onGo: (route: string) => voi
                 <button key={`${a.label}-${i}`} onClick={() => onGo(`/explore?searchQuery=${encodeURIComponent(a.label)}`)}
                   className="flex items-center gap-2 rounded-lg border border-transparent px-2 py-1 text-left text-slate-200 hover:border-sky-500/40 hover:bg-sky-500/10">
                   <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: st.dot }} />
-                  <span className="min-w-0 flex-1 truncate">{a.label}{a.parish ? <span className="text-slate-500"> · {a.parish}</span> : null}</span>
-                  {a.season && <span className="shrink-0 text-[10px] text-slate-500">{a.season}</span>}
+                  <span className="min-w-0 flex-1 truncate">{a.label}{a.parish ? <span className="text-slate-400"> · {a.parish}</span> : null}</span>
+                  {a.season && <span className="shrink-0 text-[10px] text-slate-400">{a.season}</span>}
                 </button>
               );
             })}
           </div>
           {adventures.length > 14 && (
-            <p className="mt-1.5 text-center text-[11px] text-slate-500">
+            <p className="mt-1.5 text-center text-[11px] text-slate-400">
               {sv ? `+ ${adventures.length - 14} till — se kartlagret` : `+ ${adventures.length - 14} more — see the map layer`}
             </p>
           )}

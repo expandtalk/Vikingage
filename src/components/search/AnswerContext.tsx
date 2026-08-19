@@ -94,7 +94,7 @@ const TieredGallery: React.FC<{
         <span className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
           <ImageIcon className="h-3.5 w-3.5" /> {sv ? 'Bilder' : 'Images'}
         </span>
-        {imgs.length > 0 && <span className="text-[11px] text-slate-500">{imgs.length}</span>}
+        {imgs.length > 0 && <span className="text-[11px] text-slate-400">{imgs.length}</span>}
         {/* Flik: stenar utan bild (dolda per default) → visa/dölj på begäran. */}
         {missing.length > 0 && (
           <button type="button" onClick={() => setShowMissing((v) => !v)}
@@ -147,9 +147,9 @@ const TieredGallery: React.FC<{
           // TIER 5: ingen bild → typografiskt kort (runsignum), aldrig en tom ruta
           <div key={`m-${i}`}
             className="flex aspect-[2/3] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-600 px-2 text-center">
-            <span className="text-2xl leading-none text-slate-500" style={{ fontFamily: 'var(--font-voice, serif)' }} aria-hidden="true">ᚱᚢᚾ</span>
+            <span className="text-2xl leading-none text-slate-400" style={{ fontFamily: 'var(--font-voice, serif)' }} aria-hidden="true">ᚱᚢᚾ</span>
             <span className="text-xs font-medium text-slate-300 line-clamp-2">{m.label}</span>
-            {m.signum && m.signum !== m.label && <span className="text-[10px] text-slate-500">{m.signum}</span>}
+            {m.signum && m.signum !== m.label && <span className="text-[10px] text-slate-400">{m.signum}</span>}
             <span className="mt-1 text-[10px] text-amber-300/70">{sv ? 'bild saknas · bidra' : 'no image · contribute'}</span>
           </div>
         ))}
@@ -483,7 +483,9 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     try {
       if (!mapRef.current) {
         // Zoom aktiverat (Daniel: "vill kunna zooma in och ut"): knappar + hjul + dubbelklick.
-        mapRef.current = L.map(mapEl.current, { zoomControl: true, attributionControl: false, scrollWheelZoom: true, dragging: true });
+        // scrollWheelZoom av: kartan ligger i en vertikalt scrollande panel → hjulet ska rulla sidan,
+        // inte fastna i kartan (UX/mobil). Zooma med knappar / nypgest.
+        mapRef.current = L.map(mapEl.current, { zoomControl: true, attributionControl: false, scrollWheelZoom: false, dragging: true });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapRef.current);
         // Kartan initieras i en overlay-kolumn som ofta har 0 bredd tills panelen animerat in /
         // grid:en satt sig → Leaflet målar grått tills dess. Måla om vid varje storleksändring
@@ -909,7 +911,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
               className="block w-full overflow-hidden rounded-lg border border-slate-700">
               <img src={stone.image_url} alt={stone.title || heroTitle} loading="lazy" className="max-h-[46vh] w-full object-contain bg-slate-950" />
             </button>
-            <p className="mt-1 text-[11px] text-slate-500">
+            <p className="mt-1 text-[11px] text-slate-400">
               {stone.title || heroTitle}{stone.credit ? ` · ${stone.credit}` : ''}{stone.source_institution ? ` · ${stone.source_institution}` : ''}
             </p>
           </div>
@@ -941,7 +943,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
               {lmExpanded ? (sv ? 'visa färre' : 'show fewer') : `${sv ? 'visa fler' : 'show more'} (${landmarkImages.length - rowCap(landmarkImages.length, false)}) →`}
             </button>
           )}
-          <p className="mt-1.5 text-[11px] text-slate-500">
+          <p className="mt-1.5 text-[11px] text-slate-400">
             {sv ? 'Byggnader & monument · Wikimedia Commons (fri licens), hotlänkade — klicka för källa.' : 'Buildings & monuments · Wikimedia Commons (free license), hotlinked — click for source.'}
           </p>
         </div>
@@ -1050,7 +1052,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
               : 'relative w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800'}
             style={mapExpanded ? undefined : { height: '52vh', minHeight: 340 }}
           >
-            <div ref={mapEl} className="absolute inset-0" />
+            <div ref={mapEl} className="absolute inset-0" role="region" aria-label={sv ? 'Karta över platsen och närliggande fynd' : 'Map of the place and nearby finds'} />
             {/* Expandera/stäng helskärm (Daniel). ResizeObservern (i map-init) auto-invalidateSize:ar
                 när containern ändrar storlek, så Leaflet ritar om korrekt. Top-center undviker
                 zoom (top-left) + lager-legend (top-right). */}
@@ -1088,7 +1090,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 <div className="flex w-full items-center gap-1 py-0.5 text-xs">
                   <button onClick={() => setShowAdv((v) => !v)} className="flex flex-1 items-center gap-2 text-left">
                     <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showAdv ? '#22c55e' : 'transparent', border: '1.5px solid #22c55e' }} />
-                    <span className={showAdv ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Äventyr & motion' : 'Adventure & outdoors'} · {adventures!.length}</span>
+                    <span className={showAdv ? 'text-slate-100' : 'text-slate-400'}>{sv ? 'Äventyr & motion' : 'Adventure & outdoors'} · {adventures!.length}</span>
                   </button>
                   <button onClick={() => setAdvExpanded((v) => !v)} className="shrink-0 text-slate-400 hover:text-slate-100" aria-label={sv ? 'Visa badtyper' : 'Show categories'} aria-expanded={advExpanded}>
                     {advExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
@@ -1108,49 +1110,49 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                         <button key={k} onClick={() => setHiddenAdvKinds((prev) => { const s = new Set(prev); if (s.has(k)) s.delete(k); else s.add(k); return s; })}
                           className="flex items-center gap-2 py-0.5 text-left text-[11px]">
                           <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: on ? st.fill : 'transparent', border: `1.5px solid ${st.border}` }} />
-                          <span className={on ? 'text-slate-200' : 'text-slate-500'}>{sv ? st.sv : st.en} · {n}</span>
+                          <span className={on ? 'text-slate-200' : 'text-slate-400'}>{sv ? st.sv : st.en} · {n}</span>
                         </button>
                       );
                     })}
                   </div>
                 );
               })()}
-              <button onClick={() => setShowSites((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
+              <button onClick={() => setShowSites((v) => !v)} aria-pressed={showSites} className="flex w-full items-center gap-2 py-1.5 text-left text-xs">
                 <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showSites ? '#38bdf8' : 'transparent', border: '1.5px solid #38bdf8' }} />
-                <span className={showSites ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Sevärda platser' : 'Notable sites'}{data.sites?.length ? ` · ${data.sites.length}` : ''}</span>
+                <span className={showSites ? 'text-slate-100' : 'text-slate-400'}>{sv ? 'Sevärda platser' : 'Notable sites'}{data.sites?.length ? ` · ${data.sites.length}` : ''}</span>
               </button>
-              <button onClick={() => setShowRunes((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
+              <button onClick={() => setShowRunes((v) => !v)} aria-pressed={showRunes} className="flex w-full items-center gap-2 py-1.5 text-left text-xs">
                 <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showRunes ? '#f59e0b' : 'transparent', border: '1.5px solid #f59e0b' }} />
-                <span className={showRunes ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Runstenar' : 'Runestones'}{data.count ? ` · ${data.count}` : ''}</span>
+                <span className={showRunes ? 'text-slate-100' : 'text-slate-400'}>{sv ? 'Runstenar' : 'Runestones'}{data.count ? ` · ${data.count}` : ''}</span>
               </button>
               {(data as any).churches?.length > 0 && (
-                <button onClick={() => setShowChurches((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
+                <button onClick={() => setShowChurches((v) => !v)} aria-pressed={showChurches} className="flex w-full items-center gap-2 py-1.5 text-left text-xs">
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showChurches ? '#a78bfa' : 'transparent', border: '1.5px solid #a78bfa' }} />
-                  <span className={showChurches ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Kyrkor' : 'Churches'} · {(data as any).churches.length}</span>
+                  <span className={showChurches ? 'text-slate-100' : 'text-slate-400'}>{sv ? 'Kyrkor' : 'Churches'} · {(data as any).churches.length}</span>
                 </button>
               )}
               {(data as any).wrecks?.length > 0 && (
-                <button onClick={() => setShowWrecks((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
+                <button onClick={() => setShowWrecks((v) => !v)} aria-pressed={showWrecks} className="flex w-full items-center gap-2 py-1.5 text-left text-xs">
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showWrecks ? '#fb7185' : 'transparent', border: '1.5px solid #fb7185' }} />
-                  <span className={showWrecks ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Skeppsvrak' : 'Shipwrecks'} · {(data as any).wrecks.length}</span>
+                  <span className={showWrecks ? 'text-slate-100' : 'text-slate-400'}>{sv ? 'Skeppsvrak' : 'Shipwrecks'} · {(data as any).wrecks.length}</span>
                 </button>
               )}
               {(data as any).events?.length > 0 && (
-                <button onClick={() => setShowEvents((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
+                <button onClick={() => setShowEvents((v) => !v)} aria-pressed={showEvents} className="flex w-full items-center gap-2 py-1.5 text-left text-xs">
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showEvents ? '#34d399' : 'transparent', border: '1.5px solid #34d399' }} />
-                  <span className={showEvents ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Händelser' : 'Events'} · {(data as any).events.length}</span>
+                  <span className={showEvents ? 'text-slate-100' : 'text-slate-400'}>{sv ? 'Händelser' : 'Events'} · {(data as any).events.length}</span>
                 </button>
               )}
               {(forts?.length ?? 0) > 0 && (
-                <button onClick={() => setShowForts((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
+                <button onClick={() => setShowForts((v) => !v)} aria-pressed={showForts} className="flex w-full items-center gap-2 py-1.5 text-left text-xs">
                   <span className="h-0.5 w-3 shrink-0 rounded" style={{ background: showForts ? '#c2410c' : 'transparent', border: '1.5px solid #c2410c' }} />
-                  <span className={showForts ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Befästningar' : 'Fortifications'} · {forts!.length}</span>
+                  <span className={showForts ? 'text-slate-100' : 'text-slate-400'}>{sv ? 'Befästningar' : 'Fortifications'} · {forts!.length}</span>
                 </button>
               )}
               {(data as any).crossings?.length > 0 && (
-                <button onClick={() => setShowCrossings((v) => !v)} className="flex w-full items-center gap-2 py-0.5 text-left text-xs">
+                <button onClick={() => setShowCrossings((v) => !v)} aria-pressed={showCrossings} className="flex w-full items-center gap-2 py-1.5 text-left text-xs">
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: showCrossings ? '#2dd4bf' : 'transparent', border: '1.5px solid #2dd4bf' }} />
-                  <span className={showCrossings ? 'text-slate-100' : 'text-slate-500'}>{sv ? 'Sjösidan · överfart/grund' : 'Sea side · crossings/shoals'} · {(data as any).crossings.length}</span>
+                  <span className={showCrossings ? 'text-slate-100' : 'text-slate-400'}>{sv ? 'Sjösidan · överfart/grund' : 'Sea side · crossings/shoals'} · {(data as any).crossings.length}</span>
                 </button>
               )}
             </div>
@@ -1238,7 +1240,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-[11px] text-slate-500">
+              <p className="mt-2 text-[11px] text-slate-400">
                 {sv
                   ? `Teofora ortnamn (${deity.god}-led) — tolkning av ortnamnsforskningen, inte fastställt. Violetta prickar på kartan.`
                   : `Theophoric place names — a scholarly interpretation, not established fact. Purple dots on the map.`}
@@ -1344,7 +1346,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           <div className="flex flex-wrap items-center gap-1.5">
             {[sv ? 'Skriv' : 'Write', sv ? 'Ge betyg' : 'Rate', sv ? 'Skicka foto' : 'Photo', sv ? 'Mät position' : 'Position'].map((b) => (
               <button key={b} disabled title={sv ? 'Kommer snart' : 'Coming soon'}
-                className="cursor-not-allowed rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-500">{b}</button>
+                className="cursor-not-allowed rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-400">{b}</button>
             ))}
             {/* Dela är aktiv (till skillnad från övriga bidra-knapparna som är fas 2). */}
             <button type="button" onClick={doShare} title={sv ? 'Dela länken till den här vyn' : 'Share the link to this view'}
@@ -1375,7 +1377,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 onClick={() => (onQuery ? onQuery(n.label) : onGo(`/?q=${encodeURIComponent(n.label)}`))}
                 className="group inline-flex items-center gap-1.5 rounded-full border border-slate-600 bg-slate-800/60 px-3 py-1 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100">
                 <span className="font-medium">{n.label}</span>
-                <span className="text-[10px] text-slate-500 group-hover:text-amber-300/70">{PRED_SV[n.predicate] ?? n.type}</span>
+                <span className="text-[10px] text-slate-400 group-hover:text-amber-300/70">{PRED_SV[n.predicate] ?? n.type}</span>
               </button>
             ))}
           </div>
@@ -1412,7 +1414,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
               className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-sky-300 hover:text-sky-200">
               {sv ? `Se alla i Fornvännen (${fornvannen.length}${fornvannen.length >= 20 ? '+' : ''}) →` : `See all in Fornvännen (${fornvannen.length}${fornvannen.length >= 20 ? '+' : ''}) →`}
             </button>
-            <p className="mt-2 text-[11px] text-slate-500">
+            <p className="mt-2 text-[11px] text-slate-400">
               {sv ? 'Fornvännen (KVHAA/RAÄ), CC BY 4.0 — öppnas som PDF hos utgivaren.' : 'Fornvännen (KVHAA), CC BY 4.0 — opens as publisher PDF.'}
             </p>
           </section>
@@ -1481,7 +1483,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
                 {archExpanded ? (sv ? 'visa färre' : 'show fewer') : `${sv ? 'visa fler' : 'show more'} (${arch.length - rowCap(arch.length, false)}) →`}
               </button>
             )}
-            <p className="mt-2 text-[11px] text-slate-500">
+            <p className="mt-2 text-[11px] text-slate-400">
               {sv ? 'Ur bildarkivet — varje bild med källa/licens (öppnas i visaren).' : 'From the image archive — each with source/licence.'}
             </p>
           </section>
@@ -1522,7 +1524,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-[11px] text-slate-500">
+          <p className="mt-2 text-[11px] text-slate-400">
             {sv ? 'Verk som behandlar ämnet — ur forskarnas bibliografier (Libris/KB).' : "Works on the topic — from the scholars' bibliographies (Libris/KB)."}
           </p>
         </section>

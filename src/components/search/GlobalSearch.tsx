@@ -276,7 +276,7 @@ const GoFurther: React.FC<{ hit: Hit; onGo: (route: string) => void; sv: boolean
   if (!cleanNeighbors.length && !facets.length) return null;
   return (
     <div className="border-t border-slate-800 px-4 py-3">
-      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
         {sv ? 'Gå vidare' : 'Explore further'}
       </div>
       <div className="flex flex-wrap gap-2">
@@ -426,14 +426,14 @@ const SideSenses: React.FC<{ query: string; sv: boolean }> = ({ query, sv }) => 
   return (
     <div className="border-b border-slate-800 bg-slate-800/30 px-4 py-2">
       <div className="flex items-start gap-2 text-[11px] text-slate-400">
-        <Info className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-500" />
+        <Info className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-400" />
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="text-slate-500">{sv ? 'Vid sidan:' : 'Aside:'}</span>
+          <span className="text-slate-400">{sv ? 'Vid sidan:' : 'Aside:'}</span>
           {data.map((s, i) => (
             <span key={i} className="text-slate-400">
               <span className="text-slate-300">{sv ? s.sense_label_sv : s.sense_label_en}</span>
-              {(sv ? s.note_sv : s.note_en) && <span className="text-slate-500"> — {sv ? s.note_sv : s.note_en}</span>}
-              {i < data.length - 1 && <span className="text-slate-600"> ·</span>}
+              {(sv ? s.note_sv : s.note_en) && <span className="text-slate-400"> — {sv ? s.note_sv : s.note_en}</span>}
+              {i < data.length - 1 && <span className="text-slate-400"> ·</span>}
             </span>
           ))}
         </div>
@@ -711,24 +711,24 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
               </div>
               {devInfo.queries.length > 0 && (
                 <div className="mt-1 border-l-2 border-slate-700 pl-2 text-slate-400">
-                  <div className="text-slate-500">anrop / tabeller:</div>
+                  <div className="text-slate-400">anrop / tabeller:</div>
                   {devInfo.queries.map((qr, i) => <div key={i} className="truncate">· {qr}</div>)}
                 </div>
               )}
               <div className="mt-1 max-h-44 overflow-y-auto">
                 {devInfo.hits.map((h, i) => (
                   <div key={`${h.entity_type}-${h.entity_id}-${i}`} className="flex items-baseline gap-2 leading-relaxed">
-                    <span className="w-5 shrink-0 text-right text-slate-600">{i + 1}</span>
+                    <span className="w-5 shrink-0 text-right text-slate-400">{i + 1}</span>
                     <span className="w-28 shrink-0 truncate text-sky-300">{h.entity_type}</span>
                     <span className="w-14 shrink-0 text-emerald-300">{typeof h.score === 'number' ? h.score.toFixed(3) : String(h.score)}</span>
                     <span className="truncate text-slate-200">{h.signum && h.signum !== h.label ? `${h.signum} · ` : ''}{h.label}</span>
                   </div>
                 ))}
-                {devInfo.hits.length === 0 && <div className="text-slate-500">inga träffar</div>}
+                {devInfo.hits.length === 0 && <div className="text-slate-400">inga träffar</div>}
               </div>
             </>
           ) : (
-            <div className="text-slate-500">kör sökning…</div>
+            <div className="text-slate-400">kör sökning…</div>
           )}
         </div>
       )}
@@ -742,7 +742,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
             const head = grp === 'place' ? (sv ? 'Ortnamn' : 'Places') : grp === 'person' ? (sv ? 'Personer' : 'People') : grp === 'name' ? (sv ? 'Namn' : 'Names') : (sv ? 'Övrigt' : 'Other');
             return (
               <div key={grp} className="mb-1">
-                <div className="px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-500">{head}</div>
+                <div className="px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">{head}</div>
                 {items.map((s) => {
                   const m = META[s.entity_type];
                   const route = m ? m.route(s as unknown as Hit) : `/explore?searchQuery=${enc(s.label)}`;
@@ -751,7 +751,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                       onClick={() => { logSearchClick(query, s.entity_type, s.entity_id); go(route); }}
                       className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-amber-500/10">
                       <span className="truncate text-slate-100">{s.signum && s.signum !== s.label ? `${s.signum} · ${s.label}` : s.label}</span>
-                      {s.sublabel && <span className="ml-auto shrink-0 truncate text-[11px] text-slate-500">{s.sublabel}</span>}
+                      {s.sublabel && <span className="ml-auto shrink-0 truncate text-[11px] text-slate-400">{s.sublabel}</span>}
                     </button>
                   );
                 })}
@@ -791,7 +791,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
               <p className="whitespace-pre-wrap leading-relaxed text-[15px] text-slate-100">{aiAnswer}</p>
               {aiSources.length > 0 && (
                 <div className="mt-3">
-                  <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                     {sv ? 'Källor' : 'Sources'}
                   </div>
                   {/* Källkort: numrerad bricka + typ + titel + utdrag, klickbara ner till entiteten */}
@@ -823,7 +823,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                   </div>
                 </div>
               )}
-              <p className="mt-2 text-[10px] text-slate-500">
+              <p className="mt-2 text-[10px] text-slate-400">
                 {sv ? 'AI-genererat ur källorna ovan — verifiera via länkarna.' : 'AI-generated from the sources above — verify via the links.'}
               </p>
             </div>
@@ -839,7 +839,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
             <div className="flex items-center gap-2 text-sm text-amber-100">
               <TIcon className="h-4 w-4 text-amber-400" />
               {sv ? theme.name : (theme.name_en ?? theme.name)}
-              <span className="text-xs text-slate-500">{sv ? '— graf + tematiskt sök' : '— graph + thematic search'}</span>
+              <span className="text-xs text-slate-400">{sv ? '— graf + tematiskt sök' : '— graph + thematic search'}</span>
             </div>
             <div className="flex items-center gap-3">
               {theme.slug && (
@@ -885,7 +885,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
           <div key={g.type} className="py-1">
             <div className="flex items-center gap-1.5 px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
               <Icon className="h-3 w-3" /> {sv ? g.labelSv : g.labelEn}
-              <span className="text-slate-600">· {g.rows.length}</span>
+              <span className="text-slate-400">· {g.rows.length}</span>
             </div>
             {g.rows.map((row) => {
               const sub = humanSub(row.title, row.subtitle);
@@ -913,7 +913,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                     />
                   ) : (
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-slate-800/60">
-                      <Icon className="h-4 w-4 text-slate-600" />
+                      <Icon className="h-4 w-4 text-slate-400" />
                     </span>
                   )
                 )}
@@ -1051,20 +1051,22 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                       <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
                     </div>
                     <p className="whitespace-pre-wrap leading-relaxed text-[15px] text-slate-100">{aiAnswer}</p>
-                    <p className="mt-1 text-[10px] text-slate-500">{sv ? 'AI-genererat ur källorna — verifiera via träffarna.' : 'AI-generated from the sources — verify via the results.'}</p>
+                    <p className="mt-1 text-[10px] text-slate-400">{sv ? 'AI-genererat ur källorna — verifiera via träffarna.' : 'AI-generated from the sources — verify via the results.'}</p>
                   </div>
                 )}
               </div>
             )}
-            {/* 3 kolumner: träfflista (söksvar) · karta (platsnod) · verktyg */}
-            <div className="flex-1 min-h-0 grid overflow-hidden lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)_248px]">
-              <div className="min-h-0 overflow-y-auto lg:border-r lg:border-slate-800">
+            {/* 3 kolumner på lg: träfflista · karta (platsnod) · utforska-rail. På mobil EN vertikal
+                scroll med SVARET först (Daniel/UX: högerkolumnen fick aldrig synas på mobil, och svaret
+                hamnade efter hela träfflistan). order-klasser styr mobilordningen: svar → träffar → rail. */}
+            <div className="flex-1 min-h-0 grid grid-cols-1 overflow-y-auto lg:overflow-hidden lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)_248px]">
+              <div className="order-2 lg:order-1 lg:min-h-0 lg:overflow-y-auto lg:border-r lg:border-slate-800">
                 {renderResults('', false, true)}
               </div>
-              <div className="min-h-0 overflow-y-auto">
+              <div className="order-1 lg:order-2 lg:min-h-0 lg:overflow-y-auto">
                 <AnswerContext query={cleanQuery} onGo={go} onQuery={(q) => { setQuery(q); setTheme(null); }} />
               </div>
-              <aside className="hidden min-h-0 flex-col overflow-y-auto border-l border-slate-800 lg:flex">
+              <aside className="order-3 flex min-h-0 flex-col border-t border-slate-800 lg:overflow-y-auto lg:border-l lg:border-t-0">
                 {/* Kunskapspanelen (träffens egen destination) äger toppen. */}
                 {topEntity && !theme && <KnowledgePanel hit={topEntity} thumb={thumbs[topEntity.entity_id]} onGo={go} sv={sv} />}
                 {/* Utforska & upplev + Svampkarta — flyttad hit från svarspanelens main (Daniel). */}

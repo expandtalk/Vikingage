@@ -231,7 +231,7 @@ const Bildarkiv: React.FC = () => {
                 aria-pressed={active}
                 onClick={() => setFacet(f.key)}
                 className={[
-                  'inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm',
+                  'inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm',
                   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold',
                   active
                     ? 'border-gold bg-gold/15 text-gold font-semibold'
@@ -256,7 +256,7 @@ const Bildarkiv: React.FC = () => {
                 <label htmlFor="image-archive-region" className="text-sm text-muted-foreground">{sv ? 'Landskap' : 'Province'}</label>
                 <select id="image-archive-region" value={region}
                   onChange={(e) => { setRegion(e.target.value); setCity('all'); setParish('all'); }}
-                  className="min-h-[36px] rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
+                  className="min-h-11 rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
                   <option value="all" className="bg-slate-900 text-white">{sv ? 'Alla landskap' : 'All provinces'}</option>
                   {regions.map((r) => <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>)}
                 </select>
@@ -266,7 +266,7 @@ const Bildarkiv: React.FC = () => {
               <>
                 <label htmlFor="image-archive-city" className="text-sm text-muted-foreground">{sv ? 'Stad/kommun' : 'City'}</label>
                 <select id="image-archive-city" value={city} onChange={(e) => setCity(e.target.value)}
-                  className="min-h-[36px] rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
+                  className="min-h-11 rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
                   <option value="all" className="bg-slate-900 text-white">{sv ? 'Alla städer' : 'All cities'}</option>
                   {cities.map((r) => <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>)}
                 </select>
@@ -276,7 +276,7 @@ const Bildarkiv: React.FC = () => {
               <>
                 <label htmlFor="image-archive-parish" className="text-sm text-muted-foreground">{sv ? 'Socken' : 'Parish'}</label>
                 <select id="image-archive-parish" value={parish} onChange={(e) => setParish(e.target.value)}
-                  className="min-h-[36px] rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
+                  className="min-h-11 rounded-full border border-white/15 bg-slate-900 px-3 py-1.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
                   <option value="all" className="bg-slate-900 text-white">{sv ? 'Alla socknar' : 'All parishes'}</option>
                   {parishes.map((r) => <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>)}
                 </select>
