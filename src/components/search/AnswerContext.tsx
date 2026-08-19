@@ -209,6 +209,22 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       return (data ?? []) as any[];
     },
   });
+  // "Vem var hen" — rikare text ur svenska Wikipedia (Wikidata-beskrivningen är bara en enrading).
+  // CC BY-SA → attribueras + länkas. REST-summary sätter CORS *. Hoppar disambiguering/404.
+  const { data: wikiExtract } = useQuery({
+    queryKey: ['answer-person-wiki', personHit?.name],
+    enabled: !!personHit?.name,
+    staleTime: 60 * 60 * 1000,
+    queryFn: async (): Promise<{ extract: string; url: string } | null> => {
+      try {
+        const r = await fetch(`https://sv.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(personHit.name)}?redirect=true`);
+        if (!r.ok) return null;
+        const j = await r.json();
+        if (j.type !== 'standard' || !j.extract) return null;
+        return { extract: j.extract as string, url: (j.content_urls?.desktop?.page as string) || '' };
+      } catch { return null; }
+    },
+  });
   const placesLayerRef = useRef<L.LayerGroup | null>(null); // alla platser som matchar sökningen (multi-plats)
 
   // Multi-plats: alla ortnamn som matchar frågan (exakt + prefix) med koordinat → plottas ALLA på
@@ -985,8 +1001,15 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             )}
           </div>
         </div>
-        {personHit.description_sv && (
-          <p className="px-5 pb-3 text-[15px] leading-relaxed text-slate-200">{personHit.description_sv}</p>
+        {(wikiExtract?.extract || personHit.description_sv) && (
+          <div className="px-5 pb-3">
+            <p className="text-[15px] leading-relaxed text-slate-200">{wikiExtract?.extract || personHit.description_sv}</p>
+            {wikiExtract?.url && (
+              <a href={wikiExtract.url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-[11px] text-slate-500 hover:text-amber-200">
+                {sv ? 'Ur svenska Wikipedia (CC BY-SA) →' : 'From Swedish Wikipedia (CC BY-SA) →'}
+              </a>
+            )}
+          </div>
         )}
         {personKg.length > 0 && (
           <div className="px-5 pb-3">

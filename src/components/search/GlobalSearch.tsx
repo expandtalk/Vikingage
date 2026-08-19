@@ -764,9 +764,9 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                   return (
                     <button key={`ta-${s.entity_type}-${s.entity_id}`}
                       onClick={() => { logSearchClick(query, s.entity_type, s.entity_id); go(route); }}
-                      className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-amber-500/10">
-                      <span className="truncate text-slate-100">{s.signum && s.signum !== s.label ? `${s.signum} · ${s.label}` : s.label}</span>
-                      {humanSub(s.label, s.sublabel) && <span className="ml-auto shrink-0 truncate text-[11px] text-slate-400">{humanSub(s.label, s.sublabel)}</span>}
+                      className="flex w-full flex-col items-start gap-0.5 rounded px-2 py-1.5 text-left text-sm hover:bg-amber-500/10">
+                      <span className="font-medium text-slate-100 line-clamp-1">{s.signum && s.signum !== s.label ? `${s.signum} · ${s.label}` : s.label}</span>
+                      {humanSub(s.label, s.sublabel) && <span className="line-clamp-1 text-[11px] text-slate-400">{humanSub(s.label, s.sublabel)}</span>}
                     </button>
                   );
                 })}
