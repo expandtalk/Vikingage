@@ -30,7 +30,9 @@ async function search(q) {
   } finally { clearTimeout(t); }
 }
 
-const bench = JSON.parse(readFileSync(join(DIR, 'search-benchmark.json'), 'utf8'));
+const BENCH_FILE = process.argv[2] || 'search-benchmark.json';
+const TAG = BENCH_FILE.replace(/.*[\\/]/, '').replace(/\.json$/, '').replace(/^search-benchmark-?/, '') || 'core';
+const bench = JSON.parse(readFileSync(join(DIR, BENCH_FILE), 'utf8'));
 const rows = [];
 console.log(`Kör ${bench.probes.length} frågor mot ${URL}\n`);
 
@@ -38,7 +40,7 @@ for (const p of bench.probes) {
   const r = await search(p.query);
   const deadend = r.hits.length === 0;
   const anchorFold = fold(p.anchor);
-  const anchor_found = !deadend && r.hits.some((h) => fold(h.label).includes(anchorFold) || fold(h.snippet).includes(anchorFold));
+  const anchor_found = p.anchor ? (!deadend && r.hits.some((h) => fold(h.label).includes(anchorFold) || fold(h.snippet).includes(anchorFold))) : null;
   const top = r.hits[0] ?? null;
   const top_type_ok = top && p.expect_types ? p.expect_types.includes(top.entity_type) : null;
   rows.push({ ...p, mode: r.mode, error: r.error, n: r.hits.length, deadend, anchor_found, top_type_ok,
@@ -54,7 +56,7 @@ const cats = {};
 for (const r of rows) {
   const c = (cats[r.cat] ??= { n: 0, dead: 0, anchor: 0, anchorApplicable: 0, typeOk: 0, typeApplicable: 0 });
   c.n++; if (r.deadend) c.dead++;
-  if (!r.deadend) { c.anchorApplicable++; if (r.anchor_found) c.anchor++; }
+  if (!r.deadend && r.anchor_found !== null) { c.anchorApplicable++; if (r.anchor_found) c.anchor++; }
   if (r.top_type_ok !== null) { c.typeApplicable++; if (r.top_type_ok) c.typeOk++; }
 }
 
@@ -81,7 +83,8 @@ for (const r of rows) {
 }
 
 const stamp = new Date().toISOString().slice(0, 10);
-writeFileSync(join(DIR, `results-${stamp}.md`), md);
-writeFileSync(join(DIR, `results-${stamp}.json`), JSON.stringify(rows, null, 2));
-console.log(`\nRapport: benchmark/results-${stamp}.md`);
+const outBase = TAG === 'core' ? `results-${stamp}` : `results-${TAG}-${stamp}`;
+writeFileSync(join(DIR, `${outBase}.md`), md);
+writeFileSync(join(DIR, `${outBase}.json`), JSON.stringify(rows, null, 2));
+console.log(`\nRapport: benchmark/${outBase}.md`);
 console.log(`Dead-ends: ${rows.filter((r) => r.deadend).length} · Ankare hittat: ${rows.filter((r) => r.anchor_found).length}/${rows.filter((r) => !r.deadend).length}`);
