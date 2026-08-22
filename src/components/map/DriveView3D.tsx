@@ -86,7 +86,7 @@ const FT_SV: Record<string, string> = {
   cult_site: 'Kultplats', maritime_node: 'Maritim nod',
 };
 
-export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: number; lng: number } }> = ({ className, demoCenter }) => {
+export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: number; lng: number }; onNearby?: (n: number) => void }> = ({ className, demoCenter, onNearby }) => {
   const { pos, following, target } = useFieldNav();
   const { route, dest } = useRoadtrip();
   const travelMode = useTravelMode();
@@ -426,6 +426,7 @@ export const DriveView3D: React.FC<{ className?: string; demoCenter?: { lat: num
         };
       });
       const fc = { type: 'FeatureCollection', features };
+      onNearby?.(features.length); // diagnostik/UX: rapportera hur många objekt som hämtades
       const apply = () => {
         const src = map.getSource('nearby') as maplibregl.GeoJSONSource | undefined;
         src?.setData(fc as any);

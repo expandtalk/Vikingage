@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DriveView3D } from '@/components/map/DriveView3D';
 import { useFieldNav, startFieldNav, stopFieldNav, setFieldNavFollowing } from '@/hooks/useFieldNav';
@@ -19,6 +19,7 @@ const DriveView: React.FC = () => {
   const [params] = useSearchParams();
   const { pos, following, error } = useFieldNav();
   useFieldNavGeolocation(); // matar setFieldNavPos medan aktiv
+  const [nearbyN, setNearbyN] = useState<number | null>(null); // # objekt hämtade (diagnostik + UX)
 
   // Valfritt demo-center via ?lat&lng (t.ex. "3D-vy" från en utflykt → Gåseborg-terrängpiloten).
   const qLat = parseFloat(params.get('lat') ?? '');
@@ -34,7 +35,7 @@ const DriveView: React.FC = () => {
 
   return (
     <div className="fixed inset-0 bg-slate-950">
-      <DriveView3D demoCenter={demoCenter} />
+      <DriveView3D demoCenter={demoCenter} onNearby={setNearbyN} />
 
       {/* Topbar: Explore → Stäng (Daniel) + status. Explore öppnar den platta kartan på SAMMA
           position/zoom så man inte tappar orienteringen (i st.f. utzoomad Sverigekarta). */}
@@ -56,6 +57,11 @@ const DriveView: React.FC = () => {
         <span className="rounded-lg border border-slate-600 bg-slate-900/85 px-2.5 py-1.5 text-[11px] text-slate-300 backdrop-blur-sm">
           {sv ? '3D-förarperspektiv (beta)' : '3D drive view (beta)'}
         </span>
+        {nearbyN != null && (
+          <span className={`rounded-lg border px-2.5 py-1.5 text-[11px] backdrop-blur-sm ${nearbyN === 0 ? 'border-amber-600/60 bg-amber-950/70 text-amber-200' : 'border-slate-600 bg-slate-900/85 text-slate-300'}`}>
+            {nearbyN === 0 ? (sv ? 'inga objekt hämtade' : 'no objects loaded') : (sv ? `${nearbyN} objekt nära` : `${nearbyN} nearby`)}
+          </span>
+        )}
         {!following && (
           <button
             type="button"
