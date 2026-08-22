@@ -1,0 +1,1609 @@
+[
+  {
+    "id": "A1",
+    "cat": "A entity/place",
+    "query": "Varnhem",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": true,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "parish",
+        "l": "Varnhem",
+        "s": 0.526
+      }
+    }
+  },
+  {
+    "id": "A2",
+    "cat": "A entity/place",
+    "query": "Kalmar",
+    "lang": "sv",
+    "anchor": "Kalmar",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": true,
+    "top": {
+      "t": "parish",
+      "l": "Kalmar"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "parish",
+        "l": "Kalmar",
+        "s": 0.523
+      }
+    }
+  },
+  {
+    "id": "A3",
+    "cat": "A entity/place",
+    "query": "Kalmar slott",
+    "lang": "sv",
+    "anchor": "Kalmar slott",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": false,
+    "top": {
+      "t": "place",
+      "l": "Kalmar slott"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "place",
+        "l": "Kalmar slott",
+        "s": 0.531
+      }
+    }
+  },
+  {
+    "id": "A4",
+    "cat": "A entity/place",
+    "query": "Rydboholm",
+    "lang": "sv",
+    "anchor": "Rydboholm",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 4,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": true,
+    "top": {
+      "t": "place_name",
+      "l": "Rydboholm"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "place_name",
+        "l": "Rydboholm",
+        "s": 0.516
+      }
+    }
+  },
+  {
+    "id": "A5",
+    "cat": "A entity/place",
+    "query": "Västra Aros",
+    "lang": "sv",
+    "anchor": "Västra Aros",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": false,
+    "top_type_ok": false,
+    "top": {
+      "t": "place",
+      "l": "Västra Strö"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "place",
+        "l": "Västra Strö",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "A6",
+    "cat": "A entity/place",
+    "query": "Birger jarl",
+    "lang": "sv",
+    "anchor": "Birger jarl",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": true,
+    "top": {
+      "t": "king",
+      "l": "Birger Jarl"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Birger Jarl",
+        "s": 0.535
+      }
+    }
+  },
+  {
+    "id": "A7",
+    "cat": "A entity/place",
+    "query": "Gustav Vasa",
+    "lang": "sv",
+    "anchor": "Gustav Vasa",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": true,
+    "top": {
+      "t": "king",
+      "l": "Gustav Vasa"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Gustav Vasa",
+        "s": 0.537
+      }
+    }
+  },
+  {
+    "id": "A8",
+    "cat": "A entity/place",
+    "query": "Olof Skötkonung",
+    "lang": "sv",
+    "anchor": "Olof Skötkonung",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": true,
+    "top": {
+      "t": "king",
+      "l": "Olof Skötkonung"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Olof Skötkonung",
+        "s": 0.527
+      }
+    }
+  },
+  {
+    "id": "A9",
+    "cat": "A entity/place",
+    "query": "Sigtuna",
+    "lang": "sv",
+    "anchor": "Sigtuna",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": true,
+    "top": {
+      "t": "parish",
+      "l": "Sigtuna"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "parish",
+        "l": "Sigtuna",
+        "s": 0.54
+      }
+    }
+  },
+  {
+    "id": "A10",
+    "cat": "A entity/place",
+    "query": "Öland",
+    "lang": "sv",
+    "anchor": "Öland",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": false,
+    "top": {
+      "t": "landscape",
+      "l": "Öland"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "landscape",
+        "l": "Öland",
+        "s": 0.527
+      }
+    }
+  },
+  {
+    "id": "B11",
+    "cat": "B present-day",
+    "query": "Var ligger Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "hillfort",
+        "l": "Vargklevsberget",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "B12",
+    "cat": "B present-day",
+    "query": "Vad finns att se i Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "king",
+        "l": "Aun den gamle",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "B13",
+    "cat": "B present-day",
+    "query": "Hur tar jag mig till Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "source_text",
+        "l": "Sången om Regin — strof 13",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "B14",
+    "cat": "B present-day",
+    "query": "Vilka sevärdheter finns nära Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "B15",
+    "cat": "B present-day",
+    "query": "Vilka kyrkor finns i Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "place",
+        "l": "Stora Rytterns kyrkoruin",
+        "s": 0.009
+      }
+    }
+  },
+  {
+    "id": "B16",
+    "cat": "B present-day",
+    "query": "Vilka museer finns i Kalmar?",
+    "lang": "sv",
+    "anchor": "Kalmar",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Kalmar"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "source_text",
+        "l": "Det korta kvädet om Sigurd — strof 54",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "B17",
+    "cat": "B present-day",
+    "query": "Vad finns nära Kalmar slott?",
+    "lang": "sv",
+    "anchor": "Kalmar slott",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "place",
+      "l": "Kalmar slott"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "source_text",
+        "l": "Den Höges sång — strof 145",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "B18",
+    "cat": "B present-day",
+    "query": "Restauranger nära Kalmar slott",
+    "lang": "sv",
+    "anchor": "Kalmar slott",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "place",
+      "l": "Kalmar slott"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "place",
+        "l": "Kalmar",
+        "s": 0.015
+      }
+    }
+  },
+  {
+    "id": "B19",
+    "cat": "B present-day",
+    "query": "Hur långt är det från Stockholm till Varnhem?",
+    "lang": "sv",
+    "anchor": "Stockholm",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": false,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Stockholm"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "king",
+        "l": "Birger Jarl",
+        "s": 0.016
+      }
+    }
+  },
+  {
+    "id": "B20",
+    "cat": "B present-day",
+    "query": "Vad heter Varnhem idag?",
+    "lang": "sv",
+    "anchor": "Varnhem idag",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 4,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "excursion",
+      "l": "Varnhem (Kata gård)"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "parish",
+        "l": "Varnhem",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "C21",
+    "cat": "C historical",
+    "query": "Vad vet vi om Varnhem under medeltiden?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "christian_site",
+        "l": "S:t Jörgens hospital, Kristianstad",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "C22",
+    "cat": "C historical",
+    "query": "När grundades Varnhems kloster?",
+    "lang": "sv",
+    "anchor": "Varnhems kloster",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "place",
+      "l": "Varnhems kloster"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "source_text",
+        "l": "Den Höges sång — strof 25",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "C23",
+    "cat": "C historical",
+    "query": "Vilka personer är begravda i Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "dynasty",
+        "l": "Sverkerska ätten",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "C24",
+    "cat": "C historical",
+    "query": "Vilka kungar är kopplade till Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "dynasty",
+        "l": "Sverreätten",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "C25",
+    "cat": "C historical",
+    "query": "Vilka medeltida dokument nämner Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "christian_site",
+        "l": "Hospitalshuset, Jönköping",
+        "s": 0.009
+      }
+    }
+  },
+  {
+    "id": "C26",
+    "cat": "C historical",
+    "query": "När nämns Varnhem första gången?",
+    "lang": "sv",
+    "anchor": "Varnhem första gången",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 1,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhems"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "place",
+        "l": "Varnhems kloster",
+        "s": 0.009
+      }
+    }
+  },
+  {
+    "id": "C27",
+    "cat": "C historical",
+    "query": "Vilka ortnamn i Västergötland är belagda före år 1000?",
+    "lang": "sv",
+    "anchor": "Västergötland",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "landscape",
+      "l": "Västergötland"
+    },
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "C28",
+    "cat": "C historical",
+    "query": "Vilka runinskrifter finns nära Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "theme",
+        "l": "Runverket (Sveriges runinskrifter)",
+        "s": 0.012
+      }
+    }
+  },
+  {
+    "id": "C29",
+    "cat": "C historical",
+    "query": "Vilka personer nämns i dokument från Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "C30",
+    "cat": "C historical",
+    "query": "Hur förändrades Varnhem under medeltiden?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "D31",
+    "cat": "D relations",
+    "query": "Vem var far till Gustav Vasa?",
+    "lang": "sv",
+    "anchor": "Gustav Vasa",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "king",
+      "l": "Gustav Vasa"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Gustav Vasa",
+        "s": 0.02
+      }
+    }
+  },
+  {
+    "id": "D32",
+    "cat": "D relations",
+    "query": "Vilka personer var släkt med Gustav Vasa?",
+    "lang": "sv",
+    "anchor": "Gustav Vasa",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "king",
+      "l": "Gustav Vasa"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Gustav Vasa",
+        "s": 0.02
+      }
+    }
+  },
+  {
+    "id": "D33",
+    "cat": "D relations",
+    "query": "Vilka orter är kopplade till Gustav Vasa?",
+    "lang": "sv",
+    "anchor": "Gustav Vasa",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "king",
+      "l": "Gustav Vasa"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Gustav Vasa",
+        "s": 0.02
+      }
+    }
+  },
+  {
+    "id": "D34",
+    "cat": "D relations",
+    "query": "Vilka personer är kopplade till Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "D35",
+    "cat": "D relations",
+    "query": "Vilka kloster är kopplade till Västergötland?",
+    "lang": "sv",
+    "anchor": "Västergötland",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "landscape",
+      "l": "Västergötland"
+    },
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "D36",
+    "cat": "D relations",
+    "query": "Vilka orter är kopplade till Birger jarl?",
+    "lang": "sv",
+    "anchor": "Birger jarl",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "king",
+      "l": "Birger Jarl"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Birger Jarl",
+        "s": 0.019
+      }
+    }
+  },
+  {
+    "id": "D37",
+    "cat": "D relations",
+    "query": "Vilka personer förekommer tillsammans med Birger jarl i källorna?",
+    "lang": "sv",
+    "anchor": "Birger jarl",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "king",
+      "l": "Birger Jarl"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Birger Jarl",
+        "s": 0.019
+      }
+    }
+  },
+  {
+    "id": "D38",
+    "cat": "D relations",
+    "query": "Vilka runinskrifter finns nära medeltida kyrkor?",
+    "lang": "sv",
+    "anchor": "Vilka runinskrifter finns nära medeltida kyrkor?",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "carver",
+      "l": "Vidbjörn"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "carver",
+        "l": "Vidbjörn",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "D39",
+    "cat": "D relations",
+    "query": "Vilka orter har både runinskrifter och medeltida dokument?",
+    "lang": "sv",
+    "anchor": "Vilka orter har både runinskrifter och medeltida dokument?",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": false,
+    "top_type_ok": null,
+    "top": {
+      "t": "theme",
+      "l": "Runverket (Sveriges runinskrifter)"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "theme",
+        "l": "Runverket (Sveriges runinskrifter)",
+        "s": 0.012
+      }
+    }
+  },
+  {
+    "id": "D40",
+    "cat": "D relations",
+    "query": "Vilka personer kan kopplas till både Varnhem och Skara?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "king",
+        "l": "Magnus den gode",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "E41",
+    "cat": "E evidence/concept",
+    "query": "Vilken är den äldsta källan som nämner Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "dynasty",
+        "l": "Sjöbladsätten",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "E42",
+    "cat": "E evidence/concept",
+    "query": "Finns det motstridiga uppgifter om Gustav Vasas födelseplats?",
+    "lang": "sv",
+    "anchor": "Gustav Vasas födelseplats",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "king",
+      "l": "Gustav Vasa"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Gustav Vasa",
+        "s": 0.018
+      }
+    }
+  },
+  {
+    "id": "E43",
+    "cat": "E evidence/concept",
+    "query": "Vilka uppgifter om Gustav Vasa bygger på senare tradition?",
+    "lang": "sv",
+    "anchor": "Gustav Vasa bygger",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "king",
+      "l": "Gustav Vasa"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Gustav Vasa",
+        "s": 0.02
+      }
+    }
+  },
+  {
+    "id": "E44",
+    "cat": "E evidence/concept",
+    "query": "Vad vet vi säkert om Varnhem och vad är osäkert?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "parish",
+        "l": "Vadstena",
+        "s": 0.012
+      }
+    }
+  },
+  {
+    "id": "E45",
+    "cat": "E evidence/concept",
+    "query": "Vilka påståenden om en ort stöds av flera oberoende källor?",
+    "lang": "sv",
+    "anchor": "Vilka påståenden om en ort stöds av flera oberoende källor?",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": false,
+    "top_type_ok": null,
+    "top": {
+      "t": "source_text",
+      "l": "Det korta kvädet om Sigurd — strof 63"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "source_text",
+        "l": "Det korta kvädet om Sigurd — strof 63",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "E46",
+    "cat": "E evidence/concept",
+    "query": "mjölk",
+    "lang": "sv",
+    "anchor": "mjölk",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "hybrid",
+    "n": 3,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": false,
+    "top": {
+      "t": "ecclesiastical_site",
+      "l": "Mjölkuddskyrkan"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "ecclesiastical_site",
+        "l": "Mjölkuddskyrkan",
+        "s": 0.066
+      }
+    }
+  },
+  {
+    "id": "E47",
+    "cat": "E evidence/concept",
+    "query": "solidus",
+    "lang": "sv",
+    "anchor": "solidus",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "hybrid",
+    "n": 5,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": true,
+    "top": {
+      "t": "coin",
+      "l": "Solidus \"Leo Perpetuus\" (feb 457)"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "coin",
+        "l": "Solidus \"Leo Perpetuus\" (feb 457)",
+        "s": 0.066
+      }
+    }
+  },
+  {
+    "id": "E48",
+    "cat": "E evidence/concept",
+    "query": "hacksilver",
+    "lang": "sv",
+    "anchor": "hacksilver",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "lexical",
+    "n": 0,
+    "deadend": true,
+    "anchor_found": false,
+    "top_type_ok": null,
+    "top": null,
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "E49",
+    "cat": "E evidence/concept",
+    "query": "attung",
+    "lang": "sv",
+    "anchor": "attung",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "lexical",
+    "n": 0,
+    "deadend": true,
+    "anchor_found": false,
+    "top_type_ok": null,
+    "top": null,
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "E50",
+    "cat": "E evidence/concept",
+    "query": "Vad betyder namnet Varnhem?",
+    "lang": "sv",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "M51",
+    "cat": "M multilingual",
+    "query": "Where is Varnhem?",
+    "lang": "en",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "christian_site",
+        "l": "Varnhems kloster",
+        "s": 0.006
+      }
+    }
+  },
+  {
+    "id": "M52",
+    "cat": "M multilingual",
+    "query": "Hvor ligger Varnhem?",
+    "lang": "da",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "M53",
+    "cat": "M multilingual",
+    "query": "Kvar ligg Varnhem?",
+    "lang": "no",
+    "anchor": "Varnhem",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Varnhem"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "place",
+        "l": "Tranbygge kvarn",
+        "s": 0.009
+      }
+    }
+  },
+  {
+    "id": "M54",
+    "cat": "M multilingual",
+    "query": "milk",
+    "lang": "en",
+    "anchor": "milk",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "hybrid",
+    "n": 1,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "person",
+      "l": "Milke Falck"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "person",
+        "l": "Milke Falck",
+        "s": 0.067
+      }
+    }
+  },
+  {
+    "id": "M55",
+    "cat": "M multilingual",
+    "query": "mælk",
+    "lang": "da",
+    "anchor": "mælk",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "lexical",
+    "n": 0,
+    "deadend": true,
+    "anchor_found": false,
+    "top_type_ok": null,
+    "top": null,
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "M56",
+    "cat": "M multilingual",
+    "query": "melk",
+    "lang": "no",
+    "anchor": "melk",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "person",
+      "l": "Melker Ellborg"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "person",
+        "l": "Melker Ellborg",
+        "s": 0.068
+      }
+    }
+  },
+  {
+    "id": "M57",
+    "cat": "M multilingual",
+    "query": "mjólk",
+    "lang": "is",
+    "anchor": "mjólk",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "lexical",
+    "n": 0,
+    "deadend": true,
+    "anchor_found": false,
+    "top_type_ok": null,
+    "top": null,
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  },
+  {
+    "id": "M58",
+    "cat": "M multilingual",
+    "query": "Roman gold coin solidus",
+    "lang": "en",
+    "anchor": "Roman gold coin solidus",
+    "changed": false,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": false,
+    "top_type_ok": false,
+    "top": {
+      "t": "carver",
+      "l": "Anonym mästare (U 665/672)"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": false,
+      "top": {
+        "t": "carver",
+        "l": "Anonym mästare (U 665/672)",
+        "s": 0.01
+      }
+    }
+  },
+  {
+    "id": "M59",
+    "cat": "M multilingual",
+    "query": "runestones near Uppsala",
+    "lang": "en",
+    "anchor": "Uppsala",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Uppsala"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "place",
+        "l": "Uppsala",
+        "s": 0.016
+      }
+    }
+  },
+  {
+    "id": "M60",
+    "cat": "M multilingual",
+    "query": "medieval charters mentioning Kalmar",
+    "lang": "en",
+    "anchor": "Kalmar",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": null,
+    "top": {
+      "t": "parish",
+      "l": "Kalmar"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "parish",
+        "l": "Kalmar",
+        "s": 0.016
+      }
+    }
+  },
+  {
+    "id": "M61",
+    "cat": "M multilingual",
+    "query": "who was Gustav Vasa",
+    "lang": "en",
+    "anchor": "Gustav Vasa",
+    "changed": true,
+    "reason": "proper-noun",
+    "mode": "hybrid",
+    "n": 8,
+    "deadend": false,
+    "anchor_found": true,
+    "top_type_ok": true,
+    "top": {
+      "t": "king",
+      "l": "Gustav Vasa"
+    },
+    "base": {
+      "deadend": false,
+      "anchor_found": true,
+      "top": {
+        "t": "king",
+        "l": "Gustav Vasa",
+        "s": 0.037
+      }
+    }
+  },
+  {
+    "id": "M62",
+    "cat": "M multilingual",
+    "query": "vikingekonge",
+    "lang": "da",
+    "anchor": "vikingekonge",
+    "changed": false,
+    "reason": "unchanged",
+    "mode": "lexical",
+    "n": 0,
+    "deadend": true,
+    "anchor_found": false,
+    "top_type_ok": null,
+    "top": null,
+    "base": {
+      "deadend": true,
+      "anchor_found": false,
+      "top": null
+    }
+  }
+]

@@ -42,6 +42,7 @@ const Statistics = lazy(() => import("./pages/Statistics"));
 const PlaceNames = lazy(() => import("./pages/PlaceNames"));
 const TunaNames = lazy(() => import("./pages/TunaNames"));
 const PlacePage = lazy(() => import("./pages/PlacePage"));
+const GlossaryTerm = lazy(() => import("./pages/GlossaryTerm"));
 const PlaceIndex = lazy(() => import("./pages/PlaceIndex"));
 const RoadPage = lazy(() => import("./pages/RoadPage"));
 const Vendelhjalmar = lazy(() => import("./pages/Vendelhjalmar"));
@@ -82,6 +83,7 @@ const SanktOlof = lazy(() => import("./pages/SanktOlof"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Helgon = lazy(() => import("./pages/Helgon"));
 const Vetenskapsmetodik = lazy(() => import("./pages/Vetenskapsmetodik"));
+const RiksdagCv = lazy(() => import("./pages/RiksdagCv"));
 const ForsvunnaRunstenar = lazy(() => import("./pages/ForsvunnaRunstenar"));
 const LegendStones = lazy(() => import("./pages/LegendStones"));
 const Runes = lazy(() => import("./pages/Runes"));
@@ -109,7 +111,18 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const MedievalCharters = lazy(() => import("./pages/MedievalCharters"));
 const MedievalCharterDetail = lazy(() => import("./pages/MedievalCharterDetail"));
 
-const queryClient = new QueryClient();
+// Global cache-policy: utan detta får varje query default staleTime 0 + refetch vid
+// fönsterfokus → onödiga refetch-round-trips (särskilt söksvaret). 5 min färskt räcker
+// gott för forskningsdata som ändras sällan; enskilda queries kan överstyra vid behov.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60_000,
+      gcTime: 30 * 60_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const RouteFallback = () => (
   <div className="min-h-screen viking-bg flex items-center justify-center">
@@ -190,6 +203,8 @@ const App = () => (
                   <Route path="/en/place" element={<PlaceIndex />} />
                   <Route path="/sv/plats/:slug" element={<PlacePage />} />
                   <Route path="/en/place/:slug" element={<PlacePage />} />
+                  <Route path="/sv/ordlista/:slug" element={<GlossaryTerm forceLang="sv" />} />
+                  <Route path="/en/glossary/:slug" element={<GlossaryTerm forceLang="en" />} />
                   <Route path="/sv/led/:slug" element={<RoadPage />} />
                   <Route path="/en/road/:slug" element={<RoadPage />} />
                   <Route path="/sv/vendelhjalmar" element={<Vendelhjalmar />} />
@@ -322,6 +337,9 @@ const App = () => (
                   <Route path="/sv/vetenskapsmetodik" element={<Vetenskapsmetodik forceLang="sv" />} />
                   <Route path="/en/scientific-methodology" element={<Vetenskapsmetodik forceLang="en" />} />
                   <Route path="/methodology" element={<Vetenskapsmetodik forceLang="en" />} />
+                  <Route path="/sv/riksdag-cv" element={<RiksdagCv forceLang="sv" />} />
+                  <Route path="/en/riksdag-cv" element={<RiksdagCv forceLang="en" />} />
+                  <Route path="/riksdag-cv" element={<RiksdagCv forceLang="sv" />} />
                   <Route path="/sv/forsvunna-runstenar" element={<ForsvunnaRunstenar forceLang="sv" />} />
                   <Route path="/en/lost-runestones" element={<ForsvunnaRunstenar forceLang="en" />} />
                   <Route path="/sv/runor" element={<Runes />} />

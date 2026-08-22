@@ -17,6 +17,10 @@ import { useOffTopicSenses, useCanonicalSense } from '@/hooks/useOffTopicSenses'
 import { useSearchThumbs } from '@/hooks/useSearchThumbs';
 import { RelationMindmap } from './RelationMindmap';
 import { AnswerContext } from './AnswerContext';
+import { UtilityAnswer } from './UtilityAnswer';
+import { LocateAnswer } from './LocateAnswer';
+import { PersonLocateAnswer } from './PersonLocateAnswer';
+import { detectUtilityIntent } from '@/utils/search/utilityIntent';
 import { ExploreRail } from './ExploreRail';
 import { SearchHelp } from './SearchHelp';
 import { GodQuestions } from './GodQuestions';
@@ -110,6 +114,7 @@ const META: Record<string, { labelSv: string; labelEn: string; icon: LucideIcon;
   maritime_node:  { labelSv: 'Hamnar & noder', labelEn: 'Harbours', icon: Ship, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   trade_route:    { labelSv: 'Handelsvägar', labelEn: 'Trade routes', icon: MapPin, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   content_page:   { labelSv: 'Sidor', labelEn: 'Pages', icon: BookOpen, route: (h) => h.signum ?? '/explore' },
+  glossary_term:  { labelSv: 'Ordlista', labelEn: 'Glossary', icon: BookOpen, route: (h) => h.signum ?? '/explore' },
   road_waypoint:  { labelSv: 'Vägpunkter', labelEn: 'Route waypoints', icon: Compass, route: (h) => h.signum ?? `/explore?searchQuery=${enc(h.label)}` },
   experience:     { labelSv: 'Upplevelser', labelEn: 'Experiences', icon: Compass, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
   investigation:  { labelSv: 'Undersökningar', labelEn: 'Investigations', icon: ScrollText, route: (h) => `/explore?searchQuery=${enc(h.label)}` },
@@ -253,6 +258,19 @@ const groupHits = (hits: Hit[], defaultCap = 10): Group[] => {
     const ex = byLabel.get(g.labelSv);
     if (ex) ex.rows.push(...g.rows);
     else { byLabel.set(g.labelSv, g); merged.push(g); }
+  }
+  // Dedup Ortnamn-gruppen på normaliserad TITEL efter place+place_name-merge: fyra "Daniels
+  // bebyggelse" i olika socknar (olika sublabel) klutta annars listan (Daniel). Behåll först rankade.
+  for (const g of merged) {
+    if (g.type === 'place' || g.type === 'place_name') {
+      const seen = new Set<string>();
+      g.rows = g.rows.filter((r) => {
+        const k = r.title.toLowerCase().trim();
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+    }
   }
   // Gruppordning: ORTNAMN före SOCKEN (Daniel) — fast prioritet för geo-grupperna, övriga typer
   // behåller sin relevansordning (originalindex) efter dem.
@@ -486,6 +504,9 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
   // Utvecklar-diagnostik (aktiveras med "-dev" i söket).
   const devMode = DEV_RE.test(query);
   const cleanQuery = stripDev(query);
+  // Verktygsavsikt (klockan/datum/vecka) → besvaras direkt i klienten, INTE via RAG (som bara ger
+  // "Inga källor hittades"). Pre-emptar AI-summan och stoppar edge-anropet.
+  const utilityIntent = useMemo(() => detectUtilityIntent(cleanQuery), [cleanQuery]);
   const [devInfo, setDevInfo] = useState<DevInfo | null>(null);
   // Typeahead: ortnamn + personer + namn direkt medan man skriver (search_typeahead, ~15ms).
   // Visas överst i listan innan/medan den fulla rankade sökningen laddar (Daniel: "ortnamnen ska
@@ -704,6 +725,10 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     const ql = q.toLowerCase();
     const QWORD = /^(vad|var|vem|när|nar|hur|varför|varfor|vilk\w*|finns|kan man|hur många|hur manga|berätta|beratta|what|where|who|when|why|how|which|is there|are there|tell me)\b/;
     const looksLikeQuestion = q.endsWith('?') || QWORD.test(ql);
+    // Klocka/locate = rena klientsvar → kör aldrig RAG. person_locate ("var dog X") BEHÅLLER RAG:
+    // det källförda svaret är hela poängen, vi adderar bara kartan.
+    const ui = detectUtilityIntent(q);
+    if (ui && ui.kind !== 'person_locate') return;
     if (q.length < 6 || !looksLikeQuestion || q === lastAskedRef.current) return;
     const id = setTimeout(() => { lastAskedRef.current = q; askAI(); }, 900);
     return () => clearTimeout(id);
@@ -756,7 +781,18 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
       {typeahead.length > 0 && (loading || total === 0) && (
         <div className="border-b border-slate-800 px-2 py-2">
           {(['place', 'person', 'name', 'other'] as const).map((grp) => {
-            const items = typeahead.filter((s) => s.grp === grp);
+            const raw = typeahead.filter((s) => s.grp === grp);
+            // Dedup: ortnamn på normaliserad LABEL (fyra likanämnda "Daniels · bebyggelse" → en),
+            // övriga grupper på label+sublabel (skilda personer med samma namn ska stå kvar).
+            const seenTa = new Set<string>();
+            const items = raw.filter((s) => {
+              const key = grp === 'place'
+                ? s.label.trim().toLowerCase()
+                : `${s.label.trim().toLowerCase()}|${(s.sublabel ?? '').trim().toLowerCase()}`;
+              if (seenTa.has(key)) return false;
+              seenTa.add(key);
+              return true;
+            });
             if (items.length === 0) return null;
             const head = grp === 'place' ? (sv ? 'Ortnamn' : 'Places') : grp === 'person' ? (sv ? 'Personer' : 'People') : grp === 'name' ? (sv ? 'Namn' : 'Names') : (sv ? 'Övrigt' : 'Other');
             return (
@@ -890,9 +926,9 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         </div>
       )}
 
-      {((query.trim().length >= 2) || theme) && !loading && total === 0 && faqHits.length === 0 && (
+      {((query.trim().replace(/[^\p{L}\p{N}]/gu, '').length >= 2) || theme) && !loading && total === 0 && faqHits.length === 0 && (
         <div className="p-6 text-center text-sm text-slate-400">
-          <p>{sv ? 'Inga träffar för' : 'No matches for'} “{theme ? (sv ? theme.name : theme.name_en ?? theme.name) : query}”</p>
+          <p>{sv ? 'Inga träffar för' : 'No matches for'} “{theme ? (sv ? theme.name : theme.name_en ?? theme.name) : query.trim()}”</p>
           {/* Tomt läge → föreslå platsen (granskningskö, verifieras mot källa). Bara för fritextsök. */}
           {!theme && query.trim().length >= 2 && <SuggestPlaceForm query={query.trim()} sv={sv} />}
         </div>
@@ -1056,8 +1092,27 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
         {/* Resultat = helskärm (barn nr 2, syskon till sökraden — rör aldrig fältet ovan). */}
         {fullscreen && (
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            {/* AI-summary auto ÖVERST (spänner alla kolumner) — sammanfattning före resultatet */}
-            {!theme && query.trim().length >= 3 && (aiLoading || aiAnswer) && (
+            {/* Verktygssvar ÖVERST (klockan/datum/vecka) — direkt klientsvar, pre-emptar RAG-summan */}
+            {!theme && utilityIntent?.kind === 'clock' && (
+              <div className="flex-1 min-h-0 overflow-y-auto bg-slate-900 px-4 py-3">
+                <UtilityAnswer intent={utilityIntent} sv={sv} />
+              </div>
+            )}
+            {/* Locate-svar ("var ligger X") — ram + ärlig status; kartan nedan (AnswerContext) matas med platsen */}
+            {!theme && utilityIntent?.kind === 'locate' && (
+              <div className="shrink-0 max-h-[36vh] overflow-y-auto border-b border-slate-800 bg-slate-900 px-4 py-3">
+                <LocateAnswer place={utilityIntent.place} sv={sv} />
+              </div>
+            )}
+            {/* Relationell locate ("var dog/föddes X") — person→plats + minikarta; RAG-svaret behålls nedan */}
+            {!theme && utilityIntent?.kind === 'person_locate' && (
+              <div className="shrink-0 max-h-[40vh] overflow-y-auto border-b border-slate-800 bg-slate-900 px-4 py-3">
+                <PersonLocateAnswer person={utilityIntent.person} relation={utilityIntent.relation} sv={sv} />
+              </div>
+            )}
+            {/* AI-summary auto ÖVERST (spänner alla kolumner) — sammanfattning före resultatet.
+                Visas vid vanlig sökning OCH person_locate (källförda svaret bredvid kartan). */}
+            {!theme && (!utilityIntent || utilityIntent.kind === 'person_locate') && query.trim().length >= 3 && (aiLoading || aiAnswer) && (
               <div className="shrink-0 max-h-[36vh] overflow-y-auto border-b border-slate-800 bg-slate-900 px-4 py-3 text-left">
                 {aiLoading && !aiAnswer && (
                   <div className="flex items-center gap-2 text-sm text-slate-400">
@@ -1075,15 +1130,19 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                 )}
               </div>
             )}
+            {/* Klock-avsikt: bara verktygsblocket ovan — INGEN träfflista/karta/rail (annars drar
+                "vad är klockan" in Vadstena/Vada-ortnamn + en podd som matchat "klockan"). Locate
+                och allt annat behåller 3-kolumnersvyn. */}
             {/* 3 kolumner på lg: träfflista · karta (platsnod) · utforska-rail. På mobil EN vertikal
                 scroll med SVARET först (Daniel/UX: högerkolumnen fick aldrig synas på mobil, och svaret
                 hamnade efter hela träfflistan). order-klasser styr mobilordningen: svar → träffar → rail. */}
+            {utilityIntent?.kind !== 'clock' && (
             <div className="flex-1 min-h-0 grid grid-cols-1 overflow-y-auto lg:overflow-hidden lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)_248px]">
               <div className="order-2 lg:order-1 lg:min-h-0 lg:overflow-y-auto lg:border-r lg:border-slate-800">
                 {renderResults('', false, true)}
               </div>
               <div className="order-1 lg:order-2 lg:min-h-0 lg:overflow-y-auto">
-                <AnswerContext query={cleanQuery} onGo={go} onQuery={(q) => { setQuery(q); setTheme(null); }} />
+                <AnswerContext query={utilityIntent?.kind === 'locate' ? utilityIntent.place : utilityIntent?.kind === 'person_locate' ? utilityIntent.person : cleanQuery} onGo={go} onQuery={(q) => { setQuery(q); setTheme(null); }} />
               </div>
               <aside className="order-3 flex min-h-0 flex-col border-t border-slate-800 lg:overflow-y-auto lg:border-l lg:border-t-0">
                 {/* Kunskapspanelen (träffens egen destination) äger toppen. */}
@@ -1102,6 +1161,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                 </div>
               </aside>
             </div>
+            )}
           </div>
         )}
 
