@@ -15,6 +15,7 @@ import { Loader2, User, Save, ArrowLeft, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { MyResearchAreas } from '@/components/profile/MyResearchAreas';
 import { MapPreferences } from '@/components/profile/MapPreferences';
+import { MyPlaceTies } from '@/components/profile/MyPlaceTies';
 
 interface Profile {
   id: string;
@@ -529,6 +530,12 @@ const Profile = () => {
         <Card className="max-w-4xl mx-auto mt-6 bg-white/10 backdrop-blur-md border-white/20">
           <CardContent className="p-6">
             <MyResearchAreas />
+          </CardContent>
+        </Card>
+
+        <Card className="max-w-4xl mx-auto mt-6 bg-white/10 backdrop-blur-md border-white/20">
+          <CardContent className="p-6">
+            <MyPlaceTies />
           </CardContent>
         </Card>
 
