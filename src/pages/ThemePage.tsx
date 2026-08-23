@@ -10,6 +10,7 @@ import { Loader2, Network, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AnswerContext } from '../components/search/AnswerContext';
+import { ThemeCharters } from '../components/chronicles/ThemeCharters';
 
 // Temasida (/tema/:slug): "se hela temat" — temats beskrivning + alla noder i
 // kunskapsgrafen som är kopplade via has_theme (graph_neighborhood), grupperade
@@ -64,7 +65,7 @@ const ThemePage = () => {
     queryKey: ['theme-page', slug],
     enabled: !!slug,
     queryFn: async () => {
-      const { data, error } = await sb.from('themes').select('id,name,name_en,description,description_en,slug').eq('slug', slug).maybeSingle();
+      const { data, error } = await sb.from('themes').select('id,name,name_en,description,description_en,slug,keywords').eq('slug', slug).maybeSingle();
       if (error) throw error;
       return data as Theme | null;
     },
@@ -120,6 +121,9 @@ const ThemePage = () => {
             <div className="mb-6 overflow-hidden rounded-lg border border-slate-700">
               <AnswerContext query={theme.name} onGo={(r) => navigate(r)} />
             </div>
+
+            {/* Medeltidsbrev kopplade via innehållssökning på temats nyckelord (self-hiding). */}
+            <ThemeCharters terms={(theme as { keywords?: string[] }).keywords ?? [theme.slug]} sv={sv} />
 
             <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
               <Network className="h-4 w-4 text-gold" />

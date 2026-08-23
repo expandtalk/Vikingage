@@ -5,6 +5,8 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { RoyalChroniclesView } from '../components/chronicles/RoyalChroniclesView';
+import { BjalboEstates } from '../components/chronicles/BjalboEstates';
+import { VasaEstates } from '../components/chronicles/VasaEstates';
 
 const RoyalChronicles = () => {
   return (
@@ -23,6 +25,10 @@ const RoyalChronicles = () => {
             Kronologiska kungar · Sagokungar · Dynastier · Källor. Birka-sektionen och grav-fingerprint
             bor numera inne i flikarna (RoyalChroniclesView/TabsView) — inget innehåll borttaget. */}
         <RoyalChroniclesView />
+        {/* Bjälboättens gods & arv — källkritisk provenansanalys (LAGER 2 ur person_place_claims). */}
+        <BjalboEstates />
+        {/* Gustav Vasas gods & arv — provenansklasser A–F, kopplad till Stureätten. */}
+        <VasaEstates />
       </div>
       <Footer />
     </div>
