@@ -33,6 +33,8 @@ const Coins = lazy(() => import("./pages/Coins"));
 const CoinDetail = lazy(() => import("./pages/CoinDetail"));
 const Kungstavla = lazy(() => import("./pages/Kungstavla"));
 const ExcursionDetail = lazy(() => import("./pages/ExcursionDetail"));
+const ResearchArea = lazy(() => import("./pages/ResearchArea"));
+const DiscussionFeed = lazy(() => import("./pages/DiscussionFeed"));
 const KalmarWall = lazy(() => import("./pages/KalmarWall"));
 const SourceDetail = lazy(() => import("./pages/SourceDetail"));
 const SourceLibrary = lazy(() => import("./pages/SourceLibrary"));
@@ -350,9 +352,10 @@ const App = () => (
                   <Route path="/en/legend-stones" element={<LegendStones />} />
                   <Route path="/legendstenar" element={<LegendStones />} />
                   <Route path="/prices" element={<Prices />} />
-                  <Route path="/excursions" element={<Excursions />} />
-                  <Route path="/sv/utflykter" element={<Excursions />} />
-                  <Route path="/excursions/:id" element={<ExcursionDetail />} />
+                  <Route path="/excursions" element={<Excursions forceLang="en" />} />
+                  <Route path="/utflykter" element={<Excursions forceLang="sv" />} />
+                  <Route path="/sv/utflykter" element={<Navigate to="/utflykter" replace />} />
+                  <Route path="/excursions/:id" element={<ExcursionDetail forceLang="en" />} />
                   <Route path="/sv/kalmar-stadsmur" element={<KalmarWall />} />
                   <Route path="/en/kalmar-city-wall" element={<KalmarWall />} />
                   <Route path="/kalmar-stadsmur" element={<KalmarWall />} />
@@ -366,7 +369,9 @@ const App = () => (
                   <Route path="/inscription/:signum" element={<InscriptionPage />} />
                   <Route path="/statistics" element={<Statistics />} />
                   <Route path="/sv/statistik" element={<Statistics />} />
-                  <Route path="/utflykter/:id" element={<ExcursionDetail />} />
+                  <Route path="/utflykter/:id" element={<ExcursionDetail forceLang="sv" />} />
+                  <Route path="/omraden/:slug" element={<ResearchArea />} />
+                  <Route path="/diskussioner" element={<DiscussionFeed />} />
                   <Route path="/coins" element={<Coins />} />
                   <Route path="/coins/:id" element={<CoinDetail />} />
                   <Route path="/sv/mynt" element={<Coins />} />

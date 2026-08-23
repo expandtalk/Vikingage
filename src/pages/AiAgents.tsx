@@ -6,7 +6,8 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, ShieldCheck, Search, ScrollText, Landmark, Map, Bug, Database, Users, Cpu, Ship, Bone, Dna, Gavel, BookOpen, Compass, Languages, Accessibility, Stamp, Bike, Route, Coins } from 'lucide-react';
+import { Bot, ShieldCheck, Search, ScrollText, Landmark, Map, Bug, Database, Users, Cpu, Ship, Bone, Dna, Gavel, BookOpen, Compass, Languages, Accessibility, Stamp, Bike, Route, Coins, Scale } from 'lucide-react';
+import { InstitutionValueProp } from '../components/InstitutionValueProp';
 
 // /ai-agenter (svenska) + /ai-agents (engelska) — transparenssida under Vetenskap: vilka typer av
 // AI-agenter plattformen använder och HUR. Ärlig beskrivning — produkt-AI (live) skiljs från de
@@ -128,6 +129,7 @@ const PLANNED_AGENTS: {
   title: string; titleEn: string; focus: string; focusEn: string;
   status?: string; statusEn?: string;
 }[] = [
+  { icon: Scale, name: 'Caligula', title: 'Epistemisk granskningsmotor', titleEn: 'Epistemic review engine', focus: 'Bedömer trovärdigheten i ett dokument, en sajt eller ett enskilt påstående. Bryter ned till prövbara påståenden (skiljer observation från tolkning), knyter varje till källa och bevislinje, söker aktivt motbevis och mäter oberoende som antal distinkta rötter — inte antal källor (Högom-fällan: tre texter som ärver ett antagande är ett belägg, inte tre). Levererar en dekomponerad trovärdighetsrubrik 0–100, aldrig en naken siffra.', focusEn: 'Assesses the credibility of a document, a site or a single claim. Breaks it into testable claims (separating observation from interpretation), ties each to source and evidence line, actively seeks refutation and measures independence as the number of distinct roots — not the number of sources (the Högom trap: three texts inheriting one assumption are one piece of evidence, not three). Delivers a decomposed credibility rubric 0–100, never a bare number.', status: 'Schema live (epistemic_claim / epistemic_evidence / evidence_dependency + epistemic_independence(), verifierad: Högom = 1 rot, triangulering = 3). Agentlogiken (påstående-extraktion, motbevis-sökning, bias-detektering) och dokument-/sajtingången är ännu EJ byggda.', statusEn: 'Schema live (epistemic_claim / epistemic_evidence / evidence_dependency + epistemic_independence(), verified: Högom = 1 root, triangulation = 3). The agent logic (claim extraction, refutation search, bias detection) and the document/site intake are NOT yet built.' },
   { icon: Coins, name: 'Kent', title: 'Ekonomisk historiker', titleEn: 'Economic historian', focus: 'Monetarisering och silverekonomi (mynt, hacksilver, viktsystem), handel och emporier, jordägande och gods, urbanisering (stadsprivilegier, Hansan), kyrklig ekonomi samt diplom som ekonomiska transaktioner (köp, pant, gåva). Svarar gärna som diagram.', focusEn: 'Monetisation and the silver economy (coins, hacksilver, weight systems), trade and emporia, landholding and estates, urbanisation (town privileges, the Hansa), church economy and charters as economic transactions (sale, pledge, gift). Answers preferably as a diagram.' },
   { icon: ScrollText, name: 'Rune', title: 'Runolog', titleEn: 'Runologist', focus: 'Läsning, datering (stiltypologi) och ristarattribution av runinskrifter.', focusEn: 'Reading, dating (style typology) and carver attribution of runic inscriptions.' },
   { icon: Ship, name: 'Sigrid', title: 'Marinarkeolog', titleEn: 'Marine archaeologist', focus: 'Vrak, farleder och överfarter — med segelkronologin (rodd före segel, ~700).', focusEn: 'Wrecks, fairways and crossings — with the sail chronology (rowing before sail, ~700).' },
@@ -221,6 +223,9 @@ const AiAgents = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
           )}
         </p>
       </div>
+
+      {/* Värdeförslag för offentlig sektor — "what's in it for me?" (kommun/region/museum). */}
+      <InstitutionValueProp sv={sv} />
 
       {/* Så arbetar agenterna */}
       <section className="mb-12">

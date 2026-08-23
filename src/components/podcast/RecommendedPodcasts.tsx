@@ -21,6 +21,7 @@ export const RecommendedPodcasts: React.FC = () => {
   const en = language === 'en';
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<Sort>('episodes');
+  const [topic, setTopic] = useState<string | null>(null);
 
   const { data } = useQuery({
     queryKey: ['media_directory'],
@@ -44,6 +45,7 @@ export const RecommendedPodcasts: React.FC = () => {
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
     let rows = (data ?? []).slice();
+    if (topic) rows = rows.filter((s) => (s.topics ?? []).includes(topic));
     if (needle) {
       rows = rows.filter((s) => {
         const hay = [s.name, s.creator ?? '', s.blurb_sv ?? '', s.blurb_en ?? '', (s.topics ?? []).join(' ')]
@@ -58,7 +60,17 @@ export const RecommendedPodcasts: React.FC = () => {
       return b.episodes - a.episodes; // 'episodes'
     });
     return rows;
-  }, [data, q, sort]);
+  }, [data, q, sort, topic]);
+
+  // Kategorier (teman) = distinkta topics över hela katalogen, med antal poddar per tema.
+  // Härledda ur redan laddad media_directory-data (ingen extra fråga). Sorterade på antal, fallande.
+  const categories = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const s of data ?? []) {
+      for (const t of s.topics ?? []) counts.set(t, (counts.get(t) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'sv'));
+  }, [data]);
 
   return (
     <section className="mt-12 pt-8 border-t border-border/60 text-left">
@@ -99,6 +111,44 @@ export const RecommendedPodcasts: React.FC = () => {
           <option value="medium">{en ? 'By medium' : 'Efter medium'}</option>
         </select>
       </div>
+
+      {/* Kategorier: vilka teman poddarna täcker. Klick filtrerar; klick igen (eller "Alla") nollar. */}
+      {categories.length > 0 && (
+        <div className="mb-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80 mb-2">
+            {en ? 'Categories' : 'Kategorier'}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => setTopic(null)}
+              aria-pressed={topic === null}
+              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                topic === null
+                  ? 'border-gold bg-gold/15 text-gold font-medium'
+                  : 'border-border/70 text-muted-foreground hover:text-foreground hover:border-border'
+              }`}
+            >
+              {en ? 'All' : 'Alla'}
+            </button>
+            {categories.map(([name, count]) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setTopic((cur) => (cur === name ? null : name))}
+                aria-pressed={topic === name}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  topic === name
+                    ? 'border-gold bg-gold/15 text-gold font-medium'
+                    : 'border-border/70 text-muted-foreground hover:text-foreground hover:border-border'
+                }`}
+              >
+                {name} <span className="tabular-nums text-muted-foreground/70">{count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {shown.length === 0 && (
         <p className="text-sm text-muted-foreground">{en ? 'No matches.' : 'Inga träffar.'}</p>

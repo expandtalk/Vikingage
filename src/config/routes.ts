@@ -26,6 +26,15 @@ export const routes: RouteConfig[] = [
     descriptionEn: 'Explore thousands of runic inscriptions from the Viking Age. Search, filter and analyze runestones with interactive maps.'
   },
   {
+    pathEn: '/excursions',
+    pathSv: '/utflykter',
+    component: 'Excursions',
+    titleSv: 'Utflykter',
+    titleEn: 'Excursions',
+    descriptionSv: 'Utflyktsmål från vikingatiden och äldre på karta, med relaterade fynd och kultplatser.',
+    descriptionEn: 'Excursion destinations from the Viking Age and earlier on a map, with related finds and cult sites.'
+  },
+  {
     pathEn: '/carvers',
     pathSv: '/sv/ristare',
     component: 'Carvers',

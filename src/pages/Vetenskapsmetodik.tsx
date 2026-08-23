@@ -414,6 +414,51 @@ const Vetenskapsmetodik = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             </p>
           </div>
           <div className="viking-card rounded-lg p-3">
+            <p className="text-sm text-gold font-medium mb-1">{sv ? 'Städernas lager och vandring' : 'Cities: layers and migration'}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {sv ? (
+                <>En stad är det svåraste objektet att följa, för den gör två saker samtidigt. Den{' '}
+                <em>staplas</em> — som en lök av lager där varje århundrade lägger sitt (stadsarkeologins
+                stratigrafi) — och den <em>vandrar</em>: själva kärnan flyttar när villkoren ändras. Djupgående
+                skepp söker djuphamn, järnvägen drar orten till stationen, bilen flyttar handeln till köpcentrum
+                i utkanten. Att nåla fast en stad vid en enda koordinat och ett grundningsår döljer båda
+                rörelserna. Därför skiljer vi kärnan i varje epok från platsen som helhet och antecknar{' '}
+                <em>drivkraften</em> bakom varje flytt. Två belagda slag av flytt: Mälarhandelns kärna
+                omlokaliserades medvetet från <strong>Birka till Sigtuna</strong> omkring 970 — en efterträdarort
+                tog över funktionen (Ambrosiani) — medan <strong>Kalmar</strong> flyttade som samma stad, från
+                gamla staden vid slottet ut till Kvarnholmen efter branden 1647.</>
+              ) : (
+                <>A town is the hardest object to follow, because it does two things at once. It{' '}
+                <em>stacks</em> — like an onion of layers, each century adding its own (the stratigraphy of urban
+                archaeology) — and it <em>migrates</em>: the core itself moves when conditions change. Deep-draught
+                ships seek a deep harbour, the railway pulls the town to the station, the car moves trade to a
+                mall on the edge. Pinning a town to a single coordinate and a foundation year hides both motions.
+                So we separate the core in each epoch from the place as a whole, and record the <em>driver</em>{' '}
+                behind each move. Two attested kinds of move: the Lake Mälaren trading core was deliberately
+                relocated from <strong>Birka to Sigtuna</strong> around 970 — a successor town took over the
+                function (Ambrosiani) — while <strong>Kalmar</strong> moved as the same town, from the old town by
+                the castle out to Kvarnholmen after the fire of 1647.</>
+              )}
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed mt-2 border-l-2 border-gold/40 pl-3">
+              {sv ? (
+                <><strong className="text-foreground">Men syna påståendet.</strong> Att säga att{' '}
+                <em>Söderköping blev Norrköping</em> är frestande — men det håller inte som succession: orterna
+                var samtida, Söderköping finns kvar, och nedgången var mångorsakad (landhöjning, växande
+                skeppsdjup, statlig omdirigering, 1600-talets industri). Och att åberopa samma
+                landhöjnings-förklaring på både Birka och Söderköping är inte två oberoende belägg — det är samma
+                antagande igen.</>
+              ) : (
+                <><strong className="text-foreground">But scrutinise the claim.</strong> Saying that{' '}
+                <em>Söderköping became Norrköping</em> is tempting — but it does not hold as succession: the towns
+                were contemporaneous, Söderköping still exists, and the decline was multi-causal (land uplift,
+                growing ship draught, state redirection, 17th-century industry). And invoking the same land-uplift
+                explanation for both Birka and Söderköping is not two independent attestations — it is the same
+                assumption again.</>
+              )}
+            </p>
+          </div>
+          <div className="viking-card rounded-lg p-3">
             <p className="text-sm text-gold font-medium mb-1 flex items-center gap-1.5">
               <Fingerprint className="h-4 w-4" /> {sv ? 'Forensik & digital fingerprint' : 'Forensics & digital fingerprint'}
             </p>
@@ -612,10 +657,15 @@ const Vetenskapsmetodik = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
                 <td className="py-2 pr-3">{sv ? 'Tre discipliner "bekräftar" varandra fast de ärvt samma äldre antagande — då är det inte tre belägg utan ett, upprepat.' : 'Three disciplines "confirm" each other though they inherited the same older assumption — then it is not three pieces of evidence but one, repeated.'}</td>
                 <td className="py-2">{sv ? 'Oberoendegrad: konvergens räknas bara mellan fristående beviskedjor — vi kallar det oberoende evidenskonvergens, inte disciplinär konvergens.' : 'Independence grade: convergence counts only between free-standing chains of evidence — we call it independent evidence convergence, not disciplinary convergence.'}</td>
               </tr>
-              <tr>
+              <tr className="border-b border-border/50">
                 <td className="py-2 pr-3 text-foreground/90">{sv ? 'Publikationsbias' : 'Publication bias'}</td>
                 <td className="py-2 pr-3">{sv ? 'Publicerade tolkningar överlever; motbevis och negativa resultat publiceras sällan, så en etablerad tolkning ser starkare ut än den är.' : 'Published interpretations survive; refutations and negative results are rarely published, so an established interpretation looks stronger than it is.'}</td>
                 <td className="py-2">{sv ? 'En etablerad tolkning bär hur många oberoende belägg den vilar på — inte bara att den är etablerad.' : 'An established interpretation carries how many independent attestations it rests on — not merely that it is established.'}</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-3 text-foreground/90">{sv ? 'AI-bekräftelse & modell-monokultur' : 'AI confirmation & model monoculture'}</td>
+                <td className="py-2 pr-3">{sv ? 'Ett självsäkert, sammanhängande AI-svar kan bekräfta det man redan trodde. Och två AI-modeller som håller med varandra är inget oberoende belägg om de tränats på samma text — då är det samma antagande igen, inte två.' : 'A confident, coherent AI answer can confirm what one already believed. And two AI models agreeing are no independent attestation if they were trained on the same text — then it is the same assumption again, not two.'}</td>
+                <td className="py-2">{sv ? 'Modelldiversitet, öppet redovisad: samma fråga kan prövas mot olika modeller och vilken modell som svarade sparas. Modellers enighet räknas aldrig som extra belägg — oenigheten mellan dem höjs som en synlig osäkerhetsflagga, och människan avgör.' : 'Model diversity, openly disclosed: the same question can be tested against different models and the model that answered is recorded. Model agreement never counts as extra attestation — the disagreement between them is raised as a visible uncertainty flag, and the human decides.'}</td>
               </tr>
             </tbody>
           </table>
@@ -957,6 +1007,30 @@ const Vetenskapsmetodik = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             </p>
           </div>
           <div className="viking-card rounded-lg p-3">
+            <p className="text-sm text-gold font-medium mb-1">{sv ? 'Vilka modeller — och varför flera' : 'Which models — and why several'}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {sv ? (
+                <>Öppet redovisat: runanalysen körs server-side via OpenRouter på modellen{' '}
+                <code className="text-gold/90">anthropic/claude-sonnet-4-5</code>, och de källförda sök-svaren kan
+                köras mot olika modeller — vilken modell som svarade sparas med svaret. Varför flera? En enda
+                modell har sin egen slagsida, och ett självsäkert svar riskerar att <em>bekräfta</em> det du redan
+                trodde. Att pröva samma fråga mot olika modeller gör slagsidan synlig — men med en regel:
+                modeller som håller med varandra är <strong>inte</strong> oberoende belägg om de delar
+                träningsdata (då är det samma antagande igen). Därför räknas enighet aldrig som extra bevis; det
+                är <em>oenigheten</em> mellan modeller som är signalen, och en människa avgör.</>
+              ) : (
+                <>Openly disclosed: the runic analysis runs server-side via OpenRouter on the model{' '}
+                <code className="text-gold/90">anthropic/claude-sonnet-4-5</code>, and the sourced search answers
+                can be run against different models — the model that answered is stored with the answer. Why
+                several? A single model has its own slant, and a confident answer risks <em>confirming</em> what
+                you already believed. Testing the same question against different models makes the slant visible —
+                but with one rule: models that agree are <strong>not</strong> independent attestation if they
+                share training data (then it is the same assumption again). So agreement never counts as extra
+                proof; it is the <em>disagreement</em> between models that is the signal, and a human decides.</>
+              )}
+            </p>
+          </div>
+          <div className="viking-card rounded-lg p-3">
             <p className="text-sm text-gold font-medium mb-1">{sv ? 'AI-runolog — identifiering & dokumentation av runor' : 'AI runologist — identifying & documenting runes'}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {sv ? (
@@ -1010,11 +1084,11 @@ const Vetenskapsmetodik = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
             <p className="text-sm text-gold font-medium mb-1">{sv ? 'Vår roll: användare, inte modell-leverantör' : 'Our role: user, not model provider'}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {sv ? (
-                <>Vi <em>använder</em> en generativ modell (via OpenRouter) server-side — vi tillhandahåller ingen
+                <>Vi <em>använder</em> generativa modeller (via OpenRouter) server-side — vi tillhandahåller ingen
                 egen generativ modell. Den maskinläsbara märkningen av modell-output (art. 50.2, vattenstämpel/
                 C2PA) åligger modell-leverantören. Detta är information, inte juridisk rådgivning.</>
               ) : (
-                <>We <em>use</em> a generative model (via OpenRouter) server-side — we provide no generative model
+                <>We <em>use</em> generative models (via OpenRouter) server-side — we provide no generative model
                 of our own. The machine-readable marking of model output (art. 50.2, watermark/C2PA) is the model
                 provider's responsibility. This is information, not legal advice.</>
               )}

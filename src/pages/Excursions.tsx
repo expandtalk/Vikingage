@@ -21,9 +21,9 @@ const haversineKm = (a: { lat: number; lng: number }, b: { lat: number; lng: num
   return 2 * R * Math.asin(Math.sqrt(s));
 };
 
-const Excursions = () => {
+const Excursions = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
   const { language } = useLanguage();
-  const sv = language === 'sv';
+  const sv = (forceLang ?? language) === 'sv';
 
   // Gruppera per region/tema; okända grupper hamnar sist under "Övrigt".
   // Stabil `key` (gruppnamn eller 'ungrouped') så accordion-läget överlever språkbyte.
@@ -114,7 +114,7 @@ const Excursions = () => {
       >
         {/* Thumbnail med rubriken i vit text ovanpå. Mörk gradient-scrim garanterar
             WCAG-läsbarhet oavsett foto. Bildlösa mål får en deterministisk platta. */}
-        <Link to={`/${sv ? 'utflykter' : 'excursions'}/${e.id}`} className="block relative h-44 w-full overflow-hidden">
+        <Link to={`/${sv ? 'utflykter' : 'excursions'}/${e.slug ?? e.id}`} className="block relative h-44 w-full overflow-hidden">
           {e.photoDir ? (
             <img
               src={`/excursion-photos/${e.photoDir}/${e.thumbFile ?? 'thumb.jpg'}`}
@@ -156,7 +156,7 @@ const Excursions = () => {
 
           <div className="flex flex-wrap gap-3 pt-1">
             <Link
-              to={`/${sv ? 'utflykter' : 'excursions'}/${e.id}`}
+              to={`/${sv ? 'utflykter' : 'excursions'}/${e.slug ?? e.id}`}
               className="inline-flex items-center gap-1 text-xs text-gold hover:underline font-medium"
             >
               <MapPin className="h-3 w-3" />
@@ -194,6 +194,7 @@ const Excursions = () => {
         description="Utflyktsmål från vikingatiden och äldre på karta, med relaterade fynd och kultplatser: Birka, Långhundraleden, Broborg, Ölands fornborgar, Rösaringsåsen, Tanums och Himmelstalunds hällristningar, Sigurdsristningen, Rökstenen och Hågahögen."
         descriptionEn="Excursion destinations from the Viking Age and earlier on a map, with related finds and cult sites: Birka, Långhundraleden, Broborg, Öland's hillforts, the Rösaring esker, the Tanum and Himmelstalund rock carvings, the Sigurd carving, the Rök runestone and the Håga mound."
         keywords="utflykter, vikingatid, bronsålder, Birka, fornborg, Rösaring, Långhundraleden, hällristningar, Tanum, Himmelstalund, Sigurdsristningen, Rökstenen, runsten, Håga, Hågahögen"
+        path={sv ? '/utflykter' : '/excursions'}
       />
       <Header />
       <Breadcrumbs />

@@ -37,6 +37,7 @@ import {
   Ship,
   Images,
   Newspaper,
+  MessageSquare,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -196,10 +197,16 @@ const EXTRA_LINKS: NavLink[] = [
     icon: Anchor, category: 'places',
   },
   {
-    pathEn: '/excursions', pathSv: '/excursions',
+    pathEn: '/excursions', pathSv: '/utflykter',
     labelSv: 'Utflykter', labelEn: 'Excursions',
     descSv: 'Platser att besöka på riktigt.', descEn: 'Places to visit for real.',
     icon: Compass, category: 'places',
+  },
+  {
+    pathEn: '/diskussioner', pathSv: '/diskussioner',
+    labelSv: 'Diskussioner', labelEn: 'Discussions',
+    descSv: 'Öppet samtal om platser & personer.', descEn: 'Open talk on places & people.',
+    icon: MessageSquare, category: 'places',
   },
   {
     pathEn: '/explore?focus=churches', pathSv: '/explore?focus=churches',

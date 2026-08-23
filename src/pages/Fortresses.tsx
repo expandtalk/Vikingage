@@ -1,5 +1,7 @@
 
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
@@ -72,6 +74,16 @@ const Fortresses = () => {
   const { beacons } = useBeaconSites(true);
   const { castles: medievalCastles } = useMedievalCastles(true);
   const { findsByFort } = useFortificationFinds(true);
+  // Kastal-antal ur heritage_sites (raa_type='kastal') → typologin visade "under uppbyggnad" fast datan
+  // finns (Daniel: "ser ut som vi inte har några kastaler"). Tunn täckning (få kurerade) — ärlig siffra.
+  const { data: kastalCount = 0 } = useQuery({
+    queryKey: ['kastal-count'],
+    staleTime: 60 * 60 * 1000,
+    queryFn: async (): Promise<number> => {
+      const { count } = await (supabase as any).from('heritage_sites').select('id', { count: 'exact', head: true }).eq('raa_type', 'kastal');
+      return count ?? 0;
+    },
+  });
   const [selectedFortressType, setSelectedFortressType] = useState<string>('all');
   const [selectedCityCategory, setSelectedCityCategory] = useState<string>('all');
   const [selectedLandscape, setSelectedLandscape] = useState<string>('all');
@@ -299,7 +311,7 @@ const Fortresses = () => {
         {/* Källförd typologi-ryggrad: fornborg → vikingaborg → kastal → riksborg → adelsborg/fast hus → fästning */}
         <FortificationTypology
           sv={sv}
-          counts={{ fornborg: hillforts.length, vikingaborg: fortresses.length, riksborg: medievalCastles.length }}
+          counts={{ fornborg: hillforts.length, vikingaborg: fortresses.length, kastal: kastalCount, riksborg: medievalCastles.length }}
         />
 
         {/* Hybrid Layout: Map on top */}

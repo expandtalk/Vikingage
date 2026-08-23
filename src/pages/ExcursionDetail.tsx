@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { useShorelineOverlay } from '@/hooks/useShorelineOverlay';
 import { useReliefOverlay } from '@/hooks/useReliefOverlay';
 import { ShorelinePeriodControl } from '@/components/map/ShorelinePeriodControl';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
@@ -20,10 +20,12 @@ import { nearestWithin } from '@/utils/geoDistance';
 import { RELIGIOUS_PLACES } from '@/utils/religiousLocations/religiousPlacesData';
 import { ARCHAEOLOGICAL_FINDS } from '@/utils/archaeologicalFinds';
 import { PLACE_TYPE_LABEL, FIND_TYPE_LABEL } from '@/components/excursions/nearbyLabels';
-import { ExcursionProse, excerptText } from '@/components/excursions/ExcursionProse';
+import { ExcursionProse, excerptText, metaText } from '@/components/excursions/ExcursionProse';
+import { Helmet } from 'react-helmet-async';
 import { NEAR_CATS, classifyNear, type NearCat } from '@/utils/nearFeatureCategories';
 import { ReferenceList } from '@/components/references/ReferenceList';
 import { MapLegend } from '@/components/map/MapLegend';
+import { DiscussionThread } from '@/components/discussion/DiscussionThread';
 import { useMapLegendState, type LegendLayerDef } from '@/hooks/map/useMapLegendState';
 import { createPlaceMedallion, featureIcon } from '@/utils/map/placeMarker';
 
@@ -52,11 +54,14 @@ const HYP_KIND_LABEL: Record<string, { sv: string; en: string }> = {
   reference: { sv: 'Referensfynd', en: 'Reference find' },
 };
 
-const ExcursionDetail = () => {
+const ExcursionDetail = ({ forceLang }: { forceLang?: 'sv' | 'en' }) => {
   const { id } = useParams<{ id: string }>();
   const { language } = useLanguage();
-  const sv = language === 'sv';
-  const excursion = EXCURSIONS.find((e) => e.id === id);
+  const sv = (forceLang ?? language) === 'sv';
+  // Route-låst språk → route-låst bas-path: /utflykter (sv) resp. /excursions (en).
+  const base = sv ? 'utflykter' : 'excursions';
+  // Resolva på SEO-slug i första hand, annars på (legacy) id så gamla URL:er fortsatt fungerar.
+  const excursion = EXCURSIONS.find((e) => (e.slug ?? e.id) === id) ?? EXCURSIONS.find((e) => e.id === id);
 
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -458,12 +463,36 @@ const ExcursionDetail = () => {
         <Header /><Breadcrumbs />
         <main className="container mx-auto px-4 py-16 text-center">
           <p className="text-muted-foreground">{sv ? 'Utflyktsmålet hittades inte.' : 'Excursion not found.'}</p>
-          <Link to="/excursions" className="text-gold hover:underline mt-4 inline-block">{sv ? '← Tillbaka till utflykter' : '← Back to excursions'}</Link>
+          <Link to={`/${base}`} className="text-gold hover:underline mt-4 inline-block">{sv ? '← Tillbaka till utflykter' : '← Back to excursions'}</Link>
         </main>
         <Footer />
       </div>
     );
   }
+
+  // Canonical URL = SEO-slug. Nås sidan via legacy-id (t.ex. /excursions/haga) → redirecta till
+  // /excursions/hagahogen (mjuk 301 i SPA:n; hård 301 ligger i .htaccess för crawlers).
+  const canonicalSlug = excursion.slug ?? excursion.id;
+  if (id !== canonicalSlug) return <Navigate to={`/${base}/${canonicalSlug}`} replace />;
+
+  // Rikt TouristAttraction-schema (JSON-LD) — geo, bild, region, epok — så AI-sök förstår OCH kan
+  // citera platsen. Beskrivningen är FULL brödtext (substans för GEO), inte den kapade metan.
+  const SITE = 'https://vikingage.se';
+  const firstPhoto = photos[0]?.src;
+  const excursionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristAttraction',
+    name: excursion.name,
+    description: excerptText(sv ? excursion.sv : excursion.en),
+    url: `${SITE}/${base}/${canonicalSlug}`,
+    ...(firstPhoto ? { image: firstPhoto.startsWith('http') ? firstPhoto : SITE + firstPhoto } : {}),
+    geo: { '@type': 'GeoCoordinates', latitude: excursion.coords.lat, longitude: excursion.coords.lng },
+    address: { '@type': 'PostalAddress', addressRegion: excursion.region, addressCountry: 'SE' },
+    ...(excursion.period ? { temporalCoverage: excursion.period } : {}),
+    isAccessibleForFree: true,
+    inLanguage: sv ? 'sv' : 'en',
+    isPartOf: { '@id': `${SITE}/#website` },
+  };
 
   const Section: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({ icon, title, children }) => (
     <section className="viking-card rounded-lg border border-border p-5">
@@ -483,11 +512,22 @@ const ExcursionDetail = () => {
 
   return (
     <div className="min-h-screen viking-bg">
-      <PageMeta title={`${excursion.name} — Utflykt`} titleEn={`${excursion.name} — Excursion`}
-        description={excerptText(excursion.sv)} descriptionEn={excerptText(excursion.en)} />
+      <PageMeta
+        title={excursion.seoTitle ?? `${excursion.name} — utflykt & karta`}
+        titleEn={excursion.seoTitleEn ?? `${excursion.name} — excursion & map`}
+        description={excursion.metaDescription ?? metaText(excursion.sv)}
+        descriptionEn={excursion.metaDescriptionEn ?? metaText(excursion.en)}
+        path={`/${base}/${canonicalSlug}`} />
+      <Helmet>
+        {/* Samma utflykt på båda språk — hreflang (detaljsidor saknas i routes.ts-registret). */}
+        <link rel="alternate" hrefLang="sv" href={`${SITE}/utflykter/${canonicalSlug}`} />
+        <link rel="alternate" hrefLang="en" href={`${SITE}/excursions/${canonicalSlug}`} />
+        <link rel="alternate" hrefLang="x-default" href={`${SITE}/excursions/${canonicalSlug}`} />
+        <script type="application/ld+json">{JSON.stringify(excursionSchema)}</script>
+      </Helmet>
       <Header /><Breadcrumbs />
       <main className="container mx-auto px-4 py-8">
-        <Link to="/excursions" className="inline-flex items-center gap-1 text-sm text-gold hover:underline mb-4">
+        <Link to={`/${base}`} className="inline-flex items-center gap-1 text-sm text-gold hover:underline mb-4">
           <ArrowLeft className="h-4 w-4" />{sv ? 'Alla utflykter' : 'All excursions'}
         </Link>
 
@@ -784,7 +824,7 @@ const ExcursionDetail = () => {
               <ul className="space-y-1">
                 {nearby.map(({ item, km }) => (
                   <li key={item.id} className="text-sm flex justify-between gap-2">
-                    <Link to={`/excursions/${item.id}`} className="text-gold hover:underline truncate">{item.name}</Link>
+                    <Link to={`/${base}/${item.slug ?? item.id}`} className="text-gold hover:underline truncate">{item.name}</Link>
                     <span className="text-muted-foreground shrink-0 tabular-nums">{km.toFixed(0)} km</span>
                   </li>
                 ))}
@@ -798,6 +838,11 @@ const ExcursionDetail = () => {
           sv={sv}
           sources={(sources ?? []).map((s: any) => ({ id: s.id, title: sv ? s.title : (s.title_en || s.title), author: s.author, year: s.written_year, url: s.url }))}
         />
+
+        {/* Öppet samtalslager — entitetsförankrat på utflykten. Skilt från fakta ovan. */}
+        <div className="mt-6">
+          <DiscussionThread entityType="excursion" entityKey={excursion.id} heading={sv ? 'Diskussion om platsen' : 'Discussion about the site'} />
+        </div>
       </main>
       <Footer />
     </div>

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, Navigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { ChevronDown } from 'lucide-react';
@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Brain, LogIn } from "lucide-react";
@@ -38,6 +39,25 @@ const Explore = () => {
   // växa in över HUD:ens nedre rad (ETA/km) om isMobile mis-detekteras (Daniels fältprov).
   const { route } = useRoadtrip();
 
+  // Per-användare hemposition (user_preferences): centrera kartan på användarens hemvy vid FÖRSTA
+  // /explore-besöket per session om ingen vy-param angetts. null = laddar, 'skip' = ej tillämpligt.
+  const [homePrefs, setHomePrefs] = useState<{ lat: number; lng: number } | 'skip' | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) { setHomePrefs('skip'); return; }
+    let applied = false;
+    try { applied = sessionStorage.getItem('explore_home_applied') === '1'; } catch { /* private mode */ }
+    if (applied) { setHomePrefs('skip'); return; }
+    (async () => {
+      const { data } = await (supabase as any).from('user_preferences')
+        .select('home_lat, home_lng').eq('user_id', user.id).maybeSingle();
+      if (cancelled) return;
+      setHomePrefs(data?.home_lat != null && data?.home_lng != null
+        ? { lat: data.home_lat, lng: data.home_lng } : 'skip');
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
   if (redirectChurches) return <Navigate to="/sv/kyrkor" replace />;
 
   // focus=oland utan center → centrera på Öland (annars öppnas Sverige-vyn med Öland-lagren på
@@ -49,7 +69,29 @@ const Explore = () => {
     return <Navigate to={`/explore?${p.toString()}`} replace />;
   }
 
-  if (loading || roleLoading) {
+  // region=<ortnamn> (t.ex. ?focus=parishes&region=Selånger) var en föräldralös param — kartan
+  // öppnades på hela Sverige och de viewport-laddade lagren (kyrkor tänds vid zoom ≥8) blev tomma.
+  // Kanalisera den genom den befintliga searchQuery-pipelinen (ExplorerMain centrerar på ortnamnet
+  // via place_names) så vyn faktiskt zoomar in på orten och dess kyrkor/lämningar syns.
+  const region = searchParams.get('region');
+  if (region && !searchParams.get('searchQuery')) {
+    const p = new URLSearchParams(searchParams);
+    p.delete('region');
+    p.set('searchQuery', region);
+    return <Navigate to={`/explore?${p.toString()}`} replace />;
+  }
+
+  // Hemposition: centrera på användarens hemvy vid första /explore-besöket (ingen vy-param angiven).
+  const hasViewParam = !!(searchParams.get('center') || focus || region || searchParams.get('searchQuery'));
+  if (!hasViewParam && homePrefs && homePrefs !== 'skip') {
+    try { sessionStorage.setItem('explore_home_applied', '1'); } catch { /* private mode */ }
+    const p = new URLSearchParams(searchParams);
+    p.set('center', `${homePrefs.lat},${homePrefs.lng}`);
+    p.set('zoom', '11');
+    return <Navigate to={`/explore?${p.toString()}`} replace />;
+  }
+
+  if (loading || roleLoading || (!!user && homePrefs === null && !hasViewParam)) {
     return (
       <div className="min-h-screen viking-bg flex items-center justify-center">
         <div className="text-foreground">{language === 'sv' ? 'Laddar…' : 'Loading…'}</div>

@@ -69,7 +69,7 @@ export const SvampMap: React.FC<Props> = ({ sv }) => {
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' });
     const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenTopoMap (CC-BY-SA)' });
     const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 18, attribution: 'Esri, Maxar, Earthstar Geographics' });
-    osm.addTo(m);
+    topo.addTo(m); // DEFAULT = Terräng (visar skog/höjd/mark — svampens miljö). Daniel: ej satellit/OSM som default.
     L.control.layers(
       { [sv ? 'Karta' : 'Map']: osm, [sv ? 'Terräng' : 'Terrain']: topo, [sv ? 'Satellit' : 'Satellite']: sat },
       undefined, { collapsed: typeof window !== 'undefined' && window.innerWidth < 640, position: 'topright' },

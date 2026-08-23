@@ -311,10 +311,24 @@ export const useLegendManager = (
   console.log(`  - Map inscriptions: ${mapInscriptions.length}`);
   console.log(`  - Legend items: ${legendItems.length}`);
 
+  // AKTIV TEXTSÖKNING = filtrera, inte browsa. De ambienta profil-lagren (kyrkor/mynt/vrak/monument)
+  // är INTE geo-filtrerade till sökordet, så de ligger kvar som brus över hela kartan när man söker
+  // (Daniel: "Birger Jarl visar en mängd orelaterade objekt"). Vid aktiv sökning maskar vi därför bort
+  // alla lager utom runstenarna (sökträffarna matas separat via searchResultInscriptions ovan). Rör inte
+  // den sparade/seedade rå-staten — masken är bara på det RETURNERADE värdet, så vyn återställs när
+  // sökningen rensas.
+  const searchMaskedEnabled = useMemo(() => {
+    if (!hasActiveSearch) return scopedEnabled;
+    const masked: Record<string, boolean> = {};
+    for (const k of Object.keys(scopedEnabled)) masked[k] = false;
+    masked.runic_inscriptions = true;
+    return masked;
+  }, [hasActiveSearch, scopedEnabled]);
+
   return {
     // Kartan/legenden får den period-scope:ade versionen; toggles/sparning arbetar
-    // mot rå-staten via setEnabledLegendItems i handlers ovan.
-    enabledLegendItems: scopedEnabled,
+    // mot rå-staten via setEnabledLegendItems i handlers ovan. Vid aktiv sökning: maskad (bara runstenar).
+    enabledLegendItems: searchMaskedEnabled,
     legendItems,
     mapInscriptions,
     handleLegendToggle,

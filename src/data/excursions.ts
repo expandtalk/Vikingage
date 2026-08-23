@@ -14,6 +14,16 @@ export interface ExcursionSection { key: string; titleSv: string; titleEn: strin
 
 export interface Excursion {
   id: string;
+  /** SEO-optimerad URL-slug (default = id). Sätt när id inte speglar ämnet, t.ex. 'haga' → 'hagahogen',
+   *  eller för att byta understreck mot bindestreck. id förblir intern nyckel (geojson/foton). */
+  slug?: string;
+  /** Handtrimmad SEO-titel — utan "| Viking Age" (PageMeta lägger på det). Sikta ≤ ~46 tecken så
+   *  hela titeln ryms under ~59. Utelämnad → genererad fallback. */
+  seoTitle?: string;
+  seoTitleEn?: string;
+  /** Handtrimmad metabeskrivning ≤160 tecken (hel mening). Utelämnad → auto ur brödtexten (metaText). */
+  metaDescription?: string;
+  metaDescriptionEn?: string;
   name: string;
   region: string;
   period: string;
@@ -95,6 +105,7 @@ export const EXCURSIONS: Excursion[] = [
   },
   {
     id: 'kalmar-jarnalder',
+    slug: 'kalmar-jarnaldersgravfalt',
     name: 'Kalmar – järnåldersgravfälten & Hossmo',
     region: 'Kalmar, Småland',
     group: 'Småland & Kalmarsund',
@@ -351,6 +362,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   },
   {
     id: 'morastenar',
+    slug: 'mora-stenar',
     photoDir: 'morastenar',
     name: 'Mora stenar',
     region: 'Lagga, Knivsta, Uppland',
@@ -366,6 +378,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   },
   {
     id: 'danmarksby',
+    slug: 'kammargravfaltet-danmarksby',
     name: 'Kammargravfältet vid Danmarksby',
     region: 'Danmarks socken, Uppsala',
     group: 'Uppland & Mälardalen',
@@ -381,6 +394,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   },
   {
     id: 'oland_hillforts',
+    slug: 'olands-fornborgar',
     photoDir: 'ismantorp-borg-oland',
     thumbFile: 'thumb-2.jpg',
     fortressRegion: 'Öland',
@@ -399,6 +413,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   },
   {
     id: 'rosaring',
+    slug: 'rosaringsasen',
     photoDir: 'rosaring-processionsvag-labyrint',
     name: 'Rösaringsåsen',
     region: 'Låssa, Upplands-Bro',
@@ -422,6 +437,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   },
   {
     id: 'tanum',
+    slug: 'tanums-hallristningar',
     name: 'Tanums hällristningar',
     region: 'Tanum, Bohuslän',
     group: 'Bohuslän & Västkusten',
@@ -445,6 +461,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   },
   {
     id: 'himmelstalund',
+    slug: 'himmelstalunds-hallristningar',
     name: 'Himmelstalunds hällristningar',
     region: 'Norrköping, Östergötland',
     group: 'Östergötland',
@@ -466,6 +483,11 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   },
   {
     id: 'haga',
+    slug: 'hagahogen',
+    seoTitle: 'Hågahögen – bronsålderns guldgrav',
+    seoTitleEn: 'Hågahögen – a Bronze Age gold grave',
+    metaDescription: 'Skandinaviens guldrikaste bronsåldersgrav väster om Uppsala. 7 m hög, rest ca 1000 f.Kr.; 1902–03 hittades en tredjedel av Sveriges bronsåldersguld.',
+    metaDescriptionEn: "Scandinavia's gold-richest Bronze Age grave, just west of Uppsala. 7 m high, raised c. 1000 BC; the 1902–03 dig found a third of all Sweden's Bronze Age gold.",
     heritageRef: 'raa:hagahogen',
     photoDir: 'haga-hogen-kungs-bjorns-hog',
     name: 'Hågahögen',
@@ -479,6 +501,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
 
   {
     id: 'boglosa',
+    slug: 'boglosa-hallristningar',
     photoDir: 'boglosa',
     name: 'Boglösa hällristningar',
     region: 'Boglösa, Enköping, Uppland',
@@ -490,6 +513,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   },
   {
     id: 'skepptuna-u357',
+    slug: 'u-357-skepptuna',
     photoDir: 'runor-u357',
     name: 'Runstenen U 357 vid Skepptuna kyrka',
     region: 'Skepptuna, Sigtuna kommun, Uppland',
@@ -502,6 +526,7 @@ Yes — easy paths and clear signs. Note: grazing animals are present at Mobacka
   },
   {
     id: 'arsta-skalgropar',
+    slug: 'arsta-skalgropar-valla',
     photoDir: 'arsta-skalgropar',
     name: 'Årsta – skålgropar & Valla',
     region: 'Årsta, Stockholm',
@@ -586,6 +611,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   // === Österleden & skärgårdshavet ===
   {
     id: 'aland-vikingatid',
+    slug: 'aland-osterledens-nav',
     name: 'Åland — Österledens nav',
     region: 'Saltvik/Finström, Åland (Finland)',
     group: 'Österleden & skärgårdshavet',
@@ -602,6 +628,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'hitis-kyrksundet',
+    slug: 'hitis-kyrksundet',
     name: 'Hitis & Kyrksundet — Finlands första runsten',
     region: 'Hitis (Hiittinen), Skärgårdshavet, Finland',
     group: 'Österleden & skärgårdshavet',
@@ -644,6 +671,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'noaks_ark',
+    slug: 'noaks-ark',
     name: 'Noaks Ark (skeppssättning)',
     region: 'Södra Öland',
     group: 'Öland',
@@ -668,6 +696,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   // === Museer (Wikidata-verifierade koordinater, P625) ===
   {
     id: 'historiska-museet',
+    slug: 'statens-historiska-museet',
     name: 'Statens historiska museet',
     region: 'Stockholm',
     group: 'Uppland & Mälardalen',
@@ -688,6 +717,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'skansen-friluftsmuseum',
+    slug: 'skansen',
     name: 'Skansen (friluftsmuseum)',
     region: 'Djurgården, Stockholm',
     group: 'Uppland & Mälardalen',
@@ -720,6 +750,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   // === Gotland – Norra ===
   {
     id: 'lilla_bjars',
+    slug: 'lilla-bjars-stenkyrka',
     name: 'Lilla Bjärs, Stenkyrka',
     region: 'Stenkyrka, norra Gotland',
     group: 'Gotland – Norra',
@@ -730,6 +761,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'gamlahamn_faro',
+    slug: 'gamlahamn-faro',
     name: 'Gamlahamn, Fårö',
     region: 'Fårö',
     group: 'Gotland – Norra',
@@ -740,6 +772,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'lilla_ihre',
+    slug: 'lilla-ihre-hellvi',
     name: 'Lilla Ihre, Hellvi',
     region: 'Hellvi, norra Gotland',
     group: 'Gotland – Norra',
@@ -750,6 +783,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'trullhalsar',
+    slug: 'trullhalsar-norrlanda',
     name: 'Trullhalsar, Norrlanda',
     region: 'Norrlanda, östra Gotland',
     group: 'Gotland – Norra',
@@ -760,6 +794,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'torsburgen',
+    slug: 'torsburgen-kraklingbo',
     name: 'Torsburgen, Kräklingbo',
     region: 'Kräklingbo, östra Gotland',
     group: 'Gotland – Norra',
@@ -772,6 +807,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   // === Gotland – Södra ===
   {
     id: 'fjale_ala',
+    slug: 'odegarden-fjale-ala',
     name: 'Ödegården Fjäle, Ala',
     region: 'Ala, Gotland',
     group: 'Gotland – Södra',
@@ -782,6 +818,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'bildstenar_ange',
+    slug: 'bildstenar-ange-buttle',
     name: 'Bildstenar vid Änge, Buttle',
     region: 'Buttle, Gotland',
     group: 'Gotland – Södra',
@@ -792,6 +829,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'smiss_rikvide',
+    slug: 'smiss-rikvide-nar',
     name: 'Smiss och Rikvide, När',
     region: 'När, Gotland',
     group: 'Gotland – Södra',
@@ -802,6 +840,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'bildsten_hablingbo',
+    slug: 'bildsten-hablingbo',
     name: 'Bildsten, Hablingbo',
     region: 'Hablingbo, södra Gotland',
     group: 'Gotland – Södra',
@@ -812,6 +851,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'gannarve',
+    slug: 'gannarve-skeppssattning',
     name: 'Gannarve skeppssättning, Fröjel',
     region: 'Fröjel, västra Gotland',
     group: 'Gotland – Södra',
@@ -822,6 +862,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'galrums',
+    slug: 'galrums-gravfalt-alskog',
     name: 'Gålrums gravfält & Bandeläins täppu, Alskog',
     region: 'Alskog, Gotland',
     group: 'Gotland – Södra',
@@ -832,6 +873,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'paviken',
+    slug: 'paviken-vastergarn',
     name: 'Paviken–Västergarn',
     region: 'Västergarn, Gotland',
     group: 'Gotland – Södra',
@@ -844,6 +886,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   // === Skåne ===
   {
     id: 'ales_stenar',
+    slug: 'ales-stenar-kaseberga',
     name: 'Ales stenar (Ängakåsen), Kåseberga',
     region: 'Kåseberga, Skåne',
     group: 'Skåne',
@@ -856,6 +899,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   // === Blekinge ===
   {
     id: 'bjorketorp',
+    slug: 'bjorketorpsstenen',
     name: 'Björketorpsstenen',
     region: 'Björketorp, Blekinge',
     group: 'Blekinge',
@@ -893,6 +937,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'hagadosen',
+    slug: 'hagadosen-orust',
     name: 'Hagadösen, Orust',
     region: 'Orust, Bohuslän',
     group: 'Megalitgravar (dösar)',
@@ -923,6 +968,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'disas_ting',
+    slug: 'disas-ting',
     name: 'Disas ting',
     region: 'Svarte, Ystad, Skåne',
     group: 'Megalitgravar (dösar)',
@@ -973,6 +1019,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'brot_anunds_grav',
+    slug: 'brot-anunds-grav',
     name: 'Bröt-Anunds grav',
     region: 'Hässleholm, Skåne',
     group: 'Megalitgravar (dösar)',
@@ -983,6 +1030,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'ganggriften_lunden',
+    slug: 'ganggriften-lunden',
     name: 'Gånggriften vid Lunden',
     region: 'Orust, Bohuslän',
     group: 'Megalitgravar (dösar)',
@@ -993,6 +1041,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'klovedal_dos',
+    slug: 'klovedal-dos',
     name: 'Klövedal dös',
     region: 'Tjörn, Bohuslän',
     group: 'Megalitgravar (dösar)',
@@ -1003,6 +1052,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'nedre_hagadosen',
+    slug: 'nedre-hagadosen',
     name: 'Nedre Hagadösen',
     region: 'Orust, Bohuslän',
     group: 'Megalitgravar (dösar)',
@@ -1013,6 +1063,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'torebo_altare',
+    slug: 'torebo-altare',
     name: 'Torebo Altare',
     region: 'Orust, Bohuslän',
     group: 'Megalitgravar (dösar)',
@@ -1023,6 +1074,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'valla_dos',
+    slug: 'valla-dos',
     name: 'Valla dös (Styrdalen)',
     region: 'Tjörn, Bohuslän',
     group: 'Megalitgravar (dösar)',
@@ -1033,6 +1085,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'brattas_dos',
+    slug: 'brattas-dos',
     name: 'Brattås fornlämningsområde (dös)',
     region: 'Orust, Bohuslän',
     group: 'Megalitgravar (dösar)',
@@ -1063,6 +1116,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'vrangstad',
+    slug: 'vrangstads-gravfalt',
     name: 'Vrångstads gravfält',
     region: 'Tanum, Bohuslän',
     group: 'Megalitgravar (dösar)',
@@ -1073,6 +1127,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'alnabjar',
+    slug: 'alnabjar-skeppssattning',
     name: 'Alnabjär skeppssättning',
     region: 'Bohuslän',
     group: 'Bohuslän & Västkusten',
@@ -1185,6 +1240,7 @@ Yes — short, easy stops in urban nature. The cup marks are fun for children to
   },
   {
     id: 'flasta-skokloster',
+    slug: 'flasta-kyrkoruin',
     name: 'Flasta kyrkoruin (Skokloster)',
     region: 'Skokloster, Håbo, Uppland',
     group: 'Ting & eriksgata',

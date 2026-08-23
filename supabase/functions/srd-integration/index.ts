@@ -42,10 +42,31 @@ serve(async (req) => {
   }
 
   try {
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      serviceKey
     );
+
+    // AUKTORISERING: denna funktion skriver till kärntabellen (runic_inscriptions) via
+    // service-role (bypassar RLS). Endast service-role-nyckel (ops) ELLER inloggad admin
+    // får anropa — ALDRIG den publika anon-nyckeln. Samma gate som embed-search.
+    const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
+    let authorized = token.length > 0 && token === serviceKey;
+    if (!authorized && token) {
+      const { data: { user } } = await supabase.auth.getUser(token);
+      if (user) {
+        const { data: roles } = await supabase
+          .from('user_roles').select('role').eq('user_id', user.id);
+        authorized = (roles ?? []).some((r) => r.role === 'admin');
+      }
+    }
+    if (!authorized) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const { action, signum } = await req.json();
     console.log(`🔄 SRD Integration: ${action}${signum ? ` for ${signum}` : ''}`);

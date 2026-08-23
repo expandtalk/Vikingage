@@ -153,9 +153,9 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
   // Historiska tidslinjen: condensed by default ÄVEN på desktop (Daniel). Var tidigare bara minimerad <768px.
   const [isTimelineMinimized, setIsTimelineMinimized] = useState(true);
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
-  // Legenden visas som standard på desktop; på mobil startar den STÄNGD (bottom-sheet
-  // ska inte täcka kartan vid inladdning — öppnas via Teckenförklaring-knappen).
-  const [showLegendPanel, setShowLegendPanel] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
+  // "Anpassa karta"-legenden startar ALLTID STÄNGD (Daniel) — på både desktop och mobil.
+  // Kartan ska mötas ren; legenden/lager-panelen öppnas via "Anpassa karta"-knappen.
+  const [showLegendPanel, setShowLegendPanel] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isSearchResultsMinimized, setIsSearchResultsMinimized] = useState(false);
   

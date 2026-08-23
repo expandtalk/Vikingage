@@ -36,6 +36,21 @@ export const excerptText = (text: string): string =>
     .replace(/\s+/g, ' ')
     .trim();
 
+// Metabeskrivning ≤ maxLen tecken. Google klipper längre beskrivningar mitt i en mening med "…";
+// här kapas i stället vid en HEL mening om möjligt (punkt/!/? nära slutet), annars vid sista hela
+// ord. Aldrig mitt i ett ord. Används av utflykternas <meta name="description">.
+export const metaText = (text: string, maxLen = 160): string => {
+  const s = excerptText(text);
+  if (s.length <= maxLen) return s;
+  const slice = s.slice(0, maxLen);
+  const sentenceEnd = Math.max(
+    slice.lastIndexOf('. '), slice.lastIndexOf('! '), slice.lastIndexOf('? '),
+  );
+  if (sentenceEnd >= maxLen * 0.6) return slice.slice(0, sentenceEnd + 1).trim();
+  const lastSpace = slice.lastIndexOf(' ');
+  return (lastSpace > 0 ? slice.slice(0, lastSpace) : slice).replace(/[\s.,;:–—-]+$/, '') + '…';
+};
+
 export const ExcursionProse: React.FC<{ text: string; className?: string }> = ({ text, className }) => {
   // Radbaserad parser: en '## '-rad blir ALLTID egen rubrik (även utan tom rad
   // runt den); mellanliggande rader buffras till stycken, tom rad bryter stycke.
