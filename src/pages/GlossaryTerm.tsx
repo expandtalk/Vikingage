@@ -8,6 +8,7 @@ import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, ExternalLink } from 'lucide-react';
+import { DiscussionThread } from '../components/discussion/DiscussionThread';
 
 // Ordliste-termsida /sv/ordlista/:slug (+ /en/glossary/:slug). Renderar EN källgranskad fackterm
 // ur public.glossary med epistemisk märkning + källa + licens. Endast verifierade, fritt licensierade
@@ -58,6 +59,7 @@ export default function GlossaryTerm({ forceLang }: { forceLang?: 'sv' | 'en' })
           </div>
         )}
         {row && (
+          <>
           <article>
             <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
               <span className="inline-flex items-center gap-1 text-muted-foreground"><BookOpen className="h-3.5 w-3.5" /> {sv ? 'Fackterm' : 'Term'}</span>
@@ -96,6 +98,18 @@ export default function GlossaryTerm({ forceLang }: { forceLang?: 'sv' | 'en' })
               </div>
             )}
           </article>
+
+          {/* Fas 1: UGC-bidragstråd på begreppet — inloggade skriver/diskuterar (samtyckesgrind i
+              komponenten), modererat via flagga → discussion_post_flags → UgcModerationQueue.
+              Kurator kan senare befordra ett bidrag till kanonisk definition (fas 1b, promote-RPC). */}
+          <section className="mt-10 border-t border-border/60 pt-6">
+            <DiscussionThread
+              entityType="glossary_term"
+              entityKey={row.slug}
+              heading={sv ? 'Diskussion & bidrag' : 'Discussion & contributions'}
+            />
+          </section>
+          </>
         )}
       </main>
       <Footer />
