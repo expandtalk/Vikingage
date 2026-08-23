@@ -45,6 +45,10 @@ export const useMapInstance = ({ isVikingMode }: UseMapInstanceProps) => {
     });
 
     map.current = mapInstance;
+    // Globalt kart-handtag (samma brygg-mönster som window.__nearMeFlyTo / __openChurchHistory):
+    // låter ytor UTANFÖR kartan (t.ex. SMHI-varningspanelen under kartan) läsa aktuellt center
+    // för geografisk filtrering utan prop-drilling genom hela explorer-trädet.
+    try { (window as unknown as { __vikingMap?: L.Map }).__vikingMap = mapInstance; } catch { /* noop */ }
 
     // 4-KVADRAT-BUGGEN: kartan initieras ofta INNAN containern fått sin slutstorlek → Leaflet laddar
     // bara ett litet tile-block (2×2) och fyller inte ytan. Måla om vid varje storleksändring
@@ -74,6 +78,10 @@ export const useMapInstance = ({ isVikingMode }: UseMapInstanceProps) => {
     return () => {
       try { ro.disconnect(); } catch { /* noop */ }
       sizeTimers.forEach(clearTimeout);
+      try {
+        const w = window as unknown as { __vikingMap?: L.Map | null };
+        if (w.__vikingMap === mapInstance) w.__vikingMap = null;
+      } catch { /* noop */ }
       if (map.current) {
         map.current.remove();
         map.current = null;

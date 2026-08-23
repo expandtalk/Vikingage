@@ -6,6 +6,7 @@ import { ExplorerPanels } from './ExplorerPanels';
 import { TimelineModule } from '../modules/TimelineModule';
 import { GodCardsGrid } from '../gods/GodCardsGrid';
 import { WindRoses } from './WindRose';
+import { SmhiWarnings } from './SmhiWarnings';
 import { CultSitesView } from '../gods/CultSitesView';
 import { PanelLayoutSelector } from '../panels/PanelLayoutSelector';
 import { usePanelManager } from '@/hooks/usePanelManager';
@@ -459,6 +460,13 @@ export const ExplorerLayout: React.FC<ExplorerLayoutProps> = ({
             isMinimized={isTimelineMinimized}
             onToggleMinimized={() => setIsTimelineMinimized(!isTimelineMinimized)}
           />
+        </div>
+      )}
+
+      {/* SMHI-vädervarningar (aktiva) under kartan — nyckelfritt SMHI open data, dold i billäge. */}
+      {!driving && (
+        <div className="mt-4">
+          <SmhiWarnings />
         </div>
       )}
 
