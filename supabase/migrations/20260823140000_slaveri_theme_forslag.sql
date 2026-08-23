@@ -10,10 +10,12 @@
 -- ============================================================================
 
 -- 1. TEMA -------------------------------------------------------------------
-insert into public.themes (name, name_en, description, description_en)
+insert into public.themes (name, name_en, slug, keywords, description, description_en)
 select
   'Slaveri och tvångsarbete under svensk flagg',
   'Slavery and forced labour under the Swedish flag',
+  'slaveri',
+  ARRAY['slaveri','träldom','tvångsarbete','träl','trälar','slav','slavhandel','ofri','förslavad','S:t Barthélemy','Cabo Corso','Barbareskstaterna'],
   'Tvärgående tema (FÖRSLAG). Fyra system hålls isär: (I) nordisk träldom (~vikingatid–1335), '
   || '(II) svenskar förslavade i Nordafrika ~1650–1770 (svensken som offer), (III) transatlantisk/'
   || 'karibisk slavhandel under svensk flagg (svensken som förövare), samt den nationella myten '
@@ -24,6 +26,13 @@ select
   || 'slave trade under the Swedish flag (Swede as perpetrator), plus the national myth (demonstrably '
   || 'falsifiable) and a dated reception/politics layer.'
 where not exists (select 1 from public.themes t where t.name = 'Slaveri och tvångsarbete under svensk flagg');
+
+-- Nåbarhet: ThemePage (/tema/:slug) slår upp på slug, graf-sök matchar på keywords.
+-- Säkerställ båda även om temat redan fanns utan dem (tidigare version av denna migration).
+update public.themes
+set slug = coalesce(slug, 'slaveri'),
+    keywords = coalesce(keywords, ARRAY['slaveri','träldom','tvångsarbete','träl','trälar','slav','slavhandel','ofri','förslavad','S:t Barthélemy','Cabo Corso','Barbareskstaterna'])
+where name = 'Slaveri och tvångsarbete under svensk flagg';
 
 -- 2. KÄLLBIBLIOTEK (historical_sources) -------------------------------------
 insert into public.historical_sources (title, title_en, author, written_year, covers_period_start, covers_period_end, reliability, language, description)
