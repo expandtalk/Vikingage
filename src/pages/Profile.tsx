@@ -13,6 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, User, Save, ArrowLeft, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { MyResearchAreas } from '@/components/profile/MyResearchAreas';
+import { MapPreferences } from '@/components/profile/MapPreferences';
 
 interface Profile {
   id: string;
@@ -520,6 +522,19 @@ const Profile = () => {
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Mina sidor — områden användaren kurerar (UGC steg: research_areas). */}
+        <Card className="max-w-4xl mx-auto mt-6 bg-white/10 backdrop-blur-md border-white/20">
+          <CardContent className="p-6">
+            <MyResearchAreas />
+          </CardContent>
+        </Card>
+
+        <Card className="max-w-4xl mx-auto mt-6 bg-white/10 backdrop-blur-md border-white/20">
+          <CardContent className="p-6">
+            <MapPreferences />
           </CardContent>
         </Card>
       </main>
