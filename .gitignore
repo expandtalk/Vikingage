@@ -73,3 +73,35 @@ kartsymboler/
 shoreline-mhm*/
 terrain-tiles/
 scripts/data/.cache-*.geojson
+
+# ── WIP-hygien 2026-08-23 ──────────────────────────────────────────────
+# Deploy-/prerender-output som hamnar i repo-roten (källan bor i public/ resp.
+# genereras av build: vite build + generate-sitemap + prerender-*). Ej i git.
+/assets/
+/ai-agenter/
+/ai-agents/
+/fortresses/
+/royal-chronicles/
+/inscriptions/
+/carvers/
+/en/
+/sv/
+/favicon.ico
+/og-image.png
+/placeholder.svg
+/robots.txt
+/llms.txt
+/sitemap.xml
+/.htaccess
+/.htaccess.backup
+
+# Stora binär-/bildassets (hålls lokalt/på deploy, jfr /images/ och *.tif ovan)
+/3d/
+/excursion-photos/
+/img-0942.jpg
+
+# Scratch-/arbetsfiler och temp-scripts (agent-/researcharbete, ej projektkod)
+scratch-*
+scratchpad-*
+/scripts/data/_tmp_*
+.superpowers/
