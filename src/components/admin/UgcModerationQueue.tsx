@@ -20,6 +20,9 @@ interface FieldObs {
   id: string; name: string; feature_type: string; description: string | null;
   submitter_email: string | null; status: string; created_at: string;
 }
+interface GlossaryPost {
+  id: string; entity_key: string; display_name: string | null; body: string; created_at: string;
+}
 
 const REINDEX_TYPES = ['place', 'place_name', 'heritage_site', 'content_page'];
 
@@ -28,6 +31,7 @@ export const UgcModerationQueue: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [fieldObs, setFieldObs] = useState<FieldObs[]>([]);
+  const [glossaryPosts, setGlossaryPosts] = useState<GlossaryPost[]>([]);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [coords, setCoords] = useState<Record<string, { lat: string; lng: string }>>({});
   const [busy, setBusy] = useState<string | null>(null);
@@ -39,13 +43,16 @@ export const UgcModerationQueue: React.FC = () => {
 
   const fetchAll = async () => {
     setLoading(true);
-    const [s, f] = await Promise.all([
+    const [s, f, g] = await Promise.all([
       (supabase as any).from('place_suggestions')
         .select('id, name, note, documentation, proposed_lat, proposed_lng, submitter_email, query_context, status, created_at')
         .eq('status', 'pending').order('created_at', { ascending: true }),
       (supabase as any).from('field_observations')
         .select('id, name, feature_type, description, submitter_email, status, created_at')
         .eq('status', 'submitted').order('created_at', { ascending: true }),
+      (supabase as any).from('discussion_posts')
+        .select('id, entity_key, display_name, body, created_at')
+        .eq('entity_type', 'glossary_term').eq('status', 'published').order('created_at', { ascending: true }),
     ]);
     const sugg = (s.data ?? []) as Suggestion[];
     setSuggestions(sugg);
@@ -55,6 +62,7 @@ export const UgcModerationQueue: React.FC = () => {
       lng: x.proposed_lng != null ? String(x.proposed_lng) : '',
     }])));
     setFieldObs((f.data ?? []) as FieldObs[]);
+    setGlossaryPosts((g.data ?? []) as GlossaryPost[]);
     setLoading(false);
   };
   useEffect(() => { fetchAll(); }, []);
@@ -84,6 +92,16 @@ export const UgcModerationQueue: React.FC = () => {
     setBusy(null);
     if (error) { toast({ title: 'Kunde inte befordra', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Plats skapad & indexerad', description: `/sv/plats/${data} — nu sökbar.` });
+    fetchAll();
+  };
+
+  // Befordra ett ordliste-bidrag (discussion_posts) → kanonisk definition + reindex (RPC, admin-grind).
+  const promotePost = async (p: GlossaryPost) => {
+    setBusy(p.id);
+    const { data, error } = await (supabase as any).rpc('promote_post_to_glossary', { p_post_id: p.id });
+    setBusy(null);
+    if (error) { toast({ title: 'Kunde inte befordra', description: error.message, variant: 'destructive' }); return; }
+    toast({ title: 'Bidrag befordrat', description: `Definition uppdaterad — /sv/ordlista/${data}.` });
     fetchAll();
   };
 
@@ -170,6 +188,25 @@ export const UgcModerationQueue: React.FC = () => {
                     <X className="h-4 w-4 mr-1" /> Avslå
                   </Button>
                 </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Ordliste-bidrag → befordra till kanonisk definition */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-slate-200">Ordliste-bidrag ({glossaryPosts.length})</h3>
+            {glossaryPosts.length === 0 && <p className="text-sm text-slate-400">Inga väntande bidrag.</p>}
+            {glossaryPosts.map((p) => (
+              <div key={p.id} className="rounded-lg border border-white/15 bg-white/5 p-3 space-y-2">
+                <div className="text-[11px] text-slate-400">
+                  <a href={`/sv/ordlista/${p.entity_key}`} className="text-amber-300 hover:underline">/sv/ordlista/{p.entity_key}</a>
+                  {p.display_name && <> · {p.display_name}</>}
+                </div>
+                <p className="text-sm text-slate-200 whitespace-pre-wrap">{p.body}</p>
+                <Button size="sm" disabled={busy === p.id} onClick={() => promotePost(p)} className="bg-emerald-600 hover:bg-emerald-700">
+                  <Check className="h-4 w-4 mr-1" /> Befordra till definition
+                </Button>
+                <p className="text-[11px] text-slate-500">Skriver bidraget till termens kanoniska definition (verified) + reindexerar.</p>
               </div>
             ))}
           </div>

@@ -46,6 +46,7 @@ const TunaNames = lazy(() => import("./pages/TunaNames"));
 const PlacePage = lazy(() => import("./pages/PlacePage"));
 const GlossaryTerm = lazy(() => import("./pages/GlossaryTerm"));
 const Ordlista = lazy(() => import("./pages/Ordlista"));
+const Liksinnade = lazy(() => import("./pages/Liksinnade"));
 const PlaceIndex = lazy(() => import("./pages/PlaceIndex"));
 const RoadPage = lazy(() => import("./pages/RoadPage"));
 const Vendelhjalmar = lazy(() => import("./pages/Vendelhjalmar"));
@@ -206,6 +207,8 @@ const App = () => (
                   <Route path="/en/place" element={<PlaceIndex />} />
                   <Route path="/sv/plats/:slug" element={<PlacePage />} />
                   <Route path="/en/place/:slug" element={<PlacePage />} />
+                  <Route path="/sv/liksinnade" element={<Liksinnade />} />
+                  <Route path="/en/like-minded" element={<Liksinnade />} />
                   <Route path="/sv/ordlista" element={<Ordlista forceLang="sv" />} />
                   <Route path="/en/glossary" element={<Ordlista forceLang="en" />} />
                   <Route path="/sv/ordlista/:slug" element={<GlossaryTerm forceLang="sv" />} />
