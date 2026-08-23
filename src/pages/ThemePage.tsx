@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '../components/Header';
 import { Breadcrumbs } from '../components/Breadcrumbs';
@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Network, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import { AnswerContext } from '../components/search/AnswerContext';
 import { ThemeCharters } from '../components/chronicles/ThemeCharters';
+import { ThemeMap } from '../components/chronicles/ThemeMap';
 
 // Temasida (/tema/:slug): "se hela temat" — temats beskrivning + alla noder i
 // kunskapsgrafen som är kopplade via has_theme (graph_neighborhood), grupperade
@@ -59,7 +59,6 @@ const ThemePage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { language } = useLanguage();
   const sv = language === 'sv';
-  const navigate = useNavigate();
 
   const { data: theme, isLoading } = useQuery({
     queryKey: ['theme-page', slug],
@@ -85,6 +84,12 @@ const ThemePage = () => {
   const byType = members.reduce<Record<string, Edge[]>>((acc, e) => { (acc[e.other_type] ??= []).push(e); return acc; }, {});
   const typeOrder = Object.keys(byType).sort((a, b) => byType[b].length - byType[a].length);
 
+  // "Metod & granskning"-sektionen ska stå SIST på sidan (Daniel) — bryt ut den ur beskrivningen.
+  const fullDesc = theme ? (sv ? theme.description : (theme.description_en ?? theme.description)) : null;
+  const mi = fullDesc ? Math.max(fullDesc.indexOf('## Metod & granskning'), fullDesc.indexOf('## Method & review')) : -1;
+  const descTop = mi >= 0 ? fullDesc!.slice(0, mi) : fullDesc;
+  const descMetod = mi >= 0 ? fullDesc!.slice(mi) : '';
+
   return (
     <div className="min-h-screen viking-bg">
       <PageMeta
@@ -107,19 +112,17 @@ const ThemePage = () => {
             <h1 className="text-2xl font-bold text-white flex items-center gap-2 mb-2">
               <Sparkles className="h-6 w-6 text-gold" />{sv ? theme.name : (theme.name_en ?? theme.name)}
             </h1>
-            {(sv ? theme.description : (theme.description_en ?? theme.description)) && (
+            {descTop && descTop.trim() && (
               <div className="mb-6 max-w-2xl space-y-2.5">
-                {renderThemeText((sv ? theme.description : (theme.description_en ?? theme.description)) as string)}
+                {renderThemeText(descTop)}
               </div>
             )}
 
-            {/* Grafisk temavy: karta + kopplade runstenar + bilder. Återanvänder AnswerContext
-                (samma motor som hero-sökets svarspanel) → temat får en riktig grafisk sida på en
-                egen URL. Självdöljande om temat saknar kopplat kart-/bildinnehåll (t.ex. rena
-                källteman). Skickar temats kanoniska (svenska) namn så RPC:n resolvar temat oavsett
-                gränssnittsspråk. */}
-            <div className="mb-6 overflow-hidden rounded-lg border border-slate-700">
-              <AnswerContext query={theme.name} onGo={(r) => navigate(r)} />
+            {/* Temakarta: plottar temats FAKTISKA has_theme-noder (grafkopplade platser), inte en
+                nyckelordssökning → "kartan visar bara relaterade ställen". Självdöljande om temat
+                saknar koordinatsatta noder. */}
+            <div className="mb-6">
+              <ThemeMap themeId={theme.id} sv={sv} />
             </div>
 
             {/* Medeltidsbrev kopplade via innehållssökning på temats nyckelord (self-hiding). */}
@@ -147,6 +150,13 @@ const ThemePage = () => {
               </section>
             ))}
             {members.length === 0 && <p className="text-muted-foreground py-8 text-center">{sv ? 'Inga kopplade noder ännu.' : 'No connected nodes yet.'}</p>}
+
+            {/* Metod & granskning SIST på sidan (proveniens: Caligula + Daniel). */}
+            {descMetod && (
+              <div className="mt-8 pt-4 border-t border-slate-700/60 max-w-2xl space-y-2 text-sm text-slate-400">
+                {renderThemeText(descMetod)}
+              </div>
+            )}
           </>
         )}
       </main>
