@@ -105,3 +105,15 @@ scratch-*
 scratchpad-*
 /scripts/data/_tmp_*
 .superpowers/
+
+# ── WIP-hygien addendum 2026-08-23 ─────────────────────────────────────
+# KONFIDENTIELLT: kommersiellt CRM/leads/säljmaterial — ALDRIG i git (jfr *-leads.xlsx).
+/affarsutveckling/
+~$*
+# Vendored tredjepartsdataset (hämtas lokalt, jfr /SCB-MCP/).
+/gis-positioner/
+# SEO-/sökvolym-research + arbetsanteckningar (working files).
+/sokvolym/
+# Deploy-kopior av datamappar (källan bor i public/).
+/excursion-data/
+/data/
