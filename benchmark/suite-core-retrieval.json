@@ -1,5 +1,7 @@
 {
   "meta": {
+    "version": "1.0",
+    "frozen": "Ändra probes MEDVETET (bumpa version) — annars är körningar över tid ojämförbara.",
     "purpose": "Diagnos av NUVARANDE sökmotor (search-hybrid, gte-small→search_v2→search_v1). Guldschemat är förväntad tolkning enligt query-understanding-förslaget; motorn emitterar INTE schemat ännu — vi mäter hur väl den befintliga retrievalen ändå landar rätt.",
     "engine": "POST /functions/v1/search-hybrid {q,limit} -> {hits[],mode}",
     "scoring": "anchor_found = förväntad entitet finns i topp-K; deadend = 0 träffar; top_type_ok = topp-1 entity_type i expect_types. Guld query_type/relation/time är annotering, ej motoroutput.",

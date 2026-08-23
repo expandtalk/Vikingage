@@ -2,7 +2,7 @@
 // Kör search-benchmark.json mot den RIKTIGA edge-motorn (search-hybrid) och skriver en rapport.
 //   node benchmark/run-benchmark.mjs
 // Ingen build/dev-server behövs — slår direkt mot deployad Supabase edge function (anon-nyckel, publik läs-sök).
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -30,8 +30,8 @@ async function search(q) {
   } finally { clearTimeout(t); }
 }
 
-const BENCH_FILE = process.argv[2] || 'search-benchmark.json';
-const TAG = BENCH_FILE.replace(/.*[\\/]/, '').replace(/\.json$/, '').replace(/^search-benchmark-?/, '') || 'core';
+const BENCH_FILE = process.argv[2] || 'suite-core-retrieval.json';
+const TAG = BENCH_FILE.replace(/.*[\\/]/, '').replace(/\.json$/, '').replace(/^suite-/, '') || 'core';
 const bench = JSON.parse(readFileSync(join(DIR, BENCH_FILE), 'utf8'));
 const rows = [];
 console.log(`Kör ${bench.probes.length} frågor mot ${URL}\n`);
@@ -61,7 +61,7 @@ for (const r of rows) {
 }
 
 const pct = (a, b) => (b === 0 ? '—' : `${Math.round((100 * a) / b)}%`);
-let md = `# Sökbenchmark — resultat mot nuvarande motor\n\n`;
+let md = `# Benchmark: ${TAG}${bench.meta?.version ? ` (v${bench.meta.version})` : ''}\n\n`;
 md += `Motor: \`${URL}\` (gte-small → search_v2 → search_v1)\n\n`;
 md += `Frågor: ${rows.length} · Dead-ends: ${rows.filter((r) => r.deadend).length} · `;
 md += `Ankare hittat (av ej-dead): ${rows.filter((r) => r.anchor_found).length}/${rows.filter((r) => !r.deadend).length}\n\n`;
@@ -83,8 +83,9 @@ for (const r of rows) {
 }
 
 const stamp = new Date().toISOString().slice(0, 10);
-const outBase = TAG === 'core' ? `results-${stamp}` : `results-${TAG}-${stamp}`;
+mkdirSync(join(DIR, 'results'), { recursive: true });
+const outBase = join('results', `${TAG}-${stamp}`);
 writeFileSync(join(DIR, `${outBase}.md`), md);
 writeFileSync(join(DIR, `${outBase}.json`), JSON.stringify(rows, null, 2));
-console.log(`\nRapport: benchmark/${outBase}.md`);
+console.log(`\nRapport: benchmark/${outBase.replace(/\\/g, '/')}.md`);
 console.log(`Dead-ends: ${rows.filter((r) => r.deadend).length} · Ankare hittat: ${rows.filter((r) => r.anchor_found).length}/${rows.filter((r) => !r.deadend).length}`);

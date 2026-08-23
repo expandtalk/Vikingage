@@ -1,5 +1,7 @@
 {
   "meta": {
+    "version": "1.0",
+    "frozen": "Ändra probes MEDVETET (bumpa version) — annars är körningar över tid ojämförbara.",
     "purpose": "Forskarpersona-frågor (arkeolog + historiker) mot DEPLOYAD motor (extraktion ligger i edgen → råfråga räcker). Mäter om plattformens kärnintent (källkritik/metod/evidens/entitet) landar, och kvantifierar ordliste-innehållsgapet.",
     "engine": "POST /functions/v1/search-hybrid {q,limit} -> {hits[],mode} (query-understanding server-side)",
     "note": "Många frågor är GENERISKA metodfrågor utan egennamnsankare → extraktion hjälper ej (inget egennamn); de testar begrepps-/ordlistelagret. anchor = centralt begrepp där det mappar mot något vi bör servera; annars null."
