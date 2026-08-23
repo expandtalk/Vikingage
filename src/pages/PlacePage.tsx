@@ -8,6 +8,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Footer } from '../components/Footer';
 import { PageMeta } from '../components/PageMeta';
 import { PlaceMap } from '../components/map/PlaceMap';
+import { PlaceTiesSummary } from '../components/social/PlaceTiesSummary';
 import { HelmetViewer } from '../components/HelmetViewer';
 import { Badge } from '@/components/ui/badge';
 import { MapPin } from 'lucide-react';
@@ -305,6 +306,10 @@ const PlacePage: React.FC = () => {
                 )}
               </section>
             )}
+
+            {/* Fas 2: människor knutna till orten (aggregat k-anonymt + connect). Resolvar
+                platsnamnet → place_names; självdöljande om orten saknar kopplingar. */}
+            <PlaceTiesSummary placeName={place.name} />
           </div>
         )}
       </main>

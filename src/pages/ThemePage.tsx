@@ -11,6 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ThemeCharters } from '../components/chronicles/ThemeCharters';
 import { ThemeMap } from '../components/chronicles/ThemeMap';
+import { InterestButton } from '../components/social/InterestButton';
 
 // Temasida (/tema/:slug): "se hela temat" — temats beskrivning + alla noder i
 // kunskapsgrafen som är kopplade via has_theme (graph_neighborhood), grupperade
@@ -112,6 +113,7 @@ const ThemePage = () => {
             <h1 className="text-2xl font-bold text-white flex items-center gap-2 mb-2">
               <Sparkles className="h-6 w-6 text-gold" />{sv ? theme.name : (theme.name_en ?? theme.name)}
             </h1>
+            <div className="mb-4"><InterestButton entityType="theme" entityId={theme.id} label={sv ? 'temat' : 'this theme'} /></div>
             {descTop && descTop.trim() && (
               <div className="mb-6 max-w-2xl space-y-2.5">
                 {renderThemeText(descTop)}

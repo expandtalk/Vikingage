@@ -9,6 +9,7 @@ import { PageMeta } from '../components/PageMeta';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, ExternalLink } from 'lucide-react';
 import { DiscussionThread } from '../components/discussion/DiscussionThread';
+import { InterestButton } from '../components/social/InterestButton';
 
 // Ordliste-termsida /sv/ordlista/:slug (+ /en/glossary/:slug). Renderar EN källgranskad fackterm
 // ur public.glossary med epistemisk märkning + källa + licens. Endast verifierade, fritt licensierade
@@ -69,6 +70,8 @@ export default function GlossaryTerm({ forceLang }: { forceLang?: 'sv' | 'en' })
             <h1 className="mb-2 text-2xl font-bold">{row.term}</h1>
             <p className="mb-5 text-lg text-muted-foreground">{row.short_def}</p>
             {row.definition && <p className="mb-6 leading-relaxed">{row.definition}</p>}
+
+            <div className="mb-6"><InterestButton entityType="glossary_term" entityId={row.slug} label={sv ? 'begreppet' : 'this term'} /></div>
 
             <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm">
               <div className="mb-1 font-semibold">{sv ? 'Källa & licens' : 'Source & licence'}</div>
