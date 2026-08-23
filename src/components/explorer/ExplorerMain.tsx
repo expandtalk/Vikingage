@@ -138,6 +138,14 @@ export const ExplorerMain: React.FC = () => {
     noPlaceDesc: sv ? 'Inga av sökresultaten har koordinater som kan visas.' : 'None of the search results have coordinates to display.',
     noResultsTitle: sv ? 'Inga resultat' : 'No results',
     noResultsDesc: (q: string) => (sv ? `Kunde inte hitta några inskrifter för "${q}".` : `Could not find any inscriptions for "${q}".`),
+    geocodedTitle: (label: string) => (sv ? `Visar ${label}` : `Showing ${label}`),
+    geocodedDesc: (source?: string) => (sv
+      ? `Modern plats via öppna register (${source === 'osm' ? 'OpenStreetMap' : 'Wikidata'}). Inte en historisk post i vår data.`
+      : `Modern place via open registers (${source === 'osm' ? 'OpenStreetMap' : 'Wikidata'}). Not a historical record in our data.`),
+    outsideCoverageTitle: sv ? 'Utanför vår täckning' : 'Outside our coverage',
+    outsideCoverageDesc: (q: string) => (sv
+      ? `Hittade varken historisk post eller modern plats för "${q}".`
+      : `Found neither a historical record nor a modern place for "${q}".`),
   };
 
   // Show focus-specific toast when focus changes
@@ -273,7 +281,23 @@ export const ExplorerMain: React.FC = () => {
               const la = pts.reduce((s, p) => s + p.lat, 0) / pts.length;
               const ln = pts.reduce((s, p) => s + p.lng, 0) / pts.length;
               mapNavigate(la, ln, 7);
+              return;
             }
+            // Priority 6: inget i vår historiska data matchar (t.ex. gatunamn/modern adress/byggnad).
+            //   Geokoda mot ÖPPNA REGISTER via resolve-modern-place (Wikidata P625 → OSM/Nominatim,
+            //   server-side med korrekt User-Agent, begränsat till Sverige). Vi gissar aldrig — bara
+            //   BELAGD koordinat med proveniens; hittas inget studsar vi med "utanför vår täckning".
+            supabase.functions.invoke('resolve-modern-place', { body: { q: query, language: sv ? 'sv' : 'en' } })
+              .then(({ data }: { data?: { found?: boolean; label?: string; lat?: number; lng?: number; source?: string } }) => {
+                if (data?.found && data.lat != null && data.lng != null) {
+                  toast({ title: T.geocodedTitle(data.label || query), description: T.geocodedDesc(data.source) });
+                  // Adress/gata (OSM) → tätare zoom; namngiven plats/byggnad (Wikidata) → något vidare.
+                  navMark(data.lat, data.lng, data.source === 'osm' ? 14 : 13, data.label || query);
+                } else {
+                  toast({ title: T.outsideCoverageTitle, description: T.outsideCoverageDesc(query) });
+                }
+              })
+              .catch(() => { /* nätfel → tyst, kartan lämnas orörd */ });
           });
         return;
       }
