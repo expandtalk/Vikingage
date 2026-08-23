@@ -100,7 +100,9 @@ export const SearchFallback: React.FC<{ query: string }> = ({ query }) => {
               <li key={`${h.entity_type}-${h.entity_id}`}>
                 <Link to={routeFor(h)} onClick={() => logSearchClick(query, h.entity_type, h.entity_id)}
                   className="flex flex-wrap items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800">
-                  <span className="text-slate-100">{h.signum && h.signum !== h.label ? `${h.signum} · ${h.label}` : h.label}</span>
+                  {/* signum som är en route/URL (road_waypoint, content_page) ska ALDRIG synas som text —
+                      bara vara länkmål (Daniel: "visa explore som länktext, göm koordinaterna, skicka med dem"). */}
+                  <span className="text-slate-100">{h.signum && h.signum !== h.label && !/^(\/|https?:)/.test(h.signum) ? `${h.signum} · ${h.label}` : h.label}</span>
                   <span className="ml-auto rounded border border-slate-600 px-1.5 py-0.5 text-[10px] text-slate-400">
                     {(TYPE_LABEL[h.entity_type] ? (en ? TYPE_LABEL[h.entity_type].en : TYPE_LABEL[h.entity_type].sv) : h.entity_type)}
                   </span>

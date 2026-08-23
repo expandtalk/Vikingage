@@ -21,6 +21,7 @@ import { UtilityAnswer } from './UtilityAnswer';
 import { LocateAnswer } from './LocateAnswer';
 import { PersonLocateAnswer } from './PersonLocateAnswer';
 import { detectUtilityIntent } from '@/utils/search/utilityIntent';
+import { detectQueryLang } from '@/utils/search/detectQueryLang';
 import { ExploreRail } from './ExploreRail';
 import { SearchHelp } from './SearchHelp';
 import { GodQuestions } from './GodQuestions';
@@ -696,7 +697,8 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
     // Enkel A/B-test: ?aimodel=qwen/qwen3.8-max i URL:en tvingar en specifik modell för frågan.
     const aimodel = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('aimodel') : null;
     try {
-      const { data, error } = await supabase.functions.invoke('search-answer', { body: { q, language: sv ? 'sv' : 'en', ...(aimodel ? { model: aimodel } : {}) } });
+      // Språk = FRÅGANS språk (detekterat), inte UI-växlaren → svensk fråga får svenskt svar även i en-läge.
+      const { data, error } = await supabase.functions.invoke('search-answer', { body: { q, language: detectQueryLang(q, sv ? 'sv' : 'en'), ...(aimodel ? { model: aimodel } : {}) } });
       if (error) throw error;
       const d = data as { answer?: string; sources?: Hit[]; error?: string; model?: string };
       // Inget svar/fel → dölj AI-sektionen (null) i st.f. en skrämmande fel-banner. FAQ/träffarna
@@ -1110,26 +1112,8 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                 <PersonLocateAnswer person={utilityIntent.person} relation={utilityIntent.relation} sv={sv} />
               </div>
             )}
-            {/* AI-summary auto ÖVERST (spänner alla kolumner) — sammanfattning före resultatet.
-                Visas vid vanlig sökning OCH person_locate (källförda svaret bredvid kartan). */}
-            {!theme && (!utilityIntent || utilityIntent.kind === 'person_locate') && query.trim().length >= 3 && (aiLoading || aiAnswer) && (
-              <div className="shrink-0 max-h-[36vh] overflow-y-auto border-b border-slate-800 bg-slate-900 px-4 py-3 text-left">
-                {aiLoading && !aiAnswer && (
-                  <div className="flex items-center gap-2 text-sm text-slate-400">
-                    <Loader2 className="h-4 w-4 animate-spin text-amber-400" />{sv ? 'AI läser källorna…' : 'AI reading the sources…'}
-                  </div>
-                )}
-                {aiAnswer && (
-                  <div className="text-sm text-slate-200">
-                    <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
-                      <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
-                    </div>
-                    <p className="whitespace-pre-wrap leading-relaxed text-[15px] text-slate-100">{aiAnswer}</p>
-                    <p className="mt-1 text-[10px] text-slate-400">{sv ? 'AI-genererat ur källorna — verifiera via träffarna.' : 'AI-generated from the sources — verify via the results.'}{aiModel ? ` · ${aiModel}` : ''}</p>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* AI-svaret renderas nu FULLBREDD inom svarspanelen (AnswerContext, efter hero) i st.f. som
+                lös topp-bar — se RagAnswerBlock. person_locate-svaret bor i personkortet där. */}
             {/* Klock-avsikt: bara verktygsblocket ovan — INGEN träfflista/karta/rail (annars drar
                 "vad är klockan" in Vadstena/Vada-ortnamn + en podd som matchat "klockan"). Locate
                 och allt annat behåller 3-kolumnersvyn. */}
@@ -1142,7 +1126,7 @@ export const GlobalSearch: React.FC<{ variant?: 'icon' | 'hero'; onActiveChange?
                 {renderResults('', false, true)}
               </div>
               <div className="order-1 lg:order-2 lg:min-h-0 lg:overflow-y-auto">
-                <AnswerContext query={utilityIntent?.kind === 'locate' ? utilityIntent.place : utilityIntent?.kind === 'person_locate' ? utilityIntent.person : cleanQuery} onGo={go} onQuery={(q) => { setQuery(q); setTheme(null); }} />
+                <AnswerContext query={utilityIntent?.kind === 'locate' ? utilityIntent.place : utilityIntent?.kind === 'person_locate' ? utilityIntent.person : cleanQuery} onGo={go} onQuery={(q) => { setQuery(q); setTheme(null); }} ragAnswer={aiAnswer} ragLoading={aiLoading} ragModel={aiModel} />
               </div>
               <aside className="order-3 flex min-h-0 flex-col border-t border-slate-800 lg:overflow-y-auto lg:border-l lg:border-t-0">
                 {/* Kunskapspanelen (träffens egen destination) äger toppen. */}

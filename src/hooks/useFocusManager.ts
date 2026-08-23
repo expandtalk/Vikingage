@@ -2,7 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-export type FocusType = 'inscriptions' | 'coordinates' | 'carvers' | 'rivers' | 'fortresses' | 'gods' | 'cultSites' | 'hundreds' | 'parishes' | 'names' | 'folkGroups' | 'geneticEvents' | null;
+// Alla focus-värden som faktiskt hanteras i exploreProfiles.applyFocusOverrides + Explore.tsx.
+// Höll tidigare inte 'marine'/'oland'/'churches'/'baths' m.fl. → ExplorerLayout jämförde mot 'marine'
+// som saknades i unionen (TS2367, no-overlap). Superset så jämförelserna är typade.
+export type FocusType = 'inscriptions' | 'coordinates' | 'carvers' | 'rivers' | 'fortresses' | 'gods'
+  | 'cultSites' | 'hundreds' | 'parishes' | 'names' | 'folkGroups' | 'geneticEvents'
+  | 'marine' | 'oland' | 'eriksgatan' | 'churches' | 'monasteries' | 'baths' | null;
 
 export const useFocusManager = () => {
   const [searchParams, setSearchParams] = useSearchParams();

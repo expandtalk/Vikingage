@@ -84,18 +84,55 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
   // Radie-vy för STÄDER (city_radius_overview → bär 'radius_m'): reglaget räknar om inom vald radie.
   const isCity = (overviewProp as unknown as { radius_m?: number }).radius_m != null;
   const [radiusKm, setRadiusKm] = useState(25);
+  // overviewProp är redan 25 km-vyn (AnswerContext anropar city_radius_overview med 25000 m).
+  // Hämta bara om på nytt när användaren flyttar reglaget bort från 25 — annars återanvänds
+  // prop:en → inget dubblerat round-trip vid varje visning av kommunnoden.
+  const customRadius = radiusKm !== 25;
   const { data: cityData } = useQuery({
     queryKey: ['city-radius-ov', overviewProp.name, radiusKm],
-    enabled: isCity,
+    enabled: isCity && customRadius,
     queryFn: async () => (((await (supabase as unknown as { rpc: (f: string, a: Record<string, unknown>) => Promise<{ data: unknown }> })
       .rpc('city_radius_overview', { p_name: overviewProp.name, p_radius_m: radiusKm * 1000 })).data) ?? null) as LandscapeOverview | null,
   });
-  const overview = isCity ? (cityData ?? overviewProp) : overviewProp;
+  const overview = isCity && customRadius ? (cityData ?? overviewProp) : overviewProp;
+  // Visningsnamn: kapitalisera första bokstaven (RPC/query kan ge "nybro" gement — Daniel).
+  const displayName = overview.name ? overview.name.charAt(0).toUpperCase() + overview.name.slice(1) : overview.name;
+  // MODERN ortsfakta: folkmängd per kommun (SCB, municipality_stats). Fyller "ingen info om orten"
+  // (Daniel). Namnmatch mot kommun; modern fakta, tydligt daterad + källmärkt, aldrig historiskt lager.
+  const { data: muni } = useQuery({
+    queryKey: ['muni-stats', overview.name],
+    enabled: !!overview.name,
+    staleTime: 60 * 60 * 1000,
+    queryFn: async (): Promise<{ population: number; population_year: number; source: string } | null> => {
+      const { data } = await (supabase as unknown as { from: (t: string) => any }).from('municipality_stats')
+        .select('population,population_year,source').ilike('name', overview.name).limit(1);
+      return (data ?? [])[0] ?? null;
+    },
+  });
+  // KÄNDA PERSONER HÄRIFRÅN: personer med födelseort = orten (persons.birthplace_label). Modern +
+  // historisk (t.ex. Elin av Skövde 1100-tal). Belagt ur DB, aldrig påhittat. Ordnas på notabilitet.
+  const { data: bornHere } = useQuery({
+    queryKey: ['born-here', overview.name],
+    enabled: !!overview.name,
+    staleTime: 60 * 60 * 1000,
+    queryFn: async (): Promise<Array<{ id: string; name: string; birth_year: number | null; death_year: number | null; occupations: string | null }>> => {
+      const { data } = await (supabase as unknown as { from: (t: string) => any }).from('persons')
+        .select('id,name,birth_year,death_year,occupations,sitelinks')
+        .ilike('birthplace_label', overview.name)
+        .order('sitelinks', { ascending: false, nullsFirst: false })
+        .limit(10);
+      return (data ?? []) as any[];
+    },
+  });
+
   const cats = (overview.categories ?? []).filter((c) => c.count > 0);
   const byKey = (k: string) => cats.find((c) => c.key === k);
   const summaryBits = ['runestones', 'churches', 'hillforts', 'picture_stones']
     .map((k) => { const c = byKey(k); return c ? `${c.count} ${(sv ? c.label_sv : c.label_en).toLowerCase()}` : null; })
     .filter(Boolean);
+  // Äventyr & natur (nutid) — de "intressanta" besökskategorierna med antal, som en egen strip i noden
+  // (Daniel: "visa huvudkategorierna också … samt hur många"), inte bara gömt i kart-legenden.
+  const adventureCats = cats.filter((c) => (c.group ?? 'core') === 'adventure');
 
   // Kartlager-togglar: en per kategori som har koordinatbärande poster (default PÅ). Svamp = förberett (av).
   const mappable = cats.filter((c) => c.items.some((it) => it.lat != null && it.lng != null));
@@ -106,6 +143,7 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
   const mapRef = useRef<L.Map | null>(null);
   const layersRef = useRef<Record<string, L.LayerGroup>>({});
   const circleRef = useRef<L.Circle | null>(null);
+  const heroRef = useRef<L.Marker | null>(null); // markör för SÖKTA orten (så man ser var t.ex. Nybro ligger)
   const onGoRef = useRef(onGo); onGoRef.current = onGo; // stabil referens för popup-delegering
 
   useEffect(() => {
@@ -136,11 +174,23 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
     Object.values(layersRef.current).forEach((lg) => { try { map.removeLayer(lg); } catch { /* noop */ } });
     layersRef.current = {};
     if (circleRef.current) { try { map.removeLayer(circleRef.current); } catch { /* noop */ } circleRef.current = null; }
+    if (heroRef.current) { try { map.removeLayer(heroRef.current); } catch { /* noop */ } heroRef.current = null; }
     // Radie-cirkel för städer → gör OMRÅDET synligt så man förstår att antalen är en radie-aggregation.
     if (isCity && overview.center) {
       const c = L.circle([overview.center.lat, overview.center.lng], { radius: radiusKm * 1000, color: '#f59e0b', weight: 1.5, opacity: 0.6, fillColor: '#f59e0b', fillOpacity: 0.05, dashArray: '6 6', interactive: false });
       c.addTo(map); circleRef.current = c;
       try { map.fitBounds(c.getBounds(), { padding: [16, 16] }); } catch { /* noop */ }
+    }
+    // HERO-markör för den sökta orten (Daniel: "jag ser inte var Nybro ligger på kartan"). Stor guldpin
+    // + permanent namntagg, överst (zIndexOffset). Utanför layersRef → togglas aldrig bort av legenden.
+    if (overview.center) {
+      const hero = L.marker([overview.center.lat, overview.center.lng], {
+        zIndexOffset: 1000,
+        icon: L.divIcon({ className: '', iconSize: [30, 40], iconAnchor: [15, 38], tooltipAnchor: [0, -32],
+          html: `<div style="filter:drop-shadow(0 3px 4px rgba(0,0,0,.55))"><svg viewBox="0 0 30 40" width="30" height="40"><path d="M15 39C15 39 27 24 27 14A12 12 0 1 0 3 14C3 24 15 39 15 39Z" fill="#f59e0b" stroke="#78350f" stroke-width="2"/><circle cx="15" cy="14" r="5" fill="#fff7ed" stroke="#78350f" stroke-width="1.5"/></svg></div>` }),
+      });
+      hero.bindTooltip(displayName, { permanent: true, direction: 'top', offset: [0, -32], className: 'answer-hero-label' });
+      hero.addTo(map); heroRef.current = hero;
     }
     const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] as string));
     for (const cat of mappable) {
@@ -179,12 +229,36 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
   };
 
   return (
-    <div className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4">
+    <div className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4 text-left">
       <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-300/70">
         <Landmark className="h-3 w-3" />{isCity ? (sv ? 'Ort · kunskapsnod' : 'Place · knowledge node') : (sv ? 'Landskap · kunskapsnod' : 'Province · knowledge node')}
       </div>
-      <h2 className="text-2xl font-bold leading-tight text-white">{overview.name}</h2>
+      <h2 className="text-2xl font-bold leading-tight text-white">{displayName}</h2>
+      {muni?.population != null && (
+        <p className="mt-1 text-sm text-slate-300">
+          {sv ? 'Folkmängd' : 'Population'}: <span className="font-semibold text-slate-100">{muni.population.toLocaleString('sv-SE')}</span>
+          <span className="text-[11px] text-slate-500"> · {muni.source} {muni.population_year}</span>
+        </p>
+      )}
       {summaryBits.length > 0 && <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-300">{summaryBits.join(' · ')}</p>}
+
+      {/* ÄVENTYR & NATUR (nutid) — de intressanta besökskategorierna med antal, klickbara → kartlager på/av. */}
+      {adventureCats.length > 0 && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-emerald-300/80">{sv ? 'Äventyr & natur' : 'Adventure & nature'}</span>
+          {adventureCats.map((c) => {
+            const on = !hidden.has(c.key);
+            return (
+              <button key={c.key} type="button" onClick={() => toggle(c.key)}
+                title={sv ? 'Visa/dölj på kartan' : 'Toggle on map'}
+                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs ${on ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-100' : 'border-slate-600 text-slate-400'}`}>
+                <span className="h-2 w-2 rounded-full" style={{ background: on ? (CAT_COLOR[c.key] ?? '#22d3ee') : 'transparent', border: `1.5px solid ${CAT_COLOR[c.key] ?? '#22d3ee'}` }} />
+                {sv ? c.label_sv : c.label_en}<span className="tabular-nums text-emerald-300/90">{c.count}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Radie-reglage för städer: antalen är en OMRÅDES-aggregation man kan justera (Daniel). */}
       {isCity && (
@@ -256,6 +330,30 @@ export const LandscapeNode: React.FC<{ overview: LandscapeOverview; sv: boolean;
       <div className="mt-3 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
         {GROUP_ORDER.map(renderGroup)}
       </div>
+
+      {/* KÄNDA PERSONER HÄRIFRÅN — belagt ur persons.birthplace_label (modern + historisk). Klick → sök personen. */}
+      {bornHere && bornHere.length > 0 && (
+        <div className="mt-3 rounded-lg border border-slate-700 bg-slate-800/40 p-3">
+          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300/80">
+            <MapPin className="h-3.5 w-3.5" />{sv ? `Kända personer från ${displayName}` : `Notable people from ${displayName}`}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {bornHere.map((p) => {
+              const yrs = p.birth_year ? `${p.birth_year}${p.death_year ? `–${p.death_year}` : ''}` : null;
+              const occ = p.occupations ? String(p.occupations).split(',')[0].trim() : null;
+              return (
+                <button key={p.id} type="button" onClick={() => onGo(`/?q=${encodeURIComponent(p.name)}`)}
+                  title={[occ, yrs].filter(Boolean).join(' · ') || undefined}
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-200 hover:border-amber-500/50 hover:text-amber-100">
+                  <span className="max-w-[200px] truncate">{p.name}</span>
+                  {yrs && <span className="text-[10px] text-slate-500">{yrs}</span>}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-1.5 text-[10px] text-slate-500">{sv ? 'Personer med angiven födelseort — ur databasen, ej uttömmande.' : 'People with this recorded birthplace — from the database, not exhaustive.'}</p>
+        </div>
+      )}
 
       {overview.local_sources?.length > 0 && (
         <div className="mt-3 max-w-md rounded-lg border border-slate-700 bg-slate-800/40 p-3">

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin, BookOpen, GraduationCap, ArrowRight, Library, X, ExternalLink, Image as ImageIcon, Users, Clock, ChevronDown, ChevronRight, Loader2, AlertTriangle, Compass } from 'lucide-react';
+import { MapPin, BookOpen, GraduationCap, ArrowRight, Library, X, ExternalLink, Image as ImageIcon, Users, Clock, ChevronDown, ChevronRight, Loader2, AlertTriangle, Compass, Sparkles } from 'lucide-react';
 import { useAnswerContext } from '@/hooks/useAnswerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FindBookLink } from './FindBookLink';
@@ -15,6 +15,8 @@ import { FaqAnswer } from './FaqAnswer';
 import { EXCURSIONS } from '@/data/excursions';
 import { GENERAL_IMAGES, GENERAL_IMAGE_DIR } from '@/data/generalImages';
 import { matchElements, getElement, type PlaceNameElement } from '@/utils/placeNameElements';
+import NameDossier, { type NameRow } from './NameDossier';
+import { PersonDossierMap } from './PersonDossierMap';
 
 // De 25 svenska landskapen (etablerade, ej gissade) → routas till HELA-landskaps-vyn i stället för
 // den radie-justerbara ort-vyn. Gemener + trim jämförs. Gotland är både landskap OCH kommun → hit.
@@ -176,10 +178,45 @@ const PRED_SV: Record<string, string> = {
   has_estate: 'gods', belongs_to_dynasty: 'dynasti', dates_context: 'daterar', documents: 'dokumenteras av',
   located_in: 'ligger i', part_of: 'del av', mentions: 'nämner', depicts: 'avbildar', founded_by: 'grundad av',
 };
-export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => void; onQuery?: (q: string) => void }> = ({ query, onGo, onQuery }) => {
+// AI-svaret (grounded RAG) — FULLBREDD inom svarspanelens main-område, renderas efter hero. Delas av
+// alla hit-typer (plats/person/gud/…) så placeringen blir konsekvent inom sidnavigeringen, inte som en
+// lös topp-bar i fullskärms-overlägget.
+const RagAnswerBlock: React.FC<{ answer?: string | null; loading?: boolean; sv: boolean; model?: string | null }> = ({ answer, loading, sv, model }) => {
+  if (!loading && !answer) return null;
+  return (
+    <div className="border-b border-slate-800 bg-slate-900/60 px-5 py-3 text-left">
+      {loading && !answer ? (
+        <div className="flex items-center gap-2 text-sm text-slate-400">
+          <Loader2 className="h-4 w-4 animate-spin text-amber-400" />{sv ? 'AI läser källorna…' : 'AI reading the sources…'}
+        </div>
+      ) : (
+        <>
+          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+            <Sparkles className="h-3 w-3" />{sv ? 'AI-svar · källfört' : 'AI answer · sourced'}
+          </div>
+          <p className="whitespace-pre-wrap leading-relaxed text-[15px] text-slate-100">{answer}</p>
+          <p className="mt-1 text-[10px] text-slate-400">{sv ? 'AI-genererat ur källorna — verifiera via träffarna.' : 'AI-generated from the sources — verify via the results.'}{model ? ` · ${model}` : ''}</p>
+        </>
+      )}
+    </div>
+  );
+};
+
+export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => void; onQuery?: (q: string) => void; ragAnswer?: string | null; ragLoading?: boolean; ragModel?: string | null }> = ({ query, onGo, onQuery, ragAnswer, ragLoading, ragModel }) => {
   const { data, isLoading } = useAnswerContext(query);
   const { language } = useLanguage();
   const sv = language === 'sv';
+  // SKALNING: EN aggregat-round-trip (answer_bundle) i st.f. 8 separata DB-anrop (person/namn/belägg/
+  // socken/jordebok/charters/fornvännen/FAQ). Härleds till samma variabler nedan → renderingen orörd.
+  const { data: bundle, isLoading: bundleLoading } = useQuery({
+    queryKey: ['answer-bundle', query],
+    enabled: query.trim().length >= 2,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<any> => {
+      const { data } = await (supabase as any).rpc('answer_bundle', { p_query: query.trim() });
+      return data ?? {};
+    },
+  });
   // SNABBFAKTA (tier 0): namnled härleds DIREKT ur namnet (ingen DB-runda) → syns omedelbart medan
   // kartan/bilderna/AI-svaret laddar. Tolkning, ej fastställt (etymology = "bästa gissning").
   const nameElements = useMemo<PlaceNameElement[]>(
@@ -189,17 +226,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   // PERSON-TRÄFF: exakt namn i persons (Wikidata CC0-domänen). Ger ett snabbt personkort i st.f. att
   // spinna på plats-berikning (Daniel: "det står söker … vi ville se knowledge graphen"). hasCenter
   // (plats) vinner om namnet också är en ort.
-  const { data: personHit } = useQuery({
-    queryKey: ['answer-person', query],
-    enabled: query.trim().length >= 3,
-    staleTime: 30 * 60 * 1000,
-    queryFn: async (): Promise<any | null> => {
-      const { data } = await (supabase as any).from('persons')
-        .select('id,name,birth_year,death_year,occupations,description_sv,image_url,image_license,image_credit,birthplace_label,sbl,wikidata_qid,viaf')
-        .ilike('name', query.trim()).order('sitelinks', { ascending: false }).limit(1);
-      return (data ?? [])[0] ?? null;
-    },
-  });
+  const personHit = (bundle?.person ?? null) as any; // ur answer_bundle
   const { data: personKg = [] } = useQuery({
     queryKey: ['answer-person-kg', personHit?.id],
     enabled: !!personHit?.id,
@@ -225,67 +252,35 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       } catch { return null; }
     },
   });
+  // NAMN-DOSSIER (intent-gate): en BAR förnamns-query (exakt name_authority.canonical) leder till en
+  // förnamns-dossier i stället för att kollapsa till en slumpperson (Anna→artist, Daniel→poddvärd).
+  // "birger jarl" matchar ingen canonical → faller igenom till personkortet. Plats vinner (hasCenter).
+  const nameHit = (bundle?.name ?? null) as NameRow | null; // ur answer_bundle
+  const godHit = (bundle?.god ?? null) as { id: string; name: string; name_old_norse: string | null; category: string | null; domain: string | null; description: string | null; symbols: string | null; wikidata_id: string | null } | null; // ur answer_bundle — alla 26 gudar
   const placesLayerRef = useRef<L.LayerGroup | null>(null); // alla platser som matchar sökningen (multi-plats)
 
   // Multi-plats: alla ortnamn som matchar frågan (exakt + prefix) med koordinat → plottas ALLA på
   // kartan (Daniel: "om det är flera platser bör alla visas"), och den sökta orten (t.ex. Mörbylånga)
   // blir en tydlig egen markör. Cappad; parishes/städer via search_document-geom är redan i center.
-  const { data: matchingPlaces = [] } = useQuery({
-    queryKey: ['answer-matching-places', query],
-    enabled: query.trim().length >= 2,
-    staleTime: 10 * 60 * 1000,
-    queryFn: async (): Promise<{ name: string; feature_type: string | null; lat: number; lng: number }[]> => {
-      const q = query.trim();
-      const { data } = await (supabase as any).from('place_names')
-        .select('name, feature_type, lat, lng')
-        .ilike('name', `${q}%`).not('lat', 'is', null).limit(60);
-      // Exakt namn först, sen tätorter/städer före mikrotoponymer.
-      const rank = (t: string | null) => (t && /tätort|stad|BEBT|socken|parish/i.test(t) ? 0 : 1);
-      return ((data ?? []) as any[])
-        .map((r) => ({ name: r.name as string, feature_type: r.feature_type as string | null, lat: Number(r.lat), lng: Number(r.lng) }))
-        .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
-        .sort((a, b) => (a.name.toLowerCase() === q.toLowerCase() ? -1 : 0) - (b.name.toLowerCase() === q.toLowerCase() ? -1 : 0) || rank(a.feature_type) - rank(b.feature_type))
-        .slice(0, 40);
-    },
-  });
+  // Ur answer_bundle (rå prefix-match) → samma ranking/slice som förr, klient-sida (identisk logik).
+  const matchingPlaces = useMemo(() => {
+    const q = query.trim();
+    const rank = (t: string | null) => (t && /tätort|stad|BEBT|socken|parish/i.test(t) ? 0 : 1);
+    return ((bundle?.matching_places ?? []) as any[])
+      .map((r) => ({ name: r.name as string, feature_type: r.feature_type as string | null, lat: Number(r.lat), lng: Number(r.lng) }))
+      .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
+      .sort((a, b) => (a.name.toLowerCase() === q.toLowerCase() ? -1 : 0) - (b.name.toLowerCase() === q.toLowerCase() ? -1 : 0) || rank(a.feature_type) - rank(b.feature_type))
+      .slice(0, 40);
+  }, [bundle, query]);
 
   // ÄLDSTA BELÄGG: sökt ortnamn → tidigaste skriftbelägg + belagd form + källa (Isof/SDHK). Tidigast
   // över källor (place_names.earliest_attestation_year). Källkritiskt kärnvärde — visas prominent.
-  const { data: attestation, isLoading: attLoading } = useQuery({
-    queryKey: ['answer-attestation', query],
-    enabled: query.trim().length >= 2,
-    staleTime: 30 * 60 * 1000,
-    queryFn: async (): Promise<{ name: string; year: number; form: string | null; source: string | null } | null> => {
-      const { data } = await (supabase as any).from('place_names')
-        .select('name, earliest_attestation_year, attested_form, attestation_source')
-        .ilike('name', query.trim()).not('earliest_attestation_year', 'is', null)
-        .order('earliest_attestation_year', { ascending: true }).limit(1);
-      const r = (data ?? [])[0];
-      return r ? { name: r.name, year: r.earliest_attestation_year, form: r.attested_form, source: r.attestation_source } : null;
-    },
-  });
+  const attestation = (bundle?.attestation ?? null) as { name: string; year: number; form: string | null; source: string | null } | null; // ur answer_bundle
+  const attLoading = bundleLoading;
   // SOCKEN-DOSSIER: nyckeltal om frågan är en socken (yta/runstenar/kyrkor/fornlämningar/äldsta belägg).
-  const { data: sockenInfo } = useQuery({
-    queryKey: ['answer-socken', query],
-    enabled: query.trim().length >= 3,
-    staleTime: 30 * 60 * 1000,
-    queryFn: async (): Promise<{ name: string; area_km2: number; runestones: number; churches: number; heritage: number; earliest_year: number | null } | null> => {
-      const { data } = await (supabase as any).rpc('socken_dossier', { p_name: query.trim() });
-      return (data ?? [])[0] ?? null;
-    },
-  });
+  const sockenInfo = (bundle?.socken ?? null) as { name: string; area_km2: number; runestones: number; churches: number; heritage: number; earliest_year: number | null } | null; // ur answer_bundle
   // JORDEBÖCKER: katalog per socken (utlänkat, aldrig rehostat). Tidigmoderna jordregister — EJ SDHK.
-  const { data: jordebocker = [] } = useQuery({
-    queryKey: ['answer-jordebok', query],
-    enabled: query.trim().length >= 3,
-    staleTime: 30 * 60 * 1000,
-    queryFn: async (): Promise<{ id: string; title: string; record_type: string; year_from: number | null; year_to: number | null; archive: string | null; archive_ref: string | null; url: string | null; source_org: string | null }[]> => {
-      const { data } = await (supabase as any).from('jordebok_records')
-        .select('id,title,record_type,year_from,year_to,archive,archive_ref,url,source_org')
-        .ilike('socken', query.trim()).order('year_from', { ascending: true });
-      return (data ?? []) as any[];
-    },
-  });
+  const jordebocker = ((bundle?.jordebok ?? []) as { id: string; title: string; record_type: string; year_from: number | null; year_to: number | null; archive: string | null; archive_ref: string | null; url: string | null; source_org: string | null }[]); // ur answer_bundle
   // Giltig center = både lat OCH lng är tal (t.ex. Gotland gav {null,null} → rita ingen trasig karta).
   const hasCenter = !!(data?.center && data.center.lat != null && data.center.lng != null);
   const mapEl = useRef<HTMLDivElement>(null);
@@ -327,27 +322,9 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   // (medieval_charters_browse, ilike på regest/plats/utfärdare) — "40 brev nämner Brännkyrka" — och
   // vägpunkter (road_waypoints) där platsen ligger på en historisk väg. Gör medeltidsdiariet + vägnätet
   // till ett tvärgående lager över hela plattformen (Daniel).
-  const { data: charters, isLoading: chartersLoading } = useQuery({
-    queryKey: ['answer-charters', query],
-    enabled: query.trim().length >= 2,
-    staleTime: 10 * 60 * 1000,
-    queryFn: async (): Promise<{ total: number; rows: { sdhk_id: number; year: number | null; date_display: string | null; regest: string | null }[] }> => {
-      const { data } = await (supabase as any).rpc('medieval_charters_browse', { q: query.trim(), page_size: 6 });
-      const rows = (data ?? []) as any[];
-      return { total: Number(rows[0]?.total_count ?? 0), rows };
-    },
-  });
-  const { data: waypoints = [] } = useQuery({
-    queryKey: ['answer-waypoints', query],
-    enabled: query.trim().length >= 2,
-    staleTime: 10 * 60 * 1000,
-    queryFn: async (): Promise<{ name: string; sublabel: string | null; signum: string | null }[]> => {
-      // Ur search_document (road_waypoint bär väg·typ i sublabel + explore-URL i signum).
-      const { data } = await (supabase as any).from('search_document')
-        .select('label, sublabel, signum').eq('entity_type', 'road_waypoint').ilike('label', `%${query.trim()}%`).limit(6);
-      return ((data ?? []) as any[]).map((r) => ({ name: r.label, sublabel: r.sublabel, signum: r.signum }));
-    },
-  });
+  const charters = (bundle?.charters ?? { total: 0, rows: [] }) as { total: number; rows: { sdhk_id: number; year: number | null; date_display: string | null; regest: string | null }[] }; // ur answer_bundle
+  const chartersLoading = bundleLoading;
+  const waypoints = ((bundle?.waypoints ?? []) as { name: string; sublabel: string | null; signum: string | null }[]); // ur answer_bundle
 
   // LANDMÄRKEN: byggnads-/monumentbilder (Kalmar slott, domkyrka, stadsmur…) via landmarks_for_place
   // (place_context ELLER närhet). Visas som egen remsa högt upp — även i LandscapeNode-läget där
@@ -366,52 +343,22 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
   // FORNVÄNNEN: relevanta artiklar (3605 st, direkt-PDF) som "läs mer". Matchar titel+ämnesord via
   // fornvannen_for_query (case-insensitivt server-side). Daniel: "Den är mer om man vill läsa mer."
-  const { data: fornvannen = [], isLoading: fornvannenLoading } = useQuery({
-    queryKey: ['answer-fornvannen', query],
-    enabled: query.trim().length >= 2,
-    staleTime: 30 * 60 * 1000,
-    queryFn: async (): Promise<{ id: string; title: string; year: number | null; url: string }[]> => {
-      const { data } = await (supabase as any).rpc('fornvannen_for_query', { q: query.trim(), lim: 20 });
-      return ((data ?? []) as any[]).map((r) => ({ id: r.id, title: r.title, year: r.written_year, url: r.url }));
-    },
-  });
+  const fornvannen = ((bundle?.fornvannen ?? []) as { id: string; title: string; year: number | null; url: string }[]); // ur answer_bundle
+  const fornvannenLoading = bundleLoading;
 
   // "Senaste forskningen" — färska artiklar (30–60 dgr) ur öppna register (OpenAlex/Crossref/Europe PMC),
   // relevans-triagerade i lit_intake (nordiskt förankrade). Utlänk till DOI, OA-märkta. Tips, ej kanon.
-  const { data: litRecent = [] } = useQuery({
-    queryKey: ['answer-lit', query],
-    enabled: query.trim().length >= 3,
-    staleTime: 30 * 60 * 1000,
-    queryFn: async (): Promise<{ title: string; title_sv: string | null; authors: string; journal: string; doi: string; url: string; is_oa: boolean; publication_date: string; discipline: string }[]> => {
-      const { data } = await (supabase as any).rpc('lit_for_query', { p_q: query.trim(), p_limit: 6 });
-      return (data ?? []) as any[];
-    },
-  });
+  const litRecent = ((bundle?.lit ?? []) as { title: string; title_sv: string | null; authors: string; journal: string; doi: string; url: string; is_oa: boolean; publication_date: string; discipline: string }[]); // ur answer_bundle
 
   // HISTORIEMÅLNINGAR (PD, 1800-tal — Cederström/Hellqvist m.fl.) knutna till kungar/händelser.
   // KÄLLKRITISKT: konstnärlig tolkning, ej historisk källa → caveat visas tydligt (Daniel).
   // FAQ/PAA: fler-perspektiv-svar (disciplin-linser + bias-ruta) för frågor. get_faq normaliserar.
-  const { data: faq, isLoading: faqLoading } = useQuery<import('./FaqAnswer').FaqData | null>({
-    queryKey: ['answer-faq', query],
-    enabled: query.trim().length >= 2,
-    staleTime: 30 * 60 * 1000,
-    queryFn: async () => {
-      const { data } = await (supabase as any).rpc('get_faq', { p_q: query.trim() });
-      return (data ?? null) as import('./FaqAnswer').FaqData | null;
-    },
-  });
+  const faq = (bundle?.faq ?? null) as import('./FaqAnswer').FaqData | null; // ur answer_bundle
+  const faqLoading = bundleLoading;
 
   // ARKIVBILDER: bild-på-sök över bildarkivet (runstensteckningar, kyrkor, landmärken, målningar)
   // så topiska sökningar ("runstenar", "runestone drawings", "kyrkor") drar in relevanta bilder.
-  const { data: archiveImages = [] } = useQuery({
-    queryKey: ['answer-archive-images', query],
-    enabled: query.trim().length >= 2,
-    staleTime: 30 * 60 * 1000,
-    queryFn: async (): Promise<{ image_url: string; thumb_url: string | null; title: string | null; credit: string | null; license_code: string | null; source_institution: string | null; category: string }[]> => {
-      const { data } = await (supabase as any).rpc('images_for_query', { p_q: query.trim(), p_limit: 12 });
-      return (data ?? []) as any[];
-    },
-  });
+  const archiveImages = ((bundle?.archive_images ?? []) as { image_url: string; thumb_url: string | null; title: string | null; credit: string | null; license_code: string | null; source_institution: string | null; category: string }[]); // ur answer_bundle
 
   // UTFLYKTSFOTON: Daniels EGNA foton ligger som statiska filer på webbhotellet under
   // /excursion-photos/<photoDir>/ (listade i manifest.json) och visas på utflyktssidan — men lästes
@@ -473,15 +420,18 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     },
   });
 
-  // REGION-HUBBAR: kurerade regionsidor (Ölandsprojektet, Kalmar, Höga kusten…) nära platsen via
-  // pages_near → "Färjestaden" (Öland) surfar /sv/oland (Daniel: fick inte upp Ölandskartan/projektet).
-  const { data: regionPages = [] } = useQuery({
-    queryKey: ['answer-region-pages', data?.center?.lat, data?.center?.lng],
+  // CENTER-BUNDLE: EN aggregat-round-trip (answer_bundle_geo) i st.f. separata anrop för befästningar,
+  // äventyr och grottor. Härleds till forts/adventures nedan → kart-renderingen orörd. (Det gamla
+  // pages_near/regionPages-anropet var död kod — hämtades men renderades aldrig — och togs bort.)
+  const { data: bundleGeo } = useQuery({
+    queryKey: ['answer-bundle-geo', data?.center?.lat, data?.center?.lng],
     enabled: !!(data?.center && data.center.lat != null && data.center.lng != null),
     staleTime: 30 * 60 * 1000,
-    queryFn: async (): Promise<{ title: string; url: string; kind: string | null; km: number }[]> => {
-      const { data: rows } = await (supabase as any).rpc('pages_near', { p_lat: data!.center!.lat, p_lng: data!.center!.lng, radius_m: 60000 });
-      return ((rows ?? []) as any[]).map((r) => ({ title: r.title_sv, url: r.url, kind: r.kind ?? null, km: (r.dist_m ?? 0) / 1000 })).slice(0, 5);
+    queryFn: async (): Promise<any> => {
+      const { data: b } = await (supabase as any).rpc('answer_bundle_geo', {
+        p_lat: data!.center!.lat, p_lng: data!.center!.lng,
+      });
+      return b ?? {};
     },
   });
 
@@ -524,38 +474,23 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   const mapHasCenter = !!(mapCenter && Number.isFinite(Number(mapCenter.lat)) && Number.isFinite(Number(mapCenter.lng)));
   // Befästningsgeometri (linjer/polygoner) nära svarets center — riktig fort_element- + RAÄ-lämningsgeometri.
   // Källkritik: varje feature bär evidence_class → tolkat/hypotetiskt ritas streckat, bevarat heldraget.
-  const { data: forts } = useQuery({
-    queryKey: ['forts-near', data?.center?.lat, data?.center?.lng],
-    enabled: !!(data?.center && data.center.lat != null && data.center.lng != null),
-    queryFn: async () => {
-      const { data: rows } = await (supabase as any).rpc('fortifications_near', {
-        p_lat: data!.center!.lat, p_lng: data!.center!.lng, p_radius_m: 3000,
-      });
-      return (rows ?? []) as Array<{ kind: string; name: string | null; subtype: string | null; evidence_class: string | null; year_from: number | null; year_to: number | null; geojson: string }>;
-    },
-  });
-  // Äventyr & motion (Daniel): badplatser m.m. nära platsen via nearby_experiences. Egen legend-toggle.
-  // v1 = badplatser + fiskeställen (experiences) + grottor (heritage); utbyggbart när leder/kulturvandring ingestas.
-  const { data: adventures } = useQuery({
-    queryKey: ['adventures-near', data?.center?.lat, data?.center?.lng],
-    enabled: !!(data?.center && data.center.lat != null && data.center.lng != null),
-    queryFn: async () => {
-      const lat = data!.center!.lat, lng = data!.center!.lng;
-      // Union av det vi HAR som "äventyr & motion": badplatser (experiences) + grottor (heritage_sites,
-      // ~143 st, raa_type Grotta/naturgrotta/grotta med tradition). Grottorna bor i heritage → egen
-      // bbox-fråga (~±0,3° ≈ 25 km). Utbyggbart med leder/kulturvandring när de ingestas.
-      const [expRes, grottRes] = await Promise.all([
-        // p_ignore_season: platsforskning visar allt året runt (fiske/bad) med säsong i popupen, döljer inte vår/höst-öring i augusti.
-        (supabase as any).rpc('nearby_experiences', { p_lat: lat, p_lng: lng, p_radius_km: 25, p_limit: 80, p_ignore_season: true }),
-        (supabase as any).from('heritage_sites').select('id, name, raa_type, lat, lng')
-          .gte('lat', lat - 0.28).lte('lat', lat + 0.28).gte('lng', lng - 0.45).lte('lng', lng + 0.45)
-          .ilike('raa_type', '%grott%').not('lat', 'is', null).limit(60),
-      ]);
-      const bad = ((expRes.data ?? []) as any[]).map((a) => ({ feature_type: (a.feature_type ?? 'badplats') as string, label: a.label as string, lat: a.lat as number, lng: a.lng as number, parish: (a.parish ?? null) as string | null, subtype: (a.subtype ?? null) as string | null, season: (a.season ?? null) as string | null, bath_kind: (a.bath_kind ?? null) as string | null }));
-      const grott = ((grottRes.data ?? []) as any[]).map((g) => ({ feature_type: 'grotta', label: g.name as string, lat: Number(g.lat), lng: Number(g.lng), parish: null as string | null, subtype: null as string | null, season: null as string | null, bath_kind: null as string | null }));
-      return [...bad, ...grott];
-    },
-  });
+  // Härleds nu ur answer_bundle_geo (samma fortifications_near-utdata) → inget eget round-trip.
+  const forts = useMemo(
+    () => bundleGeo
+      ? ((bundleGeo.forts ?? []) as Array<{ kind: string; name: string | null; subtype: string | null; evidence_class: string | null; year_from: number | null; year_to: number | null; geojson: string }>)
+      : undefined,
+    [bundleGeo],
+  );
+  // Äventyr & motion (Daniel): badplatser m.m. nära platsen. v1 = badplatser + fiskeställen (experiences)
+  // + grottor (heritage). Härleds ur answer_bundle_geo: bundleGeo.experiences (nearby_experiences,
+  // p_ignore_season=true — visar allt året runt, säsong i popupen) + bundleGeo.caves (grott-bbox).
+  // Samma union/form som förr → markörlogiken nedan orörd.
+  const adventures = useMemo(() => {
+    if (!bundleGeo) return undefined;
+    const bad = ((bundleGeo.experiences ?? []) as any[]).map((a) => ({ feature_type: (a.feature_type ?? 'badplats') as string, label: a.label as string, lat: a.lat as number, lng: a.lng as number, parish: (a.parish ?? null) as string | null, subtype: (a.subtype ?? null) as string | null, season: (a.season ?? null) as string | null, bath_kind: (a.bath_kind ?? null) as string | null }));
+    const grott = ((bundleGeo.caves ?? []) as any[]).map((g) => ({ feature_type: 'grotta', label: g.name as string, lat: Number(g.lat), lng: Number(g.lng), parish: null as string | null, subtype: null as string | null, season: null as string | null, bath_kind: null as string | null }));
+    return [...bad, ...grott];
+  }, [bundleGeo]);
   // Äventyrs-underkategorier: färg + etikett per badtyp/fiske/grotta. Driver markörfärg + filter-chips.
   const ADV_KIND_STYLE: Record<string, { fill: string; border: string; sv: string; en: string }> = {
     fiske:      { fill: '#3b82f6', border: '#1d4ed8', sv: 'Fiske', en: 'Fishing' },
@@ -884,7 +819,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     enabled: !!query && query.trim().length >= 2,
     queryFn: async () => {
       const { data } = await (supabase as any).rpc('entity_node', { p_name: query });
-      return (Array.isArray(data) && data[0]) as { kind: string; title: string; description: string; dating: string | null } | null;
+      return ((Array.isArray(data) && data[0]) || null) as { kind: string; title: string; description: string; dating: string | null } | null;
     },
   });
   // Strukturerad LANDSKAPSNOD: när frågan löser ett landskap (även "hur många kyrkor på gotland")
@@ -914,7 +849,12 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   });
   // Visa landskaps-/hubbnoden bara för RENA landskaps-/regionfrågor — inte när en specifik entitet
   // matchat (t.ex. "Kalmar slott" → entity_node för slottet vinner, ej hela Kalmar-översikten).
-  const showLandscape = !!overview && !data?.page && !data?.theme && !node;
+  // En KOMMUN/ORT-overview (bär radius_m ur city_radius_overview) ska vinna över ett generiskt
+  // entity_node för samma namn — annars visas en mager nodeBlock i st.f. kommun-noden med folkmängd
+  // + aktiviteter (Daniel: "alla kommuner ska trigga kommunnoden"). "Kalmar slott" resolvar ingen
+  // overview → slott-noden vinner fortfarande.
+  const isCityOverview = !!overview && (overview as unknown as { radius_m?: number }).radius_m != null;
+  const showLandscape = !!overview && !data?.page && !data?.theme && (!node || isCityOverview);
 
   // HERO: en PD-historiemålning (t.ex. Hellqvist) som full-bleed banner ÖVER innehållet. Ramen
   // beskärs med CSS (object-cover + lätt scale) — vi hotlinkar Commons, rehostar aldrig. Diskret
@@ -935,6 +875,31 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
       <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-300/70">{node.kind}{node.dating ? ` · ${node.dating}` : ''}</div>
       <h2 className="text-2xl font-bold leading-tight text-white">{node.title}</h2>
       {node.description && <p className="mt-1 max-w-3xl whitespace-pre-line text-sm leading-relaxed text-slate-300">{node.description}</p>}
+    </div>
+  ) : null;
+
+  // GUD-KORT: alla 26 gudar (gods-tabellen via answer_bundle) får en vy i svarspanelen — inte bara de
+  // ~7 med sakrala ortnamn. Komponerar med theophoric-kartan (Tor) el. står själv (Ull/Balder/Frigg…).
+  const godCard = godHit ? (
+    <div className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-3 text-left">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-300/70">
+        {sv ? 'Fornnordisk gudom' : 'Norse deity'}{godHit.category ? ` · ${godHit.category}` : ''}
+      </div>
+      <h1 className="text-2xl font-bold leading-tight text-white">{godHit.name}
+        {godHit.name_old_norse && <span className="ml-2 text-base font-normal text-slate-400">{godHit.name_old_norse}</span>}
+      </h1>
+      {godHit.domain && (
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {godHit.domain.split(',').map((d) => d.trim()).filter(Boolean).map((d) => (
+            <span key={d} className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-[11px] text-amber-200">{d}</span>
+          ))}
+        </div>
+      )}
+      {godHit.description && <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-slate-200">{godHit.description}</p>}
+      <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
+        {godHit.symbols && <span>{sv ? 'Symboler' : 'Symbols'}: {godHit.symbols}</span>}
+        {godHit.wikidata_id && <a href={`https://www.wikidata.org/wiki/${godHit.wikidata_id}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-slate-400 hover:text-amber-200"><ExternalLink className="h-3.5 w-3.5" />Wikidata</a>}
+      </div>
     </div>
   ) : null;
 
@@ -990,17 +955,40 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     </div>
   ) : null;
 
+  // NAMN-DOSSIER: bar förnamns-query → led med dossiern (betydelse/tradition/svenskt-bruk-lager/namnsdag/
+  // bärare/reception), INTE en kollaps till en enskild person. Föregår personkortet.
+  // B1 (Daniel 2026-08-21, MEDVETEN omsvängning av tidigare "plats vinner alltid"): en BAR känd
+  // namn-query (ett ord, exakt name_authority.canonical) ska leda med dossiern ÄVEN när en obskyr ort
+  // råkar matcha (Kalle→Kalleby, Sven→Skåne-ort, Erik→Norrbottens-ort — alla page=null). En NOTABEL
+  // ort (content_page finns) behåller platsledning. Så vanliga namn ger namninfo, inte en slumport.
+  const bareNameQuery = !!nameHit && query.trim().split(/\s+/).length === 1;
+  const notablePlace = !!data?.page;
+  if (nameHit && (!hasCenter || (bareNameQuery && !notablePlace))) {
+    return (
+      <div>
+        <RagAnswerBlock answer={ragAnswer} loading={ragLoading} sv={sv} model={ragModel} />
+        {snabbfakta}
+        <NameDossier name={nameHit} onQuery={onQuery} sv={sv} />
+      </div>
+    );
+  }
+
   // PERSONKORT (snabbt) — när frågan är en person och INTE en plats: rendera direkt, ingen spinner.
   if (personHit && !hasCenter) {
     const yr = personHit.birth_year ? `${personHit.birth_year}${personHit.death_year ? '–' + personHit.death_year : '–'}` : null;
     const occ = Array.isArray(personHit.occupations) ? personHit.occupations.join(', ') : null;
+    // Wikipedia-sammanfattningen börjar ibland med ", född …" (namnet var fetstilt i wikitexten och
+    // föll bort i extract) → sätt tillbaka namnet så meningen börjar rätt (Daniel: "börja med hans namn").
+    const rawBio = wikiExtract?.extract || personHit.description_sv || '';
+    const bio = rawBio && /^\s*,|^\s*[a-zåäöé]/.test(rawBio) ? `${personHit.name}${rawBio.trimStart().startsWith(',') ? '' : ' '}${rawBio.trimStart()}` : rawBio;
     const PRED: Record<string, string> = { originates_from: sv ? 'kommer från' : 'from', born_in: sv ? 'född i' : 'born in', married_to: sv ? 'gift med' : 'married to', child_of: sv ? 'barn till' : 'child of', mentioned_in: sv ? 'nämns i' : 'mentioned in' };
     return (
-      <div className="border-b border-slate-800 bg-slate-900">
+      <div className="border-b border-slate-800 bg-slate-900 text-left">
+        <RagAnswerBlock answer={ragAnswer} loading={ragLoading} sv={sv} model={ragModel} />
         <div className="flex gap-4 p-5">
           {personHit.image_url && (
             <img src={personHit.image_url} alt={personHit.name} loading="lazy"
-              className="h-28 w-24 shrink-0 rounded-lg border border-slate-700 object-cover" onError={hideCard} />
+              className="h-28 w-24 shrink-0 rounded-lg border border-slate-700 object-cover object-top" onError={hideCard} />
           )}
           <div className="min-w-0">
             <h1 className="text-2xl font-bold text-white">{personHit.name}</h1>
@@ -1015,7 +1003,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
         </div>
         {(wikiExtract?.extract || personHit.description_sv) && (
           <div className="px-5 pb-3">
-            <p className="text-[15px] leading-relaxed text-slate-200">{wikiExtract?.extract || personHit.description_sv}</p>
+            <p className="text-[15px] leading-relaxed text-slate-200">{bio}</p>
             {wikiExtract?.url && (
               <a href={wikiExtract.url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-[11px] text-slate-500 hover:text-amber-200">
                 {sv ? 'Ur svenska Wikipedia (CC BY-SA) →' : 'From Swedish Wikipedia (CC BY-SA) →'}
@@ -1023,6 +1011,9 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
             )}
           </div>
         )}
+        {/* LIVSGEOGRAFI: född/död/grav på karta + tidslinje (persondossier, det unika KG-svaret). */}
+        <PersonDossierMap personId={personHit.id} personName={personHit.name}
+          birthYear={personHit.birth_year} deathYear={personHit.death_year} sv={sv} onQuery={onQuery} />
         {personKg.length > 0 && (
           <div className="px-5 pb-3">
             <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
@@ -1053,6 +1044,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
   if (query.trim().length >= 2 && coreEmpty && !somethingMatched && (answerLoading || data === undefined)) {
     return (
       <div>
+        <RagAnswerBlock answer={ragAnswer} loading={ragLoading} sv={sv} model={ragModel} />
         {snabbfakta}
         <div className="flex items-center justify-center gap-2 px-5 py-14 text-sm text-slate-400">
           <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-600 border-t-amber-400" />
@@ -1067,7 +1059,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
     const isObjectQuery = /^(fornfynd|f[öo]rem[åa]l|fynd|artefakter?|artefacts?|arkeologiska fynd)$/i.test(query.trim());
     // Allt har settlat och kärnskopet är tomt. Visa node/landskap/relaterat om något ändå matchade;
     // annars sök-kaskadens sista lager (media + externa sök-URL:er + bidra) — sökordet loggas.
-    return <>{showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}{nodeBlock}{relatedBlock}
+    return <><RagAnswerBlock answer={ragAnswer} loading={ragLoading} sv={sv} model={ragModel} />{godCard}{showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}{nodeBlock}{relatedBlock}
       {isObjectQuery && (
         <section className="border-b border-slate-800 bg-slate-900 px-5 pt-4 pb-4 text-left">
           <h2 className="mb-1 flex items-center gap-2 text-lg font-bold text-white">
@@ -1130,13 +1122,15 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           <p className="mt-1.5 text-[10px] text-slate-500">{sv ? 'Tidigmoderna jordregister (ägare, mantal, jordenatur) — ej medeltidsbrev. Vi länkar ut till arkivet; innehållet rehostas aldrig.' : 'Early-modern land registers — not medieval charters. We link out to the archive; content is never rehosted.'}</p>
         </div>
       )}
-      {/* HERO: full-bleed historiemålning (ramen CSS-beskuren via object-cover + scale). */}
+      {/* HERO: full-bleed historiemålning. Ramen CSS-beskärs: object-center + lätt inzoomning
+          (scale-108) klipper bort tavelramens kant på ALLA sidor (figuren har overflow-hidden) —
+          generiskt, utan per-bild-beskärningsdata (Daniel: "man ser bara en del av översta ramen"). */}
       {heroPainting && (
         <figure className="relative m-0 w-full overflow-hidden">
           <img
             src={heroPainting.image_url}
             alt={heroPainting.title}
-            className="h-56 w-full scale-[1.05] object-cover object-center sm:h-72 md:h-80"
+            className="h-56 w-full origin-center scale-[1.08] object-cover object-center sm:h-72 md:h-80"
             onError={hideCard}
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/25 to-transparent" />
@@ -1154,6 +1148,7 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           </figcaption>
         </figure>
       )}
+      {godCard}
       {showLandscape && <LandscapeNode overview={overview!} sv={sv} onGo={onGo} />}
       {!data.page && !showLandscape && !heroPainting && nodeBlock}
       {/* NORMALISERAD INGRESS — populärvetenskaplig beskrivning ur den källa entiteten HAR (content-
@@ -1457,6 +1452,8 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
 
       {/* AI-svar (entitetens beskrivning) UNDER hero+karta — ramas in bättre typografiskt (Daniel). */}
       {descBelowMap}
+      {/* Grounded RAG-svar — fullbredd inom main, efter hero. */}
+      <RagAnswerBlock answer={ragAnswer} loading={ragLoading} sv={sv} model={ragModel} />
 
       {/* PANELER — 2/3 huvud + 1/3 höger-rail (Utforska & upplev). Använder ytan, undviker tomma kolumner. */}
       <div className="px-5 pb-4 lg:flex lg:gap-5">
@@ -1610,9 +1607,10 @@ export const AnswerContext: React.FC<{ query: string; onGo: (route: string) => v
           )}
 
           {/* Litteratur: böcker som documents-länkats till entiteten. ISBN → "Hitta boken"-länk
-              (STEG 0, ingen affiliate ännu). Skild från källor/forskning för trovärdighetens skull. */}
+              (STEG 0, ingen affiliate ännu). Skild från källor/forskning för trovärdighetens skull.
+              text-left: förälder-containern är centrerad (jfr works-sektionen), utan detta ärvs center. */}
           {data.literature?.length > 0 && (
-            <section>
+            <section className="text-left">
               <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-amber-300">
                 <Library className="h-3.5 w-3.5" /> {sv ? 'Litteratur' : 'Literature'}
               </h3>
